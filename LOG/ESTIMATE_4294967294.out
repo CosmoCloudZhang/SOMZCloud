@@ -1,0 +1,184 @@
+Index: 4
+Time: 0.00 minutes
+Index: 8
+Time: 0.00 minutes
+Index: 2
+Time: 0.00 minutes
+Index: 5
+Time: 0.00 minutes
+Index: 6
+Time: 0.00 minutes
+Index: 7
+Time: 0.00 minutes
+Index: 3
+Time: 0.00 minutes
+Index: 1
+Time: 0.00 minutes
+Executing stage: FlexZBoostEstimator @ 2024-06-05 16:15:37.681511
+Inserting handle into data store.  input_model: /pscratch/sd/y/yhzhang/ZCloud//DATA/INFORM/FZB_INFORM7.pkl, FZB_ESTIMATE7
+Executing stage: FlexZBoostEstimator @ 2024-06-05 16:15:37.682845
+Inserting handle into data store.  input_model: /pscratch/sd/y/yhzhang/ZCloud//DATA/INFORM/FZB_INFORM2.pkl, FZB_ESTIMATE2
+Executing stage: FlexZBoostEstimator @ 2024-06-05 16:15:40.037354
+Inserting handle into data store.  input_model: /pscratch/sd/y/yhzhang/ZCloud//DATA/INFORM/FZB_INFORM8.pkl, FZB_ESTIMATE8
+Executing stage: FlexZBoostEstimator @ 2024-06-05 16:15:42.761554
+Inserting handle into data store.  input_model: /pscratch/sd/y/yhzhang/ZCloud//DATA/INFORM/FZB_INFORM5.pkl, FZB_ESTIMATE5
+Inserting handle into data store.  input_data: /pscratch/sd/y/yhzhang/ZCloud//DATA/SAMPLE/TEST_SAMPLE.hdf5, FZB_ESTIMATE7
+Inserting handle into data store.  input_data: /pscratch/sd/y/yhzhang/ZCloud//DATA/SAMPLE/TEST_SAMPLE.hdf5, FZB_ESTIMATE2
+Process 0 running estimator on chunk 0 - 250000
+Process 0 running estimator on chunk 0 - 250000
+Process 0 estimating PZ PDF for rows 0 - 250,000
+Process 0 estimating PZ PDF for rows 0 - 250,000
+Inserting handle into data store.  input_data: /pscratch/sd/y/yhzhang/ZCloud//DATA/SAMPLE/TEST_SAMPLE.hdf5, FZB_ESTIMATE8
+Process 0 running estimator on chunk 0 - 250000
+Process 0 estimating PZ PDF for rows 0 - 250,000
+Executing stage: FlexZBoostEstimator @ 2024-06-05 16:15:47.955674
+Inserting handle into data store.  input_model: /pscratch/sd/y/yhzhang/ZCloud//DATA/INFORM/FZB_INFORM3.pkl, FZB_ESTIMATE3
+Inserting handle into data store.  input_data: /pscratch/sd/y/yhzhang/ZCloud//DATA/SAMPLE/TEST_SAMPLE.hdf5, FZB_ESTIMATE5
+Executing stage: FlexZBoostEstimator @ 2024-06-05 16:15:48.081007
+Inserting handle into data store.  input_model: /pscratch/sd/y/yhzhang/ZCloud//DATA/INFORM/FZB_INFORM4.pkl, FZB_ESTIMATE4
+Process 0 running estimator on chunk 0 - 250000
+Process 0 estimating PZ PDF for rows 0 - 250,000
+Executing stage: FlexZBoostEstimator @ 2024-06-05 16:15:49.704480
+Inserting handle into data store.  input_model: /pscratch/sd/y/yhzhang/ZCloud//DATA/INFORM/FZB_INFORM6.pkl, FZB_ESTIMATE6
+Inserting handle into data store.  input_data: /pscratch/sd/y/yhzhang/ZCloud//DATA/SAMPLE/TEST_SAMPLE.hdf5, FZB_ESTIMATE4
+Inserting handle into data store.  input_data: /pscratch/sd/y/yhzhang/ZCloud//DATA/SAMPLE/TEST_SAMPLE.hdf5, FZB_ESTIMATE3
+Process 0 running estimator on chunk 0 - 250000
+Process 0 estimating PZ PDF for rows 0 - 250,000
+Process 0 running estimator on chunk 0 - 250000
+Process 0 estimating PZ PDF for rows 0 - 250,000
+Inserting handle into data store.  input_data: /pscratch/sd/y/yhzhang/ZCloud//DATA/SAMPLE/TEST_SAMPLE.hdf5, FZB_ESTIMATE6
+Process 0 running estimator on chunk 0 - 250000
+Process 0 estimating PZ PDF for rows 0 - 250,000
+Executing stage: FlexZBoostEstimator @ 2024-06-05 16:15:59.865743
+Inserting handle into data store.  input_model: /pscratch/sd/y/yhzhang/ZCloud//DATA/INFORM/FZB_INFORM1.pkl, FZB_ESTIMATE1
+Inserting handle into data store.  input_data: /pscratch/sd/y/yhzhang/ZCloud//DATA/SAMPLE/TEST_SAMPLE.hdf5, FZB_ESTIMATE1
+Process 0 running estimator on chunk 0 - 250000
+Process 0 estimating PZ PDF for rows 0 - 250,000
+Inserting handle into data store.  output_data: /pscratch/sd/y/yhzhang/ZCloud/DATA/ESTIMATE/inprogress_FZB_ESTIMATE8.hdf5, FZB_ESTIMATE8
+Process 0 running estimator on chunk 250000 - 500000
+Process 0 estimating PZ PDF for rows 250,000 - 500,000
+Inserting handle into data store.  output_data: /pscratch/sd/y/yhzhang/ZCloud/DATA/ESTIMATE/inprogress_FZB_ESTIMATE5.hdf5, FZB_ESTIMATE5
+Process 0 running estimator on chunk 250000 - 500000
+Process 0 estimating PZ PDF for rows 250,000 - 500,000
+Inserting handle into data store.  output_data: /pscratch/sd/y/yhzhang/ZCloud/DATA/ESTIMATE/inprogress_FZB_ESTIMATE7.hdf5, FZB_ESTIMATE7
+Process 0 running estimator on chunk 250000 - 500000
+Process 0 estimating PZ PDF for rows 250,000 - 500,000
+Inserting handle into data store.  output_data: /pscratch/sd/y/yhzhang/ZCloud/DATA/ESTIMATE/inprogress_FZB_ESTIMATE2.hdf5, FZB_ESTIMATE2
+Process 0 running estimator on chunk 250000 - 500000
+Process 0 estimating PZ PDF for rows 250,000 - 500,000
+Inserting handle into data store.  output_data: /pscratch/sd/y/yhzhang/ZCloud/DATA/ESTIMATE/inprogress_FZB_ESTIMATE3.hdf5, FZB_ESTIMATE3
+Process 0 running estimator on chunk 250000 - 500000
+Process 0 estimating PZ PDF for rows 250,000 - 500,000
+Inserting handle into data store.  output_data: /pscratch/sd/y/yhzhang/ZCloud/DATA/ESTIMATE/inprogress_FZB_ESTIMATE6.hdf5, FZB_ESTIMATE6
+Process 0 running estimator on chunk 250000 - 500000
+Process 0 estimating PZ PDF for rows 250,000 - 500,000
+Inserting handle into data store.  output_data: /pscratch/sd/y/yhzhang/ZCloud/DATA/ESTIMATE/inprogress_FZB_ESTIMATE4.hdf5, FZB_ESTIMATE4
+Process 0 running estimator on chunk 250000 - 500000
+Process 0 estimating PZ PDF for rows 250,000 - 500,000
+Inserting handle into data store.  output_data: /pscratch/sd/y/yhzhang/ZCloud/DATA/ESTIMATE/inprogress_FZB_ESTIMATE1.hdf5, FZB_ESTIMATE1
+Process 0 running estimator on chunk 250000 - 500000
+Process 0 estimating PZ PDF for rows 250,000 - 500,000
+Process 0 running estimator on chunk 500000 - 750000
+Process 0 estimating PZ PDF for rows 500,000 - 750,000
+Process 0 running estimator on chunk 500000 - 750000
+Process 0 estimating PZ PDF for rows 500,000 - 750,000
+Process 0 running estimator on chunk 500000 - 750000
+Process 0 estimating PZ PDF for rows 500,000 - 750,000
+Process 0 running estimator on chunk 500000 - 750000
+Process 0 estimating PZ PDF for rows 500,000 - 750,000
+Process 0 running estimator on chunk 500000 - 750000
+Process 0 estimating PZ PDF for rows 500,000 - 750,000
+Process 0 running estimator on chunk 500000 - 750000
+Process 0 estimating PZ PDF for rows 500,000 - 750,000
+Process 0 running estimator on chunk 500000 - 750000
+Process 0 estimating PZ PDF for rows 500,000 - 750,000
+Process 0 running estimator on chunk 500000 - 750000
+Process 0 estimating PZ PDF for rows 500,000 - 750,000
+Process 0 running estimator on chunk 750000 - 1000000
+Process 0 estimating PZ PDF for rows 750,000 - 1,000,000
+Process 0 running estimator on chunk 750000 - 1000000
+Process 0 estimating PZ PDF for rows 750,000 - 1,000,000
+Process 0 running estimator on chunk 750000 - 1000000
+Process 0 estimating PZ PDF for rows 750,000 - 1,000,000
+Process 0 running estimator on chunk 750000 - 1000000
+Process 0 estimating PZ PDF for rows 750,000 - 1,000,000
+Process 0 running estimator on chunk 750000 - 1000000
+Process 0 estimating PZ PDF for rows 750,000 - 1,000,000
+Process 0 running estimator on chunk 750000 - 1000000
+Process 0 estimating PZ PDF for rows 750,000 - 1,000,000
+Process 0 running estimator on chunk 750000 - 1000000
+Process 0 estimating PZ PDF for rows 750,000 - 1,000,000
+Process 0 running estimator on chunk 750000 - 1000000
+Process 0 estimating PZ PDF for rows 750,000 - 1,000,000
+Process 0 running estimator on chunk 1000000 - 1250000
+Process 0 estimating PZ PDF for rows 1,000,000 - 1,250,000
+Process 0 running estimator on chunk 1000000 - 1250000
+Process 0 estimating PZ PDF for rows 1,000,000 - 1,250,000
+Process 0 running estimator on chunk 1000000 - 1250000
+Process 0 estimating PZ PDF for rows 1,000,000 - 1,250,000
+Process 0 running estimator on chunk 1000000 - 1250000
+Process 0 estimating PZ PDF for rows 1,000,000 - 1,250,000
+Process 0 running estimator on chunk 1000000 - 1250000
+Process 0 estimating PZ PDF for rows 1,000,000 - 1,250,000
+Process 0 running estimator on chunk 1000000 - 1250000
+Process 0 estimating PZ PDF for rows 1,000,000 - 1,250,000
+Process 0 running estimator on chunk 1000000 - 1250000
+Process 0 estimating PZ PDF for rows 1,000,000 - 1,250,000
+Process 0 running estimator on chunk 1000000 - 1250000
+Process 0 estimating PZ PDF for rows 1,000,000 - 1,250,000
+Process 0 running estimator on chunk 1250000 - 1500000
+Process 0 estimating PZ PDF for rows 1,250,000 - 1,500,000
+Process 0 running estimator on chunk 1250000 - 1500000
+Process 0 estimating PZ PDF for rows 1,250,000 - 1,500,000
+Process 0 running estimator on chunk 1250000 - 1500000
+Process 0 estimating PZ PDF for rows 1,250,000 - 1,500,000
+Process 0 running estimator on chunk 1250000 - 1500000
+Process 0 estimating PZ PDF for rows 1,250,000 - 1,500,000
+Process 0 running estimator on chunk 1250000 - 1500000
+Process 0 estimating PZ PDF for rows 1,250,000 - 1,500,000
+Process 0 running estimator on chunk 1250000 - 1500000
+Process 0 estimating PZ PDF for rows 1,250,000 - 1,500,000
+Process 0 running estimator on chunk 1250000 - 1500000
+Process 0 estimating PZ PDF for rows 1,250,000 - 1,500,000
+Process 0 running estimator on chunk 1250000 - 1500000
+Process 0 estimating PZ PDF for rows 1,250,000 - 1,500,000
+Process 0 running estimator on chunk 1500000 - 1750000
+Process 0 estimating PZ PDF for rows 1,500,000 - 1,750,000
+Process 0 running estimator on chunk 1500000 - 1750000
+Process 0 estimating PZ PDF for rows 1,500,000 - 1,750,000
+Process 0 running estimator on chunk 1500000 - 1750000
+Process 0 estimating PZ PDF for rows 1,500,000 - 1,750,000
+Process 0 running estimator on chunk 1500000 - 1750000
+Process 0 estimating PZ PDF for rows 1,500,000 - 1,750,000
+Process 0 running estimator on chunk 1500000 - 1750000
+Process 0 estimating PZ PDF for rows 1,500,000 - 1,750,000
+Process 0 running estimator on chunk 1500000 - 1750000
+Process 0 estimating PZ PDF for rows 1,500,000 - 1,750,000
+Process 0 running estimator on chunk 1500000 - 1750000
+Process 0 estimating PZ PDF for rows 1,500,000 - 1,750,000
+Process 0 running estimator on chunk 1500000 - 1750000
+Process 0 estimating PZ PDF for rows 1,500,000 - 1,750,000
+Process 0 running estimator on chunk 1750000 - 2000000
+Process 0 estimating PZ PDF for rows 1,750,000 - 2,000,000
+Process 0 running estimator on chunk 1750000 - 2000000
+Process 0 estimating PZ PDF for rows 1,750,000 - 2,000,000
+Process 0 running estimator on chunk 1750000 - 2000000
+Process 0 estimating PZ PDF for rows 1,750,000 - 2,000,000
+Process 0 running estimator on chunk 1750000 - 2000000
+Process 0 estimating PZ PDF for rows 1,750,000 - 2,000,000
+Process 0 running estimator on chunk 1750000 - 2000000
+Process 0 estimating PZ PDF for rows 1,750,000 - 2,000,000
+Process 0 running estimator on chunk 1750000 - 2000000
+Process 0 estimating PZ PDF for rows 1,750,000 - 2,000,000
+Process 0 running estimator on chunk 1750000 - 2000000
+Process 0 estimating PZ PDF for rows 1,750,000 - 2,000,000
+Process 0 running estimator on chunk 1750000 - 2000000
+Process 0 estimating PZ PDF for rows 1,750,000 - 2,000,000
+Stage complete: FlexZBoostEstimator @ 2024-06-05 16:32:59.741963 took 17.28 minutes
+Stage complete: FlexZBoostEstimator @ 2024-06-05 16:33:00.656947 took 17.34 minutes
+Stage complete: FlexZBoostEstimator @ 2024-06-05 16:33:20.706200 took 17.72 minutes
+Stage complete: FlexZBoostEstimator @ 2024-06-05 16:33:21.691139 took 17.73 minutes
+Stage complete: FlexZBoostEstimator @ 2024-06-05 16:33:22.492068 took 17.38 minutes
+Stage complete: FlexZBoostEstimator @ 2024-06-05 16:33:25.522928 took 17.60 minutes
+Stage complete: FlexZBoostEstimator @ 2024-06-05 16:33:30.041759 took 17.70 minutes
+Stage complete: FlexZBoostEstimator @ 2024-06-05 16:34:13.267094 took 18.42 minutes
