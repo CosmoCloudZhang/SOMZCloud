@@ -1,8 +1,10 @@
 # DATA
+DATA/
 *.pkl
 *.hdf5
 
 # PLOT
+PLOT/
 *.pdf
 
 # Byte-compiled / optimized / DLL files
