@@ -1,4 +1,4 @@
-FZB_ESTIMATE3:
+FZB_ESTIMATE26:
   aliases:
     input: input_data
     model: input_model
@@ -11,7 +11,7 @@ FZB_ESTIMATE3:
   - mag_i_lsst
   - mag_z_lsst
   - mag_y_lsst
-  chunk_size: 500000
+  chunk_size: 2000000
   config: null
   err_bands:
   - mag_err_u_lsst

@@ -21,7 +21,7 @@ def main(path, index):
             'input': None,
             'output': None,
             'config': None,
-            'chunk_size': 250000, 
+            'chunk_size': 2000000, 
             'nondetect_val': 99.0, 
             'ref_band': 'mag_i_lsst', 
             'output_mode': 'default',
