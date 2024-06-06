@@ -1,0 +1,32 @@
+FZB_ESTIMATE310:
+  aliases:
+    input: input_data
+    model: input_model
+    name: input_name
+    output: output_data
+  bands:
+  - mag_u_lsst
+  - mag_g_lsst
+  - mag_r_lsst
+  - mag_i_lsst
+  - mag_z_lsst
+  - mag_y_lsst
+  chunk_size: 2000000
+  config: null
+  err_bands:
+  - mag_err_u_lsst
+  - mag_err_g_lsst
+  - mag_err_r_lsst
+  - mag_err_i_lsst
+  - mag_err_z_lsst
+  - mag_err_y_lsst
+  hdf5_groupname: photometry
+  input: null
+  name: null
+  nondetect_val: 99.0
+  nzbins: 301
+  output: null
+  output_mode: default
+  ref_band: mag_i_lsst
+  zmax: 3.0
+  zmin: 0.0
