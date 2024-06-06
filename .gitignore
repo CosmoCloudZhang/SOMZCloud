@@ -1,13 +1,9 @@
 # DATA
-DATA/
-DATA/INFORM/*
-DATA/SAMPLE/*
-DATA/ESTIMATE/*
+*.pkl
+*.hdf5
 
 # PLOT
-PLOT/
-PLOT/MODEL/*
-PLOT/SAMPLE/*
+*.pdf
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
