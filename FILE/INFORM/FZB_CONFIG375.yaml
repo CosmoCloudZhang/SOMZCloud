@@ -1,0 +1,47 @@
+FZB_INFORM375:
+  aliases:
+    input: input_data
+    model: input_model
+    name: input_name
+  bands:
+  - mag_u_lsst
+  - mag_g_lsst
+  - mag_r_lsst
+  - mag_i_lsst
+  - mag_z_lsst
+  - mag_y_lsst
+  basis_system: cosine
+  bumpmax: 1.0
+  bumpmin: 0.0
+  config: null
+  err_bands:
+  - mag_err_u_lsst
+  - mag_err_g_lsst
+  - mag_err_r_lsst
+  - mag_err_i_lsst
+  - mag_err_z_lsst
+  - mag_err_y_lsst
+  hdf5_groupname: photometry
+  input: null
+  max_basis: 35
+  model: null
+  name: null
+  nbump: 50
+  nondetect_val: 99.0
+  nsharp: 20
+  nzbins: 301
+  output_mode: default
+  redshift_col: redshift
+  ref_band: mag_i_lsst
+  regression_params:
+    learning_rate: 0.1
+    max_depth: 16
+    objective: reg:squarederror
+    verbosity: 0
+  retrain_full: true
+  save_train: true
+  sharpmax: 3.0
+  sharpmin: 1.0
+  trainfrac: 0.75
+  zmax: 3.0
+  zmin: 0.0
