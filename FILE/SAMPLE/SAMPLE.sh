@@ -15,5 +15,5 @@ source $HOME/.bashrc
 conda activate $RAILENV
 
 # Run the application
-PATH_NAME="/pscratch/sd/y/yhzhang/ZCloud/"
-python "${PATH_NAME}/FILE/SAMPLE/SAMPLE.py" --path="${PATH_NAME}"
+BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
+python "${BASE_PATH}/FILE/SAMPLE/SAMPLE.py" --path="${BASE_PATH}"

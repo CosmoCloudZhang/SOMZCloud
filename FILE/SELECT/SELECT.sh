@@ -15,6 +15,6 @@ source $HOME/.bashrc
 conda activate $RAILENV
 
 # Run the application
-BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/"
-python "${PATH_NAME}/FILE/SAMPLE/INPUT.py" --path="${PATH_NAME}" --folder="${BASE_FOLDER}"
+INDEX=1
+PATH_NAME="/pscratch/sd/y/yhzhang/ZCloud/"
+python "${PATH_NAME}/FILE/SELECT/SELECT.py" --path="${PATH_NAME}" --index="${INDEX}"
