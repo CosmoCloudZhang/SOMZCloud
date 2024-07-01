@@ -34,7 +34,7 @@ for INDEX in $(seq 1 $LENGTH); do
     # Set path variables
     NAME="FZB_INFORM${INDEX}"
     MODEL_PATH="${BASE_PATH}/DATA/INFORM/FZB_INFORM${INDEX}.pkl"
-    CONFIG_PATH="${BASE_PATH}/FILE/INFORM/FZB_CONFIG${INDEX}.yaml"
+    CONFIG_PATH="${BASE_PATH}/DATA/INFORM/FZB_CONFIG${INDEX}.yaml"
     INPUT_PATH="${BASE_PATH}/DATA/SAMPLE/TRAIN_SAMPLE${INDEX}.hdf5"
     # Run applications
     python "${BASE_PATH}/FILE/INFORM/INFORM.py" --path="${BASE_PATH}" --index=$INDEX &
