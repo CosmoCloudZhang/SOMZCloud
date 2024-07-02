@@ -1,8 +1,10 @@
 import os
 import time
+import h5py
 import numpy
 import argparse
 from rail import core
+import multiprocessing
 from matplotlib import pyplot, colors
 
 def plot_select(z0, mag0, z_grid, z_mode, z_test, mag_test):
@@ -10,6 +12,8 @@ def plot_select(z0, mag0, z_grid, z_mode, z_test, mag_test):
     Plot the magnitude distribution of source redshifts.
     
     Parameters:
+        z0 (float): The redshift threshold.
+        mag0 (float): The magnitude threshold.
         z_grid (numpy.ndarray): The redshift grid of redshift PDF.
         z_mode (numpy.ndarray): The redshift mode of source samples.
         z_test (numpy.ndarray): The redshifts of test application samples.
@@ -41,7 +45,7 @@ def plot_select(z0, mag0, z_grid, z_mode, z_test, mag_test):
     figure, plot = pyplot.subplots(nrows=1, ncols=2, figsize=(12, 8))
     
     # Plot 1
-    z_map, z_edge, z_edge, z_mesh = plot[0].hist2d(x=z_mode, y=mag_test, bins=[z_bin, mag_bin], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')
+    z_mesh = plot[0].hist2d(x=z_mode, y=mag_test, bins=[z_bin, mag_bin], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')[-1]
     
     plot[0].plot(z_grid[z_grid <= 1.5], 4 * z_grid[z_grid <= 1.5] + 18, color='black', linestyle='-', linewidth=2.0)
     
@@ -56,7 +60,7 @@ def plot_select(z0, mag0, z_grid, z_mode, z_test, mag_test):
     plot[0].set_xlabel(r'$z_\mathrm{mode}$')
     
     # Plot 2
-    z_map, z_edge, z_edge, z_mesh = plot[1].hist2d(x=z_test, y=mag_test, bins=[z_bin, mag_bin], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')
+    z_mesh = plot[1].hist2d(x=z_test, y=mag_test, bins=[z_bin, mag_bin], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')[-1]
     
     plot[1].plot(z_grid[z_grid <= 1.5], 4 * z_grid[z_grid <= 1.5] + 18, color='black', linestyle='-', linewidth=2.0)
     
@@ -86,6 +90,8 @@ def plot_redshift(z0, mag0, z_grid, z_mode, z_test, mag_test):
     Plot the photometric redshift performance of source samples.
     
     Parameters:
+        z0 (float): The redshift threshold.
+        mag0 (float): The magnitude threshold.
         z_grid (numpy.ndarray): The redshift grid of redshift PDF.
         z_mode (numpy.ndarray): The redshift mode of source samples.
         z_test (numpy.ndarray): The redshifts of test application samples.
@@ -108,12 +114,12 @@ def plot_redshift(z0, mag0, z_grid, z_mode, z_test, mag_test):
     z2 = z_grid.max()
     z_bin = numpy.linspace(z1, z2, z_bin_size + 1)
     select = (mag_test < 4 * z_mode + 18) & (mag_test < mag0) & (z_mode < z0)
-    print(len(select[select]))
+    
     # Plot
     figure, plot = pyplot.subplots(nrows=1, ncols=2, figsize=(12, 8))
     
     # Plot 1
-    z_map, z_edge, z_edge, z_mesh = plot[0].hist2d(x=z_test[select], y=z_mode[select], bins=[z_bin, z_bin], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')
+    z_mesh = plot[0].hist2d(x=z_test[select], y=z_mode[select], bins=[z_bin, z_bin], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')[-1]
     
     plot[0].plot(z_grid, z_grid, color='black', linestyle='--', linewidth=2.0)
     
@@ -125,7 +131,7 @@ def plot_redshift(z0, mag0, z_grid, z_mode, z_test, mag_test):
     plot[0].set_xlabel(r'$z_\mathrm{true}$')
     
     # Plot 2
-    z_map, z_edge, z_edge, z_mesh = plot[1].hist2d(x=z_test, y=z_mode, bins=[z_bin, z_bin], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')
+    z_mesh = plot[1].hist2d(x=z_test, y=z_mode, bins=[z_bin, z_bin], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')[-1]
     
     plot[1].plot(z_grid, z_grid, color='black', linestyle='--', linewidth=2.0)
     
@@ -147,7 +153,41 @@ def plot_redshift(z0, mag0, z_grid, z_mode, z_test, mag_test):
     return figure
 
 
+def save_select(z0, mag0, z_grid, z_mode, z_pdf, mag_test):
+    """
+    Save the selected samples.
+    
+    Parameters:
+        z0 (float): The redshift threshold.
+        mag0 (float): The magnitude threshold.
+        z_grid (numpy.ndarray): The redshift grid of redshift PDF.
+        z_mode (numpy.ndarray): The redshift mode of source samples.
+        z_pdf (numpy.ndarray): The redshift PDF of whole samples.
+        mag_test (numpy.ndarray): The magnitudes of test application samples.
+    
+    Returns:
+        tuple: The selected lens and source samples.
+    """
+    # Select
+    select = (mag_test < 4 * z_mode + 18) & (mag_test < mag0) & (z_mode < z0)
+    
+    # LENS
+    lens = {}
+    lens['data'] = {'yvals': z_pdf[select, :].astype(numpy.float32)}
+    lens['meta'] = {'pdf_name': numpy.array(['interp'.encode('ascii')]).astype('S6'), 'pdf_version': numpy.array([0]).astype(numpy.int32), 'xvals': numpy.array([z_grid]).astype(numpy.float32)}
+    
+    # SOURCE
+    source = {}
+    source['data'] = {'yvals': z_pdf.astype(numpy.float32)}
+    source['meta'] = {'pdf_name': numpy.array(['interp'.encode('ascii')]).astype('S6'), 'pdf_version': numpy.array([0]).astype(numpy.int32), 'xvals': numpy.array([z_grid]).astype(numpy.float32)}
+    
+    # Return
+    return lens, source
+
+
 def main(path, index):
+    start = time.time()
+    
     # Data store
     data_store = core.stage.RailStage.data_store
     data_store.__class__.allow_overwrite = True
@@ -169,31 +209,54 @@ def main(path, index):
     z_grid = numpy.linspace(z1, z2, z_size + 1)
     
     mag0 = 24.0
+    z_test = test_data()['photometry']['redshift']
     mag_test = test_data()['photometry']['mag_i_lsst']
     
-    z_test = test_data()['photometry']['redshift']
+    z_pdf = estimator().pdf(z_grid)
     z_mode = numpy.concatenate(estimator().mode(grid=z_grid))
     
     # Plot
     figure = plot_select(z0, mag0, z_grid, z_mode, z_test, mag_test)
     figure.savefig(os.path.join(plot_path, 'SELECT/SELECT{}.pdf'.format(index)), bbox_inches='tight')
+    pyplot.close(figure)
     
     figure = plot_redshift(z0, mag0, z_grid, z_mode, z_test, mag_test)
     figure.savefig(os.path.join(plot_path, 'REDSHIFT/REDSHIFT{}.pdf'.format(index)), bbox_inches='tight')
+    pyplot.close(figure)
+    
+    # Save
+    lens, source = save_select(z0, mag0, z_grid, z_mode, z_pdf, mag_test)
+    os.makedirs(os.path.join(data_path, 'LENS/LENS{}'.format(index)), exist_ok=True)
+    with h5py.File(os.path.join(data_path, 'LENS/LENS{}/SELECT.hdf5'.format(index)), 'w') as file:
+        for name in lens.keys():
+            file.create_group(name)
+            for key, value in lens[name].items():
+                file[name].create_dataset(key, data=value)
+    
+    os.makedirs(os.path.join(data_path, 'SOURCE/SOURCE{}'.format(index)), exist_ok=True)
+    with h5py.File(os.path.join(data_path, 'SOURCE/SOURCE{}/SELECT.hdf5'.format(index)), 'w') as file:
+        for name in source.keys():
+            file.create_group(name)
+            for key, value in source[name].items():
+                file[name].create_dataset(key, data=value)
+    
+    # Return
+    end = time.time()
+    print('Index:{}, Time: {:.2f} minutes'.format(index, (end - start) / 60))
+    return index
 
 if __name__ == '__main__':
     
     # Input
     PARSE = argparse.ArgumentParser(description='FZB Informer')
     PARSE.add_argument('--path', type=str, required=True, help='The path to the base folder')
-    PARSE.add_argument('--index', type=int, required=True, help='The index of the train datasets')
+    PARSE.add_argument('--number', type=int, required=True, help='The number of the processes')
+    PARSE.add_argument('--length', type=int, required=True, help='The length of the train datasets')
     
     PATH = PARSE.parse_args().path
-    INDEX = PARSE.parse_args().index
-    print('Index: {}'.format(INDEX))
+    NUMBER = PARSE.parse_args().number
+    LENGTH = PARSE.parse_args().length
     
-    START = time.time()
-    main(PATH, INDEX)
-    
-    END = time.time()
-    print('Time: {:.2f} minutes'.format((END - START) / 60))
+    # Multiprocessing
+    with multiprocessing.Pool(processes=NUMBER) as POOL:
+        POOL.starmap(main, [(PATH, index) for index in range(1, LENGTH + 1)])
