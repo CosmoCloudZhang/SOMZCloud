@@ -11,19 +11,19 @@ from matplotlib.gridspec import GridSpec
 def bound(z, mag, color):
     
     # Redshift
-    z_quantile = 0.85
+    z_quantile = 0.84
     z0 = numpy.quantile(z, z_quantile)
     
     # Magnitude
-    mag_quantile = 0.85
+    mag_quantile = 0.84
     mag0 = numpy.quantile(mag, mag_quantile)
     
     # Color
-    color_quantile = 0.15
+    color_quantile = 0.16
     color0 = numpy.quantile(color, color_quantile)
     
     # Count
-    count0 = len(z) // 4
+    count0 = len(z) // 3
     return z0, mag0, color0, count0
 
 def select(z, mag, color, z0, mag0, color0, count0):
@@ -256,7 +256,7 @@ def main(path, index):
     
     figure = plot(bin_datasets, test_datasets, train_datasets, input_datasets, augment_datasets)
     figure.savefig(plot_path + 'SAMPLE/SAMPLE{}.pdf'.format(index), bbox_inches = 'tight')
-    pyplot.close()
+    pyplot.close(figure)
     
 if __name__ == '__main__':
     # Input
