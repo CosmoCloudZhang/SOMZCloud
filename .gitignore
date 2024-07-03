@@ -3,6 +3,11 @@ DATA/
 *.pkl
 *.hdf5
 
+# LOG
+LOG/
+*.out
+*.log
+
 # PLOT
 PLOT/
 *.pdf
