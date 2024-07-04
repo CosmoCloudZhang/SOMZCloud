@@ -45,6 +45,10 @@ def plot_select(z_lens, z_mean, z_true, z_source, mag0_lens, mag0_source, mag_so
     mag_bin_size = 100
     mag_bin = numpy.linspace(mag1, mag2, mag_bin_size + 1)
     
+    slope = 4.0
+    intersection = 18.0
+    z_pivot = (mag0_lens - intersection) / slope
+    
     # Plot
     width = 10
     figure, plot = pyplot.subplots(nrows=1, ncols=2, figsize=(12, 8))
@@ -54,9 +58,9 @@ def plot_select(z_lens, z_mean, z_true, z_source, mag0_lens, mag0_source, mag_so
     
     plot[0].plot(z_source, numpy.ones_like(z_source) * mag0_source, color='black', linestyle='--', linewidth=2.0)
     
-    plot[0].plot(z_source[(z1_lens <= z_source) & (z_source <= 1.5)], 4 * z_source[(z1_lens <= z_source) & (z_source <= 1.5)] + 18, color='black', linestyle='-', linewidth=2.0)
+    plot[0].plot(z_source[(z1_lens <= z_source) & (z_source <= z_pivot)], 4 * z_source[(z1_lens <= z_source) & (z_source <= z_pivot)] + 18, color='black', linestyle='-', linewidth=2.0)
     
-    plot[0].plot(z_source[(1.5 <= z_source) & (z_source <= z2_lens)], numpy.ones_like(z_source[(1.5 <= z_source) & (z_source <= z2_lens)]) * mag0_lens, color='black', linestyle='-', linewidth=2.0)
+    plot[0].plot(z_source[(z_pivot <= z_source) & (z_source <= z2_lens)], numpy.ones_like(z_source[(z_pivot <= z_source) & (z_source <= z2_lens)]) * mag0_lens, color='black', linestyle='-', linewidth=2.0)
     
     plot[0].plot(numpy.ones(width + 1) * z2_lens, numpy.linspace(mag1, mag0_lens, width + 1), color='black', linestyle='-', linewidth=2.0)
     
@@ -64,23 +68,23 @@ def plot_select(z_lens, z_mean, z_true, z_source, mag0_lens, mag0_source, mag_so
     plot[0].set_ylim(mag1, mag2)
     
     plot[0].set_ylabel(r'$i$')
-    plot[0].set_xlabel(r'$z_\mathrm{mode}$')
+    plot[0].set_xlabel(r'$z_\mathrm{phot}$')
     
     # Plot 2
     z_mesh = plot[1].hist2d(x=z_true, y=mag_source, bins=[z_bin, mag_bin], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')[-1]
     
     plot[1].plot(z_source, numpy.ones_like(z_source) * mag0_source, color='black', linestyle='--', linewidth=2.0)
     
-    plot[1].plot(z_source[(z1_lens <= z_source) & (z_source <= 1.5)], 4 * z_source[(z1_lens <= z_source) & (z_source <= 1.5)] + 18, color='black', linestyle='-', linewidth=2.0)
+    plot[1].plot(z_source[(z1_lens <= z_source) & (z_source <= z_pivot)], 4 * z_source[(z1_lens <= z_source) & (z_source <= z_pivot)] + 18, color='black', linestyle='-', linewidth=2.0)
     
-    plot[1].plot(z_source[(1.5 <= z_source) & (z_source <= z2_lens)], numpy.ones_like(z_source[(1.5 <= z_source) & (z_source <= z2_lens)]) * mag0_lens, color='black', linestyle='-', linewidth=2.0)
+    plot[1].plot(z_source[(z_pivot <= z_source) & (z_source <= z2_lens)], numpy.ones_like(z_source[(z_pivot <= z_source) & (z_source <= z2_lens)]) * mag0_lens, color='black', linestyle='-', linewidth=2.0)
     
     plot[1].plot(numpy.ones(width + 1) * z2_lens, numpy.linspace(mag1, mag0_lens, width + 1), color='black', linestyle='-', linewidth=2.0)
     
     plot[1].set_xlim(z1_source, z2_source)
     plot[1].set_ylim(mag1, mag2)
     
-    plot[1].set_xlabel(r'$z_\mathrm{true}$')
+    plot[1].set_xlabel(r'$z_\mathrm{spec}$')
     
     plot[1].set_yticklabels([])
     plot[1].get_xticklabels()[0].set_visible(False)
@@ -128,8 +132,11 @@ def plot_redshift(z_lens, z_mean, z_true, z_source, mag0_lens, mag0_source, mag_
     z_bin_size = 100
     z_bin = numpy.linspace(z1_source, z2_source, z_bin_size + 1)
     
+    slope = 4.0
+    intersection = 18.0
+    
     select_source = (z1_source < z_mean) & (z_mean < z2_source) & (mag_source < mag0_source)
-    select_lens = (z1_lens < z_mean) & (z_mean < z2_lens) & (mag_source < 4 * z_mean + 18) & (mag_source < mag0_lens)
+    select_lens = (z1_lens < z_mean) & (z_mean < z2_lens) & (mag_source < slope * z_mean + intersection) & (mag_source < mag0_lens)
     
     # Plot
     figure, plot = pyplot.subplots(nrows=1, ncols=2, figsize=(12, 8))
@@ -143,8 +150,8 @@ def plot_redshift(z_lens, z_mean, z_true, z_source, mag0_lens, mag0_source, mag_
     plot[0].set_ylim(z1_source, z2_source)
     
     plot[0].set_title(r'$\mathrm{Lens}$')
-    plot[0].set_ylabel(r'$z_\mathrm{mode}$')
-    plot[0].set_xlabel(r'$z_\mathrm{true}$')
+    plot[0].set_ylabel(r'$z_\mathrm{phot}$')
+    plot[0].set_xlabel(r'$z_\mathrm{spec}$')
     
     # Plot 2
     z_mesh = plot[1].hist2d(x=z_true[select_source], y=z_mean[select_source], bins=[z_bin, z_bin], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')[-1]
@@ -155,7 +162,7 @@ def plot_redshift(z_lens, z_mean, z_true, z_source, mag0_lens, mag0_source, mag_
     plot[1].set_ylim(z1_source, z2_source)
     
     plot[1].set_title(r'$\mathrm{Source}$')
-    plot[1].set_xlabel(r'$z_\mathrm{true}$')
+    plot[1].set_xlabel(r'$z_\mathrm{spec}$')
     
     plot[1].set_yticklabels([])
     plot[1].get_xticklabels()[0].set_visible(False)
@@ -194,8 +201,11 @@ def save_pdf(z_lens, z_pdf, z_mean, z_source, bin_lens, bin_source, mag0_lens, m
     z1_source = z_source.min()
     z2_source = z_source.max()
     
+    slope = 4.0
+    intersection = 18.0
+    
     select_source = (z1_source < z_mean) & (z_mean < z2_source) & (mag_source < mag0_source)
-    select_lens = (z1_lens < z_mean) & (z_mean < z2_lens) & (mag_source < 4 * z_mean + 18) & (mag_source < mag0_lens)
+    select_lens = (z1_lens < z_mean) & (z_mean < z2_lens) & (mag_source < slope * z_mean + intersection) & (mag_source < mag0_lens)
     meta = {'pdf_name': numpy.array(['interp'.encode('ascii')]).astype('S6'), 'pdf_version': numpy.array([0]).astype(numpy.int32), 'xvals': numpy.array([z_source]).astype(numpy.float32)}
     
     # Lens
@@ -300,13 +310,11 @@ def main(path, index):
     # Redshift
     z1_lens = 0.0
     z2_lens = 2.0
-    
-    z1_source = 0.0
-    z2_source = 3.0
-    
     z_lens_size = 200
     z_lens = numpy.linspace(z1_lens, z2_lens, z_lens_size + 1)
     
+    z1_source = 0.0
+    z2_source = 3.0
     z_source_size = 300
     z_source = numpy.linspace(z1_source, z2_source, z_source_size + 1)
     
@@ -317,7 +325,7 @@ def main(path, index):
     z_mean = numpy.concatenate(estimator().mean())
     
     # Magnitude
-    mag0_lens = 24.0
+    mag0_lens = 24.1
     mag1_source = 25.0
     mag2_source = 25.2
     mag0_source =  numpy.random.uniform(mag1_source, mag2_source)
