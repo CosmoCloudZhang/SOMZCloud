@@ -5,176 +5,6 @@ import numpy
 import argparse
 from rail import core
 import multiprocessing
-from matplotlib import pyplot, colors
-
-def plot_select(z_lens, z_mean, z_true, z_source, mag0_lens, mag0_source, mag_source):
-    """
-    Plot the magnitude distribution of source redshifts.
-    
-    Parameters:
-        z_lens (numpy.ndarray): The redshift grid of lens samples.
-        z_mean (numpy.ndarray): The redshift mode of source samples.
-        z_true (numpy.ndarray): The redshifts of test application samples.
-        z_source (numpy.ndarray): The redshift grid of source samples.
-        mag0_lens (float): The magnitude threshold of lens samples.
-        mag0_source (float): The magnitude threshold of source samples.
-        mag_source (numpy.ndarray): The magnitudes of test application samples.
-    
-    Returns:
-        matplotlib.figure.Figure: The plotted figure.
-    
-    """
-    os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
-    pyplot.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
-    pyplot.rcParams['pgf.texsystem'] = 'pdflatex'
-    pyplot.rcParams['text.usetex'] = True
-    pyplot.rcParams['font.size'] = 20
-    
-    # Set variables
-    z1_lens = z_lens.min()
-    z2_lens = z_lens.max()
-    
-    z1_source = z_source.min()
-    z2_source = z_source.max()
-    
-    z_bin_size = 100
-    z_bin = numpy.linspace(z1_source, z2_source, z_bin_size + 1)
-    
-    mag1 = 16.0
-    mag2 = 26.0
-    mag_bin_size = 100
-    mag_bin = numpy.linspace(mag1, mag2, mag_bin_size + 1)
-    
-    slope = 4.0
-    intersection = 18.0
-    z_pivot = (mag0_lens - intersection) / slope
-    
-    # Plot
-    width = 10
-    figure, plot = pyplot.subplots(nrows=1, ncols=2, figsize=(12, 8))
-    
-    # Plot 1
-    z_mesh = plot[0].hist2d(x=z_mean, y=mag_source, bins=[z_bin, mag_bin], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')[-1]
-    
-    plot[0].plot(z_source, numpy.ones_like(z_source) * mag0_source, color='black', linestyle='--', linewidth=2.0)
-    
-    plot[0].plot(z_source[(z1_lens <= z_source) & (z_source <= z_pivot)], 4 * z_source[(z1_lens <= z_source) & (z_source <= z_pivot)] + 18, color='black', linestyle='-', linewidth=2.0)
-    
-    plot[0].plot(z_source[(z_pivot <= z_source) & (z_source <= z2_lens)], numpy.ones_like(z_source[(z_pivot <= z_source) & (z_source <= z2_lens)]) * mag0_lens, color='black', linestyle='-', linewidth=2.0)
-    
-    plot[0].plot(numpy.ones(width + 1) * z2_lens, numpy.linspace(mag1, mag0_lens, width + 1), color='black', linestyle='-', linewidth=2.0)
-    
-    plot[0].set_xlim(z1_source, z2_source)
-    plot[0].set_ylim(mag1, mag2)
-    
-    plot[0].set_ylabel(r'$i$')
-    plot[0].set_xlabel(r'$z_\mathrm{phot}$')
-    
-    # Plot 2
-    z_mesh = plot[1].hist2d(x=z_true, y=mag_source, bins=[z_bin, mag_bin], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')[-1]
-    
-    plot[1].plot(z_source, numpy.ones_like(z_source) * mag0_source, color='black', linestyle='--', linewidth=2.0)
-    
-    plot[1].plot(z_source[(z1_lens <= z_source) & (z_source <= z_pivot)], 4 * z_source[(z1_lens <= z_source) & (z_source <= z_pivot)] + 18, color='black', linestyle='-', linewidth=2.0)
-    
-    plot[1].plot(z_source[(z_pivot <= z_source) & (z_source <= z2_lens)], numpy.ones_like(z_source[(z_pivot <= z_source) & (z_source <= z2_lens)]) * mag0_lens, color='black', linestyle='-', linewidth=2.0)
-    
-    plot[1].plot(numpy.ones(width + 1) * z2_lens, numpy.linspace(mag1, mag0_lens, width + 1), color='black', linestyle='-', linewidth=2.0)
-    
-    plot[1].set_xlim(z1_source, z2_source)
-    plot[1].set_ylim(mag1, mag2)
-    
-    plot[1].set_xlabel(r'$z_\mathrm{spec}$')
-    
-    plot[1].set_yticklabels([])
-    plot[1].get_xticklabels()[0].set_visible(False)
-    
-    # Color bar
-    color_bar = figure.colorbar(z_mesh, cax=figure.add_axes([0.15, 0.05, 0.70, 0.05]), orientation='horizontal')
-    color_bar.set_label(r'$\mathrm{Counts}$')
-    
-    # Return figure
-    figure.subplots_adjust(bottom=0.20, wspace=0.00)
-    return figure
-
-
-def plot_redshift(z_lens, z_mean, z_true, z_source, mag0_lens, mag0_source, mag_source):
-    """
-    Plot the photometric redshift distribution of source samples.
-    
-    Parameters:
-        z_lens (numpy.ndarray): The redshift grid of lens samples.
-        z_mean (numpy.ndarray): The redshift mode of source samples.
-        z_true (numpy.ndarray): The redshifts of test application samples.
-        z_source (numpy.ndarray): The redshift grid of source samples.
-        mag0_lens (float): The magnitude threshold of lens samples.
-        mag0_source (float): The magnitude threshold of source samples.
-        mag_source (numpy.ndarray): The magnitudes of test application samples.
-    
-    Returns:
-        matplotlib.figure.Figure: The plotted figure.
-    
-    """
-    # Configuration
-    os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
-    pyplot.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
-    pyplot.rcParams['pgf.texsystem'] = 'pdflatex'
-    pyplot.rcParams['text.usetex'] = True
-    pyplot.rcParams['font.size'] = 20
-    
-    # Set variables
-    z1_lens = z_lens.min()
-    z2_lens = z_lens.max()
-    
-    z1_source = z_source.min()
-    z2_source = z_source.max()
-    
-    z_bin_size = 100
-    z_bin = numpy.linspace(z1_source, z2_source, z_bin_size + 1)
-    
-    slope = 4.0
-    intersection = 18.0
-    
-    select_source = (z1_source < z_mean) & (z_mean < z2_source) & (mag_source < mag0_source)
-    select_lens = (z1_lens < z_mean) & (z_mean < z2_lens) & (mag_source < slope * z_mean + intersection) & (mag_source < mag0_lens)
-    
-    # Plot
-    figure, plot = pyplot.subplots(nrows=1, ncols=2, figsize=(12, 8))
-    
-    # Plot 1
-    z_mesh = plot[0].hist2d(x=z_true[select_lens], y=z_mean[select_lens], bins=[z_bin, z_bin], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')[-1]
-    
-    plot[0].plot(z_source, z_source, color='black', linestyle='--', linewidth=2.0)
-    
-    plot[0].set_xlim(z1_source, z2_source)
-    plot[0].set_ylim(z1_source, z2_source)
-    
-    plot[0].set_title(r'$\mathrm{Lens}$')
-    plot[0].set_ylabel(r'$z_\mathrm{phot}$')
-    plot[0].set_xlabel(r'$z_\mathrm{spec}$')
-    
-    # Plot 2
-    z_mesh = plot[1].hist2d(x=z_true[select_source], y=z_mean[select_source], bins=[z_bin, z_bin], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')[-1]
-    
-    plot[1].plot(z_source, z_source, color='black', linestyle='--', linewidth=2.0)
-    
-    plot[1].set_xlim(z1_source, z2_source)
-    plot[1].set_ylim(z1_source, z2_source)
-    
-    plot[1].set_title(r'$\mathrm{Source}$')
-    plot[1].set_xlabel(r'$z_\mathrm{spec}$')
-    
-    plot[1].set_yticklabels([])
-    plot[1].get_xticklabels()[0].set_visible(False)
-    
-    # Color bar
-    color_bar = figure.colorbar(z_mesh, cax=figure.add_axes([0.15, 0.05, 0.70, 0.05]), orientation='horizontal')
-    color_bar.set_label(r'$\mathrm{Counts}$')
-    
-    # Return figure
-    figure.subplots_adjust(bottom=0.20, wspace=0.00)
-    return figure
-
 
 def save_pdf(z_lens, z_pdf, z_mean, z_source, bin_lens, bin_source, mag0_lens, mag0_source, mag_source):
     """
@@ -228,7 +58,172 @@ def save_pdf(z_lens, z_pdf, z_mean, z_source, bin_lens, bin_source, mag0_lens, m
     return lens, source
 
 
-def save_data(z_lens, z_mean, z_true, z_source, bin_lens, bin_source, mag0_lens, mag0_source, mag_source):
+def save_mean(z_lens, z_mean, z_source, bin_lens, bin_source, mag0_lens, mag0_source, mag_source):
+    """
+    Save the selected samples.
+    
+    Parameters:
+        z_lens (numpy.ndarray): The redshift grid of lens samples.
+        z_mean (numpy.ndarray): The redshift mode of source samples.
+        z_source (numpy.ndarray): The redshift grid of source samples.
+        bin_lens (numpy.ndarray): The redshift bin of lens samples.
+        bin_source (numpy.ndarray): The redshift bin of source samples.
+        mag0_lens (float): The magnitude threshold of lens samples.
+        mag0_source (float): The magnitude threshold of source samples.
+        mag_source (numpy.ndarray): The magnitudes of test application samples.
+    
+    Returns:
+        tuple: The selected lens and source true redshift distributions.
+    """
+    # Select
+    z1_lens = z_lens.min()
+    z2_lens = z_lens.max()
+    
+    z1_source = z_source.min()
+    z2_source = z_source.max()
+    
+    select_source = (z1_source < z_mean) & (z_mean < z2_source) & (mag_source < mag0_source)
+    select_lens = (z1_lens < z_mean) & (z_mean < z2_lens) & (mag_source < 4 * z_mean + 18) & (mag_source < mag0_lens)
+    
+    # Lens
+    grid_size = z_source.size - 1
+    lens_size = len(bin_lens) - 1
+    lens_mean = numpy.zeros((lens_size, grid_size), dtype=numpy.float32)
+    
+    for m in range(lens_size):
+        select = select_lens & (bin_lens[m] < z_mean) & (z_mean < bin_lens[m + 1])
+        lens_mean[m, :] = numpy.histogram(z_mean[select], bins=z_source, range=(z1_source, z2_source), density=False)[0].astype(numpy.float32)
+    
+    lens_count = numpy.sum(lens_mean, axis=1)
+    lens = {'data': lens_mean, 'count': lens_count}
+    
+    # Source
+    grid_size = z_source.size - 1
+    source_size = len(bin_source) - 1
+    source_mean = numpy.zeros((source_size, grid_size), dtype=numpy.float32)
+    
+    for n in range(source_size):
+        select = select_source & (bin_source[n] < z_mean) & (z_mean < bin_source[n + 1])
+        source_mean[n, :] = numpy.histogram(z_mean[select], bins=z_source, range=(z1_source, z2_source), density=False)[0].astype(numpy.float32)
+    
+    source_count = numpy.sum(source_mean, axis=1)
+    source = {'data': source_mean, 'count': source_count}
+    
+    # Return
+    return lens, source
+
+def save_median(z_lens, z_mean, z_median, z_source, bin_lens, bin_source, mag0_lens, mag0_source, mag_source):
+    """
+    Save the selected samples.
+    
+    Parameters:
+        z_lens (numpy.ndarray): The redshift grid of lens samples.
+        z_mean (numpy.ndarray): The redshift mode of source samples.
+        z_median (numpy.ndarray): The redshifts of test application samples.
+        z_source (numpy.ndarray): The redshift grid of source samples.
+        bin_lens (numpy.ndarray): The redshift bin of lens samples.
+        bin_source (numpy.ndarray): The redshift bin of source samples.
+        mag0_lens (float): The magnitude threshold of lens samples.
+        mag0_source (float): The magnitude threshold of source samples.
+        mag_source (numpy.ndarray): The magnitudes of test application samples.
+    
+    Returns:
+        tuple: The selected lens and source true redshift distributions.
+    """
+    # Select
+    z1_lens = z_lens.min()
+    z2_lens = z_lens.max()
+    
+    z1_source = z_source.min()
+    z2_source = z_source.max()
+    
+    select_source = (z1_source < z_mean) & (z_mean < z2_source) & (mag_source < mag0_source)
+    select_lens = (z1_lens < z_mean) & (z_mean < z2_lens) & (mag_source < 4 * z_mean + 18) & (mag_source < mag0_lens)
+    
+    # Lens
+    grid_size = z_source.size - 1
+    lens_size = len(bin_lens) - 1
+    lens_median = numpy.zeros((lens_size, grid_size), dtype=numpy.float32)
+    
+    for m in range(lens_size):
+        select = select_lens & (bin_lens[m] < z_mean) & (z_mean < bin_lens[m + 1])
+        lens_median[m, :] = numpy.histogram(z_median[select], bins=z_source, range=(z1_source, z2_source), density=False)[0].astype(numpy.float32)
+    
+    lens_count = numpy.sum(lens_median, axis=1)
+    lens = {'data': lens_median, 'count': lens_count}
+    
+    # Source
+    grid_size = z_source.size - 1
+    source_size = len(bin_source) - 1
+    source_median = numpy.zeros((source_size, grid_size), dtype=numpy.float32)
+    
+    for n in range(source_size):
+        select = select_source & (bin_source[n] < z_mean) & (z_mean < bin_source[n + 1])
+        source_median[n, :] = numpy.histogram(z_median[select], bins=z_source, range=(z1_source, z2_source), density=False)[0].astype(numpy.float32)
+    
+    source_count = numpy.sum(source_median, axis=1)
+    source = {'data': source_median, 'count': source_count}
+    
+    # Return
+    return lens, source
+
+
+def save_mode(z_lens, z_mean, z_mode, z_source, bin_lens, bin_source, mag0_lens, mag0_source, mag_source):
+    """
+    Save the selected samples.
+    
+    Parameters:
+        z_lens (numpy.ndarray): The redshift grid of lens samples.
+        z_mean (numpy.ndarray): The redshift mode of source samples.
+        z_mode (numpy.ndarray): The redshifts of test application samples.
+        z_source (numpy.ndarray): The redshift grid of source samples.
+        bin_lens (numpy.ndarray): The redshift bin of lens samples.
+        bin_source (numpy.ndarray): The redshift bin of source samples.
+        mag0_lens (float): The magnitude threshold of lens samples.
+        mag0_source (float): The magnitude threshold of source samples.
+        mag_source (numpy.ndarray): The magnitudes of test application samples.
+    
+    Returns:
+        tuple: The selected lens and source true redshift distributions.
+    """
+    # Select
+    z1_lens = z_lens.min()
+    z2_lens = z_lens.max()
+    
+    z1_source = z_source.min()
+    z2_source = z_source.max()
+    
+    select_source = (z1_source < z_mean) & (z_mean < z2_source) & (mag_source < mag0_source)
+    select_lens = (z1_lens < z_mean) & (z_mean < z2_lens) & (mag_source < 4 * z_mean + 18) & (mag_source < mag0_lens)
+    
+    # Lens
+    grid_size = z_source.size - 1
+    lens_size = len(bin_lens) - 1
+    lens_mode = numpy.zeros((lens_size, grid_size), dtype=numpy.float32)
+    
+    for m in range(lens_size):
+        select = select_lens & (bin_lens[m] < z_mean) & (z_mean < bin_lens[m + 1])
+        lens_mode[m, :] = numpy.histogram(z_mode[select], bins=z_source, range=(z1_source, z2_source), density=False)[0].astype(numpy.float32)
+    
+    lens_count = numpy.sum(lens_mode, axis=1)
+    lens = {'data': lens_mode, 'count': lens_count}
+    
+    # Source
+    grid_size = z_source.size - 1
+    source_size = len(bin_source) - 1
+    source_mode = numpy.zeros((source_size, grid_size), dtype=numpy.float32)
+    
+    for n in range(source_size):
+        select = select_source & (bin_source[n] < z_mean) & (z_mean < bin_source[n + 1])
+        source_mode[n, :] = numpy.histogram(z_mode[select], bins=z_source, range=(z1_source, z2_source), density=False)[0].astype(numpy.float32)
+    
+    source_count = numpy.sum(source_mode, axis=1)
+    source = {'data': source_mode, 'count': source_count}
+    
+    # Return
+    return lens, source
+
+def save_select(z_lens, z_mean, z_true, z_source, bin_lens, bin_source, mag0_lens, mag0_source, mag_source):
     """
     Save the selected samples.
     
@@ -293,8 +288,6 @@ def main(path, index):
     
     # Data
     data_path = os.path.join(path, 'DATA/')
-    plot_path = os.path.join(path, 'PLOT/')
-    
     test_name = os.path.join(data_path, 'SAMPLE/TEST_SAMPLE.hdf5')
     estimate_name = os.path.join(data_path, 'ESTIMATE/FZB_ESTIMATE{}.hdf5'.format(index))
     
@@ -323,21 +316,14 @@ def main(path, index):
     
     z_pdf = estimator().pdf(z_source)
     z_mean = numpy.concatenate(estimator().mean())
+    z_median = numpy.concatenate(estimator().median())
+    z_mode = numpy.concatenate(estimator().mode(grid=z_source))
     
     # Magnitude
     mag0_lens = 24.1
     mag1_source = 25.0
     mag2_source = 25.2
     mag0_source =  numpy.random.uniform(mag1_source, mag2_source)
-    
-    # Plot
-    figure = plot_select(z_lens, z_mean, z_true, z_source, mag0_lens, mag0_source, mag_source)
-    figure.savefig(os.path.join(plot_path, 'SELECT/SELECT{}.pdf'.format(index)), bbox_inches='tight')
-    pyplot.close(figure)
-    
-    figure = plot_redshift(z_lens, z_mean, z_true, z_source, mag0_lens, mag0_source, mag_source)
-    figure.savefig(os.path.join(plot_path, 'REDSHIFT/REDSHIFT{}.pdf'.format(index)), bbox_inches='tight')
-    pyplot.close(figure)
     
     # Save PDF
     lens_pdf, source_pdf = save_pdf(z_lens, z_pdf, z_mean, z_source, bin_lens, bin_source, mag0_lens, mag0_source, mag_source)
@@ -364,15 +350,48 @@ def main(path, index):
                 for key, value in source_pdf[n][name].items():
                     file[name].create_dataset(key, data=value)
     
-    # Save Data
-    lens_data, source_data = save_data(z_lens, z_mean, z_true, z_source, bin_lens, bin_source, mag0_lens, mag0_source, mag_source)
+    # Save Mean
+    lens_mean, source_mean = save_mean(z_lens, z_mean, z_source, bin_lens, bin_source, mag0_lens, mag0_source, mag_source)
+    
+    with h5py.File(os.path.join(data_path, 'LENS/LENS{}/MEAN.hdf5'.format(index)), 'w') as file:
+        for key, value in lens_mean.items():
+            file.create_dataset(key, data=value)
+    
+    with h5py.File(os.path.join(data_path, 'SOURCE/SOURCE{}/MEAN.hdf5'.format(index)), 'w') as file:
+        for key, value in source_mean.items():
+            file.create_dataset(key, data=value)
+    
+    # Save Median
+    lens_median, source_median = save_median(z_lens, z_mean, z_median, z_source, bin_lens, bin_source, mag0_lens, mag0_source, mag_source)
+    
+    with h5py.File(os.path.join(data_path, 'LENS/LENS{}/MEDIAN.hdf5'.format(index)), 'w') as file:
+        for key, value in lens_median.items():
+            file.create_dataset(key, data=value)
+    
+    with h5py.File(os.path.join(data_path, 'SOURCE/SOURCE{}/MEDIAN.hdf5'.format(index)), 'w') as file:
+        for key, value in source_median.items():
+            file.create_dataset(key, data=value)
+    
+    # Save Mode
+    lens_mode, source_mode = save_mode(z_lens, z_mean, z_mode, z_source, bin_lens, bin_source, mag0_lens, mag0_source, mag_source)
+    
+    with h5py.File(os.path.join(data_path, 'LENS/LENS{}/MODE.hdf5'.format(index)), 'w') as file:
+        for key, value in lens_mode.items():
+            file.create_dataset(key, data=value)
+    
+    with h5py.File(os.path.join(data_path, 'SOURCE/SOURCE{}/MODE.hdf5'.format(index)), 'w') as file:
+        for key, value in source_mode.items():
+            file.create_dataset(key, data=value)
+    
+    # Save Select
+    lens_select, source_select = save_select(z_lens, z_mean, z_true, z_source, bin_lens, bin_source, mag0_lens, mag0_source, mag_source)
     
     with h5py.File(os.path.join(data_path, 'LENS/LENS{}/SELECT.hdf5'.format(index)), 'w') as file:
-        for key, value in lens_data.items():
+        for key, value in lens_select.items():
             file.create_dataset(key, data=value)
     
     with h5py.File(os.path.join(data_path, 'SOURCE/SOURCE{}/SELECT.hdf5'.format(index)), 'w') as file:
-        for key, value in source_data.items():
+        for key, value in source_select.items():
             file.create_dataset(key, data=value)
     
     # Return
