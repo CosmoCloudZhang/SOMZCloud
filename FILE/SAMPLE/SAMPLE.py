@@ -4,43 +4,51 @@ import time
 import numpy
 import argparse
 from rail import core
+import multiprocessing
 from matplotlib import pyplot
 from matplotlib import colors
 from matplotlib.gridspec import GridSpec
 
 def bound(z, mag, color):
     
-    # Redshift
-    z_quantile = 0.84
-    z0 = numpy.quantile(z, z_quantile)
-    
     # Magnitude
-    mag_quantile = 0.84
+    mag_quantile = 0.75
     mag0 = numpy.quantile(mag, mag_quantile)
     
     # Color
-    color_quantile = 0.16
+    color_quantile = 0.25
     color0 = numpy.quantile(color, color_quantile)
     
     # Count
-    count0 = len(z) // 3
-    return z0, mag0, color0, count0
+    count0 = len(z) // 2
+    return mag0, color0, count0
 
 def select(z, mag, color, z0, mag0, color0, count0):
-
-    mask0 = z > z0
+    
+    z1 = 0.0
+    z2 = 3.0
+    z_bin_size = 300
+    z_delta = (z2 - z1) / z_bin_size
+    z_edge = numpy.linspace(z1, z2, z_bin_size + 1)
+    z_bin = numpy.linspace(z1 + z_delta / 2, z2 - z_delta / 2, z_bin_size)
+    
+    pdf = numpy.histogram(z0, bins=z_edge, density=True)[0]
+    distribution = numpy.log(1 + numpy.exp(-pdf))
+    
     mask1 = (color < color0)
     mask2 = (color > color0) & (mag > mag0)
     
-    mask = mask0 & (mask1 | mask2)
+    mask = (mask1 | mask2)
     mask_indices = numpy.where(mask)[0]
-    size0 = numpy.minimum(len(mask_indices), count0)
-    mask_sample = numpy.random.choice(mask_indices, size=size0, replace=False)
     
+    probability = numpy.interp(z[mask_indices], z_bin, distribution)
+    probability = probability / numpy.sum(probability)
+    size0 = numpy.minimum(len(mask_indices), count0)
+    
+    mask_sample = numpy.random.choice(mask_indices, size=size0, replace=False, p=probability)
     select_sample = numpy.zeros_like(mask, dtype=bool)
     select_sample[mask_sample] = True
     
-    print(z0, mag0, color0, size0)
     return select_sample
 
 def augment(data_store, augment_data, input_data, select_data):
@@ -65,14 +73,12 @@ def plot(bin_datasets, test_datasets, train_datasets, input_datasets, augment_da
     z_train, mag_train, color_train = train_datasets
     z_input, mag_input, color_input = input_datasets
     z_augment, mag_augment, color_augment = augment_datasets
-    z0_input, mag0_input, color0_input, count0_input = bound(z_input, mag_input, color_input)
+    mag0_input, color0_input, count0_input = bound(z_input, mag_input, color_input)
     
     figure = pyplot.figure(figsize = (9, 12))
     gridspec = GridSpec(nrows=1, ncols=2, figure=figure, top=0.95, bottom=0.75, hspace=0.2, wspace=0.0)
     
     plot = figure.add_subplot(gridspec[0,:])
-    
-    plot.axvline(z0_input, color='black', linestyle='--', linewidth=2.0)
     
     plot.hist(z_test, bins=z_bin, linewidth=2.0, density=True, histtype='step', color='black', label=r'$\mathrm{test}$')
     
@@ -134,7 +140,7 @@ def plot(bin_datasets, test_datasets, train_datasets, input_datasets, augment_da
     
     plot = figure.add_subplot(gridspec[1,1])
     
-    z0_input, mag0_input, color0_input, count0_input = bound(z_input, mag_input, color_input)
+    mag0_input, color0_input, count0_input = bound(z_input, mag_input, color_input)
     
     plot.plot(numpy.linspace(color0_input, color_bin.max(), 10), numpy.ones(10) * mag0_input, color='black', linestyle='--', linewidth=2.0)
     
@@ -160,6 +166,8 @@ def plot(bin_datasets, test_datasets, train_datasets, input_datasets, augment_da
     return figure
 
 def main(path, index):
+    start = time.time()
+    
     # Data store
     data_store = core.stage.RailStage.data_store
     data_store.__class__.allow_overwrite = True
@@ -185,7 +193,7 @@ def main(path, index):
     color_augment = augment_data()['mag_g_lsst'] - augment_data()['mag_z_lsst']
     
     # Input datasets
-    input_name = os.path.join(data_path, 'SAMPLE/INPUT_SAMPLE{}.hdf5'.format(INDEX))
+    input_name = os.path.join(data_path, 'SAMPLE/INPUT_SAMPLE{}.hdf5'.format(index))
     input_file = h5py.File(input_name, 'r')
     
     input_table = {}
@@ -217,9 +225,9 @@ def main(path, index):
     color_test = test_data()['mag_g_lsst'] - test_data()['mag_z_lsst']
     
     # Dataset Augmentation
-    z0_input, mag0_input, color0_input, count0_input = bound(z_input, mag_input, color_input)
+    mag0_input, color0_input, count0_input = bound(z_input, mag_input, color_input)
     
-    select_data = select(z_augment, mag_augment, color_augment, z0_input, mag0_input, color0_input, count0_input)
+    select_data = select(z_augment, mag_augment, color_augment, z_input, mag0_input, color0_input, count0_input)
     
     train_data = augment(data_store, augment_data, input_data, select_data)
     
@@ -258,19 +266,23 @@ def main(path, index):
     figure.savefig(plot_path + 'SAMPLE/SAMPLE{}.pdf'.format(index), bbox_inches = 'tight')
     pyplot.close(figure)
     
+    # Return
+    end = time.time()
+    print('Index:{}, Time: {:.2f} minutes'.format(index, (end - start) / 60))
+    return index
+
+
 if __name__ == '__main__':
     # Input
     PARSE = argparse.ArgumentParser(description='Augmentation sample.')
-    PARSE.add_argument('--path', type=str, required=True, help='The path to the base folder.')
+    PARSE.add_argument('--path', type=str, required=True, help='The path to the base folder')
+    PARSE.add_argument('--number', type=int, required=True, help='The number of the processes')
+    PARSE.add_argument('--length', type=int, required=True, help='The length of the train datasets')
     
     PATH = PARSE.parse_args().path
-    LENGTH = 400
+    NUMBER = PARSE.parse_args().number
+    LENGTH = PARSE.parse_args().length
     
-    for INDEX in range(1, LENGTH + 1):
-        print('Index: {}'.format(INDEX))
-        
-        START = time.time()
-        main(PATH, INDEX)
-        END = time.time()
-        
-        print('Time: {:.2f} minutes'.format((END - START) / 60))
+    # Multiprocessing
+    with multiprocessing.Pool(processes=NUMBER) as POOL:
+        POOL.starmap(main, [(PATH, index) for index in range(1, LENGTH + 1)])
