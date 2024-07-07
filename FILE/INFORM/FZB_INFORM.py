@@ -1,6 +1,5 @@
 import os
 import yaml
-import time
 import argparse
 
 def main(path, index):
@@ -27,14 +26,14 @@ def main(path, index):
             'redshift_col': 'redshift', 
             'hdf5_groupname': 'photometry', 
             'zmin': 0.0, 'zmax': 3.0, 'nzbins': 301, 
-            'trainfrac': 0.75, 'retrain_full': True,
-            'max_basis': 35, 'basis_system': 'cosine', 
-            'bumpmin': 0.0, 'bumpmax': 1.0, 'nbump': 50, 
-            'sharpmin': 1.0, 'sharpmax': 3.0, 'nsharp': 20, 
+            'trainfrac': 0.75, 'retrain_full': False,
+            'max_basis': 50, 'basis_system': 'cosine', 
+            'bumpmin': 0.0, 'bumpmax': 0.5, 'nbump': 50, 
+            'sharpmin': 0.5, 'sharpmax': 2.5, 'nsharp': 50, 
             'regression_params': {
                 'verbosity': 0, 
                 'max_depth': 16, 
-                'learning_rate': 0.1,
+                'learning_rate': 0.05,
                 'objective': 'reg:squarederror'
             }, 
             'bands': [
@@ -69,10 +68,6 @@ if __name__ == '__main__':
     
     PATH = PARSE.parse_args().path
     INDEX = PARSE.parse_args().index
-    print('Index: {}'.format(INDEX))
     
-    START = time.time()
     main(PATH, INDEX)
-    
-    END = time.time()
-    print('Time: {:.2f} minutes'.format((END - START) / 60))
+    print('Index: {}'.format(INDEX))
