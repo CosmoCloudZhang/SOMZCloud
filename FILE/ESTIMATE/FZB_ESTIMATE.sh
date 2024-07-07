@@ -38,12 +38,11 @@ for INDEX in $(seq 1 $LENGTH); do
     CONFIG_PATH="${BASE_PATH}/DATA/ESTIMATE/FZB_CONFIG${INDEX}.yaml"
     OUTPUT_PATH="${BASE_PATH}/DATA/ESTIMATE/FZB_ESTIMATE${INDEX}.hdf5"
     # Run applications
-    python "${BASE_PATH}/FILE/ESTIMATE/ESTIMATE.py" --path="${BASE_PATH}" --index=$INDEX &
+    python "${BASE_PATH}/FILE/ESTIMATE/FZB_ESTIMATE.py" --path="${BASE_PATH}" --index=$INDEX &
     srun -u -N 1 -n 1 --cpus-per-task=$SLURM_CPUS_PER_TASK python3 -m ceci rail.estimation.algos.flexzboost.FlexZBoostEstimator --mpi --name=$NAME --input=$INPUT_PATH --model=$MODEL_PATH --config=$CONFIG_PATH --output=$OUTPUT_PATH &
     # Control parallel execution
     if (( $INDEX % $SLURM_NTASKS == 0 )); then
         wait
     fi
 done
-
 wait
