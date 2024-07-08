@@ -6,14 +6,15 @@ import argparse
 from rail import core
 import multiprocessing
 
-def save_select(z_lens, z_mean, z_true, z_source, bin_lens, bin_source, mag0_lens, mag_source, width):
+
+def save_median(z_lens, z_mean, z_median, z_source, bin_lens, bin_source, mag0_lens, mag_source, width):
     """
     Save the selected samples.
     
     Parameters:
         z_lens (numpy.ndarray): The redshift grid of lens samples.
         z_mean (numpy.ndarray): The redshift mode of source samples.
-        z_true (numpy.ndarray): The redshifts of test application samples.
+        z_median (numpy.ndarray): The redshifts of test application samples.
         z_source (numpy.ndarray): The redshift grid of source samples.
         bin_lens (numpy.ndarray): The redshift bin of lens samples.
         bin_source (numpy.ndarray): The redshift bin of source samples.
@@ -37,30 +38,30 @@ def save_select(z_lens, z_mean, z_true, z_source, bin_lens, bin_source, mag0_len
     # Lens
     grid_size = z_source.size - 1
     lens_size = len(bin_lens) - 1
-    lens_data = numpy.zeros((width, lens_size, grid_size), dtype=numpy.float32)
+    lens_median = numpy.zeros((width, lens_size, grid_size), dtype=numpy.float32)
     
     for n in range(width):
         for m in range(lens_size):
             select = select_lens & (bin_lens[m] < z_mean) & (z_mean < bin_lens[m + 1])
-            z_data = numpy.random.choice(z_true[select], z_true[select].size, replace=True)
-            lens_data[n, m, :] = numpy.histogram(z_data, bins=z_source, range=(z1_source, z2_source), density=False)[0].astype(numpy.float32)
-        
-    lens_count = numpy.sum(lens_data, axis=2)
-    lens = {'data': lens_data, 'count': lens_count}
+            z_data = numpy.random.choice(z_median[select], z_median[select].size, replace=True)
+            lens_median[n, m, :] = numpy.histogram(z_data, bins=z_source, range=(z1_source, z2_source), density=False)[0].astype(numpy.float32)
+    
+    lens_count = numpy.sum(lens_median, axis=2)
+    lens = {'data': lens_median, 'count': lens_count}
     
     # Source
     grid_size = z_source.size - 1
     source_size = len(bin_source) - 1
-    source_data = numpy.zeros((width, source_size, grid_size), dtype=numpy.float32)
+    source_median = numpy.zeros((width, source_size, grid_size), dtype=numpy.float32)
     
     for n in range(width):
         for m in range(source_size):
             select = select_source & (bin_source[m] < z_mean) & (z_mean < bin_source[m + 1])
-            z_data = numpy.random.choice(z_true[select], z_true[select].size, replace=True)
-            source_data[n, m, :] = numpy.histogram(z_data, bins=z_source, range=(z1_source, z2_source), density=False)[0].astype(numpy.float32)
+            z_data = numpy.random.choice(z_median[select], z_median[select].size, replace=True)
+            source_median[n, m, :] = numpy.histogram(z_data, bins=z_source, range=(z1_source, z2_source), density=False)[0].astype(numpy.float32)
     
-    source_count = numpy.sum(source_data, axis=2)
-    source = {'data': source_data, 'count': source_count}
+    source_count = numpy.sum(source_median, axis=2)
+    source = {'data': source_median, 'count': source_count}
     
     # Return
     return lens, source
@@ -99,24 +100,22 @@ def main(path, index):
     z_source = numpy.linspace(z1_source, z2_source, z_source_size + 1)
     
     z_mean = numpy.concatenate(estimator().mean())
-    z_true = test_data()['photometry']['redshift']
+    z_median = numpy.concatenate(estimator().median())
     mag_source = test_data()['photometry']['mag_i_lsst']
     
     # Magnitude
     width = 250
     mag0_lens = 24.1
-    os.makedirs(os.path.join(data_path, 'LENS/LENS{}'.format(index)), exist_ok=True)
-    os.makedirs(os.path.join(data_path, 'SOURCE/SOURCE{}'.format(index)), exist_ok=True)
     
-    # Save Select
-    lens_select, source_select = save_select(z_lens, z_mean, z_true, z_source, bin_lens, bin_source, mag0_lens, mag_source, width)
+    # Save Median
+    lens_median, source_median = save_median(z_lens, z_mean, z_median, z_source, bin_lens, bin_source, mag0_lens, mag_source, width)
     
-    with h5py.File(os.path.join(data_path, 'LENS/LENS{}/SELECT.hdf5'.format(index)), 'w') as file:
-        for key, value in lens_select.items():
+    with h5py.File(os.path.join(data_path, 'LENS/LENS{}/SELECT_MEDIAN.hdf5'.format(index)), 'w') as file:
+        for key, value in lens_median.items():
             file.create_dataset(key, data=value)
     
-    with h5py.File(os.path.join(data_path, 'SOURCE/SOURCE{}/SELECT.hdf5'.format(index)), 'w') as file:
-        for key, value in source_select.items():
+    with h5py.File(os.path.join(data_path, 'SOURCE/SOURCE{}/SELECT_MEDIAN.hdf5'.format(index)), 'w') as file:
+        for key, value in source_median.items():
             file.create_dataset(key, data=value)
     
     # Return

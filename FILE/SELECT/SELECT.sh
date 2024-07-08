@@ -8,7 +8,7 @@
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%a.out
-#SBATCH --cpus-per-task=128
+#SBATCH --cpus-per-task=256
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -21,13 +21,13 @@ source $HOME/.bashrc
 conda activate $RAILENV
 
 # Set OpenMP environment
-export OMP_NUM_THREADS=16
+export OMP_NUM_THREADS=64
 export OMP_PLACES=threads
 export OMP_PROC_Bind=spread
 
 # Initialize the parallisation
-NUMBER=8
+NUMBER=4
 LENGTH=400
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-srun -n 1 --cpu-bind=none python -u $BASE_PATH/FILE/SELECT/SELECT.py --path="${BASE_PATH}" --number=$NUMBER --length=$LENGTH
+srun -n 1 --cpu-bind=none python -u $BASE_PATH/FILE/SELECT/SELECT.py --path="${BASE_PATH}" --number=$NUMBER --length=$LENGTH &
 wait

@@ -4,11 +4,11 @@
 #SBATCH --nodes=1
 #SBATCH -q regular
 #SBATCH --ntasks=16
-#SBATCH --time=01:00:00
+#SBATCH --time=02:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%a.out
-#SBATCH --cpus-per-task=8
+#SBATCH --cpus-per-task=16
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -29,18 +29,20 @@ export OMP_PLACES=threads
 
 # Initialize the parallisation
 WIDTH=5
-LENGTH=400
+LENGTH=8
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-for INDEX in $(seq 1 $LENGTH); do
-    # Set path variables
-    NAME="LENS_SUMMARISE${INDEX}"
-    CONFIG_PATH="${BASE_PATH}/DATA/LENS/LENS${INDEX}/CONFIG.yaml"
-    for BIN in $(seq 0 $((WIDTH - 1))); do
-        INPUT_PATH="${BASE_PATH}/DATA/LENS/LENS${INDEX}/SELECT${BIN}.hdf5"
-        OUTPUT_PATH="${BASE_PATH}/DATA/LENS/LENS${INDEX}/LENS${BIN}.hdf5"
+
+for BIN in $(seq 0 $((WIDTH - 1))); do
+    for INDEX in $(seq 1 $LENGTH); do
+        # Set path variables
+        NAME="LENS_SUMMARISE${INDEX}"
+        CONFIG_PATH="${BASE_PATH}/DATA/LENS/LENS${INDEX}/CONFIG.yaml"
+        INPUT_PATH="${BASE_PATH}/DATA/LENS/LENS${INDEX}/SELECT_PDF${BIN}.hdf5"
+        SINGLE_NZ_PATH="${BASE_PATH}/DATA/LENS/LENS${INDEX}/SELECT_BIN${BIN}.hdf5"
+        OUTPUT_PATH="${BASE_PATH}/DATA/LENS/LENS${INDEX}/SELECT_SUMMARIZE${BIN}.hdf5"
         # Run applications
         python "${BASE_PATH}/FILE/SUMMARIZE/LENS.py" --path="${BASE_PATH}" --index=$INDEX &
-        srun -u -N 1 -n 1 --cpus-per-task=$SLURM_CPUS_PER_TASK python3 -m ceci rail.estimation.algos.naive_stack.NaiveStackSummarizer --mpi --name=$NAME --input=$INPUT_PATH --config=$CONFIG_PATH --output=$OUTPUT_PATH &
+        srun -u -N 1 -n 1 --cpus-per-task=$SLURM_CPUS_PER_TASK python3 -m ceci rail.estimation.algos.naive_stack.NaiveStackSummarizer --mpi --name=$NAME --input=$INPUT_PATH --config=$CONFIG_PATH --output=$OUTPUT_PATH --single_NZ=$SINGLE_NZ_PATH &
         # Control parallel execution
         if (( INDEX % SLURM_NTASKS == 0 )); then
             wait

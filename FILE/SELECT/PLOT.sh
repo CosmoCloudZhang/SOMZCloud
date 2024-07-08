@@ -8,7 +8,7 @@
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%a.out
-#SBATCH --cpus-per-task=128
+#SBATCH --cpus-per-task=256
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -29,5 +29,5 @@ export OMP_PROC_Bind=spread
 NUMBER=8
 LENGTH=400
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-srun -n 1 --cpu-bind=none python -u $BASE_PATH/FILE/SELECT/PLOT.py --path="${BASE_PATH}" --number=$NUMBER --length=$LENGTH
+srun -n 1 --cpu-bind=none python -u $BASE_PATH/FILE/SELECT/PLOT.py --path="${BASE_PATH}" --number=$NUMBER --length=$LENGTH &
 wait

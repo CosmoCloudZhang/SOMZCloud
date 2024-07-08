@@ -6,23 +6,22 @@ import argparse
 from rail import core
 import multiprocessing
 
-def save_select(z_lens, z_mean, z_true, z_source, bin_lens, bin_source, mag0_lens, mag_source, width):
+def save_pdf(z_lens, z_pdf, z_mean, z_source, bin_lens, bin_source, mag0_lens, mag_source):
     """
     Save the selected samples.
     
     Parameters:
         z_lens (numpy.ndarray): The redshift grid of lens samples.
+        z_pdf (numpy.ndarray): The redshift PDF of source samples.
         z_mean (numpy.ndarray): The redshift mode of source samples.
-        z_true (numpy.ndarray): The redshifts of test application samples.
         z_source (numpy.ndarray): The redshift grid of source samples.
         bin_lens (numpy.ndarray): The redshift bin of lens samples.
         bin_source (numpy.ndarray): The redshift bin of source samples.
         mag0_lens (float): The magnitude threshold of lens samples.
-        mag_source (numpy.ndarray): The magnitudes of test application samples. 
-        width (int): The number of random samples for bootstrapping.
+        mag_source (numpy.ndarray): The magnitudes of test application samples.
     
     Returns:
-        tuple: The selected lens and source true redshift distributions.
+        tuple: The selected lens and source samples.
     """
     # Select
     z1_lens = z_lens.min()
@@ -31,36 +30,28 @@ def save_select(z_lens, z_mean, z_true, z_source, bin_lens, bin_source, mag0_len
     z1_source = z_source.min()
     z2_source = z_source.max()
     
+    slope = 4.0
+    intersection = 18.0
+    
     select_source = (z1_source < z_mean) & (z_mean < z2_source)
-    select_lens = (z1_lens < z_mean) & (z_mean < z2_lens) & (mag_source < 4 * z_mean + 18) & (mag_source < mag0_lens)
+    select_lens = (z1_lens < z_mean) & (z_mean < z2_lens) & (mag_source < slope * z_mean + intersection) & (mag_source < mag0_lens)
+    meta = {'pdf_name': numpy.array(['interp'.encode('ascii')]).astype('S6'), 'pdf_version': numpy.array([0]).astype(numpy.int32), 'xvals': numpy.array([z_source]).astype(numpy.float32)}
     
     # Lens
-    grid_size = z_source.size - 1
+    lens = []
     lens_size = len(bin_lens) - 1
-    lens_data = numpy.zeros((width, lens_size, grid_size), dtype=numpy.float32)
-    
-    for n in range(width):
-        for m in range(lens_size):
-            select = select_lens & (bin_lens[m] < z_mean) & (z_mean < bin_lens[m + 1])
-            z_data = numpy.random.choice(z_true[select], z_true[select].size, replace=True)
-            lens_data[n, m, :] = numpy.histogram(z_data, bins=z_source, range=(z1_source, z2_source), density=False)[0].astype(numpy.float32)
-        
-    lens_count = numpy.sum(lens_data, axis=2)
-    lens = {'data': lens_data, 'count': lens_count}
+    for m in range(lens_size):
+        select = select_lens & (bin_lens[m] < z_mean) & (z_mean < bin_lens[m + 1])
+        data = {'yvals': z_pdf[select, :].astype(numpy.float32)}
+        lens.append({'data': data, 'meta': meta})
     
     # Source
-    grid_size = z_source.size - 1
+    source = []
     source_size = len(bin_source) - 1
-    source_data = numpy.zeros((width, source_size, grid_size), dtype=numpy.float32)
-    
-    for n in range(width):
-        for m in range(source_size):
-            select = select_source & (bin_source[m] < z_mean) & (z_mean < bin_source[m + 1])
-            z_data = numpy.random.choice(z_true[select], z_true[select].size, replace=True)
-            source_data[n, m, :] = numpy.histogram(z_data, bins=z_source, range=(z1_source, z2_source), density=False)[0].astype(numpy.float32)
-    
-    source_count = numpy.sum(source_data, axis=2)
-    source = {'data': source_data, 'count': source_count}
+    for m in range(source_size):
+        select = select_source & (bin_source[m] < z_mean) & (z_mean < bin_source[m + 1])
+        data = {'yvals': z_pdf[select, :].astype(numpy.float32)}
+        source.append({'data': data, 'meta': meta})
     
     # Return
     return lens, source
@@ -98,26 +89,37 @@ def main(path, index):
     z_source_size = 300
     z_source = numpy.linspace(z1_source, z2_source, z_source_size + 1)
     
+    z_pdf = estimator().pdf(z_source)
     z_mean = numpy.concatenate(estimator().mean())
-    z_true = test_data()['photometry']['redshift']
     mag_source = test_data()['photometry']['mag_i_lsst']
     
     # Magnitude
-    width = 250
     mag0_lens = 24.1
+    
+    # Save PDF
+    lens_pdf, source_pdf = save_pdf(z_lens, z_pdf, z_mean, z_source, bin_lens, bin_source, mag0_lens, mag_source)
+    
+    # Lens
+    lens_size = len(bin_lens) - 1
     os.makedirs(os.path.join(data_path, 'LENS/LENS{}'.format(index)), exist_ok=True)
+    
+    for m in range(lens_size):        
+        with h5py.File(os.path.join(data_path, 'LENS/LENS{}/SELECT_PDF{}.hdf5'.format(index, m)), 'w') as file:
+            for name in lens_pdf[m].keys():
+                file.create_group(name)
+                for key, value in lens_pdf[m][name].items():
+                    file[name].create_dataset(key, data=value)
+    
+    # Source
+    source_size = len(bin_source) - 1
     os.makedirs(os.path.join(data_path, 'SOURCE/SOURCE{}'.format(index)), exist_ok=True)
     
-    # Save Select
-    lens_select, source_select = save_select(z_lens, z_mean, z_true, z_source, bin_lens, bin_source, mag0_lens, mag_source, width)
-    
-    with h5py.File(os.path.join(data_path, 'LENS/LENS{}/SELECT.hdf5'.format(index)), 'w') as file:
-        for key, value in lens_select.items():
-            file.create_dataset(key, data=value)
-    
-    with h5py.File(os.path.join(data_path, 'SOURCE/SOURCE{}/SELECT.hdf5'.format(index)), 'w') as file:
-        for key, value in source_select.items():
-            file.create_dataset(key, data=value)
+    for n in range(source_size):
+        with h5py.File(os.path.join(data_path, 'SOURCE/SOURCE{}/SELECT_PDF{}.hdf5'.format(index, n)), 'w') as file:
+            for name in source_pdf[n].keys():
+                file.create_group(name)
+                for key, value in source_pdf[n][name].items():
+                    file[name].create_dataset(key, data=value)
     
     # Return
     end = time.time()

@@ -14,16 +14,17 @@ def main(path, index):
             'aliases': {
                 'name': 'input_name',
                 'input': 'input_data', 
-                'output': 'output_data'
+                'output': 'output_data', 
+                'single_NZ': 'single_NZ'
             }, 
             'seed': 0,
             'name': None,
             'input': None,
             'output': None,
             'config': None,
-            'nsamples': 1000, 
+            'nsamples': 250,
+            'single_NZ': None,
             'chunk_size': 2000000, 
-            'output_mode': 'default', 
             'zmin': 0.0, 'zmax': 3.0, 'nzbins': 300,
         }
     }
