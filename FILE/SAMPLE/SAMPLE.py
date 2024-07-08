@@ -284,5 +284,8 @@ if __name__ == '__main__':
     LENGTH = PARSE.parse_args().length
     
     # Multiprocessing
-    with multiprocessing.Pool(processes=NUMBER) as POOL:
-        POOL.starmap(main, [(PATH, index) for index in range(1, LENGTH + 1)])
+    SIZE = LENGTH // NUMBER
+    for CHUNK in range(SIZE):
+        print('CHUNK: {}'.format(CHUNK + 1))
+        with multiprocessing.Pool(processes=NUMBER) as POOL:
+            POOL.starmap(main, [(PATH, INDEX) for INDEX in range(CHUNK * NUMBER + 1, (CHUNK + 1) * NUMBER + 1)])
