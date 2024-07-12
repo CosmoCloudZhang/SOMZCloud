@@ -14,10 +14,10 @@ def main(path, width, length, number):
     data_path = os.path.join(path, 'DATA/')
     
     lens_count = numpy.zeros((height, number), dtype=numpy.float32)
-    lens_data = numpy.zeros((height, number, z_size), dtype=numpy.float32)
+    lens_sample = numpy.zeros((height, number, z_size), dtype=numpy.float32)
     
     source_count = numpy.zeros((height, number), dtype=numpy.float32)
-    source_data = numpy.zeros((height, number, z_size), dtype=numpy.float32)
+    source_sample = numpy.zeros((height, number, z_size), dtype=numpy.float32)
     
     for m in range(length):
         
@@ -26,11 +26,11 @@ def main(path, width, length, number):
         
         with h5py.File(lens_name.format(m), 'r') as file:
             lens_count[m * width: (m + 1) * width, :] = file['count'][:].astype(numpy.float32)
-            lens_data[m * width: (m + 1) * width, :] = file['data'][:].astype(numpy.float32)
+            lens_sample[m * width: (m + 1) * width, :] = file['sample'][:].astype(numpy.float32)
         
         with h5py.File(source_name.format(m), 'r') as file:
             source_count[m * width: (m + 1) * width, :] = file['count'][:].astype(numpy.float32)
-            source_data[m * width: (m + 1) * width, :] = file['data'][:].astype(numpy.float32)
+            source_sample[m * width: (m + 1) * width, :] = file['sample'][:].astype(numpy.float32)
     
     lens_weight_count = numpy.zeros((height, number), dtype=numpy.float32)
     lens_weight_data = numpy.zeros((height, number, z_size), dtype=numpy.float32)
@@ -44,10 +44,10 @@ def main(path, width, length, number):
         weight_index = length_index * width + width_index
         
         lens_weight_count[m, :] = numpy.sum(lens_count[weight_index, :], axis=0)
-        lens_weight_data[m, :, :] = numpy.sum(lens_data[weight_index, :, :], axis=0)
+        lens_weight_data[m, :, :] = numpy.sum(lens_sample[weight_index, :, :], axis=0)
         
         source_weight_count[m, :] = numpy.sum(source_count[weight_index, :], axis=0)
-        source_weight_data[m, :, :] = numpy.sum(source_data[weight_index, :, :], axis=0)
+        source_weight_data[m, :, :] = numpy.sum(source_sample[weight_index, :, :], axis=0)
     
     # Save
     lens = {'data': lens_weight_data, 'count': lens_weight_count}
