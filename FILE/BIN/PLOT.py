@@ -187,7 +187,7 @@ def main(path, index):
     plot_path = os.path.join(path, 'PLOT/')
     
     test_name = os.path.join(data_path, 'SAMPLE/TEST_SAMPLE.hdf5')
-    estimate_name = os.path.join(data_path, 'ESTIMATE/FZB_ESTIMATE{}.hdf5'.format(index))
+    estimate_name = os.path.join(data_path, 'FZB/FZB_ESTIMATE{}.hdf5'.format(index))
     
     test_data = data_store.read_file(key='test_data', path=test_name, handle_class=core.data.TableHandle)
     estimator = data_store.read_file(key='estimator', path=estimate_name, handle_class=core.data.QPHandle)

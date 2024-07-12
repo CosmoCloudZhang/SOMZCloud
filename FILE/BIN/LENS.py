@@ -57,8 +57,8 @@ def main(path, index):
     bin_lens = bin(z1_lens, z2_lens, bin_size, cosmo_ccl)
     
     # Save
-    os.makedirs(os.path.join(data_path, 'LENS/LENS{}'.format(index)), exist_ok=True)
-    with h5py.File(os.path.join(data_path, 'LENS/LENS{}/BIN.hdf5'.format(index)), 'w') as file:
+    os.makedirs(os.path.join(data_path, 'SELECT/LENS/LENS{}'.format(index)), exist_ok=True)
+    with h5py.File(os.path.join(data_path, 'SELECT/LENS/LENS{}/BIN.hdf5'.format(index)), 'w') as file:
         file.create_dataset('bin', data=bin_lens)
     
     # Return

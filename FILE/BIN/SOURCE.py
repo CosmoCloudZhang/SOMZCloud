@@ -60,7 +60,7 @@ def main(path, index):
     # Data
     data_path = os.path.join(path, 'DATA/')
     test_name = os.path.join(data_path, 'SAMPLE/TEST_SAMPLE.hdf5')
-    estimate_name = os.path.join(data_path, 'ESTIMATE/FZB_ESTIMATE{}.hdf5'.format(index))
+    estimate_name = os.path.join(data_path, 'FZB/FZB_ESTIMATE{}.hdf5'.format(index))
     
     test_data = data_store.read_file(key='test_data', path=test_name, handle_class=core.data.TableHandle)
     estimator = data_store.read_file(key='estimator', path=estimate_name, handle_class=core.data.QPHandle)
@@ -84,8 +84,8 @@ def main(path, index):
     bin_source = bin(z_mean[select_source], bin_size)
     
     # Save
-    os.makedirs(os.path.join(data_path, 'SOURCE/SOURCE{}'.format(index)), exist_ok=True)
-    with h5py.File(os.path.join(data_path, 'SOURCE/SOURCE{}/BIN.hdf5'.format(index)), 'w') as file:
+    os.makedirs(os.path.join(data_path, 'SELECT/SOURCE/SOURCE{}'.format(index)), exist_ok=True)
+    with h5py.File(os.path.join(data_path, 'SELECT/SOURCE/SOURCE{}/BIN.hdf5'.format(index)), 'w') as file:
         file.create_dataset('bin', data=bin_source)
     
     # Return
