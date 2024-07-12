@@ -96,16 +96,16 @@ def main(path, index):
     # Data
     data_path = os.path.join(path, 'DATA/')
     test_name = os.path.join(data_path, 'SAMPLE/TEST_SAMPLE.hdf5')
-    estimate_name = os.path.join(data_path, 'ESTIMATE/FZB_ESTIMATE{}.hdf5'.format(index))
+    estimate_name = os.path.join(data_path, 'FZB/FZB_ESTIMATE{}.hdf5'.format(index))
     
     test_data = data_store.read_file(key='test_data', path=test_name, handle_class=core.data.TableHandle)
     estimator = data_store.read_file(key='estimator', path=estimate_name, handle_class=core.data.QPHandle)
     
     # Bin
-    with h5py.File(os.path.join(data_path, 'LENS/LENS{}/BIN.hdf5'.format(index)), 'r') as file:
+    with h5py.File(os.path.join(data_path, 'SELECT/LENS/LENS{}/BIN.hdf5'.format(index)), 'r') as file:
         bin_lens = file['bin'][:].astype(numpy.float32)
     
-    with h5py.File(os.path.join(data_path, 'SOURCE/SOURCE{}/BIN.hdf5'.format(index)), 'r') as file:
+    with h5py.File(os.path.join(data_path, 'SELECT/SOURCE/SOURCE{}/BIN.hdf5'.format(index)), 'r') as file:
         bin_source = file['bin'][:].astype(numpy.float32)
     
     # Redshift
@@ -130,11 +130,11 @@ def main(path, index):
     select_lens, select_source = select(z1_lens, z2_lens, z1_source, z2_source, z_mean, mag_source, mag0_lens, mag0_source)
     lens_data, source_data = save_select(width, z_mean, z_true, z_edge, bin_lens, bin_source, select_lens, select_source)
     
-    with h5py.File(os.path.join(data_path, 'LENS/LENS{}/SELECT.hdf5'.format(index)), 'w') as file:
+    with h5py.File(os.path.join(data_path, 'SELECT/LENS/LENS{}/SELECT.hdf5'.format(index)), 'w') as file:
         for key, value in lens_data.items():
             file.create_dataset(key, data=value)
     
-    with h5py.File(os.path.join(data_path, 'SOURCE/SOURCE{}/SELECT.hdf5'.format(index)), 'w') as file:
+    with h5py.File(os.path.join(data_path, 'SELECT/SOURCE/SOURCE{}/SELECT.hdf5'.format(index)), 'w') as file:
         for key, value in source_data.items():
             file.create_dataset(key, data=value)
     
