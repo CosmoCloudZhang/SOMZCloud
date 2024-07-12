@@ -46,7 +46,7 @@ def main(path, index):
         }
     }
     
-    config_name = os.path.join(data_path, 'ESTIMATE/FZB_CONFIG{}.yaml'.format(index))
+    config_name = os.path.join(data_path, 'FZB/FZB_ESTIMATE{}.yaml'.format(index))
     with open(config_name, 'w') as config_file:
         yaml.dump(config, config_file, default_flow_style=False)
 
