@@ -26,7 +26,7 @@ def main(path, index):
             'redshift_col': 'redshift', 
             'hdf5_groupname': 'photometry', 
             'zmin': 0.0, 'zmax': 3.0, 'nzbins': 301, 
-            'trainfrac': 0.75, 'retrain_full': True,
+            'trainfrac': 0.75, 'retrain_full': False,
             'max_basis': 50, 'basis_system': 'cosine', 
             'bumpmin': 0.0, 'bumpmax': 0.5, 'nbump': 50, 
             'sharpmin': 0.5, 'sharpmax': 2.5, 'nsharp': 50, 

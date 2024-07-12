@@ -9,33 +9,27 @@ def main(path, index):
     
     # Config
     config = {
-        'FZB_INFORM{}'.format(index): {
+        'SOM_INFORM{}'.format(index): {
             'aliases': {
                 'name': 'input_name',
                 'input': 'input_data', 
                 'model': 'input_model',
             }, 
+            'seed': 0, 
             'name': None,
             'input': None, 
             'model': None,
             'config': None, 
-            'save_train': True,
+            'std_coeff': 12.0, 
             'nondetect_val': 99.0, 
-            'output_mode': 'default',
             'ref_band': 'mag_i_lsst', 
+            'output_mode': 'default', 
+            'som_learning_rate': 0.50,
             'redshift_col': 'redshift', 
+            'n_rows': 61, 'n_columns': 61, 
             'hdf5_groupname': 'photometry', 
-            'zmin': 0.0, 'zmax': 3.0, 'nzbins': 301, 
-            'trainfrac': 0.75, 'retrain_full': True,
-            'max_basis': 50, 'basis_system': 'cosine', 
-            'bumpmin': 0.0, 'bumpmax': 0.5, 'nbump': 50, 
-            'sharpmin': 0.5, 'sharpmax': 2.5, 'nsharp': 50, 
-            'regression_params': {
-                'verbosity': 0, 
-                'max_depth': 16, 
-                'learning_rate': 0.05,
-                'objective': 'reg:squarederror'
-            }, 
+            'column_usage': 'magandcolors', 
+            'maptype': 'planar', 'grid_type': 'hexagonal', 
             'bands': [
                 'mag_u_lsst', 
                 'mag_g_lsst', 
@@ -55,14 +49,14 @@ def main(path, index):
         }
     }
     
-    config_name = os.path.join(data_path, 'INFORM/FZB_CONFIG{}.yaml'.format(index))
+    config_name = os.path.join(data_path, 'SOM/SOM_INFORM{}.yaml'.format(index))
     with open(config_name, 'w') as config_file:
         yaml.dump(config, config_file, default_flow_style=False)
 
 if __name__ == '__main__':
     
     # Input
-    PARSE = argparse.ArgumentParser(description='FZB Informer')
+    PARSE = argparse.ArgumentParser(description='SOM Informer')
     PARSE.add_argument('--path', type=str, required=True, help='The path to the base folder')
     PARSE.add_argument('--index', type=int, required=True, help='The index of the train datasets')
     
