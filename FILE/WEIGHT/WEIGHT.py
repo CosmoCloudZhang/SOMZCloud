@@ -8,14 +8,16 @@ def main(path, width, length, number):
     start = time.time()
     
     # Data
+    z_size = 300
+    weight_size = 1
     height = length * width
     data_path = os.path.join(path, 'DATA/')
     
     lens_count = numpy.zeros((height, number), dtype=numpy.float32)
-    lens_data = numpy.zeros((height, number, width), dtype=numpy.float32)
+    lens_data = numpy.zeros((height, number, z_size), dtype=numpy.float32)
     
     source_count = numpy.zeros((height, number), dtype=numpy.float32)
-    source_data = numpy.zeros((height, number, width), dtype=numpy.float32)
+    source_data = numpy.zeros((height, number, z_size), dtype=numpy.float32)
     
     for m in range(length):
         
@@ -30,9 +32,26 @@ def main(path, width, length, number):
             source_count[m * width: (m + 1) * width, :] = file['count'][:].astype(numpy.float32)
             source_data[m * width: (m + 1) * width, :] = file['data'][:].astype(numpy.float32)
     
+    lens_weight_count = numpy.zeros((height, number), dtype=numpy.float32)
+    lens_weight_data = numpy.zeros((height, number, z_size), dtype=numpy.float32)
+    
+    source_weight_count = numpy.zeros((height, number), dtype=numpy.float32)
+    source_weight_data = numpy.zeros((height, number, z_size), dtype=numpy.float32)
+    
+    for m in range(height):
+        length_index = numpy.random.choice(numpy.arange(length), weight_size, replace=False)
+        width_index = numpy.random.choice(numpy.arange(width), weight_size, replace=False)
+        weight_index = length_index * width + width_index
+        
+        lens_weight_count[m, :] = numpy.sum(lens_count[weight_index, :], axis=0)
+        lens_weight_data[m, :, :] = numpy.sum(lens_data[weight_index, :, :], axis=0)
+        
+        source_weight_count[m, :] = numpy.sum(source_count[weight_index, :], axis=0)
+        source_weight_data[m, :, :] = numpy.sum(source_data[weight_index, :, :], axis=0)
+    
     # Save
-    lens = {'data': lens_data, 'count': lens_count}
-    source = {'data': source_data, 'count': source_count}
+    lens = {'data': lens_weight_data, 'count': lens_weight_count}
+    source = {'data': source_weight_data, 'count': source_weight_count}
     
     with h5py.File(os.path.join(data_path, 'WEIGHT/LENS.hdf5'), 'w') as file:
         for key, value in lens.items():

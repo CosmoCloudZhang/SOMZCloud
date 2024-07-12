@@ -30,5 +30,5 @@ NUMBER=5
 WIDTH=250
 LENGTH=400
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-srun -n 1 --cpu-bind=none python -u $BASE_PATH/FILE/WEIGHT/WEIGHT.py --path="${BASE_PATH}" --width=$WIDTH --length=$LENGTH --number=$NUMBER & 
+srun -n 1 --cpu-bind=none python -u $BASE_PATH/FILE/WEIGHT/WEIGHT.py --path="${BASE_PATH}" --width=$WIDTH --length=$LENGTH --number=$NUMBER &
 wait
