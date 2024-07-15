@@ -16,10 +16,6 @@ def main(path, index):
                 'model': 'input_model',
                 'output': 'output_data'
             }, 
-            'name': None,
-            'input': None,
-            'output': None,
-            'config': None,
             'chunk_size': 2000000, 
             'nondetect_val': 99.0, 
             'ref_band': 'mag_i_lsst', 

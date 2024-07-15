@@ -3,12 +3,12 @@
 #SBATCH -J INFORM
 #SBATCH --nodes=1
 #SBATCH -q regular
-#SBATCH --ntasks=4
+#SBATCH --ntasks=16
 #SBATCH --time=24:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%a.out
-#SBATCH --cpus-per-task=64
+#SBATCH --cpus-per-task=16
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -28,7 +28,7 @@ export OMP_PROC_BIND=spread
 export OMP_PLACES=threads
 
 # Initialize the parallisation
-LENGTH=4
+LENGTH=400
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 for INDEX in $(seq 1 $LENGTH); do
     # Set path variables
