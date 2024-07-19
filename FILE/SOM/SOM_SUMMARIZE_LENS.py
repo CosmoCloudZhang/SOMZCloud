@@ -9,7 +9,7 @@ def main(path, index):
     
     # Config
     config = {
-        'SOM_SUMMARIZE{}'.format(index): {
+        'SOM_SUMMARIZE_LENS{}'.format(index): {
             'aliases': {
                 'name': 'input_name', 
                 'input': 'input_data', 
@@ -34,7 +34,7 @@ def main(path, index):
         }
     }
     
-    config_name = os.path.join(data_path, 'SOM/SOM_SUMMARIZE{}.yaml'.format(index))
+    config_name = os.path.join(data_path, 'SOM/SOM_SUMMARIZE_LENS{}.yaml'.format(index))
     with open(config_name, 'w') as config_file:
         yaml.dump(config, config_file, default_flow_style=False)
 

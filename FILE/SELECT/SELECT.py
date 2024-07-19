@@ -140,20 +140,20 @@ def main(path, index):
     
     # Save Datasets
     for k in range(len(bin_lens) - 1): 
-        select_bin = select_lens & (bin_lens[k] <= z_mean) & (z_mean < bin_lens[k + 1])
-        with h5py.File(os.path.join(data_path, 'SELECT/LENS/LENS{}/SELECT{}.hdf5'.format(index, k)), 'w') as file:
+        select_bin_lens = select_lens & (bin_lens[k] <= z_mean) & (z_mean < bin_lens[k + 1])
+        with h5py.File(os.path.join(data_path, 'SELECT/LENS/LENS{}/SELECT{}.hdf5'.format(index, k + 1)), 'w') as file:
             for name in test_data().keys():
                 file.create_group(name=name)
                 for key, value in test_data()[name].items():
-                    file[name].create_dataset(key, data=value[select_bin])
+                    file[name].create_dataset(key, data=value[select_bin_lens])
     
     for k in range(len(bin_source) - 1):
-        select_bin = select_source & (bin_source[k] <= z_mean) & (z_mean < bin_source[k + 1])
-        with h5py.File(os.path.join(data_path, 'SELECT/SOURCE/SOURCE{}/SELECT{}.hdf5'.format(index, k)), 'w') as file:
+        select_bin_source = select_source & (bin_source[k] <= z_mean) & (z_mean < bin_source[k + 1])
+        with h5py.File(os.path.join(data_path, 'SELECT/SOURCE/SOURCE{}/SELECT{}.hdf5'.format(index, k + 1)), 'w') as file:
             for name in test_data().keys():
                 file.create_group(name=name)
                 for key, value in test_data()[name].items():
-                    file[name].create_dataset(key, data=value[select_bin])
+                    file[name].create_dataset(key, data=value[select_bin_source])
     
     # Return
     end = time.time()
