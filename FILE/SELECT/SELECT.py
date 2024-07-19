@@ -126,7 +126,7 @@ def main(path, index):
     mag_source = test_data()['photometry']['mag_i_lsst']
     
     # Save Select
-    width = 250
+    width = 1000
     select_lens, select_source = select(z1_lens, z2_lens, z1_source, z2_source, z_mean, mag_source, mag0_lens, mag0_source)
     lens_data, source_data = save_select(width, z_mean, z_true, z_edge, bin_lens, bin_source, select_lens, select_source)
     
@@ -138,6 +138,23 @@ def main(path, index):
         for key, value in source_data.items():
             file.create_dataset(key, data=value)
     
+    # Save Datasets
+    for k in range(len(bin_lens) - 1): 
+        select_bin = select_lens & (bin_lens[k] <= z_mean) & (z_mean < bin_lens[k + 1])
+        with h5py.File(os.path.join(data_path, 'SELECT/LENS/LENS{}/SELECT{}.hdf5'.format(index, k)), 'w') as file:
+            for name in test_data().keys():
+                file.create_group(name=name)
+                for key, value in test_data()[name].items():
+                    file[name].create_dataset(key, data=value[select_bin])
+    
+    for k in range(len(bin_source) - 1):
+        select_bin = select_source & (bin_source[k] <= z_mean) & (z_mean < bin_source[k + 1])
+        with h5py.File(os.path.join(data_path, 'SELECT/SOURCE/SOURCE{}/SELECT{}.hdf5'.format(index, k)), 'w') as file:
+            for name in test_data().keys():
+                file.create_group(name=name)
+                for key, value in test_data()[name].items():
+                    file[name].create_dataset(key, data=value[select_bin])
+    
     # Return
     end = time.time()
     print('Index:{}, Time: {:.2f} minutes'.format(index, (end - start) / 60))
@@ -146,7 +163,7 @@ def main(path, index):
 if __name__ == '__main__':
     
     # Input
-    PARSE = argparse.ArgumentParser(description='FZB Informer')
+    PARSE = argparse.ArgumentParser(description='SELECT')
     PARSE.add_argument('--path', type=str, required=True, help='The path to the base folder')
     PARSE.add_argument('--number', type=int, required=True, help='The number of the processes')
     PARSE.add_argument('--length', type=int, required=True, help='The length of the train datasets')
