@@ -17,8 +17,6 @@ module swap PrgEnv-${PE_ENV,,} PrgEnv-gnu
 
 source $HOME/.bashrc
 conda activate $RAILENV
-
-module load PrgEnv-gnu
 module load cray-hdf5-parallel
 
 # Set environment

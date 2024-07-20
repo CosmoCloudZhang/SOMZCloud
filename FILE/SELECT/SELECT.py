@@ -6,32 +6,33 @@ import argparse
 from rail import core
 import multiprocessing
 
-def select(z1_lens, z2_lens, z1_source, z2_source, z_mean, mag_source, mag0_lens, mag0_source):
+def select(z_mean, z_lens, z_source, mag_source):
     """
     Select the samples based on the redshift and magnitude criteria.
     
     Parameters:
-        z1_lens (float): The minimum lens redshift.
-        z2_lens (float): The maximum lens redshift.
-        z1_source (float): The minimum source redshift.
-        z2_source (float): The maximum source redshift.
-        z_mean (numpy.ndarray): The mean redshift values.
-        mag_source (numpy.ndarray): The source magnitudes.
-        mag0_lens (float): The maximum lens magnitude.
-        mag0_source (float): The maximum source magnitude.
+        z_mean (numpy.ndarray): The mean redshift values of the samples.
+        z_lens (list): The redshift range of the lens samples.
+        z_source (list): The redshift range of the source samples.
+        mag_source (numpy.ndarray): The magnitude values of the source samples.
         
     Returns:
         tuple: The selected lens and source samples.
     """
+    # Redshift
+    z1_lens, z2_lens = z_lens
+    z1_source, z2_source = z_source
+    
     # Select
     slope = 4.0
     intercept = 18.0
-    select_source = (z1_source < z_mean) & (z_mean < z2_source) & (mag_source < mag0_source)
-    select_lens = (z1_lens < z_mean) & (z_mean < z2_lens) & (mag_source < slope * z_mean + intercept) & (mag_source < mag0_lens)
+    select_source = (z1_source < z_mean) & (z_mean < z2_source)
+    select_lens = (z1_lens < z_mean) & (z_mean < z2_lens) & (mag_source < slope * z_mean + intercept)
     
     return select_lens, select_source
 
-def save_select(width, z_mean, z_true, z_edge, bin_lens, bin_source, select_lens, select_source):
+
+def save_select(width, z_mean, z_true, z_grid, bin_lens, bin_source, select_lens, select_source):
     """
     Save the selected samples.
     
@@ -39,7 +40,7 @@ def save_select(width, z_mean, z_true, z_edge, bin_lens, bin_source, select_lens
         width (int): The number of samples to draw.
         z_mean (numpy.ndarray): The mean redshift values.
         z_true (numpy.ndarray): The true redshift values.
-        z_edge (numpy.ndarray): The redshift bin edges.
+        z_grid (numpy.ndarray): The redshift grid.
         bin_lens (numpy.ndarray): The lens redshift bins.
         bin_source (numpy.ndarray): The source redshift bins.
         select_lens (numpy.ndarray): The selected lens samples.
@@ -49,35 +50,35 @@ def save_select(width, z_mean, z_true, z_edge, bin_lens, bin_source, select_lens
         tuple: The selected lens and source true redshift distributions.
     """
     # Lens
-    z_size = z_edge.size - 1
+    grid_size = z_grid.size - 1
     lens_size = len(bin_lens) - 1
-    lens_data = numpy.zeros((lens_size, z_size), dtype=numpy.float32)
-    lens_sample = numpy.zeros((width, lens_size, z_size), dtype=numpy.float32)
+    lens_data = numpy.zeros((lens_size, grid_size), dtype=numpy.float32)
+    lens_sample = numpy.zeros((width, lens_size, grid_size), dtype=numpy.float32)
     
     for n in range(width):
         for m in range(lens_size):
             select = select_lens & (bin_lens[m] <= z_mean) & (z_mean < bin_lens[m + 1])
-            lens_data[m, :] = numpy.histogram(z_true[select], bins=z_edge, range=(z_edge.min(), z_edge.max()), density=False)[0].astype(numpy.float32)
+            lens_data[m, :] = numpy.histogram(z_true[select], bins=z_grid, range=(z_grid.min(), z_grid.max()), density=False)[0].astype(numpy.float32)
             
             z_data = numpy.random.choice(z_true[select], z_true[select].size, replace=True)
-            lens_sample[n, m, :] = numpy.histogram(z_data, bins=z_edge, range=(z_edge.min(), z_edge.max()), density=False)[0].astype(numpy.float32)
+            lens_sample[n, m, :] = numpy.histogram(z_data, bins=z_grid, range=(z_grid.min(), z_grid.max()), density=False)[0].astype(numpy.float32)
         
     lens_count = numpy.sum(lens_sample, axis=2)
     lens = {'data': lens_data, 'count': lens_count, 'sample': lens_sample}
     
     # Source
-    z_size = z_edge.size - 1
+    grid_size = z_grid.size - 1
     source_size = len(bin_source) - 1
-    source_data = numpy.zeros((source_size, z_size), dtype=numpy.float32)
-    source_sample = numpy.zeros((width, source_size, z_size), dtype=numpy.float32)
+    source_data = numpy.zeros((source_size, grid_size), dtype=numpy.float32)
+    source_sample = numpy.zeros((width, source_size, grid_size), dtype=numpy.float32)
     
     for n in range(width):
         for m in range(source_size):
             select = select_source & (bin_source[m] <= z_mean) & (z_mean < bin_source[m + 1])
-            source_data[m, :] = numpy.histogram(z_true[select], bins=z_edge, range=(z_edge.min(), z_edge.max()), density=False)[0].astype(numpy.float32)
+            source_data[m, :] = numpy.histogram(z_true[select], bins=z_grid, range=(z_grid.min(), z_grid.max()), density=False)[0].astype(numpy.float32)
             
             z_data = numpy.random.choice(z_true[select], z_true[select].size, replace=True)
-            source_sample[n, m, :] = numpy.histogram(z_data, bins=z_edge, range=(z_edge.min(), z_edge.max()), density=False)[0].astype(numpy.float32)
+            source_sample[n, m, :] = numpy.histogram(z_data, bins=z_grid, range=(z_grid.min(), z_grid.max()), density=False)[0].astype(numpy.float32)
             
     source_count = numpy.sum(source_sample, axis=2)
     source = {'data': source_data, 'count': source_count, 'sample': source_sample}
@@ -87,9 +88,18 @@ def save_select(width, z_mean, z_true, z_edge, bin_lens, bin_source, select_lens
 
 
 def main(path, index):
-    start = time.time()
+    """
+    The main function to select the samples based on the redshift and magnitude criteria.
     
+    Arguments:
+        path (str): The path to the base folder.
+        index (int): The index of the datasets.
+    
+    Returns:
+        float: The duration of the selection.
+    """
     # Data store
+    start = time.time()
     data_store = core.stage.RailStage.data_store
     data_store.__class__.allow_overwrite = True
     
@@ -109,17 +119,16 @@ def main(path, index):
         bin_source = file['bin'][:].astype(numpy.float32)
     
     # Redshift
-    z1_lens = 0.0
-    z2_lens = 2.0
+    z1_lens = 0.2
+    z2_lens = 1.2
+    z_lens = [z1_lens, z2_lens]
     
     z1_source = 0.0
     z2_source = 3.0
+    z_source = [z1_source, z2_source]
     
-    z_size = 300
-    z_edge = numpy.linspace(z1_source, z2_source, z_size + 1)
-    
-    mag0_lens = 24.1
-    mag0_source = 25.5
+    grid_size = 300
+    z_grid = numpy.linspace(z1_source, z2_source, grid_size + 1)
     
     z_mean = numpy.concatenate(estimator().mean())
     z_true = test_data()['photometry']['redshift']
@@ -127,8 +136,8 @@ def main(path, index):
     
     # Save Select
     width = 1000
-    select_lens, select_source = select(z1_lens, z2_lens, z1_source, z2_source, z_mean, mag_source, mag0_lens, mag0_source)
-    lens_data, source_data = save_select(width, z_mean, z_true, z_edge, bin_lens, bin_source, select_lens, select_source)
+    select_lens, select_source = select(z_mean, z_lens, z_source, mag_source)
+    lens_data, source_data = save_select(width, z_mean, z_true, z_grid, bin_lens, bin_source, select_lens, select_source)
     
     with h5py.File(os.path.join(data_path, 'SELECT/LENS/LENS{}/SELECT.hdf5'.format(index)), 'w') as file:
         for key, value in lens_data.items():
@@ -157,8 +166,10 @@ def main(path, index):
     
     # Return
     end = time.time()
-    print('Index:{}, Time: {:.2f} minutes'.format(index, (end - start) / 60))
-    return index
+    duration = (end - start) / 60
+    
+    print('Index:{}, Time: {:.2f} minutes'.format(index, duration))
+    return duration
 
 if __name__ == '__main__':
     
