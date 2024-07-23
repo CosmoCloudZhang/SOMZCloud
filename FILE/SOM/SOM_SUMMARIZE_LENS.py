@@ -49,4 +49,3 @@ if __name__ == '__main__':
     INDEX = PARSE.parse_args().index
     
     main(PATH, INDEX)
-    print('Index: {}'.format(INDEX))
