@@ -4,7 +4,7 @@
 #SBATCH --nodes=1
 #SBATCH -q regular
 #SBATCH --ntasks=16
-#SBATCH --time=24:00:00
+#SBATCH --time=16:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%a.out
