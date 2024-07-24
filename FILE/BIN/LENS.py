@@ -45,8 +45,8 @@ def main(path, index):
     bin_lens = bin(z1_lens, z2_lens, bin_size)
     
     # Save
-    os.makedirs(os.path.join(data_path, 'SELECT/LENS/LENS{}'.format(index)), exist_ok=True)
-    with h5py.File(os.path.join(data_path, 'SELECT/LENS/LENS{}/BIN.hdf5'.format(index)), 'w') as file:
+    os.makedirs(os.path.join(data_path, 'BIN/LENS/LENS{}'.format(index)), exist_ok=True)
+    with h5py.File(os.path.join(data_path, 'BIN/LENS/LENS{}/BIN.hdf5'.format(index)), 'w') as file:
         file.create_dataset('bin', data=bin_lens)
     
     # Return
@@ -59,7 +59,7 @@ def main(path, index):
 if __name__ == '__main__':
     
     # Input
-    PARSE = argparse.ArgumentParser(description='FZB Informer')
+    PARSE = argparse.ArgumentParser(description='Lens Binning')
     PARSE.add_argument('--path', type=str, required=True, help='The path to the base folder')
     PARSE.add_argument('--number', type=int, required=True, help='The number of the processes')
     PARSE.add_argument('--length', type=int, required=True, help='The length of the train datasets')

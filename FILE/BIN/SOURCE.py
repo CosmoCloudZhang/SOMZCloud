@@ -94,8 +94,8 @@ def main(path, index):
     bin_source = bin(z_mean[select_source], bin_size)
     
     # Save
-    os.makedirs(os.path.join(data_path, 'SELECT/SOURCE/SOURCE{}'.format(index)), exist_ok=True)
-    with h5py.File(os.path.join(data_path, 'SELECT/SOURCE/SOURCE{}/BIN.hdf5'.format(index)), 'w') as file:
+    os.makedirs(os.path.join(data_path, 'BIN/SOURCE/SOURCE{}'.format(index)), exist_ok=True)
+    with h5py.File(os.path.join(data_path, 'BIN/SOURCE/SOURCE{}/BIN.hdf5'.format(index)), 'w') as file:
         file.create_dataset('bin', data=bin_source)
     
     # Return
@@ -108,7 +108,7 @@ def main(path, index):
 if __name__ == '__main__':
     
     # Input
-    PARSE = argparse.ArgumentParser(description='FZB Informer')
+    PARSE = argparse.ArgumentParser(description='Source Binning')
     PARSE.add_argument('--path', type=str, required=True, help='The path to the base folder')
     PARSE.add_argument('--number', type=int, required=True, help='The number of the processes')
     PARSE.add_argument('--length', type=int, required=True, help='The length of the train datasets')

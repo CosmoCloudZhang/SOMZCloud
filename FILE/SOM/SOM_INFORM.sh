@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH -A m1727
-#SBATCH -J INFORM
 #SBATCH --nodes=1
 #SBATCH -q regular
 #SBATCH --ntasks=16
+#SBATCH -J SOM_INFORM
 #SBATCH --time=24:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
@@ -40,6 +40,7 @@ for INDEX in $(seq 1 $LENGTH); do
     # Control parallel execution
     if (( $INDEX % $SLURM_NTASKS == 0 )); then
         wait
+        sleep 60
     fi
 done
 wait

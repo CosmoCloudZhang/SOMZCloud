@@ -2,9 +2,9 @@
 #SBATCH -A m1727
 #SBATCH --nodes=1
 #SBATCH -q regular
-#SBATCH -J ESTIMATE
 #SBATCH --ntasks=16
-#SBATCH --time=24:00:00
+#SBATCH -J FZB_ESTIMATE
+#SBATCH --time=16:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%a.out
@@ -41,6 +41,7 @@ for INDEX in $(seq 1 $LENGTH); do
     # Control parallel execution
     if (( $INDEX % $SLURM_NTASKS == 0 )); then
         wait
+        sleep 60
     fi
 done
 wait

@@ -112,10 +112,10 @@ def main(path, index):
     estimator = data_store.read_file(key='estimator', path=estimate_name, handle_class=core.data.QPHandle)
     
     # Bin
-    with h5py.File(os.path.join(data_path, 'SELECT/LENS/LENS{}/BIN.hdf5'.format(index)), 'r') as file:
+    with h5py.File(os.path.join(data_path, 'BIN/LENS/LENS{}/BIN.hdf5'.format(index)), 'r') as file:
         bin_lens = file['bin'][:].astype(numpy.float32)
     
-    with h5py.File(os.path.join(data_path, 'SELECT/SOURCE/SOURCE{}/BIN.hdf5'.format(index)), 'r') as file:
+    with h5py.File(os.path.join(data_path, 'BIN/SOURCE/SOURCE{}/BIN.hdf5'.format(index)), 'r') as file:
         bin_source = file['bin'][:].astype(numpy.float32)
     
     # Redshift
@@ -139,18 +139,18 @@ def main(path, index):
     select_lens, select_source = select(z_mean, z_lens, z_source, mag_source)
     lens_data, source_data = save_select(width, z_mean, z_true, z_grid, bin_lens, bin_source, select_lens, select_source)
     
-    with h5py.File(os.path.join(data_path, 'SELECT/LENS/LENS{}/SELECT.hdf5'.format(index)), 'w') as file:
+    with h5py.File(os.path.join(data_path, 'BIN/LENS/LENS{}/SELECT.hdf5'.format(index)), 'w') as file:
         for key, value in lens_data.items():
             file.create_dataset(key, data=value)
     
-    with h5py.File(os.path.join(data_path, 'SELECT/SOURCE/SOURCE{}/SELECT.hdf5'.format(index)), 'w') as file:
+    with h5py.File(os.path.join(data_path, 'BIN/SOURCE/SOURCE{}/SELECT.hdf5'.format(index)), 'w') as file:
         for key, value in source_data.items():
             file.create_dataset(key, data=value)
     
     # Save Datasets
     for k in range(len(bin_lens) - 1): 
         select_bin_lens = select_lens & (bin_lens[k] <= z_mean) & (z_mean < bin_lens[k + 1])
-        with h5py.File(os.path.join(data_path, 'SELECT/LENS/LENS{}/SELECT{}.hdf5'.format(index, k + 1)), 'w') as file:
+        with h5py.File(os.path.join(data_path, 'BIN/LENS/LENS{}/SELECT{}.hdf5'.format(index, k + 1)), 'w') as file:
             for name in test_data().keys():
                 file.create_group(name=name)
                 for key, value in test_data()[name].items():
@@ -158,7 +158,7 @@ def main(path, index):
     
     for k in range(len(bin_source) - 1):
         select_bin_source = select_source & (bin_source[k] <= z_mean) & (z_mean < bin_source[k + 1])
-        with h5py.File(os.path.join(data_path, 'SELECT/SOURCE/SOURCE{}/SELECT{}.hdf5'.format(index, k + 1)), 'w') as file:
+        with h5py.File(os.path.join(data_path, 'BIN/SOURCE/SOURCE{}/SELECT{}.hdf5'.format(index, k + 1)), 'w') as file:
             for name in test_data().keys():
                 file.create_group(name=name)
                 for key, value in test_data()[name].items():
