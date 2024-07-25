@@ -2,34 +2,29 @@ import os
 import yaml
 import argparse
 
-def main(path, index):
+def main(path):
     
     # Path
     data_path = os.path.join(path, 'DATA/')
     
     # Config
     config = {
-        'SOM_INFORM{}'.format(index): {
+        'SOM_INFORM': {
             'aliases': {
                 'name': 'input_name',
                 'input': 'input_data', 
                 'model': 'input_model',
             }, 
             'seed': 0, 
-            'name': None,
-            'input': None, 
-            'model': None,
-            'config': None, 
             'std_coeff': 15.0, 
             'maptype': 'planar', 
             'nondetect_val': 99.0, 
             'ref_band': 'mag_i_lsst', 
-            'grid_type': 'hexagonal', 
             'output_mode': 'default', 
-            'column_usage': 'columns', 
             'som_learning_rate': 0.50,
-            'redshift_col': 'redshift', 
-            'n_rows': 50, 'n_columns': 50, 
+            'grid_type': 'rectangular', 
+            'n_rows': 80, 'n_columns': 80, 
+            'column_usage': 'magandcolors', 
             'hdf5_groupname': 'photometry', 
             'bands': [
                 'mag_u_lsst', 
@@ -50,7 +45,7 @@ def main(path, index):
         }
     }
     
-    config_name = os.path.join(data_path, 'SOM/SOM_INFORM{}.yaml'.format(index))
+    config_name = os.path.join(data_path, 'SOM/SOM_INFORM.yaml')
     with open(config_name, 'w') as config_file:
         yaml.dump(config, config_file, default_flow_style=False)
 
@@ -59,10 +54,6 @@ if __name__ == '__main__':
     # Input
     PARSE = argparse.ArgumentParser(description='SOM Informer')
     PARSE.add_argument('--path', type=str, required=True, help='The path to the base folder')
-    PARSE.add_argument('--index', type=int, required=True, help='The index of the train datasets')
     
     PATH = PARSE.parse_args().path
-    INDEX = PARSE.parse_args().index
-    
-    main(PATH, INDEX)
-    print('Index: {}'.format(INDEX))
+    main(PATH)

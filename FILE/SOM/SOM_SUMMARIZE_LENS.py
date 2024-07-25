@@ -6,6 +6,8 @@ def main(path, index):
     
     # Path
     data_path = os.path.join(path, 'DATA/')
+    os.makedirs(os.path.join(data_path, 'SOM/LENS'), exist_ok=True)
+    os.makedirs(os.path.join(data_path, 'SOM/LENS/LENS{}'.format(index)), exist_ok=True)
     
     # Config
     config = {
@@ -32,7 +34,7 @@ def main(path, index):
         }
     }
     
-    config_name = os.path.join(data_path, 'SOM/SOM_SUMMARIZE_LENS{}.yaml'.format(index))
+    config_name = os.path.join(data_path, 'SOM/LENS/LENS{}/SOM_SUMMARIZE.yaml'.format(index))
     with open(config_name, 'w') as config_file:
         yaml.dump(config, config_file, default_flow_style=False)
 
@@ -47,4 +49,4 @@ if __name__ == '__main__':
     INDEX = PARSE.parse_args().index
     
     main(PATH, INDEX)
-    print('INDEX {}:'.format(INDEX))
+    print('INDEX: {}'.format(INDEX))
