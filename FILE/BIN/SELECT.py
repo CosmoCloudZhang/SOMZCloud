@@ -58,13 +58,11 @@ def save_select(width, z_mean, z_true, z_grid, bin_lens, bin_source, select_lens
     for n in range(width):
         for m in range(lens_size):
             select = select_lens & (bin_lens[m] <= z_mean) & (z_mean < bin_lens[m + 1])
-            lens_data[m, :] = numpy.histogram(z_true[select], bins=z_grid, range=(z_grid.min(), z_grid.max()), density=False)[0].astype(numpy.float32)
+            lens_data[m, :] = numpy.histogram(z_true[select], bins=z_grid, range=(z_grid.min(), z_grid.max()), density=True)[0].astype(numpy.float32)
             
             z_data = numpy.random.choice(z_true[select], z_true[select].size, replace=True)
-            lens_sample[n, m, :] = numpy.histogram(z_data, bins=z_grid, range=(z_grid.min(), z_grid.max()), density=False)[0].astype(numpy.float32)
-        
-    lens_count = numpy.sum(lens_sample, axis=2)
-    lens = {'data': lens_data, 'count': lens_count, 'sample': lens_sample}
+            lens_sample[n, m, :] = numpy.histogram(z_data, bins=z_grid, range=(z_grid.min(), z_grid.max()), density=True)[0].astype(numpy.float32)
+    lens = {'data': lens_data, 'sample': lens_sample}
     
     # Source
     grid_size = z_grid.size - 1
@@ -75,13 +73,11 @@ def save_select(width, z_mean, z_true, z_grid, bin_lens, bin_source, select_lens
     for n in range(width):
         for m in range(source_size):
             select = select_source & (bin_source[m] <= z_mean) & (z_mean < bin_source[m + 1])
-            source_data[m, :] = numpy.histogram(z_true[select], bins=z_grid, range=(z_grid.min(), z_grid.max()), density=False)[0].astype(numpy.float32)
+            source_data[m, :] = numpy.histogram(z_true[select], bins=z_grid, range=(z_grid.min(), z_grid.max()), density=True)[0].astype(numpy.float32)
             
             z_data = numpy.random.choice(z_true[select], z_true[select].size, replace=True)
-            source_sample[n, m, :] = numpy.histogram(z_data, bins=z_grid, range=(z_grid.min(), z_grid.max()), density=False)[0].astype(numpy.float32)
-            
-    source_count = numpy.sum(source_sample, axis=2)
-    source = {'data': source_data, 'count': source_count, 'sample': source_sample}
+            source_sample[n, m, :] = numpy.histogram(z_data, bins=z_grid, range=(z_grid.min(), z_grid.max()), density=True)[0].astype(numpy.float32)
+    source = {'data': source_data, 'sample': source_sample}
     
     # Return
     return lens, source
