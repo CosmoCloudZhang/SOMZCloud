@@ -45,13 +45,13 @@ def select(bin_datasets, input_datasets, augment_datasets):
     
     pdf, edges = numpy.histogramdd([z_input, mag_input, color_input], bins=[z_bin, mag_bin, color_bin], density=True)
     
-    sigma = numpy.quantile(pdf[pdf > 0], 0.05)
-    factor = numpy.log(1 + numpy.exp(- 0.5 * numpy.square(pdf / sigma)))
+    sigma = numpy.quantile(pdf[pdf > 0], 0.01)
+    factor = numpy.log(1 + numpy.exp(- numpy.square(pdf / sigma)))
     
     weight = scipy.interpolate.interpn(points=(z_data, mag_data, color_data), values=factor, xi=(z_augment, mag_augment, color_augment), method='linear', bounds_error=False, fill_value=0.0)
     weight = weight / numpy.sum(weight)
     
-    count = len(z_input) // 2
+    count = len(z_input) // 3
     index = numpy.arange(len(z_augment))
     index_sample = numpy.random.choice(index, size=count, replace=False, p=weight)
     
@@ -60,7 +60,7 @@ def select(bin_datasets, input_datasets, augment_datasets):
     return select_sample
 
 
-def augment(data_store, input_data, augment_data, select_data):
+def augment(input_data, augment_data, select_data):
     """
     Augment the data.
     
@@ -244,7 +244,7 @@ def main(path, index):
     
     # Dataset Augmentation
     select_data = select(bin_datasets, input_datasets, augment_datasets)
-    train_data = augment(data_store, input_data, augment_data, select_data)
+    train_data = augment(input_data, augment_data, select_data)
     
     z_train = train_data['redshift']
     mag_train = train_data['mag_i_lsst']
