@@ -45,9 +45,9 @@ def plot(train_data, model_data):
     
     figure, plot = pyplot.subplots(nrows=1, ncols=2, figsize=(16, 8))
     
-    somoclu_som.plot_som(plot[0], cell_occupation.T, grid_type='hexagonal', colormap=cm.viridis, cbar_name='Cell Occupation')
+    somoclu_som.plot_som(plot[0], cell_occupation.T, grid_type='hexagonal', colormap=cm.coolwarm, cbar_name='Cell Occupation')
     
-    somoclu_som.plot_som(plot[1], mean_redshift.T, grid_type='hexagonal', colormap=cm.viridis, cbar_name='Mean Redshift')
+    somoclu_som.plot_som(plot[1], mean_redshift.T, grid_type='hexagonal', colormap=cm.coolwarm, cbar_name='Mean Redshift')
     
     return figure
 
