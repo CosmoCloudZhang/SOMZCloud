@@ -16,7 +16,7 @@ def main(path):
                 'model': 'input_model',
             }, 
             'seed': 0, 
-            'std_coeff': 15.0, 
+            'std_coeff': 2.0, 
             'maptype': 'planar', 
             'nondetect_val': 99.0, 
             'ref_band': 'mag_i_lsst', 
