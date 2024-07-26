@@ -2,9 +2,9 @@ import os
 import time
 import h5py
 import numpy
+import scipy
 import argparse
 from rail import core
-import multiprocessing
 
 def select(z_mean, z_lens, z_source, mag_source):
     """
@@ -32,14 +32,14 @@ def select(z_mean, z_lens, z_source, mag_source):
     return select_lens, select_source
 
 
-def save_select(width, z_pdf, z_mean, z_true, z_grid, bin_lens, bin_source, select_lens, select_source):
+def save_select(width, z_pdf, z_mean, z_grid, bin_lens, bin_source, select_lens, select_source):
     """
     Save the selected samples.
     
     Parameters:
         width (int): The number of samples to draw.
+        z_pdf (numpy.ndarray): The redshift PDF values.
         z_mean (numpy.ndarray): The mean redshift values.
-        z_true (numpy.ndarray): The true redshift values.
         z_grid (numpy.ndarray): The redshift grid.
         bin_lens (numpy.ndarray): The lens redshift bins.
         bin_source (numpy.ndarray): The source redshift bins.
@@ -49,35 +49,34 @@ def save_select(width, z_pdf, z_mean, z_true, z_grid, bin_lens, bin_source, sele
     Returns:
         tuple: The selected lens and source true redshift distributions.
     """
+    # Grid
+    z1 = z_grid.min()
+    z2 = z_grid.max()
+    grid_size = len(z_grid) - 1
+    z_delta = (z2 - z1) / grid_size
+    #z_data = numpy.linspace(z1 + z_delta / 2, z2 - z_delta / 2, grid_size)
+    
     # Lens
-    grid_size = z_grid.size - 1
     lens_size = len(bin_lens) - 1
     lens_data = numpy.zeros((lens_size, grid_size), dtype=numpy.float32)
-    lens_sample = numpy.zeros((width, lens_size, grid_size), dtype=numpy.float32)
+    #lens_sample = numpy.zeros((width, lens_size, grid_size), dtype=numpy.float32)
     
     for n in range(width):
         for m in range(lens_size):
             select = select_lens & (bin_lens[m] <= z_mean) & (z_mean < bin_lens[m + 1])
-            #lens_data[m, :] = numpy.histogram(z_true[select], bins=z_grid, range=(z_grid.min(), z_grid.max()), density=True)[0].astype(numpy.float32)
-            
-            z_data = numpy.random.choice(z_true[select], z_true[select].size, replace=True)
-            #lens_sample[n, m, :] = numpy.histogram(z_data, bins=z_grid, range=(z_grid.min(), z_grid.max()), density=True)[0].astype(numpy.float32)
-    lens = {'data': lens_data, 'sample': lens_sample}
+            lens_data[m, :] = numpy.mean(z_pdf[select, :], axis=0).astype(numpy.float32)
+    lens = {'data': lens_data}
     
     # Source
-    grid_size = z_grid.size - 1
     source_size = len(bin_source) - 1
     source_data = numpy.zeros((source_size, grid_size), dtype=numpy.float32)
-    source_sample = numpy.zeros((width, source_size, grid_size), dtype=numpy.float32)
+    #source_sample = numpy.zeros((width, source_size, grid_size), dtype=numpy.float32)
     
     for n in range(width):
         for m in range(source_size):
             select = select_source & (bin_source[m] <= z_mean) & (z_mean < bin_source[m + 1])
-            #source_data[m, :] = numpy.histogram(z_true[select], bins=z_grid, range=(z_grid.min(), z_grid.max()), density=True)[0].astype(numpy.float32)
-            
-            z_data = numpy.random.choice(z_true[select], z_true[select].size, replace=True)
-            #source_sample[n, m, :] = numpy.histogram(z_data, bins=z_grid, range=(z_grid.min(), z_grid.max()), density=True)[0].astype(numpy.float32)
-    source = {'data': source_data, 'sample': source_sample}
+            source_data[m, :] = numpy.mean(z_pdf[select, :], axis=0).astype(numpy.float32)
+    source = {'data': source_data}
     
     # Return
     return lens, source
@@ -96,6 +95,7 @@ def main(path, index):
     """
     # Data store
     start = time.time()
+    print('Index:{}'.format(index))
     data_store = core.stage.RailStage.data_store
     data_store.__class__.allow_overwrite = True
     
@@ -124,18 +124,18 @@ def main(path, index):
     z_source = [z1_source, z2_source]
     
     grid_size = 300
+    z_delta = (z2_source - z1_source) / grid_size
     z_grid = numpy.linspace(z1_source, z2_source, grid_size + 1)
+    z_data = numpy.linspace(z1_source + z_delta / 2, z2_source - z_delta / 2, grid_size)
     
-    z_pdf = estimator().pdf(z_grid)
-    print(z_pdf.shape)
+    z_pdf = estimator().pdf(z_data)
     z_mean = numpy.concatenate(estimator().mean())
-    z_true = test_data()['photometry']['redshift']
     mag_source = test_data()['photometry']['mag_i_lsst']
     
     # Save Select
     width = 1000
     select_lens, select_source = select(z_mean, z_lens, z_source, mag_source)
-    lens_data, source_data = save_select(width, z_pdf, z_mean, z_true, z_grid, bin_lens, bin_source, select_lens, select_source)
+    lens_data, source_data = save_select(width, z_pdf, z_mean, z_grid, bin_lens, bin_source, select_lens, select_source)
     
     with h5py.File(os.path.join(data_path, 'FZB/LENS/LENS{}/FZB_SUMMARIZE.hdf5'.format(index)), 'w') as file:
         for key, value in lens_data.items():
@@ -149,7 +149,7 @@ def main(path, index):
     end = time.time()
     duration = (end - start) / 60
     
-    print('Index:{}, Time: {:.2f} minutes'.format(index, duration))
+    print('Time: {:.2f} minutes'.format(duration))
     return duration
 
 if __name__ == '__main__':
@@ -157,16 +157,10 @@ if __name__ == '__main__':
     # Input
     PARSE = argparse.ArgumentParser(description='SELECT')
     PARSE.add_argument('--path', type=str, required=True, help='The path to the base folder')
-    PARSE.add_argument('--number', type=int, required=True, help='The number of the processes')
     PARSE.add_argument('--length', type=int, required=True, help='The length of the train datasets')
     
     PATH = PARSE.parse_args().path
-    NUMBER = PARSE.parse_args().number
     LENGTH = PARSE.parse_args().length
     
-    # Multiprocessing
-    SIZE = LENGTH // NUMBER
-    for CHUNK in range(SIZE):
-        print('CHUNK: {}'.format(CHUNK + 1))
-        with multiprocessing.Pool(processes=NUMBER) as POOL:
-            POOL.starmap(main, [(PATH, INDEX) for INDEX in range(CHUNK * NUMBER + 1, (CHUNK + 1) * NUMBER + 1)])
+    for INDEX in range(1, LENGTH + 1):
+        main(PATH, INDEX)

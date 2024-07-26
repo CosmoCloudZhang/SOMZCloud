@@ -26,8 +26,6 @@ export OMP_PLACES=threads
 export OMP_PROC_Bind=spread
 
 # Initialize the parallisation
-NUMBER=16
-LENGTH=16
+LENGTH=4
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-srun -n 1 --cpu-bind=none python -u $BASE_PATH/FILE/FZB/FZB_SUMMARIZE.py --path="${BASE_PATH}" --number=$NUMBER --length=$LENGTH &
-wait
+python -u $BASE_PATH/FILE/FZB/FZB_SUMMARIZE.py --path="${BASE_PATH}" --length=$LENGTH
