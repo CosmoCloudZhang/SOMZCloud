@@ -51,7 +51,7 @@ def select(bin_datasets, input_datasets, augment_datasets):
     weight = scipy.interpolate.interpn(points=(z_data, mag_data, color_data), values=factor, xi=(z_augment, mag_augment, color_augment), method='linear', bounds_error=False, fill_value=0.0)
     weight = weight / numpy.sum(weight)
     
-    count = len(z_input) // 4
+    count = len(z_input) // 3
     index = numpy.arange(len(z_augment))
     index_sample = numpy.random.choice(index, size=count, replace=False, p=weight)
     
