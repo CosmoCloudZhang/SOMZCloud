@@ -51,7 +51,7 @@ def select(bin_datasets, input_datasets, augment_datasets):
     weight = scipy.interpolate.interpn(points=(z_data, mag_data, color_data), values=factor, xi=(z_augment, mag_augment, color_augment), method='linear', bounds_error=False, fill_value=0.0)
     weight = weight / numpy.sum(weight)
     
-    count = len(z_input) // 3
+    count = len(z_input) // 4
     index = numpy.arange(len(z_augment))
     index_sample = numpy.random.choice(index, size=count, replace=False, p=weight)
     
@@ -229,12 +229,12 @@ def main(path, index):
     
     mag1 = 12.0
     mag2 = 26.0
-    mag_bin_size = 50
+    mag_bin_size = 75
     mag_bin = numpy.linspace(mag1, mag2, mag_bin_size + 1)
     
     color1 = -1.0
     color2 = +6.0
-    color_bin_size = 50
+    color_bin_size = 75
     color_bin = numpy.linspace(color1, color2, color_bin_size + 1)
     
     bin_datasets = [z_bin, mag_bin, color_bin]
