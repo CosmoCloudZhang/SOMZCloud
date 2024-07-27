@@ -25,7 +25,7 @@ def main(path):
             'som_learning_rate': 0.50,
             'grid_type': 'rectangular', 
             'hdf5_groupname': 'photometry', 
-            'n_rows': 150, 'n_columns': 150, 
+            'n_rows': 125, 'n_columns': 125, 
             'bands': [
                 'mag_u_lsst', 
                 'mag_g_lsst', 
