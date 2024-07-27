@@ -29,7 +29,7 @@ def plot(input_data, model_data):
     
     model = model_data()['som']
     column_list = ['mag_u_lsst', 'mag_g_lsst', 'mag_r_lsst', 'mag_i_lsst', 'mag_z_lsst', 'mag_y_lsst']
-    input = somoclu_som._computemagcolordata(data=input_data()['photometry'], mag_column_name='mag_i_lsst', column_names=column_list, colusage='magandcolors')
+    input = somoclu_som._computemagcolordata(data=input_data()['photometry'], mag_column_name='mag_i_lsst', column_names=column_list, colusage='columns')
     
     output = somoclu_som.get_bmus(model, input)
     mean_redshift = numpy.zeros((model_data()['n_rows'], model_data()['n_columns']))
@@ -44,7 +44,7 @@ def plot(input_data, model_data):
     cell_occupation[cell_occupation == 0] = numpy.nan
     mean_redshift = numpy.divide(mean_redshift, cell_occupation, out=numpy.ones_like(mean_redshift) * numpy.nan, where=cell_occupation != 0)
     
-    figure, plot = pyplot.subplots(nrows=1, ncols=2, figsize=(16, 8))
+    figure, plot = pyplot.subplots(nrows=1, ncols=2, figsize=(15, 8))
     
     somoclu_som.plot_som(plot[0], cell_occupation.T, grid_type='rectangular', colormap=cm.coolwarm, cbar_name=r'$\mathrm{Cell \: Occupation}$')
     

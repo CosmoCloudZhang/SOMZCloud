@@ -4,7 +4,7 @@
 #SBATCH --nodes=1
 #SBATCH -q regular
 #SBATCH --ntasks=1
-#SBATCH --time=24:00:00
+#SBATCH --time=04:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%a.out
@@ -27,6 +27,6 @@ export OMP_PROC_Bind=spread
 
 # Initialize the parallisation
 NUMBER=16
-LENGTH=400
+LENGTH=16
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 srun -n 1 --cpu-bind=none python -u $BASE_PATH/FILE/SOM/SOM_FIGURE.py --path="${BASE_PATH}" --number=$NUMBER --length=$LENGTH

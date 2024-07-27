@@ -27,7 +27,7 @@ export OMP_PLACES=threads
 
 # Initialize the parallisation
 WIDTH=5
-LENGTH=400
+LENGTH=16
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 for BIN in $(seq 1 $WIDTH); do
     for INDEX in $(seq 1 $LENGTH); do
