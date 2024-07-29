@@ -80,10 +80,9 @@ def main(path, index):
     z_source = [z1_source, z2_source]
     
     grid_size = 300
-    z_delta = (z2_source - z1_source) / grid_size
-    z_data = numpy.linspace(z1_source + z_delta / 2, z2_source - z_delta / 2, grid_size)
+    z_grid = numpy.linspace(z1_source, z2_source, grid_size + 1)
     
-    z_pdf = estimator().pdf(z_data)
+    z_pdf = estimator().pdf(z_grid)
     z_mean = numpy.concatenate(estimator().mean())
     mag_source = test_data()['photometry']['mag_i_lsst']
     
@@ -97,9 +96,9 @@ def main(path, index):
             file.create_group(name='meta')
             file.create_group(name='data')
             
-            file['meta'].create_dataset('xvals', data=z_data)
-            file['meta'].create_dataset('pdf_name', data='interp')
-            file['meta'].create_dataset('pdf_version', data='0.0')
+            file['meta'].create_dataset('xvals', data=[z_grid])
+            file['meta'].create_dataset('pdf_version', data=[0.0])
+            file['meta'].create_dataset('pdf_name', data=['interp'])
             file['data'].create_dataset('yvals', data=z_pdf[select_lens_bin, :])
     
     for m in range(len(bin_source) - 1):
@@ -109,9 +108,9 @@ def main(path, index):
             file.create_group(name='meta')
             file.create_group(name='data')
             
-            file['meta'].create_dataset('xvals', data=z_data)
-            file['meta'].create_dataset('pdf_name', data='interp')
-            file['meta'].create_dataset('pdf_version', data='0.0')
+            file['meta'].create_dataset('xvals', data=[z_grid])
+            file['meta'].create_dataset('pdf_version', data=[0.0])
+            file['meta'].create_dataset('pdf_name', data=['interp'])
             file['data'].create_dataset('yvals', data=z_pdf[select_source_bin, :])
     
     # Return
