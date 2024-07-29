@@ -41,7 +41,7 @@ for INDEX in $(seq 1 $LENGTH); do
     # Control parallel execution
     if (( $INDEX % $SLURM_NTASKS == 0 )); then
         wait
-        sleep 60
+        sleep 30
     fi
 done
 wait
