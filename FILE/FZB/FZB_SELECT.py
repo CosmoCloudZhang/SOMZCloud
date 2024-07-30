@@ -96,10 +96,10 @@ def main(path, index):
             file.create_group(name='meta')
             file.create_group(name='data')
             
-            file['meta'].create_dataset('xvals', data=[z_grid])
             file['meta'].create_dataset('pdf_version', data=[0.0])
             file['meta'].create_dataset('pdf_name', data=['interp'])
-            file['data'].create_dataset('yvals', data=z_pdf[select_lens_bin, :])
+            file['meta'].create_dataset('xvals', data=[z_grid], dtype=numpy.float32)
+            file['data'].create_dataset('yvals', data=z_pdf[select_lens_bin, :], dtype=numpy.float32)
     
     for m in range(len(bin_source) - 1):
         select_source_bin = select_source & (bin_source[m] <= z_mean) & (z_mean < bin_source[m + 1])
@@ -108,10 +108,13 @@ def main(path, index):
             file.create_group(name='meta')
             file.create_group(name='data')
             
-            file['meta'].create_dataset('xvals', data=[z_grid])
             file['meta'].create_dataset('pdf_version', data=[0.0])
             file['meta'].create_dataset('pdf_name', data=['interp'])
-            file['data'].create_dataset('yvals', data=z_pdf[select_source_bin, :])
+            file['meta'].create_dataset('xvals', data=[z_grid], dtype=numpy.float32)
+            file['data'].create_dataset('yvals', data=z_pdf[select_source_bin, :], dtype=numpy.float32)
+    
+    # Delete
+    del test_name, estimate_name, test_data, estimator, bin_lens, bin_source, z_pdf, z_mean, mag_source, select_lens, select_source
     
     # Return
     end = time.time()
