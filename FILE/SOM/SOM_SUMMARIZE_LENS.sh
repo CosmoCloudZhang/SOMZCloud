@@ -2,12 +2,12 @@
 #SBATCH -A m1727
 #SBATCH --nodes=1
 #SBATCH -q regular
-#SBATCH --ntasks=4
+#SBATCH --ntasks=8
 #SBATCH --time=24:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%a.out
-#SBATCH --cpus-per-task=64
+#SBATCH --cpus-per-task=32
 #SBATCH -J SOM_SUMMARIZE_LENS
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
