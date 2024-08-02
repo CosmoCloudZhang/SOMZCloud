@@ -6,85 +6,6 @@ from rail import core
 import multiprocessing
 from matplotlib import pyplot, colors
 
-def plot_select(z_grid, z_mean, z_true, z_lens, z_source, mag_source):
-    """
-    Plot the magnitude distribution of lens and source samples.
-    
-    Parameters:
-        z_grid (numpy.ndarray): The redshift grid of source samples.
-        z_mean (numpy.ndarray): The redshift mode of source samples.
-        z_true (numpy.ndarray): The redshifts of test application samples.
-        z_lens (list): The redshift range of lens samples.
-        z_source (list): The redshift range of source samples.
-        mag_source (numpy.ndarray): The magnitudes of test application samples
-    
-    Returns:
-        matplotlib.figure.Figure: The plotted figure.
-    
-    """
-    os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
-    pyplot.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
-    pyplot.rcParams['pgf.texsystem'] = 'pdflatex'
-    pyplot.rcParams['text.usetex'] = True
-    pyplot.rcParams['font.size'] = 20
-    
-    # Set variables
-    z1_lens, z2_lens = z_lens
-    z1_source, z2_source = z_source
-    
-    mag1 = 16.0
-    mag2 = 26.0
-    
-    slope = 4.0
-    intersection = 18.0
-    
-    bin_size = 100
-    mag_bin = numpy.linspace(mag1, mag2, bin_size + 1)
-    z_bin = numpy.linspace(z1_source, z2_source, bin_size + 1)
-    
-    # Plot
-    figure, plot = pyplot.subplots(nrows=1, ncols=2, figsize=(12, 8))
-    
-    # Plot 1
-    z_mesh = plot[0].hist2d(x=z_mean, y=mag_source, bins=[z_bin, mag_bin], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')[-1]
-    
-    plot[0].plot(numpy.ones(bin_size + 1) * z1_lens, numpy.linspace(mag1, slope * z1_lens + intersection, bin_size + 1), color='black', linestyle='-', linewidth=2.0)
-    
-    plot[0].plot(numpy.ones(bin_size + 1) * z2_lens, numpy.linspace(mag1, slope * z2_lens + intersection, bin_size + 1), color='black', linestyle='-', linewidth=2.0)
-    
-    plot[0].plot(z_grid[(z1_lens <= z_grid) & (z_grid <= z2_lens)], slope * z_grid[(z1_lens <= z_grid) & (z_grid <= z2_lens)] + intersection, color='black', linestyle='-', linewidth=2.0)
-    
-    plot[0].set_xlim(z1_source, z2_source)
-    plot[0].set_ylim(mag1, mag2)
-    
-    plot[0].set_ylabel(r'$i$')
-    plot[0].set_xlabel(r'$z_\mathrm{phot}$')
-    
-    # Plot 2
-    z_mesh = plot[1].hist2d(x=z_true, y=mag_source, bins=[z_bin, mag_bin], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')[-1]
-    
-    plot[1].plot(numpy.ones(bin_size + 1) * z1_lens, numpy.linspace(mag1, slope * z1_lens + intersection, bin_size + 1), color='black', linestyle='-', linewidth=2.0)
-    
-    plot[1].plot(numpy.ones(bin_size + 1) * z2_lens, numpy.linspace(mag1, slope * z2_lens + intersection, bin_size + 1), color='black', linestyle='-', linewidth=2.0)
-    
-    plot[1].plot(z_grid[(z1_lens <= z_grid) & (z_grid <= z2_lens)], slope * z_grid[(z1_lens <= z_grid) & (z_grid <= z2_lens)] + intersection, color='black', linestyle='-', linewidth=2.0)
-    
-    plot[1].set_xlim(z1_source, z2_source)
-    plot[1].set_ylim(mag1, mag2)
-    
-    plot[1].set_xlabel(r'$z_\mathrm{spec}$')
-    
-    plot[1].set_yticklabels([])
-    plot[1].get_xticklabels()[0].set_visible(False)
-    
-    # Color bar
-    color_bar = figure.colorbar(z_mesh, cax=figure.add_axes([0.15, 0.05, 0.70, 0.05]), orientation='horizontal')
-    color_bar.set_label(r'$\mathrm{Counts}$')
-    
-    # Return figure
-    figure.subplots_adjust(bottom=0.20, wspace=0.00)
-    return figure
-
 
 def plot_redshift(z_grid, z_mean, z_true, z_lens, z_source, mag_source):
     """
@@ -203,11 +124,6 @@ def main(path, index):
     z_mean = numpy.concatenate(estimator().mean())
     z_true = test_data()['photometry']['redshift']
     mag_source = test_data()['photometry']['mag_i_lsst']
-    
-    # Plot
-    figure = plot_select(z_grid, z_mean, z_true, z_lens, z_source, mag_source)
-    figure.savefig(os.path.join(plot_path, 'SELECT/SELECT{}.pdf'.format(index)), bbox_inches='tight')
-    pyplot.close(figure)
     
     figure = plot_redshift(z_grid, z_mean, z_true, z_lens, z_source, mag_source)
     figure.savefig(os.path.join(plot_path, 'REDSHIFT/REDSHIFT{}.pdf'.format(index)), bbox_inches='tight')

@@ -27,8 +27,8 @@ def select(z_mean, z_lens, z_source, mag_source):
     # Select
     slope = 4.0
     intercept = 18.0
-    select_source = (z1_source < z_mean) & (z_mean < z2_source)
-    select_lens = (z1_lens < z_mean) & (z_mean < z2_lens) & (mag_source < slope * z_mean + intercept)
+    select_source = numpy.isfinite(z_mean) & (z1_source < z_mean) & (z_mean <= z2_source)
+    select_lens = numpy.isfinite(z_mean) & (z1_lens < z_mean) & (z_mean <= z2_lens) & (mag_source < slope * z_mean + intercept)
     
     return select_lens, select_source
 

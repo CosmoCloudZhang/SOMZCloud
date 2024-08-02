@@ -26,8 +26,8 @@ def select(z_mean, z_lens, z_source, mag_source):
     # Select
     slope = 4.0
     intercept = 18.0
-    select_source = (z1_source < z_mean) & (z_mean < z2_source)
-    select_lens = (z1_lens < z_mean) & (z_mean < z2_lens) & (mag_source < slope * z_mean + intercept)
+    select_source = numpy.isfinite(z_mean) & (z1_source < z_mean) & (z_mean <= z2_source)
+    select_lens = numpy.isfinite(z_mean) & (z1_lens < z_mean) & (z_mean <= z2_lens) & (mag_source < slope * z_mean + intercept)
     
     return select_lens, select_source
 
@@ -142,23 +142,6 @@ def main(path, index):
     with h5py.File(os.path.join(data_path, 'BIN/SOURCE/SOURCE{}/SELECT.hdf5'.format(index)), 'w') as file:
         for key, value in source_data.items():
             file.create_dataset(key, data=value)
-    
-    # Save Datasets
-    for k in range(len(bin_lens) - 1): 
-        select_bin_lens = select_lens & (bin_lens[k] <= z_mean) & (z_mean < bin_lens[k + 1])
-        with h5py.File(os.path.join(data_path, 'BIN/LENS/LENS{}/SELECT{}.hdf5'.format(index, k + 1)), 'w') as file:
-            for name in test_data().keys():
-                file.create_group(name=name)
-                for key, value in test_data()[name].items():
-                    file[name].create_dataset(key, data=value[select_bin_lens])
-    
-    for k in range(len(bin_source) - 1):
-        select_bin_source = select_source & (bin_source[k] <= z_mean) & (z_mean < bin_source[k + 1])
-        with h5py.File(os.path.join(data_path, 'BIN/SOURCE/SOURCE{}/SELECT{}.hdf5'.format(index, k + 1)), 'w') as file:
-            for name in test_data().keys():
-                file.create_group(name=name)
-                for key, value in test_data()[name].items():
-                    file[name].create_dataset(key, data=value[select_bin_source])
     
     # Return
     end = time.time()
