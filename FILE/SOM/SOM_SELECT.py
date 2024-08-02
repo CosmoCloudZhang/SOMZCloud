@@ -32,56 +32,6 @@ def select(z_mean, z_lens, z_source, mag_source):
     return select_lens, select_source
 
 
-def save_select(width, z_mean, z_true, z_grid, bin_lens, bin_source, select_lens, select_source):
-    """
-    Save the selected samples.
-    
-    Parameters:
-        width (int): The number of samples to draw.
-        z_mean (numpy.ndarray): The mean redshift values.
-        z_true (numpy.ndarray): The true redshift values.
-        z_grid (numpy.ndarray): The redshift grid.
-        bin_lens (numpy.ndarray): The lens redshift bins.
-        bin_source (numpy.ndarray): The source redshift bins.
-        select_lens (numpy.ndarray): The selected lens samples.
-        select_source (numpy.ndarray): The selected source samples.
-    
-    Returns:
-        tuple: The selected lens and source true redshift distributions.
-    """
-    # Lens
-    grid_size = z_grid.size - 1
-    lens_size = len(bin_lens) - 1
-    lens_data = numpy.zeros((lens_size, grid_size), dtype=numpy.float32)
-    lens_sample = numpy.zeros((width, lens_size, grid_size), dtype=numpy.float32)
-    
-    for n in range(width):
-        for m in range(lens_size):
-            select = select_lens & (bin_lens[m] <= z_mean) & (z_mean < bin_lens[m + 1])
-            lens_data[m, :] = numpy.histogram(z_true[select], bins=z_grid, range=(z_grid.min(), z_grid.max()), density=True)[0].astype(numpy.float32)
-            
-            z_data = numpy.random.choice(z_true[select], z_true[select].size, replace=True)
-            lens_sample[n, m, :] = numpy.histogram(z_data, bins=z_grid, range=(z_grid.min(), z_grid.max()), density=True)[0].astype(numpy.float32)
-    lens = {'data': lens_data, 'sample': lens_sample}
-    
-    # Source
-    grid_size = z_grid.size - 1
-    source_size = len(bin_source) - 1
-    source_data = numpy.zeros((source_size, grid_size), dtype=numpy.float32)
-    source_sample = numpy.zeros((width, source_size, grid_size), dtype=numpy.float32)
-    
-    for m in range(source_size):
-        select = select_source & (bin_source[m] <= z_mean) & (z_mean < bin_source[m + 1])
-        source_data[m, :] = numpy.histogram(z_true[select], bins=z_grid, range=(z_grid.min(), z_grid.max()), density=True)[0].astype(numpy.float32)
-        for n in range(width):
-            z_data = numpy.random.choice(z_true[select], z_true[select].size, replace=True)
-            source_sample[n, m, :] = numpy.histogram(z_data, bins=z_grid, range=(z_grid.min(), z_grid.max()), density=True)[0].astype(numpy.float32)
-    source = {'data': source_data, 'sample': source_sample}
-    
-    # Return
-    return lens, source
-
-
 def main(path, index):
     """
     The main function to select the samples based on the redshift and magnitude criteria.
@@ -122,25 +72,28 @@ def main(path, index):
     z2_source = 3.0
     z_source = [z1_source, z2_source]
     
-    grid_size = 300
-    z_grid = numpy.linspace(z1_source, z2_source, grid_size + 1)
-    
     z_mean = numpy.concatenate(estimator().mean())
-    z_true = test_data()['photometry']['redshift']
     mag_source = test_data()['photometry']['mag_i_lsst']
     
     # Save Select
-    width = 1000
     select_lens, select_source = select(z_mean, z_lens, z_source, mag_source)
-    lens_data, source_data = save_select(width, z_mean, z_true, z_grid, bin_lens, bin_source, select_lens, select_source)
     
-    with h5py.File(os.path.join(data_path, 'BIN/LENS/LENS{}/SELECT.hdf5'.format(index)), 'w') as file:
-        for key, value in lens_data.items():
-            file.create_dataset(key, data=value)
+    # Save Datasets
+    for k in range(len(bin_lens) - 1): 
+        select_bin_lens = select_lens & (bin_lens[k] <= z_mean) & (z_mean < bin_lens[k + 1])
+        with h5py.File(os.path.join(data_path, 'BIN/LENS/LENS{}/SELECT{}.hdf5'.format(index, k + 1)), 'w') as file:
+            for name in test_data().keys():
+                file.create_group(name=name)
+                for key, value in test_data()[name].items():
+                    file[name].create_dataset(key, data=value[select_bin_lens])
     
-    with h5py.File(os.path.join(data_path, 'BIN/SOURCE/SOURCE{}/SELECT.hdf5'.format(index)), 'w') as file:
-        for key, value in source_data.items():
-            file.create_dataset(key, data=value)
+    for k in range(len(bin_source) - 1):
+        select_bin_source = select_source & (bin_source[k] <= z_mean) & (z_mean < bin_source[k + 1])
+        with h5py.File(os.path.join(data_path, 'BIN/SOURCE/SOURCE{}/SELECT{}.hdf5'.format(index, k + 1)), 'w') as file:
+            for name in test_data().keys():
+                file.create_group(name=name)
+                for key, value in test_data()[name].items():
+                    file[name].create_dataset(key, data=value[select_bin_source])
     
     # Return
     end = time.time()

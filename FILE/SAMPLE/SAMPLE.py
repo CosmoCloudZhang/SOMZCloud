@@ -132,7 +132,10 @@ def plot(bin_datasets, test_datasets, input_datasets, train_datasets, augmented_
     
     map_test, color_bin, mag_bin, mesh_test = plot.hist2d(color_test, mag_test, bins=[color_bin, mag_bin], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')
     
+    plot.set_ylabel(r'$i$')
     plot.set_xticklabels([])
+    plot.get_yticklabels()[0].set_visible(False)
+    
     plot.set_ylim(mag_bin.min(), mag_bin.max())
     plot.set_xlim(color_bin.min(), color_bin.max())
     
@@ -142,7 +145,6 @@ def plot(bin_datasets, test_datasets, input_datasets, train_datasets, augmented_
     
     map_augmented, color_bin, mag_bin, mesh_augmented = plot.hist2d(color_augmented, mag_augmented, bins=[color_bin, mag_bin], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')
     
-    plot.set_ylabel(r'$i$')
     plot.set_yticklabels([])
     plot.set_xticklabels([])
     plot.set_ylim(mag_bin.min(), mag_bin.max())

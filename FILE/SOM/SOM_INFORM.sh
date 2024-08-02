@@ -4,7 +4,7 @@
 #SBATCH -q regular
 #SBATCH --ntasks=1
 #SBATCH -J SOM_INFORM
-#SBATCH --time=01:00:00
+#SBATCH --time=24:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%a.out
@@ -32,4 +32,4 @@ CONFIG_PATH="${BASE_PATH}/DATA/SOM/SOM_INFORM.yaml"
 INPUT_PATH="${BASE_PATH}/DATA/SAMPLE/TEST_SAMPLE.hdf5"
 # Run applications
 python "${BASE_PATH}/FILE/SOM/SOM_INFORM.py" --path="${BASE_PATH}" &
-srun -u -N 1 -n 1 --cpus-per-task=$SLURM_CPUS_PER_TASK python3 -m ceci rail.estimation.algos.minisom_som.MiniSOMInformer --mpi  --name=$NAME --input=$INPUT_PATH --model=$MODEL_PATH --config=$CONFIG_PATH
+srun -u -N 1 -n 1 --cpus-per-task=$SLURM_CPUS_PER_TASK python3 -m ceci rail.estimation.algos.somoclu_som.SOMocluInformer --mpi  --name=$NAME --input=$INPUT_PATH --model=$MODEL_PATH --config=$CONFIG_PATH

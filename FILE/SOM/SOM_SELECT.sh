@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH -A m1727
+#SBATCH -J SELECT
 #SBATCH --nodes=1
 #SBATCH -q regular
 #SBATCH --ntasks=1
-#SBATCH -J SOM_FIGURE
 #SBATCH --time=04:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
@@ -29,4 +29,5 @@ export OMP_PROC_Bind=spread
 NUMBER=16
 LENGTH=16
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-srun -n 1 --cpu-bind=none python -u $BASE_PATH/FILE/SOM/SOM_FIGURE.py --path="${BASE_PATH}" --number=$NUMBER --length=$LENGTH
+srun -n 1 --cpu-bind=none python -u $BASE_PATH/FILE/SOM/SOM_SELECT.py --path="${BASE_PATH}" --number=$NUMBER --length=$LENGTH &
+wait
