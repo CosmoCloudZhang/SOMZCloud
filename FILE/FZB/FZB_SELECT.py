@@ -27,8 +27,8 @@ def select(z_mean, z_lens, z_source, mag_source):
     # Select
     slope = 4.0
     intercept = 18.0
-    select_source = (z1_source < z_mean) & (z_mean < z2_source)
-    select_lens = (z1_lens < z_mean) & (z_mean < z2_lens) & (mag_source < slope * z_mean + intercept)
+    select_source = numpy.isfinite(z_mean) & (z1_source < z_mean) & (z_mean <= z2_source)
+    select_lens = numpy.isfinite(z_mean) & (z1_lens < z_mean) & (z_mean <= z2_lens) & (mag_source < slope * z_mean + intercept)
     
     return select_lens, select_source
 
@@ -87,10 +87,12 @@ def main(path, index):
     mag_source = test_data()['photometry']['mag_i_lsst']
     
     # Save Select
+    del test_name, estimate_name, test_data, estimator
     select_lens, select_source = select(z_mean, z_lens, z_source, mag_source)
     
+    # Lens
     for m in range(len(bin_lens) - 1):
-        select_lens_bin = select_lens & (bin_lens[m] <= z_mean) & (z_mean < bin_lens[m + 1])
+        select_lens_bin = select_lens & (bin_lens[m] < z_mean) & (z_mean <= bin_lens[m + 1])
         with h5py.File(os.path.join(data_path, 'FZB/LENS/LENS{}/FZB_SELECT{}.hdf5'.format(index, m + 1)), 'w') as file:
             
             file.create_group(name='meta')
@@ -100,9 +102,11 @@ def main(path, index):
             file['meta'].create_dataset('pdf_name', data=['interp'])
             file['meta'].create_dataset('xvals', data=[z_grid], dtype=numpy.float32)
             file['data'].create_dataset('yvals', data=z_pdf[select_lens_bin, :], dtype=numpy.float32)
+    del select_lens, select_lens_bin
     
+    # Source
     for m in range(len(bin_source) - 1):
-        select_source_bin = select_source & (bin_source[m] <= z_mean) & (z_mean < bin_source[m + 1])
+        select_source_bin = select_source & (bin_source[m] < z_mean) & (z_mean <= bin_source[m + 1])
         with h5py.File(os.path.join(data_path, 'FZB/SOURCE/SOURCE{}/FZB_SELECT{}.hdf5'.format(index, m + 1)), 'w') as file:
             
             file.create_group(name='meta')
@@ -112,9 +116,10 @@ def main(path, index):
             file['meta'].create_dataset('pdf_name', data=['interp'])
             file['meta'].create_dataset('xvals', data=[z_grid], dtype=numpy.float32)
             file['data'].create_dataset('yvals', data=z_pdf[select_source_bin, :], dtype=numpy.float32)
+    del select_source, select_source_bin
     
     # Delete
-    del test_name, estimate_name, test_data, estimator, bin_lens, bin_source, z_pdf, z_mean, mag_source, select_lens, select_source
+    del bin_lens, bin_source, z_pdf, z_mean, mag_source
     
     # Return
     end = time.time()

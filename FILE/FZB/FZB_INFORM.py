@@ -29,7 +29,7 @@ def main(path, index):
             'regression_params': {
                 'verbosity': 0, 
                 'max_depth': 16, 
-                'learning_rate': 0.02,
+                'learning_rate': 0.05,
                 'objective': 'reg:squarederror'
             }, 
             'bands': [
