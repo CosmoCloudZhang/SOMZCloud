@@ -68,7 +68,6 @@ def plot_redshift(z_grid, z_mean, z_true, z_lens, z_source, mag_source):
     
     plot[1].set_title(r'$\mathrm{Source}$')
     plot[1].set_xlabel(r'$z_\mathrm{phot}$')
-    plot[1].set_ylabel(r'$z_\mathrm{spec}$')
     
     plot[1].set_yticklabels([])
     plot[1].get_xticklabels()[0].set_visible(False)
