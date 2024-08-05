@@ -29,5 +29,4 @@ export OMP_PROC_Bind=spread
 NUMBER=8
 LENGTH=400
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-srun -n 1 --cpu-bind=none python -u $BASE_PATH/FILE/FZB/FZB_SUMMARIZE_LENS.py --path="${BASE_PATH}" --number=$NUMBER --length=$LENGTH &
-wait
+srun -n 1 --cpu-bind=none python -u $BASE_PATH/FILE/FZB/FZB_SUMMARIZE_LENS.py --path="${BASE_PATH}" --number=$NUMBER --length=$LENGTH
