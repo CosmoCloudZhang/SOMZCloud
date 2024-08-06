@@ -1,6 +1,5 @@
 #!/bin/bash
 #SBATCH -A m1727
-#SBATCH -J SELECT
 #SBATCH --nodes=1
 #SBATCH -q regular
 #SBATCH --ntasks=1
@@ -8,6 +7,7 @@
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%a.out
+#SBATCH -J ENSEMBLE_SOURCE
 #SBATCH --cpus-per-task=256
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
@@ -26,9 +26,8 @@ export OMP_PLACES=threads
 export OMP_PROC_Bind=spread
 
 # Initialize the parallisation
-NUMBER=5
-WIDTH=250
+SIZE=5
+WIDTH=1000
 LENGTH=400
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-srun -n 1 --cpu-bind=none python -u $BASE_PATH/FILE/WEIGHT/WEIGHT.py --path="${BASE_PATH}" --width=$WIDTH --length=$LENGTH --number=$NUMBER &
-wait
+srun -n 1 --cpu-bind=none python -u $BASE_PATH/FILE/ENSEMBLE/ENSEMBLE_SOURCE.py --path="${BASE_PATH}" --size=$SIZE --width=$WIDTH --length=$LENGTH
