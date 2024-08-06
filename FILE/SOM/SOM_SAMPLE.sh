@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH -A m1727
-#SBATCH -J SAMPLE
 #SBATCH --nodes=1
 #SBATCH -q regular
 #SBATCH --ntasks=1
+#SBATCH -J SOM_SAMPLE
 #SBATCH --time=24:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
@@ -27,6 +27,6 @@ conda activate $RAILENV
 
 # Initialize the parallisation
 NUMBER=16
-LENGTH=400
+LENGTH=16
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-srun -n 1 --cpu-bind=none python -u "${BASE_PATH}/FILE/SAMPLE/SAMPLE.py" --path="${BASE_PATH}" --number=$NUMBER --length=$LENGTH
+srun -n 1 --cpu-bind=none python -u "${BASE_PATH}/FILE/SOM/SOM_SAMPLE.py" --path="${BASE_PATH}" --number=$NUMBER --length=$LENGTH

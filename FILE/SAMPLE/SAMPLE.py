@@ -23,7 +23,6 @@ def select(bin_datasets, input_datasets, augment_datasets):
     Returns:
         numpy.ndarray: The select data.
     """
-    
     z_bin, mag_bin, color_bin = bin_datasets
     z_input, mag_input, color_input = input_datasets
     z_augment, mag_augment, color_augment = augment_datasets
