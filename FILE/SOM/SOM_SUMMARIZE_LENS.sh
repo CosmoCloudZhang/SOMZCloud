@@ -27,7 +27,7 @@ export OMP_PLACES=threads
 
 # Initialize the parallisation
 WIDTH=5
-LENGTH=16
+LENGTH=8
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 for BIN in $(seq 1 $WIDTH); do
     for INDEX in $(seq 1 $LENGTH); do
@@ -35,7 +35,7 @@ for BIN in $(seq 1 $WIDTH); do
         NAME="SOM_SUMMARIZE_LENS${INDEX}"
         MODEL_PATH="${BASE_PATH}/DATA/SOM/SOM_INFORM.pkl"
         SPEC_PATH="${BASE_PATH}/DATA/SAMPLE/TRAIN_SAMPLE${INDEX}.hdf5"
-        INPUT_PATH="${BASE_PATH}/DATA/BIN/LENS/LENS${INDEX}/SELECT${BIN}.hdf5"
+        INPUT_PATH="${BASE_PATH}/DATA/SOM/LENS/LENS${INDEX}/SELECT${BIN}.hdf5"
         CONFIG_PATH="${BASE_PATH}/DATA/SOM/LENS/LENS${INDEX}/SOM_SUMMARIZE.yaml"
         # Set path of output variables
         SINGLE_PATH="${BASE_PATH}/DATA/SOM/LENS/LENS${INDEX}/SOM_SINGLE${BIN}.hdf5"

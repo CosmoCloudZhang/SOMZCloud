@@ -51,6 +51,12 @@ def main(path, index):
     
     # Data
     data_path = os.path.join(path, 'DATA/')
+    os.makedirs(os.path.join(data_path, 'SOM/LENS/'), exist_ok=True)
+    os.makedirs(os.path.join(data_path, 'SOM/SOURCE/'), exist_ok=True)
+    
+    os.makedirs(os.path.join(data_path, 'SOM/LENS/LENS{}'.format(index)), exist_ok=True)
+    os.makedirs(os.path.join(data_path, 'SOM/SOURCE/SOURCE{}'.format(index)), exist_ok=True)
+    
     test_name = os.path.join(data_path, 'SAMPLE/TEST_SAMPLE.hdf5')
     estimate_name = os.path.join(data_path, 'FZB/FZB_ESTIMATE{}.hdf5'.format(index))
     
