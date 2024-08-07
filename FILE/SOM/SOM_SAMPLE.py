@@ -29,15 +29,17 @@ def main(path, length):
                 spec_data['photometry'][train_key] = numpy.concatenate([spec_data['photometry'][train_key], train_value])
             else:
                 spec_data['photometry'][train_key] = train_value
+    spec_size = spec_data['photometry']['redshift'].size
+    spec_index = numpy.random.choice(numpy.arange(spec_size), size=spec_size // length, replace=False)
     
     # Save
     phot_name = os.path.join(data_path, 'SOM/SOM_SAMPLE.hdf5')
     with h5py.File(phot_name, 'w') as file:
         file.create_group('photometry')
+        
         for test_key, test_value in test_data['photometry'].items():
-            
-            spec_value = spec_data['photometry'][test_key]
-            value = numpy.concatenate([test_value, numpy.random.choice(spec_value, size=spec_value.size // length)])
+            spec_value = spec_data['photometry'][test_key][spec_index]
+            value = numpy.concatenate([test_value, spec_value])
             
             if test_key in file['photometry'].keys():
                 file['photometry'][test_key][...] = value

@@ -2,12 +2,12 @@
 #SBATCH -A m1727
 #SBATCH --nodes=1
 #SBATCH -q regular
-#SBATCH --ntasks=8
+#SBATCH --ntasks=16
 #SBATCH --time=24:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%a.out
-#SBATCH --cpus-per-task=32
+#SBATCH --cpus-per-task=16
 #SBATCH -J SOM_SUMMARIZE_LENS
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
@@ -27,7 +27,7 @@ export OMP_PLACES=threads
 
 # Initialize the parallisation
 WIDTH=5
-LENGTH=8
+LENGTH=400
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 for BIN in $(seq 1 $WIDTH); do
     for INDEX in $(seq 1 $LENGTH); do

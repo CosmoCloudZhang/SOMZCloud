@@ -21,8 +21,8 @@ def main(path):
             'nondetect_val': 99.0, 
             'ref_band': 'mag_i_lsst',
             'som_learning_rate': 0.5,
-            'column_usage': 'columns',
             'grid_type': 'rectangular', 
+            'column_usage': 'magandcolors',
             'hdf5_groupname': 'photometry', 
             'n_rows': 100, 'n_columns': 100, 
             'bands': [
