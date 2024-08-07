@@ -64,9 +64,9 @@ def main(path, index):
     width = 1000
     for m in range(len(bin_source) - 1):
         select_name = os.path.join(data_path, 'FZB/SOURCE/SOURCE{}/FZB_SELECT{}.hdf5'.format(index, m + 1))
-        select_data = data_store.read_file(key='select_data', path=select_name, handle_class=core.data.QPHandle)
+        select_data = data_store.read_file(key='select_data', path=select_name, handle_class=core.data.QPHandle)()
         
-        z_pdf = select_data().pdf(z_grid)
+        z_pdf = select_data.pdf(z_grid)
         summarize_single, summarize_data = summarize(z_pdf, width)
         del z_pdf, select_name, select_data
         

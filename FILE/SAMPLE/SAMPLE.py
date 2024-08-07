@@ -73,8 +73,8 @@ def augment(input_data, augment_data, select_data):
         core.data.TableHandle: The train data.
     """
     train_data = {}
-    for key in input_data()['photometry'].keys():
-        train_data[key] = numpy.concatenate([input_data()['photometry'][key], augment_data()['photometry'][key][select_data]])
+    for key in input_data['photometry'].keys():
+        train_data[key] = numpy.concatenate([input_data['photometry'][key], augment_data['photometry'][key][select_data]])
     return train_data
 
 
@@ -200,27 +200,27 @@ def main(path, index):
     
     # Augment datasets
     augment_name = os.path.join(data_path, 'SAMPLE/AUGMENT_SAMPLE.hdf5')
-    augment_data = data_store.read_file(key='augment_data', path=augment_name, handle_class=core.data.TableHandle)
+    augment_data = data_store.read_file(key='augment_data', path=augment_name, handle_class=core.data.TableHandle)()
     
-    z_augment = augment_data()['photometry']['redshift']
-    mag_augment = augment_data()['photometry']['mag_i_lsst']
-    color_augment = augment_data()['photometry']['mag_g_lsst'] - augment_data()['photometry']['mag_z_lsst']
+    z_augment = augment_data['photometry']['redshift']
+    mag_augment = augment_data['photometry']['mag_i_lsst']
+    color_augment = augment_data['photometry']['mag_g_lsst'] - augment_data['photometry']['mag_z_lsst']
     
     # Input datasets
     input_name = os.path.join(data_path, 'SAMPLE/INPUT_SAMPLE{}.hdf5'.format(index))
-    input_data = data_store.read_file(key='input_data', path=input_name, handle_class=core.data.TableHandle)
+    input_data = data_store.read_file(key='input_data', path=input_name, handle_class=core.data.TableHandle)()
     
-    z_input = input_data()['photometry']['redshift']
-    mag_input = input_data()['photometry']['mag_i_lsst']
-    color_input = input_data()['photometry']['mag_g_lsst'] - input_data()['photometry']['mag_z_lsst']
+    z_input = input_data['photometry']['redshift']
+    mag_input = input_data['photometry']['mag_i_lsst']
+    color_input = input_data['photometry']['mag_g_lsst'] - input_data['photometry']['mag_z_lsst']
     
     # Test datasets
     test_name = os.path.join(data_path, 'SAMPLE/TEST_SAMPLE.hdf5')
-    test_data = data_store.read_file(key='test_data', path=test_name, handle_class=core.data.TableHandle)
+    test_data = data_store.read_file(key='test_data', path=test_name, handle_class=core.data.TableHandle)()
     
-    z_test = test_data()['photometry']['redshift']
-    mag_test = test_data()['photometry']['mag_i_lsst']
-    color_test = test_data()['photometry']['mag_g_lsst'] - test_data()['photometry']['mag_z_lsst']
+    z_test = test_data['photometry']['redshift']
+    mag_test = test_data['photometry']['mag_i_lsst']
+    color_test = test_data['photometry']['mag_g_lsst'] - test_data['photometry']['mag_z_lsst']
     
     # Bin Datasets
     z1 = 0.0

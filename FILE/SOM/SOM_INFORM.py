@@ -2,14 +2,14 @@ import os
 import yaml
 import argparse
 
-def main(path, index):
+def main(path):
     
     # Path
     data_path = os.path.join(path, 'DATA/')
     
     # Config
     config = {
-        'SOM_INFORM{}'.format(index): {
+        'SOM_INFORM': {
             'aliases': {
                 'name': 'input_name',
                 'input': 'input_data', 
@@ -24,7 +24,7 @@ def main(path, index):
             'grid_type': 'rectangular', 
             'column_usage': 'magandcolors',
             'hdf5_groupname': 'photometry', 
-            'n_rows': 128, 'n_columns': 128, 
+            'n_rows': 150, 'n_columns': 150, 
             'bands': [
                 'mag_u_lsst', 
                 'mag_g_lsst', 
@@ -44,7 +44,7 @@ def main(path, index):
         }
     }
     
-    config_name = os.path.join(data_path, 'SOM/SOM_INFORM{}.yaml'.format(index))
+    config_name = os.path.join(data_path, 'SOM/SOM_INFORM.yaml')
     with open(config_name, 'w') as config_file:
         yaml.dump(config, config_file, default_flow_style=False)
 
@@ -53,8 +53,6 @@ if __name__ == '__main__':
     # Input
     PARSE = argparse.ArgumentParser(description='SOM Informer')
     PARSE.add_argument('--path', type=str, required=True, help='The path to the base folder')
-    PARSE.add_argument('--index', type=str, required=True, help='The index of the training dataset')
     
     PATH = PARSE.parse_args().path
-    INDEX = PARSE.parse_args().index
-    main(PATH, INDEX)
+    main(PATH)

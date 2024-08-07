@@ -103,8 +103,8 @@ def main(path, index):
     test_name = os.path.join(data_path, 'SAMPLE/TEST_SAMPLE.hdf5')
     estimate_name = os.path.join(data_path, 'FZB/FZB_ESTIMATE{}.hdf5'.format(index))
     
-    test_data = data_store.read_file(key='test_data', path=test_name, handle_class=core.data.TableHandle)
-    estimator = data_store.read_file(key='estimator', path=estimate_name, handle_class=core.data.QPHandle)
+    test_data = data_store.read_file(key='test_data', path=test_name, handle_class=core.data.TableHandle)()
+    estimator = data_store.read_file(key='estimator', path=estimate_name, handle_class=core.data.QPHandle)()
     
     # Bin
     with h5py.File(os.path.join(data_path, 'BIN/LENS/LENS{}/BIN.hdf5'.format(index)), 'r') as file:
@@ -125,9 +125,9 @@ def main(path, index):
     grid_size = 300
     z_grid = numpy.linspace(z1_source, z2_source, grid_size + 1)
     
-    z_mean = numpy.concatenate(estimator().mean())
-    z_true = test_data()['photometry']['redshift']
-    mag_source = test_data()['photometry']['mag_i_lsst']
+    z_mean = numpy.concatenate(estimator.mean())
+    z_true = test_data['photometry']['redshift']
+    mag_source = test_data['photometry']['mag_i_lsst']
     
     # Save Select
     width = 1000

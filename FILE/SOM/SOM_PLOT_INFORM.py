@@ -4,7 +4,6 @@ import numpy
 import argparse
 import matplotlib
 from rail import core
-import multiprocessing
 from matplotlib import cm
 from matplotlib import pyplot
 from rail.estimation.algos import somoclu_som
@@ -27,19 +26,19 @@ def plot(input_data, model_data):
     pyplot.rcParams['font.size'] = 20
     matplotlib.use('Agg')
     
-    model = model_data()['som']
+    model = model_data['som']
     column_list = ['mag_u_lsst', 'mag_g_lsst', 'mag_r_lsst', 'mag_i_lsst', 'mag_z_lsst', 'mag_y_lsst']
-    input = somoclu_som._computemagcolordata(data=input_data()['photometry'], mag_column_name='mag_i_lsst', column_names=column_list, colusage='magandcolors')
+    input = somoclu_som._computemagcolordata(data=input_data['photometry'], mag_column_name='mag_i_lsst', column_names=column_list, colusage='magandcolors')
     
     output = somoclu_som.get_bmus(model, input)
-    mean_redshift = numpy.zeros((model_data()['n_rows'], model_data()['n_columns']))
-    cell_occupation = numpy.zeros((model_data()['n_rows'], model_data()['n_columns']))
+    mean_redshift = numpy.zeros((model_data['n_rows'], model_data['n_columns']))
+    cell_occupation = numpy.zeros((model_data['n_rows'], model_data['n_columns']))
     
-    input_size = input_data()['photometry']['redshift'].size
+    input_size = input_data['photometry']['redshift'].size
     for k in range(input_size):
         x, y = output[k]
         cell_occupation[x, y] += 1
-        mean_redshift[x, y] += input_data()['photometry']['redshift'][k]
+        mean_redshift[x, y] += input_data['photometry']['redshift'][k]
     
     cell_occupation[cell_occupation == 0] = numpy.nan
     mean_redshift = numpy.divide(mean_redshift, cell_occupation, out=numpy.ones_like(mean_redshift) * numpy.nan, where=cell_occupation != 0)
@@ -53,17 +52,17 @@ def plot(input_data, model_data):
     return figure
 
 
-def main(path, index):
+def main(path):
     """
-    The main function to plot the som figure.
+    This is the main function for the SOM plotting.
     
     Arguments:
         path (str): The path to the base folder.
-        index (int): The index of the datasets.
     
     Returns:
         float: The duration of the plotting.
     """
+    
     # Data store
     start = time.time()
     data_store = core.stage.RailStage.data_store
@@ -75,21 +74,21 @@ def main(path, index):
     os.makedirs(os.path.join(plot_path, 'SOM/'), exist_ok=True)
     
     model_name = os.path.join(data_path, 'SOM/SOM_INFORM.pkl')
-    som_name = os.path.join(data_path, 'SOM/SOM_SAMPLE{}.hdf5'.format(index))
+    test_name = os.path.join(data_path, 'SAMPLE/TEST_SAMPLE.hdf5')
     
-    som_data = data_store.read_file(key='data', path=som_name, handle_class=core.data.TableHandle)
-    model_data = data_store.read_file(key='model', path=model_name, handle_class=core.data.ModelHandle)
+    test_data = data_store.read_file(key='test', path=test_name, handle_class=core.data.TableHandle)()
+    model_data = data_store.read_file(key='model', path=model_name, handle_class=core.data.ModelHandle)()
     
     # Plot
-    figure = plot(som_data, model_data)
-    figure.savefig(os.path.join(plot_path, 'SOM/SOM{}.pdf'.format(index)), bbox_inches='tight')
+    figure = plot(test_data, model_data)
+    figure.savefig(os.path.join(plot_path, 'SOM/SOM_INFORM.pdf'), bbox_inches='tight')
     pyplot.close(figure)
     
     # Return
     end = time.time()
     duration = (end - start) / 60
     
-    print('Index:{}, Time: {:.2f} minutes'.format(index, duration))
+    print('Inform Time: {:.2f} minutes'.format(duration))
     return duration
 
 
@@ -98,15 +97,6 @@ if __name__ == '__main__':
     # Input
     PARSE = argparse.ArgumentParser(description='SOM FIGURE')
     PARSE.add_argument('--path', type=str, required=True, help='The path to the base folder')
-    PARSE.add_argument('--number', type=int, required=True, help='The number of the processes')
-    PARSE.add_argument('--length', type=int, required=True, help='The length of the som datasets')
     
     PATH = PARSE.parse_args().path
-    NUMBER = PARSE.parse_args().number
-    LENGTH = PARSE.parse_args().length
-    
-    SIZE = LENGTH // NUMBER
-    for CHUNK in range(SIZE):
-        print('CHUNK: {}'.format(CHUNK + 1))
-        with multiprocessing.Pool(processes=NUMBER) as pool:
-            pool.starmap(main, [(PATH, INDEX) for INDEX in range(CHUNK * NUMBER + 1, (CHUNK + 1) * NUMBER + 1)])
+    main(PATH)
