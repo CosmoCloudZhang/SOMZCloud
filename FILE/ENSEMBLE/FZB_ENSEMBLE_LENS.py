@@ -7,7 +7,7 @@ import argparse
 
 def main(path, size, width, length):
     """
-    This function computes the ensemble average of the lensing data.
+    This function computes the ensemble average of the LENSing data.
     
     Arguments:    
         path : str : the path to the base folder
@@ -35,13 +35,23 @@ def main(path, size, width, length):
     
     # Ensemble
     height = length * width
+    sample = numpy.zeros((length, width, size, grid_size), dtype=numpy.float32)
     ensemble_sample = numpy.zeros((height, size, grid_size), dtype=numpy.float32)
     
     for n in range(length):
         for m in range(size):
             sample_name = os.path.join(data_path, 'FZB/LENS/LENS{}/FZB_SUMMARIZE{}.hdf5'.format(n + 1, m + 1))
             with h5py.File(sample_name, 'r') as file:
-                ensemble_sample[n * width: (n + 1) * width, m, :] = numpy.apply_along_axis(lambda x: numpy.interp(x=z_data, xp=z_grid, fp=x), arr=file['data']['pdfs'][:].astype(numpy.float32), axis=1)
+                sample[n, :, m, :] = numpy.apply_along_axis(lambda x: numpy.interp(x=z_data, xp=z_grid, fp=x), arr=file['data']['pdfs'][:].astype(numpy.float32), axis=1)
+    
+    for k in range(height):
+        length_index = numpy.arange(length, dtype=numpy.int32)
+        width_index = numpy.random.choice(numpy.arange(width, dtype=numpy.int32), size=length, replace=True)
+        
+        alpha = numpy.random.dirichlet(numpy.ones(length), size=1).flatten()
+        beta = numpy.random.dirichlet(alpha, size=1).flatten()
+        
+        ensemble_sample[k, :, :] = numpy.sum(beta[:, numpy.newaxis, numpy.newaxis] * sample[length_index, width_index, :, :], axis=0)
     ensemble_data = numpy.mean(ensemble_sample, axis=0)
     
     # Save

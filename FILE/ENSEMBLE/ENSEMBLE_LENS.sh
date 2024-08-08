@@ -20,14 +20,9 @@ module load cray-mpich/8.1.28
 source $HOME/.bashrc
 conda activate $RAILENV
 
-# Set OpenMP environment
-export OMP_NUM_THREADS=64
-export OMP_PLACES=threads
-export OMP_PROC_Bind=spread
-
 # Initialize the parallisation
 SIZE=5
 WIDTH=1000
 LENGTH=400
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-srun -n 1 --cpu-bind=none python -u $BASE_PATH/FILE/ENSEMBLE/ENSEMBLE_LENS.py --path="${BASE_PATH}" --size=$SIZE --width=$WIDTH --length=$LENGTH
+python -u $BASE_PATH/FILE/ENSEMBLE/ENSEMBLE_LENS.py --path="${BASE_PATH}" --size=$SIZE --width=$WIDTH --length=$LENGTH
