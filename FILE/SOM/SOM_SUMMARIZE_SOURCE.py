@@ -23,7 +23,7 @@ def main(path, index):
                 'uncovered_cluster_file': 'output_cluster',
             }, 
             'seed': 0,
-            'split': 10000, 
+            'split': 100, 
             'nsamples': 1000, 
             'n_clusters': 10000, 
             'chunk_size': 100000, 

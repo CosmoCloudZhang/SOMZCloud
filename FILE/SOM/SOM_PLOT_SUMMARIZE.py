@@ -75,7 +75,7 @@ def main(path, index):
     os.makedirs(os.path.join(plot_path, 'SOM/'), exist_ok=True)
     
     model_name = os.path.join(data_path, 'SOM/SOM_INFORM.pkl')
-    train_name = os.path.join(data_path, 'SAMPLE/TRAIN_SAMPLE{}.hdf5'.format(index))
+    train_name = os.path.join(data_path, 'SOM/SOURCE/SOURCE{}/SELECT3.hdf5'.format(index))
     
     train_data = data_store.read_file(key='data', path=train_name, handle_class=core.data.TableHandle)()
     model_data = data_store.read_file(key='model', path=model_name, handle_class=core.data.ModelHandle)()
