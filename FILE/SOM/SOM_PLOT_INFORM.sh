@@ -20,10 +20,6 @@ module load cray-mpich/8.1.28
 source $HOME/.bashrc
 conda activate $RAILENV
 
-# Set OpenMP environment
-export OMP_PLACES=threads
-export OMP_PROC_Bind=spread
-
 # Initialize the parallisation
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-srun -n 1 --cpu-bind=none python -u $BASE_PATH/FILE/SOM/SOM_PLOT_INFORM.py --path="${BASE_PATH}"
+python -u $BASE_PATH/FILE/SOM/SOM_PLOT_INFORM.py --path="${BASE_PATH}"

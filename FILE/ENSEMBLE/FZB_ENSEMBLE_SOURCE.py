@@ -34,7 +34,7 @@ def main(path, size, width, length):
     z_data = numpy.linspace(z1 + z_delta / 2, z2 - z_delta / 2, grid_size)
     
     # Ensemble
-    height = length * width
+    height = 10000#length * width
     sample = numpy.zeros((length, width, size, grid_size), dtype=numpy.float32)
     ensemble_sample = numpy.zeros((height, size, grid_size), dtype=numpy.float32)
     

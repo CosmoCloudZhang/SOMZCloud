@@ -13,18 +13,18 @@
 
 # Load modules
 module load python
-module load PrgEnv-gnu
-module load cray-mpich/8.1.28
+module swap PrgEnv-${PE_ENV,,} PrgEnv-gnu
 
-# Set OpenMP environment
-export OMP_PLACES=threads
-export OMP_PROC_Bind=spread
-
-# Activate the conda environment
 source $HOME/.bashrc
 conda activate $RAILENV
+module load cray-hdf5-parallel
+
+# Set environment variables
+export HDF5_USE_FILE_LOCKING=FALSE
+export OMP_PROC_BIND=spread
+export OMP_PLACES=threads
 
 # Initialize the parallisation
 LENGTH=400
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-srun -n 1 --cpu-bind=none python -u "${BASE_PATH}/FILE/SOM/SOM_SAMPLE.py" --path="${BASE_PATH}" --length=$LENGTH
+python -u "${BASE_PATH}/FILE/SOM/SOM_SAMPLE.py" --path="${BASE_PATH}" --length=$LENGTH
