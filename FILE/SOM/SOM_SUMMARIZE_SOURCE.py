@@ -25,7 +25,7 @@ def main(path, index):
             'seed': 0,
             'split': 10000, 
             'nsamples': 1000, 
-            'n_clusters': 25000, 
+            'n_clusters': 25600, 
             'chunk_size': 100000, 
             'nondetect_val': 99.0, 
             'redshift_colname': 'redshift', 
