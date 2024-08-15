@@ -23,7 +23,7 @@ export OMP_PROC_Bind=spread
 
 # Activate the conda environment
 source $HOME/.bashrc
-conda activate $RAILENV
+conda activate $CosmoENV
 
 # Initialize the parallisation
 NUMBER=16
