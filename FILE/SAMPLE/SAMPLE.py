@@ -52,7 +52,7 @@ def select(bin_datasets, input_datasets, augment_datasets):
     
     count = len(z_input) // 3
     index = numpy.arange(len(z_augment))
-    index_sample = numpy.random.choice(index, size=count, replace=False, p=weight)
+    index_sample = numpy.random.choice(index, size=count, replace=True, p=weight)
     
     select_sample = numpy.zeros_like(z_augment, dtype=bool)
     select_sample[index_sample] = True
