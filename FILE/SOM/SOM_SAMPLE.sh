@@ -19,7 +19,7 @@ module load cray-hdf5-parallel
 
 # Activate the conda environment
 source $HOME/.bashrc
-conda activate $CosmoENV
+conda activate $RAILENV
 
 # Set environment variables
 export HDF5_USE_FILE_LOCKING=FALSE

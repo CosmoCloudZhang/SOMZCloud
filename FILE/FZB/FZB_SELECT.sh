@@ -19,7 +19,7 @@ module load cray-hdf5-parallel
 
 # Activate the conda environment
 source $HOME/.bashrc
-conda activate $CosmoENV
+conda activate $RAILENV
 
 # Set OpenMP environment
 export OMP_NUM_THREADS=32

@@ -19,7 +19,7 @@ module load cray-hdf5-parallel
 
 # Activate the conda environment
 source $HOME/.bashrc
-conda activate $CosmoENV
+conda activate $RAILENV
 
 # Set environment
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
