@@ -15,10 +15,11 @@
 module load python
 module load PrgEnv-gnu
 module load cray-mpich/8.1.28
+module load cray-hdf5-parallel
 
 # Activate the conda environment
 source $HOME/.bashrc
-conda activate $RAILENV
+conda activate $CosmoENV
 
 # Set OpenMP environment
 export OMP_NUM_THREADS=16

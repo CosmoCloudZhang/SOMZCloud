@@ -24,7 +24,7 @@ def main(path):
             'column_usage': 'colors',
             'som_learning_rate': 0.5, 
             'hdf5_groupname': 'photometry', 
-            'n_rows': 160, 'n_columns': 160, 
+            'n_rows': 200, 'n_columns': 200, 
             'bands': [
                 'mag_u_lsst', 
                 'mag_g_lsst', 

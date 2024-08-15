@@ -5,19 +5,21 @@
 #SBATCH --ntasks=8
 #SBATCH --time=48:00:00
 #SBATCH --mail-type=END
-#SBATCH --constraint=gpu
+#SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%a.out
-#SBATCH --cpus-per-task=16
+#SBATCH --cpus-per-task=32
 #SBATCH -J SOM_SUMMARIZE_SOURCE1
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
 module load python
-module swap PrgEnv-${PE_ENV,,} PrgEnv-gnu
-
-source $HOME/.bashrc
-conda activate $RAILENV
+module load PrgEnv-gnu
+module load cray-mpich/8.1.28
 module load cray-hdf5-parallel
+
+# Activate the conda environment
+source $HOME/.bashrc
+conda activate $CosmoENV
 
 # Set environment
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
