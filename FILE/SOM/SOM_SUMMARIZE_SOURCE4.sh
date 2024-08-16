@@ -6,7 +6,7 @@
 #SBATCH --time=48:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
-#SBATCH -o LOG/%x_%a.out
+#SBATCH -o LOG/%x_%j.out
 #SBATCH --cpus-per-task=32
 #SBATCH -J SOM_SUMMARIZE_SOURCE4
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk

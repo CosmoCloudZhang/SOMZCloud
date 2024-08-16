@@ -6,7 +6,7 @@
 #SBATCH --time=24:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
-#SBATCH -o LOG/%x_%a.out
+#SBATCH -o LOG/%x_%j.out
 #SBATCH -J ENSEMBLE_LENS
 #SBATCH --cpus-per-task=256
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk

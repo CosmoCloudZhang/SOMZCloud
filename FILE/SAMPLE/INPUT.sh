@@ -1,5 +1,15 @@
 #!/bin/bash
-
+#SBATCH -A m1727
+#SBATCH -J INPUT
+#SBATCH --nodes=1
+#SBATCH -q regular
+#SBATCH --ntasks=1
+#SBATCH --time=24:00:00
+#SBATCH --mail-type=END
+#SBATCH --constraint=cpu
+#SBATCH -o LOG/%x_%j.out
+#SBATCH --cpus-per-task=256
+#SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 # Load modules
 module load python
 module load PrgEnv-gnu
