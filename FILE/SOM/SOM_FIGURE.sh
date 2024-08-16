@@ -21,6 +21,13 @@ module load cray-hdf5-parallel
 source $HOME/.bashrc
 conda activate $RAILENV
 
+# Set OpenMP environment
+export OMP_NUM_THREADS=32
+export OMP_PLACES=threads
+export OMP_PROC_Bind=spread
+
 # Initialize the parallisation
+NUMBER=8
+LENGTH=400
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-python -u $BASE_PATH/FILE/SOM/SOM_PLOT_INFORM.py --path="${BASE_PATH}"
+srun -n 1 --cpu-bind=none python -u $BASE_PATH/FILE/SOM/SOM_FIGURE.py --path="${BASE_PATH}" --number=$NUMBER --length=$LENGTH
