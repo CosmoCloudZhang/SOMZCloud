@@ -4,7 +4,7 @@
 #SBATCH -q regular
 #SBATCH --ntasks=1
 #SBATCH -J SOM_INFORM
-#SBATCH --time=24:00:00
+#SBATCH --time=48:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%a.out
