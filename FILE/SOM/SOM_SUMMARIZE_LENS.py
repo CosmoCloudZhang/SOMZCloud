@@ -26,7 +26,7 @@ def main(path, index):
             'split': 10000, 
             'nsamples': 1000, 
             'n_clusters': 40000, 
-            'chunk_size': 100000, 
+            'chunk_size': 50000, 
             'nondetect_val': 99.0, 
             'redshift_colname': 'redshift', 
             'hdf5_groupname': 'photometry', 
