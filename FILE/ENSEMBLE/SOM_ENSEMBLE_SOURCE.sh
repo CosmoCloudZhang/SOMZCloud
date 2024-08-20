@@ -8,7 +8,7 @@
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
 #SBATCH --cpus-per-task=256
-#SBATCH -J FZB_ENSEMBLE_SOURCE
+#SBATCH -J SOM_ENSEMBLE_SOURCE
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules

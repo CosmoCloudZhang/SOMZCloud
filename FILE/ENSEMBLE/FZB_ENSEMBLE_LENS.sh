@@ -7,8 +7,8 @@
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH -J ENSEMBLE_LENS
 #SBATCH --cpus-per-task=256
+#SBATCH -J FZB_ENSEMBLE_LENS
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
