@@ -3,7 +3,7 @@
 #SBATCH --nodes=1
 #SBATCH -q regular
 #SBATCH --ntasks=1
-#SBATCH --time=24:00:00
+#SBATCH --time=48:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
@@ -22,7 +22,7 @@ source $HOME/.bashrc
 conda activate $RAILENV
 
 # Set OpenMP environment
-export OMP_NUM_THREADS=32
+export OMP_NUM_THREADS=16
 export OMP_PLACES=threads
 export OMP_PROC_Bind=spread
 
