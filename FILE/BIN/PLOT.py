@@ -4,7 +4,7 @@ import numpy
 import argparse
 from rail import core
 import multiprocessing
-from matplotlib import pyplot, colors
+from matplotlib import pyplot, colors, gridspec
 
 
 def plot_redshift(z_grid, z_mean, z_true, z_lens, z_source, mag_source):
@@ -37,47 +37,98 @@ def plot_redshift(z_grid, z_mean, z_true, z_lens, z_source, mag_source):
     slope = 4.0
     intersection = 18.0
     
-    bin_size = 100
-    z_bin = numpy.linspace(z_grid.min(), z_grid.max(), bin_size + 1)
+    grid_size = 100
+    z_grid = numpy.linspace(z_grid.min(), z_grid.max(), grid_size + 1)
     
     select_source = (z1_source < z_mean) & (z_mean < z2_source)
     select_lens = (z1_lens < z_mean) & (z_mean < z2_lens) & (mag_source < slope * z_mean + intersection)
     
     # Plot
-    figure, plot = pyplot.subplots(nrows=1, ncols=2, figsize=(12, 8))
+    figure = pyplot.figure(figsize=(12, 12))
+    
+    plot = gridspec.GridSpec(nrows=2, ncols=2, figure=figure, height_ratios=[1, 3], width_ratios=[1, 1])
     
     # Plot 1
-    z_mesh = plot[0].hist2d(x=z_mean[select_lens], y=z_true[select_lens], bins=[z_bin, z_bin], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')[-1]
+    plot1 = figure.add_subplot(plot[0, 0])
     
-    plot[0].plot(z_grid, z_grid, color='black', linestyle='--', linewidth=2.0)
+    sigma_lens = numpy.zeros(grid_size)
+    for m in range(grid_size):
+        select = select_lens & (z_grid[m] < z_mean) & (z_mean < z_grid[m + 1])
+        if len(select[select]) > 0:
+            delta = numpy.log((1 + z_true[select]) / (1 + z_mean[select]))
+            sigma_lens[m] = (numpy.quantile(delta, 0.84) - numpy.quantile(delta, 0.16)) / 2
     
-    plot[0].set_xlim(z1_source, z2_source)
-    plot[0].set_ylim(z1_source, z2_source)
+    plot1.plot((z_grid[1:] + z_grid[:-1]) / 2, sigma_lens, color='black', linestyle='-', linewidth=2.0)
     
-    plot[0].set_title(r'$\mathrm{Lens}$')
-    plot[0].set_xlabel(r'$z_\mathrm{phot}$')
-    plot[0].set_ylabel(r'$z_\mathrm{spec}$')
+    plot1.plot(z_grid, 0.03 * numpy.ones(grid_size + 1), color='black', linestyle=':', linewidth=2.0)
+    
+    plot1.set_ylim(0.001, 1.000)
+    plot1.set_xlim(z1_source, z2_source)
+    
+    plot1.set_yscale('log')
+    plot1.set_xticklabels([])
+    
+    plot1.set_ylabel(r'$\frac{\sigma_z}{1 + z}$')
+    plot1.set_title(r'$\mathrm{Lens}$')
     
     # Plot 2
-    z_mesh = plot[1].hist2d(x=z_mean[select_source], y=z_true[select_source], bins=[z_bin, z_bin], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')[-1]
+    plot2 = figure.add_subplot(plot[0, 1])
     
-    plot[1].plot(z_grid, z_grid, color='black', linestyle='--', linewidth=2.0)
+    sigma_source = numpy.zeros(grid_size)
+    for m in range(grid_size):
+        select = select_source & (z_grid[m] < z_mean) & (z_mean < z_grid[m + 1])
+        if len(select[select]) > 0:
+            delta = numpy.log((1 + z_true[select]) / (1 + z_mean[select]))
+            sigma_source[m] = (numpy.quantile(delta, 0.84) - numpy.quantile(delta, 0.16)) / 2
     
-    plot[1].set_xlim(z1_source, z2_source)
-    plot[1].set_ylim(z1_source, z2_source)
+    plot2.plot((z_grid[1:] + z_grid[:-1]) / 2, sigma_source, color='black', linestyle='-', linewidth=2.0)
     
-    plot[1].set_title(r'$\mathrm{Source}$')
-    plot[1].set_xlabel(r'$z_\mathrm{phot}$')
+    plot2.plot(z_grid, 0.05 * numpy.ones(grid_size + 1), color='black', linestyle=':', linewidth=2.0)
     
-    plot[1].set_yticklabels([])
-    plot[1].get_xticklabels()[0].set_visible(False)
+    plot2.set_ylim(0.001, 1.000)
+    plot2.set_xlim(z1_source, z2_source)
+    
+    plot2.set_yscale('log')
+    plot2.set_title(r'$\mathrm{Source}$')
+    
+    plot2.set_xticklabels([])
+    plot2.set_yticklabels([])
+    plot2.get_xticklabels()[0].set_visible(False)
+    
+    # Plot 3
+    plot3 = figure.add_subplot(plot[1, 0])
+    
+    z_mesh = plot3.hist2d(x=z_mean[select_lens], y=z_true[select_lens], bins=[z_grid, z_grid], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')[-1]
+    
+    plot3.plot(z_grid, z_grid, color='black', linestyle='--', linewidth=2.0)
+    
+    plot3.set_xlim(z1_source, z2_source)
+    plot3.set_ylim(z1_source, z2_source)
+    
+    plot3.set_xlabel(r'$z_\mathrm{phot}$')
+    plot3.set_ylabel(r'$z_\mathrm{spec}$')
+    plot3.get_yticklabels()[-1].set_visible(False)
+    
+    # Plot 4
+    plot4 = figure.add_subplot(plot[1, 1])
+    
+    z_mesh = plot4.hist2d(x=z_mean[select_source], y=z_true[select_source], bins=[z_grid, z_grid], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')[-1]
+    
+    plot4.plot(z_grid, z_grid, color='black', linestyle='--', linewidth=2.0)
+    
+    plot4.set_xlim(z1_source, z2_source)
+    plot4.set_ylim(z1_source, z2_source)
+    plot4.set_xlabel(r'$z_\mathrm{phot}$')
+    
+    plot4.set_yticklabels([])
+    plot4.get_xticklabels()[0].set_visible(False)
     
     # Color bar
     color_bar = figure.colorbar(z_mesh, cax=figure.add_axes([0.15, 0.05, 0.70, 0.05]), orientation='horizontal')
     color_bar.set_label(r'$\mathrm{Counts}$')
     
     # Return figure
-    figure.subplots_adjust(bottom=0.20, wspace=0.00)
+    figure.subplots_adjust(bottom=0.20, wspace=0.00, hspace=0.00)
     return figure
 
 
