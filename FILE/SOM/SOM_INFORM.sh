@@ -33,5 +33,5 @@ MODEL_PATH="${BASE_PATH}/DATA/SOM/SOM_INFORM.pkl"
 INPUT_PATH="${BASE_PATH}/DATA/SOM/SOM_SAMPLE.hdf5"
 CONFIG_PATH="${BASE_PATH}/DATA/SOM/SOM_INFORM.yaml"
 # Run applications
-python "${BASE_PATH}/FILE/SOM/SOM_INFORM.py" --path="${BASE_PATH}" &
+python -u "${BASE_PATH}/FILE/SOM/SOM_INFORM.py" --path=$BASE_PATH &
 srun -u -N 1 -n 1 --cpus-per-task=$SLURM_CPUS_PER_TASK python3 -m ceci rail.estimation.algos.somoclu_som.SOMocluInformer --mpi  --name=$NAME --input=$INPUT_PATH --model=$MODEL_PATH --config=$CONFIG_PATH

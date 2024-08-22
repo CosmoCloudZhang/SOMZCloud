@@ -44,7 +44,7 @@ for INDEX in $(seq 1 $LENGTH); do
     OUTPUT_PATH="${BASE_PATH}/DATA/SOM/SOURCE/SOURCE${INDEX}/SOM_SUMMARIZE${BIN}.hdf5"
     CLUSTER_PATH="${BASE_PATH}/DATA/SOM/SOURCE/SOURCE${INDEX}/SOM_CELL_FILE${BIN}.hdf5"
     # Run applications
-    python "${BASE_PATH}/FILE/SOM/SOM_SUMMARIZE_SOURCE.py" --path="${BASE_PATH}" --index=$INDEX &
+    python -u "${BASE_PATH}/FILE/SOM/SOM_SUMMARIZE_SOURCE.py" --path=$BASE_PATH --index=$INDEX &
     srun -u -N 1 -n 1 --cpus-per-task=$SLURM_CPUS_PER_TASK python3 -m ceci rail.estimation.algos.somoclu_som.SOMocluSummarizer --mpi --name=$NAME --input=$INPUT_PATH --model=$MODEL_PATH --spec_input=$SPEC_PATH --config=$CONFIG_PATH --single_NZ=$SINGLE_PATH --output=$OUTPUT_PATH --uncovered_cluster_file=$CLUSTER_PATH --cellid_output=$CELLID_PATH &
     # Control parallel execution
     if (( $INDEX % $SLURM_NTASKS == 0 )); then

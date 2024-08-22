@@ -3,7 +3,15 @@ import yaml
 import argparse
 
 def main(path):
+    """
+    The main function to create the som informer.
     
+    Arguments:
+        path (str): The path to the
+    
+    Returns:
+        None
+    """
     # Path
     data_path = os.path.join(path, 'DATA/')
     
@@ -55,4 +63,4 @@ if __name__ == '__main__':
     PARSE.add_argument('--path', type=str, required=True, help='The path to the base folder')
     
     PATH = PARSE.parse_args().path
-    main(PATH)
+    RESULT = main(PATH)

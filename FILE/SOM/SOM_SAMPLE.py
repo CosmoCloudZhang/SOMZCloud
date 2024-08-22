@@ -7,7 +7,16 @@ from rail import core
 
 
 def main(path, length):
+    """
+    The main function to create the som sample.
     
+    Arguments:
+        path (str): The path to the
+        length (int): The length of the train datasets
+    
+    Returns:
+        None
+    """
     # Data Store
     start = time.time()
     data_store = core.stage.RailStage.data_store
@@ -63,4 +72,4 @@ if __name__ == '__main__':
     PATH = PARSE.parse_args().path
     LENGTH = PARSE.parse_args().length
     
-    main(PATH, LENGTH)
+    RESULT = main(PATH, LENGTH)

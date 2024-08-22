@@ -3,7 +3,16 @@ import yaml
 import argparse
 
 def main(path, index):
+    """
+    The main function to create the som summarizer.
     
+    Arguments:
+        path (str): The path to the
+        index (int): The index of the sample for the modelling
+    
+    Returns:
+        None
+    """
     # Path
     data_path = os.path.join(path, 'DATA/')
     os.makedirs(os.path.join(data_path, 'SOM/SOURCE'), exist_ok=True)
@@ -49,5 +58,5 @@ if __name__ == '__main__':
     PATH = PARSE.parse_args().path
     INDEX = PARSE.parse_args().index
     
-    main(PATH, INDEX)
+    RESULT = main(PATH, INDEX)
     print('INDEX: {}'.format(INDEX))

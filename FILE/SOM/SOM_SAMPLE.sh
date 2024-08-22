@@ -29,4 +29,4 @@ export OMP_PLACES=threads
 # Initialize the parallisation
 LENGTH=400
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-python -u "${BASE_PATH}/FILE/SOM/SOM_SAMPLE.py" --path="${BASE_PATH}" --length=$LENGTH
+python -u "${BASE_PATH}/FILE/SOM/SOM_SAMPLE.py" --path=$BASE_PATH --length=$LENGTH
