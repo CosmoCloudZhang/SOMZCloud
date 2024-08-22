@@ -28,4 +28,4 @@ export OMP_PROC_Bind=spread
 # Run the application
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/"
-python -u "${BASE_PATH}/FILE/SAMPLE/INPUT.py" --path="${BASE_PATH}" --folder="${BASE_FOLDER}"
+python -u "${BASE_PATH}/FILE/SAMPLE/INPUT.py" --path=$BASE_PATH --folder=$BASE_FOLDER

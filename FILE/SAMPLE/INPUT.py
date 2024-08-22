@@ -30,7 +30,7 @@ if __name__ == '__main__':
         print('Index: {}'.format(INDEX))
         
         START = time.time()
-        main(PATH, FOLDER, INDEX)
+        RESULT = main(PATH, FOLDER, INDEX)
         
         END = time.time()
         print('Time: {:.2f} minutes'.format((END - START) / 60))
