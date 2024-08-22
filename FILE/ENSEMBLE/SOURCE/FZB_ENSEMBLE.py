@@ -25,24 +25,18 @@ def main(path, size, width, length):
     os.makedirs(os.path.join(data_path, 'ENSEMBLE/'), exist_ok=True)
     os.makedirs(os.path.join(data_path, 'ENSEMBLE/SOURCE/'), exist_ok=True)
     
-    # Redshift
-    z1 = 0.0
-    z2 = 3.0
-    grid_size = 300
-    z_delta = (z2 - z1) / grid_size
-    z_grid = numpy.linspace(z1, z2, grid_size + 1)
-    z_data = numpy.linspace(z1 + z_delta / 2, z2 - z_delta / 2, grid_size)
-    
     # Ensemble
+    grid_size = 300
     height = length * width
     sample = numpy.zeros((length, width, size, grid_size), dtype=numpy.float32)
     ensemble_sample = numpy.zeros((height, size, grid_size), dtype=numpy.float32)
     
     for n in range(length):
         for m in range(size):
-            sample_name = os.path.join(data_path, 'SOM/SOURCE/SOURCE{}/SOM_SUMMARIZE{}.hdf5'.format(n + 1, m + 1))
+            sample_name = os.path.join(data_path, 'FZB/SOURCE/SOURCE{}/FZB_SUMMARIZE{}.hdf5'.format(n + 1, m + 1))
             with h5py.File(sample_name, 'r') as file:
-                sample[n, :, m, :] = numpy.apply_along_axis(lambda x: numpy.interp(x=z_data, xp=z_grid, fp=x), arr=file['data']['pdfs'][:].astype(numpy.float32), axis=1)
+                data = file['data']['pdfs'][:].astype(numpy.float32)
+                sample[n, :, m, :] = (data[:, +1:] + data[:, :-1]) / 2
     
     for k in range(height):
         length_index = numpy.arange(length, dtype=numpy.int32)
@@ -55,7 +49,7 @@ def main(path, size, width, length):
     ensemble_data = numpy.mean(ensemble_sample, axis=0)
     
     # Save
-    with h5py.File(os.path.join(data_path, 'ENSEMBLE/SOURCE/SOM_ENSEMBLE.hdf5'), 'w') as file:
+    with h5py.File(os.path.join(data_path, 'ENSEMBLE/SOURCE/FZB_ENSEMBLE.hdf5'), 'w') as file:
         file.create_dataset('data', data=ensemble_data, dtype=numpy.float32)
         file.create_dataset('sample', data=ensemble_sample, dtype=numpy.float32)
     
@@ -80,4 +74,4 @@ if __name__ == '__main__':
     SIZE = PARSE.parse_args().size
     WIDTH = PARSE.parse_args().width
     LENGTH = PARSE.parse_args().length
-    main(PATH, SIZE, WIDTH, LENGTH)
+    RESULT = main(PATH, SIZE, WIDTH, LENGTH)

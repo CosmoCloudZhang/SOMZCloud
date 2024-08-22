@@ -72,4 +72,4 @@ if __name__ == '__main__':
     SIZE = PARSE.parse_args().size
     WIDTH = PARSE.parse_args().width
     LENGTH = PARSE.parse_args().length
-    main(PATH, SIZE, WIDTH, LENGTH)
+    RESULT = main(PATH, SIZE, WIDTH, LENGTH)

@@ -25,15 +25,8 @@ def main(path, size, width, length):
     os.makedirs(os.path.join(data_path, 'ENSEMBLE/'), exist_ok=True)
     os.makedirs(os.path.join(data_path, 'ENSEMBLE/SOURCE/'), exist_ok=True)
     
-    # Redshift
-    z1 = 0.0
-    z2 = 3.0
-    grid_size = 300
-    z_delta = (z2 - z1) / grid_size
-    z_grid = numpy.linspace(z1, z2, grid_size + 1)
-    z_data = numpy.linspace(z1 + z_delta / 2, z2 - z_delta / 2, grid_size)
-    
     # Ensemble
+    grid_size = 300
     height = length * width
     sample = numpy.zeros((length, width, size, grid_size), dtype=numpy.float32)
     ensemble_sample = numpy.zeros((height, size, grid_size), dtype=numpy.float32)
@@ -79,4 +72,4 @@ if __name__ == '__main__':
     SIZE = PARSE.parse_args().size
     WIDTH = PARSE.parse_args().width
     LENGTH = PARSE.parse_args().length
-    main(PATH, SIZE, WIDTH, LENGTH)
+    RESULT = main(PATH, SIZE, WIDTH, LENGTH)

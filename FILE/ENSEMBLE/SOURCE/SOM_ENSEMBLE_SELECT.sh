@@ -7,8 +7,8 @@
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
+#SBATCH -J ENSEMBLE_SOURCE
 #SBATCH --cpus-per-task=256
-#SBATCH -J SOM_ENSEMBLE_SOURCE
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -26,4 +26,4 @@ SIZE=5
 WIDTH=1000
 LENGTH=400
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-python -u $BASE_PATH/FILE/ENSEMBLE/FZB_ENSEMBLE_SOURCE.py --path="${BASE_PATH}" --size=$SIZE --width=$WIDTH --length=$LENGTH
+python -u "${BASE_PATH}FILE/ENSEMBLE/SOURCE/SOM_ENSEMBLE_SELECT.py" --path=$BASE_PATH --size=$SIZE --width=$WIDTH --length=$LENGTH

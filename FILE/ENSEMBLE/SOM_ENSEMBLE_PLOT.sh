@@ -27,5 +27,5 @@ export OMP_PLACES=threads
 export OMP_PROC_Bind=spread
 
 # Initialize the parallisation
-BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-python -u $BASE_PATH/FILE/ENSEMBLE/FZB/FZB_ENSEMBLE_PLOT.py --path="${BASE_PATH}"
+BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud"
+python -u "${BASE_PATH}FILE/ENSEMBLE/SOM/SOM_ENSEMBLE_PLOT.py" --path=$BASE_PATH

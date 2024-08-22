@@ -7,7 +7,7 @@ import argparse
 
 def main(path, size, width, length):
     """
-    This function computes the ensemble average of the LENSing data.
+    This function computes the ensemble average of the SOURCEing data.
     
     Arguments:    
         path : str : the path to the base folder
@@ -23,7 +23,7 @@ def main(path, size, width, length):
     data_path = os.path.join(path, 'DATA/')
     
     os.makedirs(os.path.join(data_path, 'ENSEMBLE/'), exist_ok=True)
-    os.makedirs(os.path.join(data_path, 'ENSEMBLE/LENS/'), exist_ok=True)
+    os.makedirs(os.path.join(data_path, 'ENSEMBLE/SOURCE/'), exist_ok=True)
     
     # Ensemble
     grid_size = 300
@@ -32,11 +32,9 @@ def main(path, size, width, length):
     ensemble_sample = numpy.zeros((height, size, grid_size), dtype=numpy.float32)
     
     for n in range(length):
-        for m in range(size):
-            sample_name = os.path.join(data_path, 'SOM/LENS/LENS{}/SOM_SUMMARIZE{}.hdf5'.format(n + 1, m + 1))
-            with h5py.File(sample_name, 'r') as file:
-                data = file['data']['pdfs'][:].astype(numpy.float32)
-                sample[n, :, m, :] = (data[:, +1:] + data[:, :-1]) / 2
+        sample_name = os.path.join(data_path, 'BIN/SOURCE/SOURCE{}/SELECT.hdf5'.format(n + 1))
+        with h5py.File(sample_name, 'r') as file:
+            sample[n, :, :, :] = file['sample'][:].astype(numpy.float32)
     
     for k in range(height):
         length_index = numpy.arange(length, dtype=numpy.int32)
@@ -49,7 +47,7 @@ def main(path, size, width, length):
     ensemble_data = numpy.mean(ensemble_sample, axis=0)
     
     # Save
-    with h5py.File(os.path.join(data_path, 'ENSEMBLE/LENS/SOM_ENSEMBLE.hdf5'), 'w') as file:
+    with h5py.File(os.path.join(data_path, 'ENSEMBLE/SOURCE/SOM_ENSEMBLE.hdf5'), 'w') as file:
         file.create_dataset('data', data=ensemble_data, dtype=numpy.float32)
         file.create_dataset('sample', data=ensemble_sample, dtype=numpy.float32)
     

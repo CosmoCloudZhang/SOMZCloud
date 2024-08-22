@@ -8,7 +8,7 @@
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
 #SBATCH --cpus-per-task=256
-#SBATCH -J SOM_ENSEMBLE_LENS
+#SBATCH -J SOM_ENSEMBLE_SOURCE
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -26,4 +26,4 @@ SIZE=5
 WIDTH=1000
 LENGTH=400
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-python -u "${BASE_PATH}FILE/ENSEMBLE/LENS/SOM_ENSEMBLE.py" --path=$BASE_PATH --size=$SIZE --width=$WIDTH --length=$LENGTH
+python -u "${BASE_PATH}FILE/ENSEMBLE/SOURCE/FZB_ENSEMBLE.py" --path=$BASE_PATH --size=$SIZE --width=$WIDTH --length=$LENGTH
