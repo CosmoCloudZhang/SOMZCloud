@@ -3,7 +3,16 @@ import yaml
 import argparse
 
 def main(path, index):
+    """
+    Main function to create the FZB_ESTIMATE.yaml file
     
+    Arguments:
+        path (str): The path to the base folder
+        index (int): Index of the sample for the modelling
+    
+    Returns:
+        None
+    """
     # Path
     data_path = os.path.join(path, 'DATA/')
     
@@ -56,5 +65,5 @@ if __name__ == '__main__':
     PATH = PARSE.parse_args().path
     INDEX = PARSE.parse_args().index
     
-    main(PATH, INDEX)
+    RESULT = main(PATH, INDEX)
     print('Index: {}'.format(INDEX))
