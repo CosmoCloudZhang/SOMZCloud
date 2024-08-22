@@ -15,24 +15,20 @@ def main(path):
     
     # Ensemble
     with h5py.File(os.path.join(data_path, 'ENSEMBLE/LENS/FZB_ENSEMBLE_SELECT.hdf5'), 'r') as file:
-        lens_ensemble_data = file['data'][:].astype(numpy.float32)
-        lens_ensemble_sample = file['sample'][:].astype(numpy.float32)
+        lens_data_select = file['data'][:].astype(numpy.float32)
+        lens_sample_select = file['sample'][:].astype(numpy.float32)
     
-    with h5py.File(os.path.join(data_path, 'ENSEMBLE/SOURCE/ENSEMBLE.hdf5'), 'r') as file:
-        source_ensemble_data = file['data'][:].astype(numpy.float32)
-        source_ensemble_sample = file['sample'][:].astype(numpy.float32)
+    with h5py.File(os.path.join(data_path, 'ENSEMBLE/SOURCE/FZB_ENSEMBLE_SELECT.hdf5'), 'r') as file:
+        source_data_select = file['data'][:].astype(numpy.float32)
+        source_sample_select = file['sample'][:].astype(numpy.float32)
     
     with h5py.File(os.path.join(data_path, 'ENSEMBLE/LENS/FZB_ENSEMBLE.hdf5'), 'r') as file:
-        lens_fzb_ensemble_data = file['data'][:].astype(numpy.float32)
-        lens_fzb_ensemble_sample = file['sample'][:].astype(numpy.float32)
+        lens_data = file['data'][:].astype(numpy.float32)
+        lens_sample = file['sample'][:].astype(numpy.float32)
     
     with h5py.File(os.path.join(data_path, 'ENSEMBLE/SOURCE/FZB_ENSEMBLE.hdf5'), 'r') as file:
-        source_fzb_ensemble_data = file['data'][:].astype(numpy.float32)
-        source_fzb_ensemble_sample = file['sample'][:].astype(numpy.float32)
-    
-    with h5py.File(os.path.join(data_path, 'ENSEMBLE/LENS/SOM_ENSEMBLE.hdf5'), 'r') as file:
-        som_lens_ensemble_data = file['data'][:].astype(numpy.float32)
-        som_lens_ensemble_sample = file['sample'][:].astype(numpy.float32)
+        source_data = file['data'][:].astype(numpy.float32)
+        source_sample = file['sample'][:].astype(numpy.float32)
     
     z1 = 0.0
     z2 = 3.0
@@ -42,24 +38,20 @@ def main(path):
     z_delta = (z2 - z1) / grid_size
     z_data = numpy.linspace(z1 + z_delta / 2, z2 - z_delta / 2, grid_size)
     
-    lens_mean_data = numpy.sum(lens_ensemble_data * z_data[numpy.newaxis, :], axis=1) * z_delta
-    lens_mean_sample = numpy.sum(lens_ensemble_sample * z_data[numpy.newaxis, numpy.newaxis, :], axis=2) * z_delta
+    lens_mean_data_select = numpy.sum(lens_data_select * z_data[numpy.newaxis, :], axis=1) * z_delta
+    lens_mean_sample_select = numpy.sum(lens_sample_select * z_data[numpy.newaxis, numpy.newaxis, :], axis=2) * z_delta
     
-    source_mean_data = numpy.sum(source_ensemble_data * z_data[numpy.newaxis, :], axis=1) * z_delta
-    source_mean_sample = numpy.sum(source_ensemble_sample * z_data[numpy.newaxis, numpy.newaxis, :], axis=2) * z_delta
+    source_mean_data_select = numpy.sum(source_data_select * z_data[numpy.newaxis, :], axis=1) * z_delta
+    source_mean_sample_select = numpy.sum(source_sample_select * z_data[numpy.newaxis, numpy.newaxis, :], axis=2) * z_delta
     
-    lens_fzb_mean_data = numpy.sum(lens_fzb_ensemble_data * z_data[numpy.newaxis, :], axis=1) * z_delta
-    lens_fzb_mean_sample = numpy.sum(lens_fzb_ensemble_sample * z_data[numpy.newaxis, numpy.newaxis, :], axis=2) * z_delta
+    lens_mean_data = numpy.sum(lens_data * z_data[numpy.newaxis, :], axis=1) * z_delta
+    lens_mean_sample = numpy.sum(lens_sample * z_data[numpy.newaxis, numpy.newaxis, :], axis=2) * z_delta
     
-    source_fzb_mean_data = numpy.sum(source_fzb_ensemble_data * z_data[numpy.newaxis, :], axis=1) * z_delta
-    source_fzb_mean_sample = numpy.sum(source_fzb_ensemble_sample * z_data[numpy.newaxis, numpy.newaxis, :], axis=2) * z_delta
+    source_mean_data = numpy.sum(source_data * z_data[numpy.newaxis, :], axis=1) * z_delta
+    source_mean_sample = numpy.sum(source_sample * z_data[numpy.newaxis, numpy.newaxis, :], axis=2) * z_delta
     
-    som_lens_mean_data = numpy.sum(som_lens_ensemble_data * z_data[numpy.newaxis, :], axis=1) * z_delta
-    som_lens_mean_sample = numpy.sum(som_lens_ensemble_sample * z_data[numpy.newaxis, numpy.newaxis, :], axis=2) * z_delta
-    
-    print(lens_mean_data)
-    print(lens_fzb_mean_data)
-    print(som_lens_mean_data)
+    print(lens_mean_data_select, lens_mean_data)
+    print(source_mean_data_select, source_mean_data)
     
     # Configuration
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
@@ -74,28 +66,29 @@ def main(path):
     figure, plot = pyplot.subplots(ncols=2, nrows=bin_size, figsize=(12, 15))
     
     for m in range(bin_size):
-        plot[m, 0].hist(lens_mean_sample[:, m] - lens_mean_data[m], bins=size, range=(shift1, shift2), color='black', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 0].hist(lens_mean_sample_select[:, m] - lens_mean_data_select[m], bins=size, range=(shift1, shift2), color='darkblue', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 0].hist(lens_fzb_mean_sample[:, m] - lens_fzb_mean_data[m], bins=size, range=(shift1, shift2), color='darkred', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 0].hist(lens_mean_sample[:, m] - lens_mean_data[m], bins=size, range=(shift1, shift2), color='darkred', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 0].hist(som_lens_mean_sample[:, m] - som_lens_mean_data[m], bins=size, range=(shift1, shift2), color='darkorange', density=True, histtype='step', linewidth=2.0, linestyle='-')
-        
+        plot[m, 0].set_ylim(0, 450)
+        plot[m, 0].set_yticklabels([])
         plot[m, 0].set_xlim(shift1, shift2)
+        plot[m, 0].set_ylabel(r'$\mathcal{P} \left( \Delta z \right)$')
         
-        plot[m, 1].hist(source_mean_sample[:, m] - source_mean_data[m], bins=size, range=(shift1, shift2), color='black', density=True, histtype='step', linewidth=2.0, linestyle='-', label=r'$\mathrm{HOS}$')
+        plot[m, 1].hist(source_mean_sample_select[:, m] - source_mean_data_select[m], bins=size, range=(shift1, shift2), color='darkblue', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 1].hist(source_fzb_mean_sample[:, m] - source_fzb_mean_data[m], bins=size, range=(shift1, shift2), color='darkred', density=True, histtype='step', linewidth=2.0, linestyle='-', label=r'$\mathrm{FZB}$')
+        plot[m, 1].hist(source_mean_sample[:, m] - source_mean_data[m], bins=size, range=(shift1, shift2), color='darkred', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
+        plot[m, 1].set_ylim(0, 450)
         plot[m, 1].set_yticklabels([])
         plot[m, 1].set_xlim(shift1, shift2)
-        plot[m, 1].legend(loc='upper right')
         
         if m != bin_size - 1:
             plot[m, 0].set_xticklabels([])
             plot[m, 1].set_xticklabels([])
     
     figure.subplots_adjust(wspace=0.0, hspace=0.0)
-    figure.savefig(os.path.join(plot_path, 'ENSEMBLE/ENSEMBLE.pdf'), bbox_inches='tight')
+    figure.savefig(os.path.join(plot_path, 'ENSEMBLE/FZB_ENSEMBLE.pdf'), bbox_inches='tight')
     
     # Return
     end = time.time()
