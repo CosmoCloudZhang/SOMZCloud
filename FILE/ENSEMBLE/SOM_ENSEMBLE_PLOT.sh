@@ -3,12 +3,12 @@
 #SBATCH --nodes=1
 #SBATCH -q regular
 #SBATCH --ntasks=1
-#SBATCH --time=24:00:00
+#SBATCH --time=04:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
+#SBATCH -J ENSEMBLE_PLOT
 #SBATCH --cpus-per-task=256
-#SBATCH -J SOM_ENSEMBLE_LENS
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -21,9 +21,11 @@ module load cray-hdf5-parallel
 source $HOME/.bashrc
 conda activate $RAILENV
 
+# Set OpenMP environment
+export OMP_NUM_THREADS=16
+export OMP_PLACES=threads
+export OMP_PROC_Bind=spread
+
 # Initialize the parallisation
-SIZE=5
-WIDTH=1000
-LENGTH=400
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-python -u $BASE_PATH/FILE/ENSEMBLE/SOM_ENSEMBLE_LENS.py --path="${BASE_PATH}" --size=$SIZE --width=$WIDTH --length=$LENGTH
+python -u $BASE_PATH/FILE/ENSEMBLE/FZB/FZB_ENSEMBLE_PLOT.py --path="${BASE_PATH}"

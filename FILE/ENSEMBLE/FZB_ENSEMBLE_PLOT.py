@@ -14,7 +14,7 @@ def main(path):
     os.makedirs(os.path.join(plot_path, 'ENSEMBLE/'), exist_ok=True)
     
     # Ensemble
-    with h5py.File(os.path.join(data_path, 'ENSEMBLE/LENS/ENSEMBLE.hdf5'), 'r') as file:
+    with h5py.File(os.path.join(data_path, 'ENSEMBLE/LENS/FZB_ENSEMBLE_SELECT.hdf5'), 'r') as file:
         lens_ensemble_data = file['data'][:].astype(numpy.float32)
         lens_ensemble_sample = file['sample'][:].astype(numpy.float32)
     
@@ -57,6 +57,10 @@ def main(path):
     som_lens_mean_data = numpy.sum(som_lens_ensemble_data * z_data[numpy.newaxis, :], axis=1) * z_delta
     som_lens_mean_sample = numpy.sum(som_lens_ensemble_sample * z_data[numpy.newaxis, numpy.newaxis, :], axis=2) * z_delta
     
+    print(lens_mean_data)
+    print(lens_fzb_mean_data)
+    print(som_lens_mean_data)
+    
     # Configuration
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
     pyplot.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
@@ -70,16 +74,15 @@ def main(path):
     figure, plot = pyplot.subplots(ncols=2, nrows=bin_size, figsize=(12, 15))
     
     for m in range(bin_size):
-        plot[m, 0].hist(lens_mean_sample[:, m] - lens_mean_data[m], bins=size, range=(shift1, shift2), color='black', density=True, histtype='step', linewidth=2.0, linestyle='-', label=r'$\mathrm{Fiducial}$')
+        plot[m, 0].hist(lens_mean_sample[:, m] - lens_mean_data[m], bins=size, range=(shift1, shift2), color='black', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 0].hist(lens_fzb_mean_sample[:, m] - lens_fzb_mean_data[m], bins=size, range=(shift1, shift2), color='darkred', density=True, histtype='step', linewidth=2.0, linestyle='-', label=r'$\mathrm{FZB}$')
+        plot[m, 0].hist(lens_fzb_mean_sample[:, m] - lens_fzb_mean_data[m], bins=size, range=(shift1, shift2), color='darkred', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 0].hist(som_lens_mean_sample[:, m] - som_lens_mean_data[m], bins=size, range=(shift1, shift2), color='darkorange', density=True, histtype='step', linewidth=2.0, linestyle='-', label=r'$\mathrm{SOM}$')
+        plot[m, 0].hist(som_lens_mean_sample[:, m] - som_lens_mean_data[m], bins=size, range=(shift1, shift2), color='darkorange', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
         plot[m, 0].set_xlim(shift1, shift2)
-        plot[m, 0].legend(loc='upper right')
         
-        plot[m, 1].hist(source_mean_sample[:, m] - source_mean_data[m], bins=size, range=(shift1, shift2), color='black', density=True, histtype='step', linewidth=2.0, linestyle='-', label=r'$\mathrm{Fiducial}$')
+        plot[m, 1].hist(source_mean_sample[:, m] - source_mean_data[m], bins=size, range=(shift1, shift2), color='black', density=True, histtype='step', linewidth=2.0, linestyle='-', label=r'$\mathrm{HOS}$')
         
         plot[m, 1].hist(source_fzb_mean_sample[:, m] - source_fzb_mean_data[m], bins=size, range=(shift1, shift2), color='darkred', density=True, histtype='step', linewidth=2.0, linestyle='-', label=r'$\mathrm{FZB}$')
         

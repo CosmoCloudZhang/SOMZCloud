@@ -7,7 +7,7 @@ import argparse
 
 def main(path, size, width, length):
     """
-    This function computes the ensemble average of the SOURCEing data.
+    This function computes the ensemble average of the LENSing data.
     
     Arguments:    
         path : str : the path to the base folder
@@ -23,22 +23,39 @@ def main(path, size, width, length):
     data_path = os.path.join(path, 'DATA/')
     
     os.makedirs(os.path.join(data_path, 'ENSEMBLE/'), exist_ok=True)
-    os.makedirs(os.path.join(data_path, 'ENSEMBLE/SOURCE/'), exist_ok=True)
+    os.makedirs(os.path.join(data_path, 'ENSEMBLE/LENS/'), exist_ok=True)
     
     # Redshift
+    z1 = 0.0
+    z2 = 3.0
     grid_size = 300
-    height = length * width
-    ensemble_sample = numpy.zeros((height, size, grid_size), dtype=numpy.float32)
+    z_delta = (z2 - z1) / grid_size
+    z_grid = numpy.linspace(z1, z2, grid_size + 1)
+    z_data = numpy.linspace(z1 + z_delta / 2, z2 - z_delta / 2, grid_size)
     
     # Ensemble
+    height = length * width
+    sample = numpy.zeros((length, width, size, grid_size), dtype=numpy.float32)
+    ensemble_sample = numpy.zeros((height, size, grid_size), dtype=numpy.float32)
+    
     for n in range(length):
-        data_name = os.path.join(data_path, 'BIN/SOURCE/SOURCE{}/SELECT.hdf5'.format(n + 1))
-        with h5py.File(data_name, 'r') as file:
-            ensemble_sample[n * width: (n + 1) * width, :, :] = file['sample'][:].astype(numpy.float32)
+        for m in range(size):
+            sample_name = os.path.join(data_path, 'SOM/LENS/LENS{}/SOM_SELECT{}.hdf5'.format(n + 1, m + 1))
+            with h5py.File(sample_name, 'r') as file:
+                sample[n, :, m, :] = numpy.apply_along_axis(lambda x: numpy.interp(x=z_data, xp=z_grid, fp=x), arr=file['data']['pdfs'][:].astype(numpy.float32), axis=1)
+    
+    for k in range(height):
+        length_index = numpy.arange(length, dtype=numpy.int32)
+        width_index = numpy.random.choice(numpy.arange(width, dtype=numpy.int32), size=length, replace=True)
+        
+        alpha = numpy.random.dirichlet(numpy.ones(length), size=1).flatten()
+        beta = numpy.random.dirichlet(alpha, size=1).flatten()
+        
+        ensemble_sample[k, :, :] = numpy.sum(beta[:, numpy.newaxis, numpy.newaxis] * sample[length_index, width_index, :, :], axis=0)
     ensemble_data = numpy.mean(ensemble_sample, axis=0)
     
     # Save
-    with h5py.File(os.path.join(data_path, 'ENSEMBLE/SOURCE/ENSEMBLE.hdf5'), 'w') as file:
+    with h5py.File(os.path.join(data_path, 'ENSEMBLE/LENS/SOM_ENSEMBLE_SELECT.hdf5'), 'w') as file:
         file.create_dataset('data', data=ensemble_data, dtype=numpy.float32)
         file.create_dataset('sample', data=ensemble_sample, dtype=numpy.float32)
     

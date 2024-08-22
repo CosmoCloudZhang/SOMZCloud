@@ -25,5 +25,5 @@ conda activate $RAILENV
 SIZE=5
 WIDTH=1000
 LENGTH=400
-BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-python -u $BASE_PATH/FILE/ENSEMBLE/ENSEMBLE_LENS.py --path="${BASE_PATH}" --size=$SIZE --width=$WIDTH --length=$LENGTH
+BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud"
+python -u $BASE_PATH/FILE/ENSEMBLE/LENS/FZB_ENSEMBLE.py --path="${BASE_PATH}" --size=$SIZE --width=$WIDTH --length=$LENGTH
