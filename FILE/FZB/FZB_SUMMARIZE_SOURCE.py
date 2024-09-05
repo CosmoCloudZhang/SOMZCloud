@@ -50,8 +50,8 @@ def main(path, index):
     os.makedirs(os.path.join(data_path, 'FZB/SOURCE/SOURCE{}'.format(index)), exist_ok=True)
     
     # Bin
-    with h5py.File(os.path.join(data_path, 'BIN/SOURCE/SOURCE{}/BIN.hdf5'.format(index)), 'r') as file:
-        bin_source = file['bin'][:].astype(numpy.float32)
+    with h5py.File(os.path.join(data_path, 'FZB/SOURCE/BIN.hdf5'), 'r') as file:
+        bin_source = file['bin'][index - 1, :].astype(numpy.float32)
     
     # Redshift
     z1 = 0.0
