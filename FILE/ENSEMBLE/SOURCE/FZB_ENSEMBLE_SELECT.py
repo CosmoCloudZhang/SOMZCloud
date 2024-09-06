@@ -32,7 +32,7 @@ def main(path, size, width, length):
     ensemble_sample = numpy.zeros((height, size, grid_size), dtype=numpy.float32)
     
     for n in range(length):
-        sample_name = os.path.join(data_path, 'BIN/SOURCE/SOURCE{}/SELECT.hdf5'.format(n + 1))
+        sample_name = os.path.join(data_path, 'FZB/SOURCE/SOURCE{}/FZB_SUMMARIZE_SELECT.hdf5'.format(n + 1))
         with h5py.File(sample_name, 'r') as file:
             sample[n, :, :, :] = file['sample'][:].astype(numpy.float32)
     
@@ -47,7 +47,7 @@ def main(path, size, width, length):
     ensemble_data = numpy.mean(ensemble_sample, axis=0)
     
     # Save
-    with h5py.File(os.path.join(data_path, 'ENSEMBLE/SOURCE/FZB_ENSEMBLE.hdf5'), 'w') as file:
+    with h5py.File(os.path.join(data_path, 'ENSEMBLE/SOURCE/FZB_ENSEMBLE_SELECT.hdf5'), 'w') as file:
         file.create_dataset('data', data=ensemble_data, dtype=numpy.float32)
         file.create_dataset('sample', data=ensemble_sample, dtype=numpy.float32)
     

@@ -33,9 +33,9 @@ def main(path, size, width, length):
     
     for n in range(length):
         for m in range(size):
-            sample_name = os.path.join(data_path, 'SOM/LENS/LENS{}/SOM_SELECT{}.hdf5'.format(n + 1, m + 1))
+            sample_name = os.path.join(data_path, 'SOM/LENS/LENS{}/SOM_SUMMARIZE_SELECT{}.hdf5'.format(n + 1, m + 1))
             with h5py.File(sample_name, 'r') as file:
-                sample[n, :, m, :] = file['data'][:].astype(numpy.float32)
+                sample[n, :, m, :] = file['data']['yvals'][:].astype(numpy.float32)
     
     for k in range(height):
         length_index = numpy.arange(length, dtype=numpy.int32)

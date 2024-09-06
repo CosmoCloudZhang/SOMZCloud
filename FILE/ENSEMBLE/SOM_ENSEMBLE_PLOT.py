@@ -14,19 +14,19 @@ def main(path):
     os.makedirs(os.path.join(plot_path, 'ENSEMBLE/'), exist_ok=True)
     
     # Ensemble
-    with h5py.File(os.path.join(data_path, 'ENSEMBLE/LENS/FZB_ENSEMBLE_SELECT.hdf5'), 'r') as file:
+    with h5py.File(os.path.join(data_path, 'ENSEMBLE/LENS/SOM_ENSEMBLE_SELECT.hdf5'), 'r') as file:
         lens_data_select = file['data'][:].astype(numpy.float32)
         lens_sample_select = file['sample'][:].astype(numpy.float32)
     
-    with h5py.File(os.path.join(data_path, 'ENSEMBLE/SOURCE/FZB_ENSEMBLE_SELECT.hdf5'), 'r') as file:
+    with h5py.File(os.path.join(data_path, 'ENSEMBLE/SOURCE/SOM_ENSEMBLE_SELECT.hdf5'), 'r') as file:
         source_data_select = file['data'][:].astype(numpy.float32)
         source_sample_select = file['sample'][:].astype(numpy.float32)
     
-    with h5py.File(os.path.join(data_path, 'ENSEMBLE/LENS/FZB_ENSEMBLE.hdf5'), 'r') as file:
+    with h5py.File(os.path.join(data_path, 'ENSEMBLE/LENS/SOM_ENSEMBLE.hdf5'), 'r') as file:
         lens_data = file['data'][:].astype(numpy.float32)
         lens_sample = file['sample'][:].astype(numpy.float32)
     
-    with h5py.File(os.path.join(data_path, 'ENSEMBLE/SOURCE/FZB_ENSEMBLE.hdf5'), 'r') as file:
+    with h5py.File(os.path.join(data_path, 'ENSEMBLE/SOURCE/SOM_ENSEMBLE.hdf5'), 'r') as file:
         source_data = file['data'][:].astype(numpy.float32)
         source_sample = file['sample'][:].astype(numpy.float32)
     
@@ -88,7 +88,7 @@ def main(path):
             plot[m, 1].set_xticklabels([])
     
     figure.subplots_adjust(wspace=0.0, hspace=0.0)
-    figure.savefig(os.path.join(plot_path, 'ENSEMBLE/FZB_ENSEMBLE.pdf'), bbox_inches='tight')
+    figure.savefig(os.path.join(plot_path, 'ENSEMBLE/SOM_ENSEMBLE.pdf'), bbox_inches='tight')
     
     # Return
     end = time.time()
