@@ -28,4 +28,4 @@ export OMP_PROC_Bind=spread
 
 # Initialize the parallisation
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-python -u "${BASE_PATH}FILE/ENSEMBLE/FZB_ENSEMBLE_PLOT.py" --path=$BASE_PATH
+python -u "${BASE_PATH}FILE/ENSEMBLE/FIGURE/ENSEMBLE_FIGURE.py" --path=$BASE_PATH

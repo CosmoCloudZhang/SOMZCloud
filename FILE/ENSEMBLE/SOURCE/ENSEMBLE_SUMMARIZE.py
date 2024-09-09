@@ -119,7 +119,7 @@ if __name__ == '__main__':
     
     # Multiprocessing
     SIZE = LENGTH // NUMBER
-    for CHUNK in range(SIZE // 2, SIZE):
+    for CHUNK in range(SIZE):
         print('CHUNK: {}'.format(CHUNK + 1))
         with multiprocessing.Pool(processes=NUMBER) as POOL:
             RESULT = POOL.starmap(main, [(PATH, INDEX) for INDEX in range(CHUNK * NUMBER + 1, (CHUNK + 1) * NUMBER + 1)])

@@ -22,11 +22,11 @@ def main(path):
         source_data_select = file['data'][:].astype(numpy.float32)
         source_sample_select = file['sample'][:].astype(numpy.float32)
     
-    with h5py.File(os.path.join(data_path, 'ENSEMBLE/LENS/FZB_ENSEMBLE.hdf5'), 'r') as file:
+    with h5py.File(os.path.join(data_path, 'ENSEMBLE/LENS/ENSEMBLE.hdf5'), 'r') as file:
         lens_data = file['data'][:].astype(numpy.float32)
         lens_sample = file['sample'][:].astype(numpy.float32)
     
-    with h5py.File(os.path.join(data_path, 'ENSEMBLE/SOURCE/FZB_ENSEMBLE.hdf5'), 'r') as file:
+    with h5py.File(os.path.join(data_path, 'ENSEMBLE/SOURCE/ENSEMBLE.hdf5'), 'r') as file:
         source_data = file['data'][:].astype(numpy.float32)
         source_sample = file['sample'][:].astype(numpy.float32)
     
@@ -87,7 +87,7 @@ def main(path):
     figure.supylabel(r'$\mathcal{P} \left( \langle z \rangle \right)$')
     
     figure.subplots_adjust(wspace=0.0, hspace=0.2)
-    figure.savefig(os.path.join(plot_path, 'ENSEMBLE/FZB_ENSEMBLE.pdf'), bbox_inches='tight')
+    figure.savefig(os.path.join(plot_path, 'ENSEMBLE/ENSEMBLE.pdf'), bbox_inches='tight')
     
     # Return
     end = time.time()
