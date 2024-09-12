@@ -19,7 +19,7 @@ def summarize(z_pdf, width):
         numpy.ndarray: The summarized data.
     """
     sample_size, pdf_size = z_pdf.shape
-    summarize_data = numpy.zeros((width, pdf_size), dtype=numpy.float32)
+    summarize_data = numpy.zeros((width, pdf_size), dtype=numpy.float64)
     
     for n in range(width):
         z_index = numpy.random.randint(0, sample_size, size=sample_size)
@@ -84,8 +84,8 @@ def main(path, index):
             
             file['meta'].create_dataset(name='pdf_name', data=['hist'])
             file['meta'].create_dataset(name='pdf_version', data=[0.0])
-            file['meta'].create_dataset(name='bins', data=z_bin, dtype=numpy.float32)
-            file['data'].create_dataset(name='pdfs', data=summarize_single, dtype=numpy.float32)
+            file['meta'].create_dataset(name='bins', data=z_bin, dtype=numpy.float64)
+            file['data'].create_dataset(name='pdfs', data=summarize_single, dtype=numpy.float64)
         del summarize_single
         
         with h5py.File(os.path.join(data_path, 'ENSEMBLE/LENS/LENS{}/SUMMARIZE{}.hdf5'.format(index, m + 1)), 'w') as file:
@@ -94,8 +94,8 @@ def main(path, index):
             
             file['meta'].create_dataset(name='pdf_name', data=['hist'])
             file['meta'].create_dataset(name='pdf_version', data=[0.0])
-            file['meta'].create_dataset(name='bins', data=z_bin, dtype=numpy.float32)
-            file['data'].create_dataset(name='pdfs', data=summarize_data, dtype=numpy.float32)
+            file['meta'].create_dataset(name='bins', data=z_bin, dtype=numpy.float64)
+            file['data'].create_dataset(name='pdfs', data=summarize_data, dtype=numpy.float64)
         del summarize_data
     
     # Return

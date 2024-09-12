@@ -28,13 +28,13 @@ def main(path, size, width, length):
     # Ensemble
     grid_size = 300
     height = length * width
-    sample = numpy.zeros((length, width, size, grid_size), dtype=numpy.float32)
-    ensemble_sample = numpy.zeros((height, size, grid_size), dtype=numpy.float32)
+    sample = numpy.zeros((length, width, size, grid_size), dtype=numpy.float64)
+    ensemble_sample = numpy.zeros((height, size, grid_size), dtype=numpy.float64)
     
     for n in range(length):
         sample_name = os.path.join(data_path, 'FZB/SOURCE/SOURCE{}/FZB_SUMMARIZE_SELECT.hdf5'.format(n + 1))
         with h5py.File(sample_name, 'r') as file:
-            sample[n, :, :, :] = file['sample'][:].astype(numpy.float32)
+            sample[n, :, :, :] = file['sample'][:].astype(numpy.float64)
     
     for k in range(height):
         length_index = numpy.arange(length, dtype=numpy.int32)
@@ -48,8 +48,8 @@ def main(path, size, width, length):
     
     # Save
     with h5py.File(os.path.join(data_path, 'ENSEMBLE/SOURCE/FZB_ENSEMBLE_SELECT.hdf5'), 'w') as file:
-        file.create_dataset('data', data=ensemble_data, dtype=numpy.float32)
-        file.create_dataset('sample', data=ensemble_sample, dtype=numpy.float32)
+        file.create_dataset('data', data=ensemble_data, dtype=numpy.float64)
+        file.create_dataset('sample', data=ensemble_sample, dtype=numpy.float64)
     
     # Return
     end = time.time()

@@ -28,14 +28,14 @@ def main(path, size, width, length):
     # Ensemble
     grid_size = 300
     height = length * width
-    sample = numpy.zeros((length, width, size, grid_size), dtype=numpy.float32)
-    ensemble_sample = numpy.zeros((height, size, grid_size), dtype=numpy.float32)
+    sample = numpy.zeros((length, width, size, grid_size), dtype=numpy.float64)
+    ensemble_sample = numpy.zeros((height, size, grid_size), dtype=numpy.float64)
     
     for n in range(length):
         for m in range(size):
             sample_name = os.path.join(data_path, 'SOM/LENS/LENS{}/SOM_SUMMARIZE{}.hdf5'.format(n + 1, m + 1))
             with h5py.File(sample_name, 'r') as file:
-                data = file['data']['pdfs'][:].astype(numpy.float32)
+                data = file['data']['pdfs'][:].astype(numpy.float64)
                 sample[n, :, m, :] = (data[:, +1:] + data[:, :-1]) / 2
     
     for k in range(height):
@@ -50,8 +50,8 @@ def main(path, size, width, length):
     
     # Save
     with h5py.File(os.path.join(data_path, 'ENSEMBLE/LENS/SOM_ENSEMBLE.hdf5'), 'w') as file:
-        file.create_dataset('data', data=ensemble_data, dtype=numpy.float32)
-        file.create_dataset('sample', data=ensemble_sample, dtype=numpy.float32)
+        file.create_dataset('data', data=ensemble_data, dtype=numpy.float64)
+        file.create_dataset('sample', data=ensemble_sample, dtype=numpy.float64)
     
     # Return
     end = time.time()
