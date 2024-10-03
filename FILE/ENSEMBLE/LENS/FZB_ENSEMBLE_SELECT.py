@@ -47,9 +47,16 @@ def main(path, size, width, length):
     ensemble_data = numpy.mean(ensemble_sample, axis=0)
     
     # Save
-    with h5py.File(os.path.join(data_path, 'ENSEMBLE/LENS/FZB_ENSEMBLE_SELECT.hdf5'), 'w') as file:
-        file.create_dataset('data', data=ensemble_data, dtype=numpy.float64)
+    with h5py.File(os.path.join(data_path, 'ENSEMBLE/LENS/FZB_ENSEMBLE_SELECT_SAMPLE.hdf5'), 'w') as file:
         file.create_dataset('sample', data=ensemble_sample, dtype=numpy.float64)
+    
+    z1 = 0.0
+    z2 = 3.0
+    z_delta = (z2 - z1) / grid_size
+    z_grid = numpy.linspace(z1 + z_delta / 2, z2 - z_delta / 2, grid_size)
+    with h5py.File(os.path.join(data_path, 'ENSEMBLE/LENS/FZB_ENSEMBLE_SELECT_MEAN.hdf5'), 'w') as file:
+        file.create_dataset('DATA', data=ensemble_data, dtype=numpy.float64)
+        file.create_dataset('Z', data=z_grid, dtype=numpy.float64)
     
     # Return
     end = time.time()
