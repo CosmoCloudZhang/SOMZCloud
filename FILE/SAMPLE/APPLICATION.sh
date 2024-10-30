@@ -30,4 +30,8 @@ export OMP_PROC_Bind=spread
 NUMBER=16
 LENGTH=400
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-srun -n 1 --cpu-bind=none python -u "${BASE_PATH}/FILE/SAMPLE/APPLICATION.py" --path=$BASE_PATH --number=$NUMBER --length=$LENGTH
+BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/yhzhang/ZCloud"
+BASE_DIRECTORY="/global/cfs/cdirs/lsst/projecta/lsst/groups/CS/roman_rubin_2023_v1.1.3/"
+
+# Run the application
+python -u "${BASE_PATH}/FILE/SAMPLE/APPLICATION.py" --path=$BASE_PATH --folder=$BASE_FOLDER --directory=$BASE_DIRECTORY --length=$LENGTH --number=$NUMBER 
