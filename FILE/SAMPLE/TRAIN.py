@@ -50,7 +50,7 @@ def select(bin_datasets, input_datasets, augment_datasets):
     weight = scipy.interpolate.interpn(points=(z_data, mag_data, color_data), values=factor, xi=(z_augment, mag_augment, color_augment), method='linear', bounds_error=False, fill_value=0.0)
     weight = weight / numpy.sum(weight)
     
-    count = len(z_input) // 3
+    count = len(z_input) // 4
     index = numpy.arange(len(z_augment))
     index_sample = numpy.random.choice(index, size=count, replace=True, p=weight)
     
@@ -78,7 +78,7 @@ def augment(input_data, augment_data, select_data):
     return train_data
 
 
-def plot(bin_datasets, test_datasets, input_datasets, train_datasets, augmented_datasets):
+def plot(bin_datasets, test_datasets, input_datasets, train_datasets, augmentation_datasets):
     """
     Plot the data.
     
@@ -87,7 +87,7 @@ def plot(bin_datasets, test_datasets, input_datasets, train_datasets, augmented_
         test_datasets (list): The test datasets.
         input_datasets (list): The input datasets.
         train_datasets (list): The train datasets.
-        augmented_datasets (list): The augment datasets.
+        augmentation_datasets (list): The augment datasets.
     
     Returns:
         matplotlib.figure.Figure: The figure.
@@ -102,20 +102,20 @@ def plot(bin_datasets, test_datasets, input_datasets, train_datasets, augmented_
     z_test, mag_test, color_test = test_datasets
     z_input, mag_input, color_input = input_datasets
     z_train, mag_train, color_train = train_datasets
-    z_augmented, mag_augmented, color_augmented = augmented_datasets
+    z_augmentation, mag_augmentation, color_augmentation = augmentation_datasets
     
     figure = pyplot.figure(figsize = (9, 12))
     gridspec = GridSpec(nrows=1, ncols=2, figure=figure, top=0.95, bottom=0.75, hspace=0.2, wspace=0.0)
     
     plot = figure.add_subplot(gridspec[0,:])
     
-    plot.hist(z_test, bins=z_bin, linewidth=1.0, density=True, histtype='step', color='black', label=r'$\mathrm{test}$')
+    plot.hist(z_test, bins=z_bin, linewidth=1.0, density=True, histtype='step', color='black', label=r'$\mathrm{application}$')
     
-    plot.hist(z_train, bins=z_bin, linewidth=1.0, density=True, histtype='step', color='darkred', label=r'$\mathrm{train}$')
+    plot.hist(z_input, bins=z_bin, linewidth=1.0, density=True, histtype='step', color='darkred', label=r'$\mathrm{input}$')
     
-    plot.hist(z_input, bins=z_bin, linewidth=1.0, density=True, histtype='step', color='darkblue', label=r'$\mathrm{input}$')
+    plot.hist(z_augmentation, bins=z_bin, linewidth=1.0, density=True, histtype='step', color='darkorange', label=r'$\mathrm{augmentation}$')
     
-    plot.hist(z_augmented, bins=z_bin, linewidth=1.0, density=True, histtype='step', color='darkorange', label=r'$\mathrm{augmented}$')
+    plot.hist(z_train, bins=z_bin, linewidth=1.0, density=True, histtype='step', color='darkblue', label=r'$\mathrm{training}$')
     
     plot.legend()
     plot.set_xlim(z_bin.min(), z_bin.max())
@@ -125,9 +125,9 @@ def plot(bin_datasets, test_datasets, input_datasets, train_datasets, augmented_
     
     gridspec = GridSpec(nrows=2, ncols=2, figure=figure, top=0.70, bottom=0.15, hspace=0.0, wspace=0.0)
     
-    plot = figure.add_subplot(gridspec[0,0])
+    plot = figure.add_subplot(gridspec[0, 0])
     
-    plot.text(3.0, 15.0, r'$\mathrm{test}$')
+    plot.text(3.0, 15.0, r'$\mathrm{application}$')
     
     map_test, color_bin, mag_bin, mesh_test = plot.hist2d(color_test, mag_test, bins=[color_bin, mag_bin], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')
     
@@ -138,22 +138,22 @@ def plot(bin_datasets, test_datasets, input_datasets, train_datasets, augmented_
     plot.set_ylim(mag_bin.min(), mag_bin.max())
     plot.set_xlim(color_bin.min(), color_bin.max())
     
-    plot = figure.add_subplot(gridspec[0,1])
+    plot = figure.add_subplot(gridspec[0, 1])
     
-    plot.text(3.0, 15.0, r'$\mathrm{augmented}$')
+    plot.text(3.0, 15.0, r'$\mathrm{input}$')
     
-    map_augmented, color_bin, mag_bin, mesh_augmented = plot.hist2d(color_augmented, mag_augmented, bins=[color_bin, mag_bin], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')
+    map_input, color_bin, mag_bin, mesh_input = plot.hist2d(color_input, mag_input, bins=[color_bin, mag_bin], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')
     
     plot.set_yticklabels([])
     plot.set_xticklabels([])
     plot.set_ylim(mag_bin.min(), mag_bin.max())
     plot.set_xlim(color_bin.min(), color_bin.max())
     
-    plot = figure.add_subplot(gridspec[1,0])
+    plot = figure.add_subplot(gridspec[1, 0])
     
-    plot.text(3.0, 15.0, r'$\mathrm{input}$')
+    plot.text(3.0, 15.0, r'$\mathrm{augmentation}$')
     
-    map_input, color_bin, mag_bin, mesh_input = plot.hist2d(color_input, mag_input, bins=[color_bin, mag_bin], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')
+    map_augmentation, color_bin, mag_bin, mesh_augmentation = plot.hist2d(color_augmentation, mag_augmentation, bins=[color_bin, mag_bin], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')
     
     plot.set_ylim(mag_bin.min(), mag_bin.max())
     plot.set_xlim(color_bin.min(), color_bin.max())
@@ -161,9 +161,9 @@ def plot(bin_datasets, test_datasets, input_datasets, train_datasets, augmented_
     plot.set_ylabel(r'$i$')
     plot.set_xlabel(r'$g - z$')
     
-    plot = figure.add_subplot(gridspec[1,1])
+    plot = figure.add_subplot(gridspec[1, 1])
     
-    plot.text(3.0, 15.0, r'$\mathrm{train}$')
+    plot.text(3.0, 15.0, r'$\mathrm{training}$')
     
     map_train, color_bin, mag_bin, mesh_train = plot.hist2d(color_train, mag_train, bins=[color_bin, mag_bin], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')
     
@@ -225,17 +225,17 @@ def main(path, index):
     # Bin Datasets
     z1 = 0.0
     z2 = 3.0
-    z_bin_size = 150
+    z_bin_size = 50
     z_bin = numpy.linspace(z1, z2, z_bin_size + 1)
     
-    mag1 = 12.0
+    mag1 = 14.0
     mag2 = 26.0
-    mag_bin_size = 75
+    mag_bin_size = 50
     mag_bin = numpy.linspace(mag1, mag2, mag_bin_size + 1)
     
     color1 = -1.0
     color2 = +6.0
-    color_bin_size = 75
+    color_bin_size = 50
     color_bin = numpy.linspace(color1, color2, color_bin_size + 1)
     
     bin_datasets = [z_bin, mag_bin, color_bin]
@@ -252,7 +252,7 @@ def main(path, index):
     color_train = train_data['mag_g_lsst'] - train_data['mag_z_lsst']
     
     train_datasets = [z_train, mag_train, color_train]
-    augmented_datasets = [z_augment[select_data], mag_augment[select_data], color_augment[select_data]]
+    augmentation_datasets = [z_augment[select_data], mag_augment[select_data], color_augment[select_data]]
     
     with h5py.File(os.path.join(data_path, 'SAMPLE/TRAIN_SAMPLE{}.hdf5'.format(index)), 'w') as file:
         group = file.create_group('photometry')
@@ -260,7 +260,7 @@ def main(path, index):
             group.create_dataset(key, data=value)
     
     # Figure 
-    figure = plot(bin_datasets, test_datasets, input_datasets, train_datasets, augmented_datasets)
+    figure = plot(bin_datasets, test_datasets, input_datasets, train_datasets, augmentation_datasets)
     figure.savefig(plot_path + 'SAMPLE/SAMPLE{}.pdf'.format(index), bbox_inches = 'tight')
     pyplot.close(figure)
     

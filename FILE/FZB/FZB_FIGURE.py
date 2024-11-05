@@ -6,6 +6,44 @@ from rail import core
 import multiprocessing
 from matplotlib import pyplot, colors, gridspec
 
+def plot_select(z_grid, z_mean, z_lens, z_source, mag_source):
+    
+    mag1 = 14.0
+    mag2 = 26.0
+    mag_size = 100
+    mag_grid = numpy.linspace(mag1, mag2, mag_size + 1)
+    
+    slope = 4.0
+    intersection = 18.0
+    
+    z1_lens, z2_lens = z_lens
+    z1_source, z2_source = z_source
+    z_lens_grid = numpy.linspace(z1_lens, z2_lens, z_grid.size + 1)
+    
+    figure, plot = pyplot.subplots(nrows=1, ncols=1, figsize=(12, 12))
+    
+    z_mesh =plot.hist2d(x=z_mean, y=mag_source, bins=[z_grid, mag_grid], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')[-1]
+    
+    plot.plot(z_lens_grid, slope * z_lens_grid + intersection, color='black', linestyle='--', linewidth=2.0)
+    
+    plot.plot(numpy.ones(z_grid.size) * z1_lens, numpy.linspace(mag1, slope * z1_lens + intersection, z_grid.size), color='black', linestyle='--', linewidth=2.0)
+    
+    plot.plot(numpy.ones(z_grid.size) * z2_lens, numpy.linspace(mag1, slope * z2_lens + intersection, z_grid.size), color='black', linestyle='--', linewidth=2.0)
+    
+    plot.set_ylim(mag1, mag2)
+    plot.set_xlim(z1_source, z2_source)
+    
+    plot.set_ylabel(r'$i$')
+    plot.set_xlabel(r'$z_\mathrm{phot}$')
+    
+    # Color bar
+    color_bar = figure.colorbar(z_mesh, cax=figure.add_axes([0.15, 0.05, 0.70, 0.05]), orientation='horizontal')
+    color_bar.set_label(r'$\mathrm{Counts}$')
+    
+    # Return figure
+    figure.subplots_adjust(bottom=0.20, wspace=0.00, hspace=0.00)
+    return figure
+
 
 def plot_redshift(z_grid, z_mean, z_true, z_lens, z_source, mag_source):
     """
@@ -23,12 +61,6 @@ def plot_redshift(z_grid, z_mean, z_true, z_lens, z_source, mag_source):
         matplotlib.figure.Figure: The plotted figure.
     
     """
-    # Configuration
-    os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
-    pyplot.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
-    pyplot.rcParams['pgf.texsystem'] = 'pdflatex'
-    pyplot.rcParams['text.usetex'] = True
-    pyplot.rcParams['font.size'] = 20
     
     # Set variables
     z1_lens, z2_lens = z_lens
@@ -40,87 +72,85 @@ def plot_redshift(z_grid, z_mean, z_true, z_lens, z_source, mag_source):
     grid_size = 100
     z_grid = numpy.linspace(z_grid.min(), z_grid.max(), grid_size + 1)
     
+    sigma1 = 1e-4
+    sigma2 = 1e+0
+    sigma_grid = numpy.geomspace(sigma1, sigma2, grid_size + 1)
+    
     select_source = (z1_source < z_mean) & (z_mean < z2_source)
     select_lens = (z1_lens < z_mean) & (z_mean < z2_lens) & (mag_source < slope * z_mean + intersection)
     
-    # Plot
-    figure = pyplot.figure(figsize=(12, 12))
+    delta_lens = numpy.abs(z_mean[select_lens] - z_true[select_lens])
+    delta_source = numpy.abs(z_mean[select_source] - z_true[select_source])
     
-    plot = gridspec.GridSpec(nrows=2, ncols=2, figure=figure, height_ratios=[1, 3], width_ratios=[1, 1])
+    sigma_lens = delta_lens / (1 + z_true[select_lens])
+    sigma_source = delta_source / (1 + z_true[select_source])
+    
+    print('Lens: {} {}'.format(len(sigma_lens[sigma_lens > 0.1]) / len(sigma_lens) * 100, len(delta_lens[delta_lens > 1.0]) / len(delta_lens) * 100))
+    
+    print('Source: {} {}'.format(len(sigma_source[sigma_source > 0.1]) / len(sigma_source) * 100, len(delta_source[delta_source > 1.0]) / len(delta_source) * 100))
+    
+    # Plot
+    figure = pyplot.figure(figsize=(15, 12))
+    
+    plot = gridspec.GridSpec(nrows=2, ncols=2, figure=figure, height_ratios=[3, 1], width_ratios=[1, 1])
     
     # Plot 1
     plot1 = figure.add_subplot(plot[0, 0])
     
-    sigma_lens = numpy.zeros(grid_size)
-    for m in range(grid_size):
-        select = select_lens & (z_grid[m] < z_mean) & (z_mean < z_grid[m + 1])
-        if len(select[select]) > 0:
-            delta = numpy.log((1 + z_true[select]) / (1 + z_mean[select]))
-            sigma_lens[m] = (numpy.quantile(delta, 0.84) - numpy.quantile(delta, 0.16)) / 2
+    z_mesh = plot1.hist2d(x=z_mean[select_lens], y=z_true[select_lens], bins=[z_grid, z_grid], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')[-1]
     
-    plot1.plot((z_grid[1:] + z_grid[:-1]) / 2, sigma_lens, color='black', linestyle='-', linewidth=2.0)
+    plot1.plot(z_grid, z_grid, color='black', linestyle='--', linewidth=2.0)
     
-    plot1.plot(z_grid, 0.03 * numpy.ones(grid_size + 1), color='black', linestyle=':', linewidth=2.0)
-    
-    plot1.set_ylim(0.001, 1.000)
     plot1.set_xlim(z1_source, z2_source)
+    plot1.set_ylim(z1_source, z2_source)
     
-    plot1.set_yscale('log')
-    plot1.set_xticklabels([])
-    
-    plot1.set_ylabel(r'$\frac{\sigma_z}{1 + z}$')
-    plot1.set_title(r'$\mathrm{Lens}$')
+    plot1.set_ylabel(r'$z_\mathrm{spec}$')
+    plot1.get_xticklabels()[0].set_visible(False)
+    plot1.get_yticklabels()[0].set_visible(False)
     
     # Plot 2
     plot2 = figure.add_subplot(plot[0, 1])
     
-    sigma_source = numpy.zeros(grid_size)
-    for m in range(grid_size):
-        select = select_source & (z_grid[m] < z_mean) & (z_mean < z_grid[m + 1])
-        if len(select[select]) > 0:
-            delta = numpy.log((1 + z_true[select]) / (1 + z_mean[select]))
-            sigma_source[m] = (numpy.quantile(delta, 0.84) - numpy.quantile(delta, 0.16)) / 2
+    z_mesh = plot2.hist2d(x=z_mean[select_source], y=z_true[select_source], bins=[z_grid, z_grid], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')[-1]
     
-    plot2.plot((z_grid[1:] + z_grid[:-1]) / 2, sigma_source, color='black', linestyle='-', linewidth=2.0)
+    plot2.plot(z_grid, z_grid, color='black', linestyle='--', linewidth=2.0)
     
-    plot2.plot(z_grid, 0.05 * numpy.ones(grid_size + 1), color='black', linestyle=':', linewidth=2.0)
-    
-    plot2.set_ylim(0.001, 1.000)
     plot2.set_xlim(z1_source, z2_source)
+    plot2.set_ylim(z1_source, z2_source)
+    plot2.set_xlabel(r'$z_\mathrm{phot}$')
     
-    plot2.set_yscale('log')
-    plot2.set_title(r'$\mathrm{Source}$')
-    
-    plot2.set_xticklabels([])
     plot2.set_yticklabels([])
     plot2.get_xticklabels()[0].set_visible(False)
     
     # Plot 3
     plot3 = figure.add_subplot(plot[1, 0])
     
-    z_mesh = plot3.hist2d(x=z_mean[select_lens], y=z_true[select_lens], bins=[z_grid, z_grid], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')[-1]
+    z_mesh = plot3.hist2d(x=z_mean[select_lens], y=sigma_lens, bins=[z_grid, sigma_grid], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')[-1]
     
-    plot3.plot(z_grid, z_grid, color='black', linestyle='--', linewidth=2.0)
+    plot3.plot(z_grid, 0.03 * numpy.ones(grid_size + 1), color='black', linestyle='--', linewidth=2.0)
     
+    plot3.set_ylim(sigma1, sigma2)
     plot3.set_xlim(z1_source, z2_source)
-    plot3.set_ylim(z1_source, z2_source)
     
+    plot3.set_yscale('log')
     plot3.set_xlabel(r'$z_\mathrm{phot}$')
-    plot3.set_ylabel(r'$z_\mathrm{spec}$')
-    plot3.get_yticklabels()[-1].set_visible(False)
+    plot3.set_ylabel(r'$\left( z_\mathrm{phot} - z_\mathrm{spec} \right) / \left(1 + z_\mathrm{spec} \right)$')
     
     # Plot 4
     plot4 = figure.add_subplot(plot[1, 1])
     
-    z_mesh = plot4.hist2d(x=z_mean[select_source], y=z_true[select_source], bins=[z_grid, z_grid], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')[-1]
+    z_mesh = plot4.hist2d(x=z_mean[select_source], y=sigma_source, bins=[z_grid, sigma_grid], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')[-1]
     
-    plot4.plot(z_grid, z_grid, color='black', linestyle='--', linewidth=2.0)
+    plot4.plot(z_grid, 0.05 * numpy.ones(grid_size + 1), color='black', linestyle='--', linewidth=2.0)
     
+    plot4.set_yscale('log')
+    plot4.set_ylim(sigma1, sigma2)
     plot4.set_xlim(z1_source, z2_source)
-    plot4.set_ylim(z1_source, z2_source)
-    plot4.set_xlabel(r'$z_\mathrm{phot}$')
     
+    plot4.set_xticklabels([])
     plot4.set_yticklabels([])
+    
+    plot4.set_xlabel(r'$z_\mathrm{phot}$')
     plot4.get_xticklabels()[0].set_visible(False)
     
     # Color bar
@@ -174,6 +204,17 @@ def main(path, index):
     z_mean = numpy.concatenate(estimator.mean())
     z_true = test_data['photometry']['redshift']
     mag_source = test_data['photometry']['mag_i_lsst']
+    
+    # Configuration
+    os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
+    pyplot.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
+    pyplot.rcParams['pgf.texsystem'] = 'pdflatex'
+    pyplot.rcParams['text.usetex'] = True
+    pyplot.rcParams['font.size'] = 25
+    
+    figure = plot_select(z_grid, z_mean, z_lens, z_source, mag_source)
+    figure.savefig(os.path.join(plot_path, 'SELECT/SELECT{}.pdf'.format(index)), bbox_inches='tight')
+    pyplot.close(figure)
     
     figure = plot_redshift(z_grid, z_mean, z_true, z_lens, z_source, mag_source)
     figure.savefig(os.path.join(plot_path, 'REDSHIFT/REDSHIFT{}.pdf'.format(index)), bbox_inches='tight')
