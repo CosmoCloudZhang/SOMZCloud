@@ -134,7 +134,7 @@ def plot_redshift(z_grid, z_mean, z_true, z_lens, z_source, mag_source):
     
     plot3.set_yscale('log')
     plot3.set_xlabel(r'$z_\mathrm{phot}$')
-    plot3.set_ylabel(r'$\left( z_\mathrm{phot} - z_\mathrm{spec} \right) / \left(1 + z_\mathrm{spec} \right)$')
+    plot3.set_ylabel(r'$\left| z_\mathrm{phot} - z_\mathrm{spec} \right| / \left(1 + z_\mathrm{spec} \right)$')
     
     # Plot 4
     plot4 = figure.add_subplot(plot[1, 1])
