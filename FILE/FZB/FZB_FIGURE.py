@@ -20,7 +20,7 @@ def plot_select(z_grid, z_mean, z_lens, z_source, mag_source):
     z1_source, z2_source = z_source
     z_lens_grid = numpy.linspace(z1_lens, z2_lens, z_grid.size + 1)
     
-    figure, plot = pyplot.subplots(nrows=1, ncols=1, figsize=(12, 12))
+    figure, plot = pyplot.subplots(nrows=1, ncols=1, figsize=(12, 8))
     
     z_mesh =plot.hist2d(x=z_mean, y=mag_source, bins=[z_grid, mag_grid], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')[-1]
     
