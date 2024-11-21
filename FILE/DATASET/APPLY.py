@@ -1,0 +1,125 @@
+import os
+import h5py
+import time
+import numpy
+import argparse
+
+
+def application(catalog, select, band_list):
+    '''
+    Create individual application datasets
+    
+    Arguments:
+        catalog (dict): The catalog data
+        select (numpy.ndarray): The selection of the catalog
+        band_list (list): The list of bands for LSST
+    
+    Returns:
+        data (dict): The application dataset
+    '''
+    width = 5000000
+    length = len(catalog['redshift'][select])
+    indices = numpy.random.choice(length, width, replace=True)
+    
+    # Data
+    data = {'photometry': {}}
+    data['photometry']['redshift'] = catalog['redshift'][select][indices]
+    
+    # Photometry
+    for band in band_list:
+        
+        # Magnitude
+        mag = catalog['mag_{}'.format(band)]
+        mag_err = catalog['mag_err_{}'.format(band)]
+        
+        # Sampling
+        epsilon = numpy.random.normal(0, 1, mag_err.shape)
+        mag = mag - 2.5 * numpy.log10(numpy.abs(1 + epsilon * mag_err * numpy.log(10) / 2.5))
+        
+        # Mask
+        mask = mag_err > 2.5 / numpy.log(10) / 3.0
+        mag_err[mask] = 99.0
+        mag[mask] = 99.0
+        
+        # Save
+        data['photometry']['mag_{}'.format(band)] = mag[select][indices]
+        data['photometry']['mag_err_{}'.format(band)] = mag_err[select][indices]
+    return data
+
+
+def main(number, folder, directory):
+    '''
+    Create the application datasets
+    
+    Arguments:
+        number (int): The number of datasets
+        folder (str): The base folder of the catalog
+        directory (str): The base directory of the catalog
+    
+    Returns:
+        duration (float): The duration of the process
+    '''
+    # Start
+    start = time.time()
+    data_folder = os.path.join(folder, 'DATASET/')
+    band_list = ['u_lsst', 'g_lsst', 'r_lsst', 'i_lsst', 'z_lsst', 'y_lsst']
+    
+    # Load
+    catalog = {}
+    catalog_name1 = os.path.join(directory, 'cosmoDC2_gold_test_catalog.hdf5')
+    with h5py.File(catalog_name1, 'r') as file:
+        for key, value in file['photometry'].items():
+            catalog[key] = value[...].astype(numpy.float32)
+    
+    catalog_name2 = os.path.join(directory, 'cosmoDC2_gold_augmentation_catalog.hdf5')
+    with h5py.File(catalog_name2, 'r') as file:
+        for key, value in file['photometry'].items():
+            catalog[key] = numpy.concatenate([catalog[key], value[...].astype(numpy.float32)], axis=0)
+    
+    # Select
+    z1 = 0.0
+    z2 = 3.0
+    select = (z1 < catalog['redshift']) & (catalog['redshift'] < z2)
+    
+    mag1 = 16.0
+    mag2 = 26.0
+    select = select & (mag1 < catalog['mag_i_lsst']) & (catalog['mag_i_lsst'] < mag2)
+    
+    # Random
+    seed = 45
+    numpy.random.seed(seed)
+    
+    # Application
+    for index in range(number):
+        print('Index: {:.0f}'.format(index + 1))
+        data = application(catalog, select, band_list)
+        
+        # Save
+        os.makedirs(data_folder, exist_ok=True)
+        os.makedirs(os.path.join(data_folder, 'APPLICATION'), exist_ok=True)
+        with h5py.File(os.path.join(data_folder, 'APPLICATION/DATA{:.0f}.hdf5'.format(index + 1)), 'w') as file:
+            for key, value in data['photometry'].items():
+                file.create_dataset(key, data=value)
+    # Duration
+    end = time.time()
+    duration = (end - start) / 60
+    
+    # Return
+    print('Time: {:.2f} minutes'.format(duration))
+    return duration
+
+
+if __name__ == '__main__':
+    # Input
+    PARSE = argparse.ArgumentParser(description='Application dataset')
+    PARSE.add_argument('--number', type=int, required=True, help='The number of datasets')
+    PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the catalog')
+    PARSE.add_argument('--directory', type=str, required=True, help='The base directory of the catalog')
+    
+    # Argument
+    NUMBER = PARSE.parse_args().number
+    FOLDER = PARSE.parse_args().folder
+    DIRECTORY = PARSE.parse_args().directory
+    
+    # Output
+    OUTPUT = main(NUMBER, FOLDER, DIRECTORY)
