@@ -7,11 +7,18 @@ import pandas
 import argparse
 from photerr import LsstErrorModel
 
-def catalog(folder, directory):
+def catalog(directory):
+    '''
+    Load the Roman-Rubin simulation catalogs
     
+    Arguments:
+        directory (str): The directory of the Roman-Rubin simulation catalogs
+    
+    Returns:
+        data (dict): The Roman-Rubin simulation catalogs
+    '''
     # Start
     start = time.time()
-    data_folder = os.path.join(folder, 'DATASET')
     
     # Data
     data = {
@@ -37,53 +44,53 @@ def catalog(folder, directory):
                 if list(file[key].keys()):
                     
                     bulge_fraction = file[key]['bulge_frac'][:].astype(numpy.float32)
-                    disk_major = file[key]['diskHalfLightRadiusArcsec'][:].astype(numpy.float32)
-                    bulge_major = file[key]['spheroidHalfLightRadiusArcsec'][:].astype(numpy.float32)
+                    disk_radius = file[key]['diskHalfLightRadiusArcsec'][:].astype(numpy.float32)
+                    bulge_radius = file[key]['spheroidHalfLightRadiusArcsec'][:].astype(numpy.float32)
                     
-                    disk_minor = disk_major * file[key]['diskAxisRatio'][:].astype(numpy.float32)
-                    bulge_minor = bulge_major * file[key]['spheroidAxisRatio'][:].astype(numpy.float32)
+                    ellipticity = file[key]['totalEllipticity'][:].astype(numpy.float32)
+                    radius = bulge_fraction * bulge_radius + (1 - bulge_fraction) * disk_radius
                     
-                    data['major'] = numpy.concatenate((data['major'], bulge_fraction * bulge_major + (1 - bulge_fraction) * disk_major))
-                    data['minor'] = numpy.concatenate((data['minor'], bulge_fraction * bulge_minor + (1 - bulge_fraction) * disk_minor))
+                    data['major'] = numpy.append(data['major'], radius / numpy.sqrt((1 - ellipticity) / (1 + ellipticity)))
+                    data['minor'] = numpy.append(data['minor'], radius * numpy.sqrt((1 - ellipticity) / (1 + ellipticity)))
                     
-                    data['redshift'] = numpy.concatenate((data['redshift'], file[key]['redshift'][:].astype(numpy.float32)))
+                    data['redshift'] = numpy.append(data['redshift'], file[key]['redshift'][:].astype(numpy.float32))
                     
-                    data['mag_u_lsst'] = numpy.concatenate((data['mag_u_lsst'], file[key]['LSST_obs_u'][:].astype(numpy.float32)))
+                    data['mag_u_lsst'] = numpy.append(data['mag_u_lsst'], file[key]['LSST_obs_u'][:].astype(numpy.float32))
                     
-                    data['mag_g_lsst'] = numpy.concatenate((data['mag_g_lsst'], file[key]['LSST_obs_g'][:].astype(numpy.float32)))
+                    data['mag_g_lsst'] = numpy.append(data['mag_g_lsst'], file[key]['LSST_obs_g'][:].astype(numpy.float32))
                     
-                    data['mag_r_lsst'] = numpy.concatenate((data['mag_r_lsst'], file[key]['LSST_obs_r'][:].astype(numpy.float32)))
+                    data['mag_r_lsst'] = numpy.append(data['mag_r_lsst'], file[key]['LSST_obs_r'][:].astype(numpy.float32))
                     
-                    data['mag_i_lsst'] = numpy.concatenate((data['mag_i_lsst'], file[key]['LSST_obs_i'][:].astype(numpy.float32)))
+                    data['mag_i_lsst'] = numpy.append(data['mag_i_lsst'], file[key]['LSST_obs_i'][:].astype(numpy.float32))
                     
-                    data['mag_z_lsst'] = numpy.concatenate((data['mag_z_lsst'], file[key]['LSST_obs_z'][:].astype(numpy.float32)))
+                    data['mag_z_lsst'] = numpy.append(data['mag_z_lsst'], file[key]['LSST_obs_z'][:].astype(numpy.float32))
                     
-                    data['mag_y_lsst'] = numpy.concatenate((data['mag_y_lsst'], file[key]['LSST_obs_y'][:].astype(numpy.float32)))
-    
-    # Save
-    os.makedirs(data_folder, exist_ok=True)
-    os.makedirs(os.path.join(data_folder, 'AUGMENTATION'), exist_ok=True)
-    
-    with h5py.File(os.path.join(data_folder, 'AUGMENTATION/CATALOG.hdf5'), 'w') as file:
-        for key in data.keys():
-            file.create_dataset(key, data=data[key])
+                    data['mag_y_lsst'] = numpy.append(data['mag_y_lsst'], file[key]['LSST_obs_y'][:].astype(numpy.float32))
     # Duration
     end = time.time()
     duration = (end - start) / 60
     
     # Return
     print('Time: {:.2f} minutes'.format(duration))
-    return duration
+    return data
 
 
-def data(folder):
+def dataset(folder):
+    '''
+    Create the Roman-Rubin simulation datasets
+    
+    Arguments:
+        folder (str): The base folder of the Augmentation datasets
+    
+    Returns:
+        data (dict): The Roman-Rubin simulation datasets
+    '''
     # Start
-    start = time.time()
     data_folder = os.path.join(folder, 'DATASET')
     
     # Load
     with h5py.File(os.path.join(data_folder, 'AUGMENTATION/CATALOG.hdf5'), 'r') as file:
-        catalog = pandas.DataFrame({key: file[key][:].astype(numpy.float32) for key in file.keys()})
+        catalog = pandas.DataFrame({key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()})
     
     # Error
     error_model = LsstErrorModel(
@@ -101,11 +108,7 @@ def data(folder):
         }
     )
     print(error_model.getLimitingMags())
-    
-    # Random
-    seed = 100
-    numpy.random.seed(seed)
-    table = error_model(catalog, random_state=seed)
+    table = error_model(catalog)
     
     # Band
     band_list = ['u_lsst', 'g_lsst', 'r_lsst', 'i_lsst', 'z_lsst', 'y_lsst']
@@ -138,8 +141,8 @@ def data(folder):
     select = select & (snr1 < catalog['snr_r_lsst']) & (catalog['snr_i_lsst'] > snr2)
     
     # Data
-    data = {'photometry': {}}
-    data['photometry']['redshift'] = catalog['redshift'][select]
+    data = {}
+    data['redshift'] = catalog['redshift'][select]
     
     for band in band_list:
         
@@ -149,34 +152,26 @@ def data(folder):
         
         # Mask
         mask = catalog['snr_{}'.format(band)] < 3.0
-        mag_err[mask] = 99.0
-        mag[mask] = 99.0
+        mag_err[mask] = 30.0
+        mag[mask] = 30.0
         
         # Save
-        data['photometry']['mag_{}'.format(band)] = mag[select]
-        data['photometry']['mag_err_{}'.format(band)] = mag_err[select]
-    
-    # Save
-    os.makedirs(data_folder, exist_ok=True)
-    os.makedirs(os.path.join(data_folder, 'AUGMENTATION'), exist_ok=True)
-    
-    with h5py.File(os.path.join(data_folder, 'AUGMENTATION/DATA.hdf5'), 'w') as file:
-        file.create_group('photometry')
-        
-        for key, value in data['photometry'].items():
-            file['photometry'].create_dataset(key, data=value)
-    
-    # Duration
-    end = time.time()
-    duration = (end - start) / 60
-    
-    # Return
-    print('Time: {:.2f} minutes'.format(duration))
-    return duration
+        data['mag_{}'.format(band)] = mag[select]
+        data['mag_err_{}'.format(band)] = mag_err[select]
+    return data
 
 
 def augmentation(index, folder):
+    '''
+    Create the Roman-Rubin simulation augmentation datasets
     
+    Arguments:
+        index (int): The index of the Augmentation datasets
+        folder (str): The base folder of the Augmentation datasets
+    
+    Returns:
+        data (dict): The Roman-Rubin simulation augmentation datasets
+    '''
     # Start
     start = time.time()
     data_folder = os.path.join(folder, 'DATASET')
@@ -186,16 +181,16 @@ def augmentation(index, folder):
         data = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
     z_data = data['redshift']
     mag_data = data['mag_i_lsst']
-    color_data = numpy.subtract(data['mag_g_lsst'], data['mag_z_lsst'], where=(data['mag_g_lsst'] != 99.0) & (data['mag_z_lsst'] != 99.0), out=numpy.full_like(data['mag_g_lsst'], 99.0))
+    color_data = data['mag_g_lsst'] - data['mag_z_lsst']
     
     # Selection
     with h5py.File(os.path.join(data_folder, 'SELECTION/DATA{}.hdf5'.format(index + 1)), 'r') as file:
         selection_data = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
     z_selection = selection_data['redshift']
     mag_selection = selection_data['mag_i_lsst']
-    color_selection = numpy.subtract(selection_data['mag_g_lsst'], selection_data['mag_z_lsst'], where=(selection_data['mag_g_lsst'] != 99.0) & (selection_data['mag_z_lsst'] != 99.0), out=numpy.full_like(selection_data['mag_g_lsst'], 99.0))
+    color_selection = selection_data['mag_g_lsst'] - selection_data['mag_z_lsst']
     
-    # Bin Datasets
+    # Bin
     z1 = 0.0
     z2 = 3.0
     z_size = 50
@@ -211,7 +206,7 @@ def augmentation(index, folder):
     mag_grid = numpy.linspace(mag1 + mag_delta / 2, mag2 - mag_delta / 2, mag_size)
     
     color1 = -2.0
-    color2 = +6.0
+    color2 = +5.0
     color_size = 50
     color_delta = (color2 - color1) / color_size
     color_bin = numpy.linspace(color1, color2, color_size + 1)
@@ -224,23 +219,12 @@ def augmentation(index, folder):
     weight = scipy.interpolate.interpn(points=(z_grid, mag_grid, color_grid), values=factor, xi=(z_data, mag_data, color_data), method='linear', bounds_error=False, fill_value=0.0)
     weight = weight / numpy.sum(weight)
     
-    # Random
-    seed = 100
-    numpy.random.seed(seed)
-    
     fraction1 = 0.10
     fraction2 = 0.40
     fraction = numpy.random.uniform(fraction1, fraction2)
     
-    count = numpy.round(len(z_data) * fraction, decimals=0).astype(numpy.int32)
+    count = numpy.round(len(z_selection) * fraction, decimals=0).astype(numpy.int32)
     indices = numpy.random.choice(numpy.arange(len(z_data)), size=count, replace=True, p=weight)
-    
-    # Save
-    with h5py.File(os.path.join(data_folder, 'AUGMENTATION/DATA{}.hdf5'.format(index + 1)), 'w') as file:
-        file.create_group('photometry')
-        
-        for key, value in data.items():
-            file['photometry'].create_dataset(key, data=value[indices])
     
     # Duration
     end = time.time()
@@ -248,19 +232,46 @@ def augmentation(index, folder):
     
     # Return
     print('Time: {:.2f} minutes'.format(duration))
-    return duration
+    return {key: value[indices] for key, value in data.items()}
 
 
 def main(number, folder, directory):
     start = time.time()
+    data_folder = os.path.join(folder, 'DATASET')
     
-    catalog(folder, directory)
+    # Path
+    os.makedirs(data_folder, exist_ok=True)
+    os.makedirs(os.path.join(data_folder, 'AUGMENTATION'), exist_ok=True)
     
-    data(folder)
+    # Catalog
+    data = catalog(directory)
     
+    with h5py.File(os.path.join(data_folder, 'AUGMENTATION/CATALOG.hdf5'), 'w') as file:
+        file.create_group('photometry')
+        
+        for key in data.keys():
+            file['photometry'].create_dataset(key, data=data[key])
+    
+    # Dataset
+    data = dataset(folder)
+    
+    with h5py.File(os.path.join(data_folder, 'AUGMENTATION/DATA.hdf5'), 'w') as file:
+        file.create_group('photometry')
+        
+        for key, value in data.items():
+            file['photometry'].create_dataset(key, data=value)
+    
+    # Augmentation
     for index in range(number):
         print('Index: {}'.format(index + 1))
-        augmentation(index, folder)
+        
+        data = augmentation(index, folder)
+        
+        with h5py.File(os.path.join(data_folder, 'AUGMENTATION/DATA{}.hdf5'.format(index + 1)), 'w') as file:
+            file.create_group('photometry')
+            
+            for key, value in data.items():
+                file['photometry'].create_dataset(key, data=value)
     
     # Duration
     end = time.time()
@@ -278,6 +289,7 @@ if __name__ == '__main__':
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the Augmentation datasets')
     PARSE.add_argument('--directory', type=str, required=True, help='The directory of the Roman-Rubin simulation catalogs')
     
+    # Parse
     NUMBER = PARSE.parse_args().number
     FOLDER = PARSE.parse_args().folder
     DIRECTORY = PARSE.parse_args().directory

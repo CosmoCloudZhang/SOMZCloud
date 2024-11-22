@@ -27,7 +27,7 @@ export OMP_NUM_THREADS=64
 export OMP_PROC_Bind=spread
 
 # Initialize the parallisation
-NUMBER=1
+NUMBER=400
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/yhzhang/ZCloud/"
 BASE_DIRECTORY="/global/cfs/cdirs/lsst/projecta/lsst/groups/CS/roman_rubin_2023_v1.1.3/"

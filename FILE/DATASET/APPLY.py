@@ -62,8 +62,8 @@ def application(directory):
     indices = numpy.random.choice(length, width, replace=True)
     
     # Data
-    data = {'photometry': {}}
-    data['photometry']['redshift'] = catalog['redshift'][select][indices]
+    data = {}
+    data['redshift'] = catalog['redshift'][select][indices]
     
     for band in band_list:
         
@@ -73,12 +73,12 @@ def application(directory):
         
         # Mask
         mask = catalog['snr_{}'.format(band)] < 3.0
-        mag_err[mask] = 99.0
-        mag[mask] = 99.0
+        mag_err[mask] = 30.0
+        mag[mask] = 30.0
         
         # Save
-        data['photometry']['mag_{}'.format(band)] = mag[select][indices]
-        data['photometry']['mag_err_{}'.format(band)] = mag_err[select][indices]
+        data['mag_{}'.format(band)] = mag[select][indices]
+        data['mag_err_{}'.format(band)] = mag_err[select][indices]
     return data
 
 
@@ -98,10 +98,6 @@ def main(number, folder, directory):
     start = time.time()
     data_folder = os.path.join(folder, 'DATASET/')
     
-    # Random
-    seed = 100
-    numpy.random.seed(seed)
-    
     # Application
     for index in range(number):
         print('Index: {:.0f}'.format(index + 1))
@@ -116,7 +112,7 @@ def main(number, folder, directory):
         with h5py.File(os.path.join(data_folder, 'APPLICATION/DATA{:.0f}.hdf5'.format(index + 1)), 'w') as file:
             file.create_group('photometry')
             
-            for key, value in data['photometry'].items():
+            for key, value in data.items():
                 file['photometry'].create_dataset(key, data=value)
     # Duration
     end = time.time()
