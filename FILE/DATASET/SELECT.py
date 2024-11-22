@@ -5,7 +5,7 @@ import numpy
 import argparse
 
 
-def selection(catalog, select, band_list):
+def selection(index, directory):
     '''
     Create individual selection datasets
     
@@ -17,25 +17,64 @@ def selection(catalog, select, band_list):
     Returns:
         data (dict): The selection dataset
     '''
+    # Catalog
+    catalog = {}
+    catalog_name = os.path.join(directory, 'training_samples/training_sample{}.hdf5'.format(index))
+    with h5py.File(catalog_name, 'r') as file:
+        for key, value in file['photometry'].items():
+            catalog[key] = value[...].astype(numpy.float32)
+    
+    # Band
+    band_list = ['u_lsst', 'g_lsst', 'r_lsst', 'i_lsst', 'z_lsst', 'y_lsst']
+    for band in band_list:
+        
+        # Photometry
+        mag = catalog['mag_{}'.format(band)]
+        mag_err = catalog['mag_err_{}'.format(band)] * numpy.sqrt(10)
+        
+        # Sampling
+        epsilon = numpy.random.normal(0, 1, mag_err.shape)
+        mag = mag - 2.5 * numpy.log10(numpy.abs(1 + epsilon * mag_err * numpy.log(10) / 2.5))
+        
+        catalog['mag_{}'.format(band)] = mag
+        catalog['mag_err_{}'.format(band)] = mag_err
+        catalog['snr_{}'.format(band)] = 2.5 / numpy.log(10) / mag_err + epsilon
+    
+    # Redshift
+    z1 = 0.0
+    z2 = 3.0
+    select = (z1 < catalog['redshift']) & (catalog['redshift'] < z2)
+    
+    # Magnitude
+    mag1 = 16.0
+    mag2 = 26.0
+    select = select & (mag1 < catalog['mag_i_lsst']) & (catalog['mag_i_lsst'] < mag2)
+    
+    # SNR
+    snr1 = 3.0
+    snr2 = 5.0
+    select = select & (snr1 < catalog['snr_r_lsst']) & (catalog['snr_i_lsst'] > snr2)
+    
     width = 200000
     length = len(catalog['redshift'][select])
     indices = numpy.random.choice(length, width, replace=True)
     
+    # Data
     data = {'photometry': {}}
     data['photometry']['redshift'] = catalog['redshift'][select][indices]
     
     for band in band_list:
         
+        # Photometry
         mag = catalog['mag_{}'.format(band)]
         mag_err = catalog['mag_err_{}'.format(band)]
         
-        epsilon = numpy.random.normal(0, 1, mag_err.shape)
-        mag = mag - 2.5 * numpy.log10(numpy.abs(1 + epsilon * mag_err * numpy.log(10) / 2.5))
-        
-        mask = mag_err > 2.5 / numpy.log(10) / 3.0
+        # Mask
+        mask = catalog['snr_{}'.format(band)] < 3.0
         mag_err[mask] = 99.0
         mag[mask] = 99.0
         
+        # Save
         data['photometry']['mag_{}'.format(band)] = mag[select][indices]
         data['photometry']['mag_err_{}'.format(band)] = mag_err[select][indices]
     return data
@@ -56,29 +95,17 @@ def main(number, folder, directory):
     # Start
     start = time.time()
     data_folder = os.path.join(folder, 'DATASET/')
-    band_list = ['u_lsst', 'g_lsst', 'r_lsst', 'i_lsst', 'z_lsst', 'y_lsst']
     
-    # Loop
+    # Random
+    seed = 100
+    numpy.random.seed(seed)
+    
+    # Index
     for index in range(number):
         print('Index: {:.0f}'.format(index + 1))
         
-        # Catalog
-        catalog = {}
-        catalog_name = os.path.join(directory, 'training_samples/training_sample{}.hdf5'.format(index))
-        with h5py.File(catalog_name, 'r') as file:
-            for key, value in file['photometry'].items():
-                catalog[key] = value[...].astype(numpy.float32)
-        
-        # Selection
-        z1 = 0.0
-        z2 = 3.0
-        select = (z1 < catalog['redshift']) & (catalog['redshift'] < z2)
-        
-        mag1 = 16.0
-        mag2 = 26.0
-        select = select & (mag1 < catalog['mag_i_lsst']) & (catalog['mag_i_lsst'] < mag2)
-        
-        data = selection(catalog, select, band_list)
+        # Data
+        data = selection(index, directory)
         
         # Save
         os.makedirs(data_folder, exist_ok=True)

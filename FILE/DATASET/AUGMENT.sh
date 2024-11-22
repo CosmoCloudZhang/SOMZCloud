@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH -A m1727
-#SBATCH -J SAMPLE
 #SBATCH --nodes=1
 #SBATCH -q regular
 #SBATCH --ntasks=1
+#SBATCH -J AUGMENT
 #SBATCH --time=48:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
@@ -23,7 +23,7 @@ conda activate $RAILENV
 
 # Set OpenMP environment
 export OMP_PLACES=threads
-export OMP_NUM_THREADS=256
+export OMP_NUM_THREADS=64
 export OMP_PROC_Bind=spread
 
 # Initialize the parallisation

@@ -5,18 +5,58 @@ import numpy
 import argparse
 
 
-def application(catalog, select, band_list):
+def application(directory):
     '''
     Create individual application datasets
     
     Arguments:
-        catalog (dict): The catalog data
-        select (numpy.ndarray): The selection of the catalog
-        band_list (list): The list of bands for LSST
+        directory (str): The base directory of the catalog
     
     Returns:
         data (dict): The application dataset
     '''
+    catalog = {}
+    catalog_name1 = os.path.join(directory, 'cosmoDC2_gold_test_catalog.hdf5')
+    with h5py.File(catalog_name1, 'r') as file:
+        for key, value in file['photometry'].items():
+            catalog[key] = value[...].astype(numpy.float32)
+    
+    catalog_name2 = os.path.join(directory, 'cosmoDC2_gold_augmentation_catalog.hdf5')
+    with h5py.File(catalog_name2, 'r') as file:
+        for key, value in file['photometry'].items():
+            catalog[key] = numpy.concatenate([catalog[key], value[...].astype(numpy.float32)], axis=0)
+    
+    # Band
+    band_list = ['u_lsst', 'g_lsst', 'r_lsst', 'i_lsst', 'z_lsst', 'y_lsst']
+    for band in band_list:
+        
+        # Photometry
+        mag = catalog['mag_{}'.format(band)]
+        mag_err = catalog['mag_err_{}'.format(band)] * numpy.sqrt(10)
+        
+        # Sampling
+        epsilon = numpy.random.normal(0, 1, mag_err.shape)
+        mag = mag - 2.5 * numpy.log10(numpy.abs(1 + epsilon * mag_err * numpy.log(10) / 2.5))
+        
+        catalog['mag_{}'.format(band)] = mag
+        catalog['mag_err_{}'.format(band)] = mag_err
+        catalog['snr_{}'.format(band)] = 2.5 / numpy.log(10) / mag_err + epsilon
+    # Redshift
+    z1 = 0.0
+    z2 = 3.0
+    select = (z1 < catalog['redshift']) & (catalog['redshift'] < z2)
+    
+    # Magnitude
+    mag1 = 16.0
+    mag2 = 26.0
+    select = select & (mag1 < catalog['mag_i_lsst']) & (catalog['mag_i_lsst'] < mag2)
+    
+    # SNR
+    snr1 = 3.0
+    snr2 = 5.0
+    select = select & (snr1 < catalog['snr_r_lsst']) & (catalog['snr_i_lsst'] > snr2)
+    
+    # Select
     width = 5000000
     length = len(catalog['redshift'][select])
     indices = numpy.random.choice(length, width, replace=True)
@@ -25,19 +65,14 @@ def application(catalog, select, band_list):
     data = {'photometry': {}}
     data['photometry']['redshift'] = catalog['redshift'][select][indices]
     
-    # Photometry
     for band in band_list:
         
-        # Magnitude
+        # Photometry
         mag = catalog['mag_{}'.format(band)]
         mag_err = catalog['mag_err_{}'.format(band)]
         
-        # Sampling
-        epsilon = numpy.random.normal(0, 1, mag_err.shape)
-        mag = mag - 2.5 * numpy.log10(numpy.abs(1 + epsilon * mag_err * numpy.log(10) / 2.5))
-        
         # Mask
-        mask = mag_err > 2.5 / numpy.log(10) / 3.0
+        mask = catalog['snr_{}'.format(band)] < 3.0
         mag_err[mask] = 99.0
         mag[mask] = 99.0
         
@@ -59,40 +94,20 @@ def main(number, folder, directory):
     Returns:
         duration (float): The duration of the process
     '''
-    # Start
+    # Path
     start = time.time()
     data_folder = os.path.join(folder, 'DATASET/')
-    band_list = ['u_lsst', 'g_lsst', 'r_lsst', 'i_lsst', 'z_lsst', 'y_lsst']
-    
-    # Load
-    catalog = {}
-    catalog_name1 = os.path.join(directory, 'cosmoDC2_gold_test_catalog.hdf5')
-    with h5py.File(catalog_name1, 'r') as file:
-        for key, value in file['photometry'].items():
-            catalog[key] = value[...].astype(numpy.float32)
-    
-    catalog_name2 = os.path.join(directory, 'cosmoDC2_gold_augmentation_catalog.hdf5')
-    with h5py.File(catalog_name2, 'r') as file:
-        for key, value in file['photometry'].items():
-            catalog[key] = numpy.concatenate([catalog[key], value[...].astype(numpy.float32)], axis=0)
-    
-    # Select
-    z1 = 0.0
-    z2 = 3.0
-    select = (z1 < catalog['redshift']) & (catalog['redshift'] < z2)
-    
-    mag1 = 16.0
-    mag2 = 26.0
-    select = select & (mag1 < catalog['mag_i_lsst']) & (catalog['mag_i_lsst'] < mag2)
     
     # Random
-    seed = 45
+    seed = 100
     numpy.random.seed(seed)
     
     # Application
     for index in range(number):
         print('Index: {:.0f}'.format(index + 1))
-        data = application(catalog, select, band_list)
+        
+        # Data
+        data = application(directory)
         
         # Save
         os.makedirs(data_folder, exist_ok=True)
