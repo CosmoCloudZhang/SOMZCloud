@@ -112,9 +112,12 @@ def main(number, folder, directory):
         # Save
         os.makedirs(data_folder, exist_ok=True)
         os.makedirs(os.path.join(data_folder, 'APPLICATION'), exist_ok=True)
+        
         with h5py.File(os.path.join(data_folder, 'APPLICATION/DATA{:.0f}.hdf5'.format(index + 1)), 'w') as file:
+            file.create_group('photometry')
+            
             for key, value in data['photometry'].items():
-                file.create_dataset(key, data=value)
+                file['photometry'].create_dataset(key, data=value)
     # Duration
     end = time.time()
     duration = (end - start) / 60
