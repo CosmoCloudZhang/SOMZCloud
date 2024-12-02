@@ -87,10 +87,10 @@ def dataset(folder):
         data (dict): The Roman-Rubin simulation datasets
     '''
     # Path
-    data_folder = os.path.join(folder, 'DATASET/')
+    dataset_folder = os.path.join(folder, 'DATASET/')
     
     # Load
-    with h5py.File(os.path.join(data_folder, 'AUGMENTATION/CATALOG.hdf5'), 'r') as file:
+    with h5py.File(os.path.join(dataset_folder, 'AUGMENTATION/CATALOG.hdf5'), 'r') as file:
         catalog = pandas.DataFrame({key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()})
     
     # Error
@@ -174,15 +174,15 @@ def augmentation(index, folder):
         data (dict): The Roman-Rubin simulation augmentation datasets
     '''
     # Load
-    data_folder = os.path.join(folder, 'DATASET')
-    with h5py.File(os.path.join(data_folder, 'AUGMENTATION/DATA.hdf5'), 'r') as file:
+    dataset_folder = os.path.join(folder, 'DATASET')
+    with h5py.File(os.path.join(dataset_folder, 'AUGMENTATION/DATA.hdf5'), 'r') as file:
         data = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
     z_data = data['redshift']
     mag_data = data['mag_i_lsst']
     color_data = data['mag_g_lsst'] - data['mag_z_lsst']
     
     # Selection
-    with h5py.File(os.path.join(data_folder, 'SELECTION/DATA{}.hdf5'.format(index + 1)), 'r') as file:
+    with h5py.File(os.path.join(dataset_folder, 'SELECTION/DATA{}.hdf5'.format(index + 1)), 'r') as file:
         selection_data = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
     z_selection = selection_data['redshift']
     mag_selection = selection_data['mag_i_lsst']
@@ -243,16 +243,16 @@ def main(number, folder, directory):
     start = time.time()
     
     # Path
-    data_folder = os.path.join(folder, 'DATASET/')
+    dataset_folder = os.path.join(folder, 'DATASET/')
     
     # Path
-    os.makedirs(data_folder, exist_ok=True)
-    os.makedirs(os.path.join(data_folder, 'AUGMENTATION'), exist_ok=True)
+    os.makedirs(dataset_folder, exist_ok=True)
+    os.makedirs(os.path.join(dataset_folder, 'AUGMENTATION'), exist_ok=True)
     
     # Catalog
     data = catalog(directory)
     
-    with h5py.File(os.path.join(data_folder, 'AUGMENTATION/CATALOG.hdf5'), 'w') as file:
+    with h5py.File(os.path.join(dataset_folder, 'AUGMENTATION/CATALOG.hdf5'), 'w') as file:
         file.create_group('photometry')
         
         for key in data.keys():
@@ -261,7 +261,7 @@ def main(number, folder, directory):
     # Dataset
     data = dataset(folder)
     
-    with h5py.File(os.path.join(data_folder, 'AUGMENTATION/DATA.hdf5'), 'w') as file:
+    with h5py.File(os.path.join(dataset_folder, 'AUGMENTATION/DATA.hdf5'), 'w') as file:
         file.create_group('photometry')
         
         for key, value in data.items():
@@ -273,7 +273,7 @@ def main(number, folder, directory):
         
         data = augmentation(index, folder)
         
-        with h5py.File(os.path.join(data_folder, 'AUGMENTATION/DATA{}.hdf5'.format(index + 1)), 'w') as file:
+        with h5py.File(os.path.join(dataset_folder, 'AUGMENTATION/DATA{}.hdf5'.format(index + 1)), 'w') as file:
             file.create_group('photometry')
             
             for key, value in data.items():

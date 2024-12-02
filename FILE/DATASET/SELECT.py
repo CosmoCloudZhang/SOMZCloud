@@ -96,7 +96,7 @@ def main(number, folder, directory):
     start = time.time()
     
     # Path
-    data_folder = os.path.join(folder, 'DATASET/')
+    dataset_folder = os.path.join(folder, 'DATASET/')
     
     # Index
     for index in range(number):
@@ -106,9 +106,9 @@ def main(number, folder, directory):
         data = selection(index, directory)
         
         # Save
-        os.makedirs(data_folder, exist_ok=True)
-        os.makedirs(os.path.join(data_folder, 'SELECTION'), exist_ok=True)
-        with h5py.File(os.path.join(data_folder, 'SELECTION/DATA{:.0f}.hdf5'.format(index + 1)), 'w') as file:
+        os.makedirs(dataset_folder, exist_ok=True)
+        os.makedirs(os.path.join(dataset_folder, 'SELECTION'), exist_ok=True)
+        with h5py.File(os.path.join(dataset_folder, 'SELECTION/DATA{:.0f}.hdf5'.format(index + 1)), 'w') as file:
             file.create_group('photometry')
             
             for key, value in data.items():

@@ -23,31 +23,31 @@ def plot_figure(index, folder):
     start = time.time()
     
     # Path
-    data_folder = os.path.join(folder, 'DATASET/')
+    dataset_folder = os.path.join(folder, 'DATASET/')
     
     # Application
-    with h5py.File(os.path.join(data_folder, 'APPLICATION/DATA{}.hdf5'.format(index + 1)), 'r') as file:
+    with h5py.File(os.path.join(dataset_folder, 'APPLICATION/DATA{}.hdf5'.format(index + 1)), 'r') as file:
         application_data = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
     z_application = application_data['redshift']
     mag_application = application_data['mag_i_lsst']
     color_application = numpy.subtract(application_data['mag_g_lsst'], application_data['mag_z_lsst'], where=(application_data['mag_g_lsst'] != 99.0) & (application_data['mag_z_lsst'] != 99.0), out=numpy.full_like(application_data['mag_i_lsst'], 99.0))
     
     # Selection
-    with h5py.File(os.path.join(data_folder, 'SELECTION/DATA{}.hdf5'.format(index + 1)), 'r') as file:
+    with h5py.File(os.path.join(dataset_folder, 'SELECTION/DATA{}.hdf5'.format(index + 1)), 'r') as file:
         selection_data = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
     z_selection = selection_data['redshift']
     mag_selection = selection_data['mag_i_lsst']
     color_selection = numpy.subtract(selection_data['mag_g_lsst'], selection_data['mag_z_lsst'], where=(selection_data['mag_g_lsst'] != 99.0) & (selection_data['mag_z_lsst'] != 99.0), out=numpy.full_like(selection_data['mag_i_lsst'], 99.0))
     
     # Augmentation
-    with h5py.File(os.path.join(data_folder, 'AUGMENTATION/DATA{}.hdf5'.format(index + 1)), 'r') as file:
+    with h5py.File(os.path.join(dataset_folder, 'AUGMENTATION/DATA{}.hdf5'.format(index + 1)), 'r') as file:
         augmentation_data = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
     z_augmentation = augmentation_data['redshift']
     mag_augmentation = augmentation_data['mag_i_lsst']
     color_augmentation = numpy.subtract(augmentation_data['mag_g_lsst'], augmentation_data['mag_z_lsst'], where=(augmentation_data['mag_g_lsst'] != 99.0) & (augmentation_data['mag_z_lsst'] != 99.0), out=numpy.full_like(augmentation_data['mag_i_lsst'], 99.0))
     
     # Combination
-    with h5py.File(os.path.join(data_folder, 'COMBINATION/DATA{}.hdf5'.format(index + 1)), 'r') as file:
+    with h5py.File(os.path.join(dataset_folder, 'COMBINATION/DATA{}.hdf5'.format(index + 1)), 'r') as file:
         combination_data = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
     z_combination = combination_data['redshift']
     mag_combination = combination_data['mag_i_lsst']
@@ -155,10 +155,10 @@ def plot_figure(index, folder):
     color_bar.set_label(r'$\mathrm{Counts}$')
     figure.subplots_adjust(bottom=0.15)
     
-    os.makedirs(data_folder, exist_ok=True)
-    os.makedirs(os.path.join(data_folder, 'FIGURE'), exist_ok=True)
+    os.makedirs(dataset_folder, exist_ok=True)
+    os.makedirs(os.path.join(dataset_folder, 'FIGURE'), exist_ok=True)
     
-    figure.savefig(os.path.join(data_folder, 'FIGURE/FIGURE{}.png'.format(index + 1)), bbox_inches='tight', dpi=512)
+    figure.savefig(os.path.join(dataset_folder, 'FIGURE/FIGURE{}.png'.format(index + 1)), bbox_inches='tight', dpi=512)
     pyplot.close(figure)
     
     # Duration

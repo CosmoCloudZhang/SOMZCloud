@@ -19,17 +19,17 @@ def main(number, folder):
     start = time.time()
     
     # Path
-    data_folder = os.path.join(folder, 'DATASET/')
+    dataset_folder = os.path.join(folder, 'DATASET/')
     
     for index in range(number):
         print('Index: {}'.format(index + 1))
         
         # Selection
-        with h5py.File(os.path.join(data_folder, 'SELECTION/DATA{}.hdf5'.format(index + 1)), 'r') as file:
+        with h5py.File(os.path.join(dataset_folder, 'SELECTION/DATA{}.hdf5'.format(index + 1)), 'r') as file:
             selection_data = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
             
         # Augmentation
-        with h5py.File(os.path.join(data_folder, 'AUGMENTATION/DATA{}.hdf5'.format(index + 1)), 'r') as file:
+        with h5py.File(os.path.join(dataset_folder, 'AUGMENTATION/DATA{}.hdf5'.format(index + 1)), 'r') as file:
             augmentation_data = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
         
         # Combine
@@ -43,10 +43,10 @@ def main(number, folder):
             data['photometry']['mag_err_{}'.format(band)] = numpy.append(selection_data['mag_err_{}'.format(band)], augmentation_data['mag_err_{}'.format(band)])
         
         # Save
-        os.makedirs(data_folder, exist_ok=True)
-        os.makedirs(os.path.join(data_folder, 'COMBINATION'), exist_ok=True)
+        os.makedirs(dataset_folder, exist_ok=True)
+        os.makedirs(os.path.join(dataset_folder, 'COMBINATION'), exist_ok=True)
         
-        with h5py.File(os.path.join(data_folder, 'COMBINATION/DATA{}.hdf5'.format(index + 1)), 'w') as file:
+        with h5py.File(os.path.join(dataset_folder, 'COMBINATION/DATA{}.hdf5'.format(index + 1)), 'w') as file:
             file.create_group('photometry')
             for key, value in data['photometry'].items():
                 file['photometry'].create_dataset(key, data=value)
