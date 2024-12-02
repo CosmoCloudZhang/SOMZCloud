@@ -86,8 +86,8 @@ def dataset(folder):
     Returns:
         data (dict): The Roman-Rubin simulation datasets
     '''
-    # Start
-    data_folder = os.path.join(folder, 'DATASET')
+    # Path
+    data_folder = os.path.join(folder, 'DATASET/')
     
     # Load
     with h5py.File(os.path.join(data_folder, 'AUGMENTATION/CATALOG.hdf5'), 'r') as file:
@@ -228,8 +228,22 @@ def augmentation(index, folder):
 
 
 def main(number, folder, directory):
+    '''
+    Augment the datasets with the Roman-Rubin simulation catalogs
+    
+    Arguments:
+        number (int): The number of Augmentation datasets
+        folder (str): The base folder of the Augmentation datasets
+        directory (str): The directory of the Roman-Rubin simulation catalogs
+    
+    Returns:
+        duration (float): The duration of the process
+    '''
+    # Start
     start = time.time()
-    data_folder = os.path.join(folder, 'DATASET')
+    
+    # Path
+    data_folder = os.path.join(folder, 'DATASET/')
     
     # Path
     os.makedirs(data_folder, exist_ok=True)

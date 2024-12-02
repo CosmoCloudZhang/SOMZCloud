@@ -96,6 +96,8 @@ def main(number, folder, directory):
     '''
     # Path
     start = time.time()
+    
+    # Path
     data_folder = os.path.join(folder, 'DATASET/')
     
     # Application

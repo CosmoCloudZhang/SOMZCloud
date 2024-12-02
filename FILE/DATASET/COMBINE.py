@@ -5,9 +5,21 @@ import numpy
 import argparse
 
 def main(number, folder):
+    '''
+    Combine the datasets
     
+    Arguments:
+        number (int): The number of datasets
+        folder (str): The base folder of the datasets
+    
+    Returns:
+        duration (float): The duration of the process
+    '''
+    # Start
     start = time.time()
-    data_folder = os.path.join(folder, 'DATASET')
+    
+    # Path
+    data_folder = os.path.join(folder, 'DATASET/')
     
     for index in range(number):
         print('Index: {}'.format(index + 1))

@@ -8,10 +8,21 @@ from matplotlib import colors, pyplot
 from matplotlib.gridspec import GridSpec
 
 def plot_figure(index, folder):
+    '''
+    Plot the figure of the datasets
     
+    Arguments:
+        index (int): The index of the dataset
+        folder (str): The base folder of the datasets
+    
+    Returns:
+        duration (float): The duration of the process
+    '''
     # Start
     start = time.time()
-    data_folder = os.path.join(folder, 'DATASET')
+    
+    # Path
+    data_folder = os.path.join(folder, 'DATASET/')
     
     # Application
     with h5py.File(os.path.join(data_folder, 'APPLICATION/DATA{}.hdf5'.format(index + 1)), 'r') as file:
@@ -146,6 +157,17 @@ def plot_figure(index, folder):
 
 
 def main(count, number, folder):
+    '''
+    Plot the figures of the datasets
+    
+    Arguments:
+        count (int): The number of the processes
+        number (int): The number of the datasets
+        folder (str): The base folder of the datasets
+    
+    Returns:
+        duration (float): The duration of the process
+    '''
     # Start
     start = time.time()
     

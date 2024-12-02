@@ -55,7 +55,7 @@ def selection(index, directory):
     snr2 = 5.0
     select = select & (snr1 < catalog['snr_r_lsst']) & (catalog['snr_i_lsst'] > snr2)
     
-    width = 200000
+    width = 100000
     length = len(catalog['redshift'][select])
     indices = numpy.random.choice(length, width, replace=True)
     
@@ -94,6 +94,8 @@ def main(number, folder, directory):
     '''
     # Start
     start = time.time()
+    
+    # Path
     data_folder = os.path.join(folder, 'DATASET/')
     
     # Index
