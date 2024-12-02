@@ -7,6 +7,7 @@ import multiprocessing
 from matplotlib import colors, pyplot
 from matplotlib.gridspec import GridSpec
 
+
 def plot_figure(index, folder):
     '''
     Plot the figure of the datasets
@@ -98,7 +99,9 @@ def plot_figure(index, folder):
     
     plot.set_ylabel(r'$i$')
     plot.set_xticklabels([])
+    
     plot.get_yticklabels()[0].set_visible(False)
+    plot.get_xticklabels()[0].set_visible(False)
     
     plot.set_ylim(mag_bin.min(), mag_bin.max())
     plot.set_xlim(color_bin.min(), color_bin.max())
@@ -111,6 +114,10 @@ def plot_figure(index, folder):
     
     plot.set_yticklabels([])
     plot.set_xticklabels([])
+    
+    plot.get_yticklabels()[0].set_visible(False)
+    plot.get_xticklabels()[0].set_visible(False)
+    
     plot.set_ylim(mag_bin.min(), mag_bin.max())
     plot.set_xlim(color_bin.min(), color_bin.max())
     
@@ -123,6 +130,9 @@ def plot_figure(index, folder):
     plot.set_ylim(mag_bin.min(), mag_bin.max())
     plot.set_xlim(color_bin.min(), color_bin.max())
     
+    plot.get_yticklabels()[0].set_visible(False)
+    plot.get_xticklabels()[0].set_visible(False)
+    
     plot.set_ylabel(r'$i$')
     plot.set_xlabel(r'$g - z$')
     
@@ -134,6 +144,9 @@ def plot_figure(index, folder):
     
     plot.set_ylim(mag_bin.min(), mag_bin.max())
     plot.set_xlim(color_bin.min(), color_bin.max())
+    
+    plot.get_yticklabels()[0].set_visible(False)
+    plot.get_xticklabels()[0].set_visible(False)
     
     plot.set_yticklabels([])
     plot.set_xlabel(r'$g - z$')

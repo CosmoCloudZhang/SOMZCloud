@@ -26,7 +26,7 @@ export OMP_PLACES=threads
 export OMP_NUM_THREADS=16
 export OMP_PROC_Bind=spread
 
-# Initialize the parallisation
+# Initialize the process
 COUNT=16
 NUMBER=400
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
