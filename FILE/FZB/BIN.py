@@ -5,64 +5,8 @@ import numpy
 import argparse
 from rail import core
 
-def select(z_mean, z_lens, z_source, mag_source):
-    """
-    Select the samples based on the redshift and magnitude criteria.
-    
-    Parameters:
-        z_mean (numpy.ndarray): The mean redshift values of the samples.
-        z_lens (list): The redshift range of the lens samples.
-        z_source (list): The redshift range of the source samples.
-        mag_source (numpy.ndarray): The magnitude values of the source samples.
-        
-    Returns:
-        tuple: The selected lens and source samples.
-    """
-    # Redshift
-    z1_lens, z2_lens = z_lens
-    z1_source, z2_source = z_source
-    
-    # Select
-    slope = 4.0
-    intercept = 18.0
-    select_source = numpy.isfinite(z_mean) & (z1_source < z_mean) & (z_mean <= z2_source)
-    select_lens = numpy.isfinite(z_mean) & (z1_lens < z_mean) & (z_mean <= z2_lens) & (mag_source < slope * z_mean + intercept)
-    
-    return select_lens, select_source
 
-def lens_bin(z1, z2, bin_size):
-    """
-    Create a redshift bin.
-    
-    Arguments:
-        z1 (float): The minimum redshift.
-        z2 (float): The maximum redshift.
-        bin_size (int): The number
-    
-    Returns:
-        numpy.ndarray: The redshift bin.
-    """
-    z_bin = numpy.linspace(z1, z2, bin_size + 1)
-    return z_bin
-
-def source_bin(z, bin_size):
-    """
-    Calculate the redshift bins for a given range of redshifts and bin size.
-    
-    Parameters:
-        z (numpy.ndarray): The redshift values to bin.
-        bin_size (int): The number of bins to divide the redshift range into.
-    
-    Returns:
-        numpy.ndarray: An array of redshift values representing the bin edges.
-    
-    """
-    quantiles = numpy.linspace(0, 1, bin_size + 1)
-    z_bin = numpy.quantile(z, quantiles)
-    return z_bin
-
-
-def main(path, length):
+def main(folder, number):
     """
     Create a redshift bin.
     
@@ -88,6 +32,8 @@ def main(path, length):
     # Bin
     bin_size = 5
     bin_lens = numpy.zeros((length, bin_size + 1))
+    
+    quantiles = numpy.linspace(0, 1, bin_size + 1)
     bin_source = numpy.zeros((length, bin_size + 1))
     
     for index in range(1, length + 1):
@@ -99,18 +45,15 @@ def main(path, length):
         # Lens
         z1_lens = 0.2
         z2_lens = 1.2
-        z_lens = [z1_lens, z2_lens]
-        bin_lens[index - 1, :] = lens_bin(z1_lens, z2_lens, bin_size)
+        bin_lens[index - 1, :] = numpy.linspace(z1_lens, z2_lens, bin_size + 1)
         
         z1_source = 0.0
         z2_source = 3.0
-        z_source = [z1_source, z2_source]
         z_mean = numpy.concatenate(estimator.mean())
-        mag_source = test_data['photometry']['mag_i_lsst']
         
-        # Select
-        select_source = select(z_mean, z_lens, z_source, mag_source)[1]
-        bin_source[index - 1, :] = source_bin(z_mean[select_source], bin_size)
+        select_source = numpy.isfinite(z_mean) & (z1_source < z_mean) & (z_mean <= z2_source)
+        
+        bin_source[index - 1, :] = numpy.quantile(z_mean[select_source], quantiles)
         
         end = time.time()
         duration = (end - start) / 60

@@ -32,13 +32,13 @@ LENGTH=400
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 for INDEX in $(seq 1 $LENGTH); do
     # Set path variables
-    NAME="FZB_ESTIMATE${INDEX}"
-    INPUT_PATH="${BASE_PATH}/DATA/SAMPLE/TEST_SAMPLE.hdf5"
-    MODEL_PATH="${BASE_PATH}/DATA/FZB/FZB_INFORM${INDEX}.pkl"
-    CONFIG_PATH="${BASE_PATH}/DATA/FZB/FZB_ESTIMATE${INDEX}.yaml"
-    OUTPUT_PATH="${BASE_PATH}/DATA/FZB/FZB_ESTIMATE${INDEX}.hdf5"
+    NAME="ESTIMATE${INDEX}"
+    MODEL_PATH="${BASE_FOLDER}/FZB/INFORM${INDEX}.pkl"
+    CONFIG_PATH="${BASE_FOLDER}/FZB/ESTIMATE${INDEX}.yaml"
+    OUTPUT_PATH="${BASE_FOLDER}/FZB/ESTIMATE${INDEX}.hdf5"
+    INPUT_PATH="${BASE_FOLDER}/APPLICATION/DATA${INDEX}.hdf5"
     # Run applications
-    python -u "${BASE_PATH}/FILE/FZB/FZB_ESTIMATE.py" --path=$BASE_PATH --index=$INDEX &
+    python -u "${BASE_PATH}/FILE/FZB/ESTIMATE.py" --index=$INDEX --folder=$BASE_FOLDER &
     srun -u -N 1 -n 1 --cpus-per-task=$SLURM_CPUS_PER_TASK python3 -m ceci rail.estimation.algos.flexzboost.FlexZBoostEstimator --mpi --name=$NAME --input=$INPUT_PATH --model=$MODEL_PATH --config=$CONFIG_PATH --output=$OUTPUT_PATH &
     # Control parallel execution
     if (( $INDEX % $SLURM_NTASKS == 0 )); then

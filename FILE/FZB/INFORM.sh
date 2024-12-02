@@ -28,16 +28,18 @@ export OMP_PROC_BIND=spread
 export OMP_PLACES=threads
 
 # Initialize the parallisation
-LENGTH=400
+LENGTH=16
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
+BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/yhzhang/ZCloud/"
+
 for INDEX in $(seq 1 $LENGTH); do
     # Set path variables
-    NAME="FZB_INFORM${INDEX}"
-    MODEL_PATH="${BASE_PATH}/DATA/FZB/FZB_INFORM${INDEX}.pkl"
-    CONFIG_PATH="${BASE_PATH}/DATA/FZB/FZB_INFORM${INDEX}.yaml"
-    INPUT_PATH="${BASE_PATH}/DATA/SAMPLE/TRAIN_SAMPLE${INDEX}.hdf5"
+    NAME="INFORM${INDEX}"
+    MODEL_PATH="${BASE_FOLDER}/FZB/INFORM${INDEX}.pkl"
+    CONFIG_PATH="${BASE_FOLDER}/FZB/INFORM${INDEX}.yaml"
+    INPUT_PATH="${BASE_FOLDER}/DATASET/COMBINATION/DATA${INDEX}.hdf5"
     # Run applications
-    python -u "${BASE_PATH}/FILE/FZB/FZB_INFORM.py" --path=$BASE_PATH --index=$INDEX &
+    python -u "${BASE_PATH}/FILE/FZB/INFORM.py" --index=$INDEX --folder=$BASE_FOLDER &
     srun -u -N 1 -n 1 --cpus-per-task=$SLURM_CPUS_PER_TASK python3 -m ceci rail.estimation.algos.flexzboost.FlexZBoostInformer --mpi  --name=$NAME --input=$INPUT_PATH --model=$MODEL_PATH --config=$CONFIG_PATH &
     # Control parallel execution
     if (( $INDEX % $SLURM_NTASKS == 0 )); then

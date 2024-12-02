@@ -7,33 +7,7 @@ from rail import core
 import multiprocessing
 
 
-def select(z_mean, z_lens, z_source, mag_source):
-    """
-    Select the samples based on the redshift and magnitude criteria.
-    
-    Parameters:
-        z_mean (numpy.ndarray): The mean redshift values of the samples.
-        z_lens (list): The redshift range of the lens samples.
-        z_source (list): The redshift range of the source samples.
-        mag_source (numpy.ndarray): The magnitude values of the source samples.
-        
-    Returns:
-        tuple: The selected lens and source samples.
-    """
-    # Redshift
-    z1_lens, z2_lens = z_lens
-    z1_source, z2_source = z_source
-    
-    # Select
-    slope = 4.0
-    intercept = 18.0
-    select_source = numpy.isfinite(z_mean) & (z1_source < z_mean) & (z_mean <= z2_source)
-    select_lens = numpy.isfinite(z_mean) & (z1_lens < z_mean) & (z_mean <= z2_lens) & (mag_source < slope * z_mean + intercept)
-    
-    return select_lens, select_source
-
-
-def main(path, index):
+def select(path, index):
     """
     The main function to select the samples based on the redshift and magnitude criteria.
     
@@ -73,11 +47,9 @@ def main(path, index):
     # Redshift
     z1_lens = 0.2
     z2_lens = 1.2
-    z_lens = [z1_lens, z2_lens]
     
     z1_source = 0.0
     z2_source = 3.0
-    z_source = [z1_source, z2_source]
     
     grid_size = 300
     z_grid = numpy.linspace(z1_source, z2_source, grid_size + 1)
@@ -87,8 +59,10 @@ def main(path, index):
     mag_source = test_data['photometry']['mag_i_lsst']
     
     # Save Select
-    del test_name, estimate_name, test_data, estimator
-    select_lens, select_source = select(z_mean, z_lens, z_source, mag_source)
+    slope = 4.0
+    intercept = 18.0
+    select_source = numpy.isfinite(z_mean) & (z1_source < z_mean) & (z_mean <= z2_source)
+    select_lens = numpy.isfinite(z_mean) & (z1_lens < z_mean) & (z_mean <= z2_lens) & (mag_source < slope * z_mean + intercept)
     
     # Lens
     for m in range(len(bin_lens) - 1):
@@ -102,7 +76,6 @@ def main(path, index):
             file['meta'].create_dataset('pdf_name', data=['interp'])
             file['meta'].create_dataset('xvals', data=[z_grid], dtype=numpy.float32)
             file['data'].create_dataset('yvals', data=z_pdf[select_lens_bin, :], dtype=numpy.float32)
-    del select_lens, select_lens_bin
     
     # Source
     for m in range(len(bin_source) - 1):
@@ -116,10 +89,6 @@ def main(path, index):
             file['meta'].create_dataset('pdf_name', data=['interp'])
             file['meta'].create_dataset('xvals', data=[z_grid], dtype=numpy.float32)
             file['data'].create_dataset('yvals', data=z_pdf[select_source_bin, :], dtype=numpy.float32)
-    del select_source, select_source_bin
-    
-    # Delete
-    del bin_lens, bin_source, z_pdf, z_mean, mag_source
     
     # Return
     end = time.time()
@@ -128,6 +97,15 @@ def main(path, index):
     print('Index:{}, Time: {:.2f} minutes'.format(index, duration))
     return duration
 
+
+def main(count, number, folder):
+    
+    # Multiprocessing
+    SIZE = LENGTH // NUMBER
+    for CHUNK in range(SIZE):
+        print('CHUNK: {}'.format(CHUNK + 1))
+        with multiprocessing.Pool(processes=NUMBER) as POOL:
+            RESULT = POOL.starmap(main, [(PATH, INDEX) for INDEX in range(CHUNK * NUMBER + 1, (CHUNK + 1) * NUMBER + 1)])
 
 if __name__ == '__main__':
     
@@ -141,9 +119,3 @@ if __name__ == '__main__':
     NUMBER = PARSE.parse_args().number
     LENGTH = PARSE.parse_args().length
     
-    # Multiprocessing
-    SIZE = LENGTH // NUMBER
-    for CHUNK in range(SIZE):
-        print('CHUNK: {}'.format(CHUNK + 1))
-        with multiprocessing.Pool(processes=NUMBER) as POOL:
-            RESULT = POOL.starmap(main, [(PATH, INDEX) for INDEX in range(CHUNK * NUMBER + 1, (CHUNK + 1) * NUMBER + 1)])
