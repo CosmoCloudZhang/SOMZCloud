@@ -38,7 +38,7 @@ def selection(index, directory):
         
         catalog['mag_{}'.format(band)] = mag
         catalog['mag_err_{}'.format(band)] = mag_err
-        catalog['snr_{}'.format(band)] = 2.5 / numpy.log(10) / mag_err + epsilon
+        catalog['snr_{}'.format(band)] = 2.5 / numpy.log(10) / mag_err
     
     # Redshift
     z1 = 0.0

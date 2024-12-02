@@ -66,6 +66,7 @@ def catalog(directory):
                     data['mag_z_lsst'] = numpy.append(data['mag_z_lsst'], file[key]['LSST_obs_z'][:].astype(numpy.float32))
                     
                     data['mag_y_lsst'] = numpy.append(data['mag_y_lsst'], file[key]['LSST_obs_y'][:].astype(numpy.float32))
+    
     # Duration
     end = time.time()
     duration = (end - start) / 60
@@ -124,7 +125,7 @@ def dataset(folder):
         
         catalog['mag_{}'.format(band)] = mag
         catalog['mag_err_{}'.format(band)] = mag_err
-        catalog['snr_{}'.format(band)] = 2.5 / numpy.log(10) / mag_err + epsilon
+        catalog['snr_{}'.format(band)] = 2.5 / numpy.log(10) / mag_err
     # Redshift
     z1 = 0.0
     z2 = 3.0
@@ -142,7 +143,7 @@ def dataset(folder):
     
     # Data
     data = {}
-    data['redshift'] = catalog['redshift'][select]
+    data['redshift'] = catalog['redshift'].values[select]
     
     for band in band_list:
         
@@ -172,11 +173,8 @@ def augmentation(index, folder):
     Returns:
         data (dict): The Roman-Rubin simulation augmentation datasets
     '''
-    # Start
-    start = time.time()
-    data_folder = os.path.join(folder, 'DATASET')
-    
     # Load
+    data_folder = os.path.join(folder, 'DATASET')
     with h5py.File(os.path.join(data_folder, 'AUGMENTATION/DATA.hdf5'), 'r') as file:
         data = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
     z_data = data['redshift']
@@ -206,7 +204,7 @@ def augmentation(index, folder):
     mag_grid = numpy.linspace(mag1 + mag_delta / 2, mag2 - mag_delta / 2, mag_size)
     
     color1 = -2.0
-    color2 = +5.0
+    color2 = +8.0
     color_size = 50
     color_delta = (color2 - color1) / color_size
     color_bin = numpy.linspace(color1, color2, color_size + 1)
@@ -216,8 +214,8 @@ def augmentation(index, folder):
     pdf = numpy.histogramdd([z_selection, mag_selection, color_selection], bins=[z_bin, mag_bin, color_bin], density=True)[0]
     factor = numpy.log(1 + numpy.exp(- numpy.square(pdf / numpy.quantile(pdf[pdf > 0], 0.01))))
     
-    weight = scipy.interpolate.interpn(points=(z_grid, mag_grid, color_grid), values=factor, xi=(z_data, mag_data, color_data), method='linear', bounds_error=False, fill_value=0.0)
-    weight = weight / numpy.sum(weight)
+    weight = scipy.interpolate.interpn(points=(z_grid, mag_grid, color_grid), values=factor, xi=numpy.stack([z_data, mag_data, color_data], axis=1), method='slinear', bounds_error=False, fill_value=0.0)
+    weight = numpy.abs(weight) / numpy.sum(weight)
     
     fraction1 = 0.10
     fraction2 = 0.40
@@ -226,12 +224,6 @@ def augmentation(index, folder):
     count = numpy.round(len(z_selection) * fraction, decimals=0).astype(numpy.int32)
     indices = numpy.random.choice(numpy.arange(len(z_data)), size=count, replace=True, p=weight)
     
-    # Duration
-    end = time.time()
-    duration = (end - start) / 60
-    
-    # Return
-    print('Time: {:.2f} minutes'.format(duration))
     return {key: value[indices] for key, value in data.items()}
 
 

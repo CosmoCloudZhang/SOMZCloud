@@ -4,7 +4,6 @@ import time
 import numpy
 import argparse
 
-
 def main(number, folder):
     
     start = time.time()
