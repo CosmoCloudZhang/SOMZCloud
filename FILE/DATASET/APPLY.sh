@@ -33,4 +33,4 @@ BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/yhzhang/ZCloud/"
 BASE_DIRECTORY="/global/cfs/cdirs/lsst/groups/PZ/cosmoDC2_gold_samples/"
 
 # Run the application
-python -u "${BASE_PATH}/FILE/DATASET/APPLY.py" --number=$NUMBER --folder=$BASE_FOLDER --directory=$BASE_DIRECTORY
+python -u "${BASE_PATH}FILE/DATASET/APPLY.py" --number=$NUMBER --folder=$BASE_FOLDER --directory=$BASE_DIRECTORY

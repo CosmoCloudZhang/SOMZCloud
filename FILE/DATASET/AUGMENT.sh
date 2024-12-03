@@ -33,4 +33,4 @@ BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/yhzhang/ZCloud/"
 BASE_DIRECTORY="/global/cfs/cdirs/lsst/projecta/lsst/groups/CS/roman_rubin_2023_v1.1.3/"
 
 # Run the application
-python -u "${BASE_PATH}/FILE/DATASET/AUGMENT.py" --number=$NUMBER --folder=$BASE_FOLDER --directory=$BASE_DIRECTORY
+python -u "${BASE_PATH}FILE/DATASET/AUGMENT.py" --number=$NUMBER --folder=$BASE_FOLDER --directory=$BASE_DIRECTORY
