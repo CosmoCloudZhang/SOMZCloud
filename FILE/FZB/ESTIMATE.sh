@@ -23,7 +23,7 @@ conda activate $RAILENV
 
 # Set environment
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-export HDF5_USE_FILE_LOCKING=FALSE
+export HDF5_USE_FILE_LOCKING=True
 export OMP_PROC_BIND=spread
 export OMP_PLACES=threads
 
@@ -40,7 +40,7 @@ for INDEX in $(seq 1 $NUMBER); do
     OUTPUT_PATH="${BASE_FOLDER}FZB/ESTIMATE/ESTIMATE${INDEX}.hdf5"
     INPUT_PATH="${BASE_FOLDER}DATASET/APPLICATION/DATA${INDEX}.hdf5"
     # Run applications
-    python -u "${BASE_PATH}/FILE/FZB/ESTIMATE.py" --index=$INDEX --folder=$BASE_FOLDER &
+    python -u "${BASE_PATH}FILE/FZB/ESTIMATE.py" --index=$INDEX --folder=$BASE_FOLDER &
     srun -u -N 1 -n 1 --cpus-per-task=$SLURM_CPUS_PER_TASK python3 -m ceci rail.estimation.algos.flexzboost.FlexZBoostEstimator --mpi --name=$NAME --input=$INPUT_PATH --model=$MODEL_PATH --config=$CONFIG_PATH --output=$OUTPUT_PATH &
     # Control parallel execution
     if (( $INDEX % $SLURM_NTASKS == 0 )); then

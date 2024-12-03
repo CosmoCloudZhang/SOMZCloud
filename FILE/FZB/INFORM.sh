@@ -39,7 +39,7 @@ for INDEX in $(seq 1 $NUMBER); do
     CONFIG_PATH="${BASE_FOLDER}FZB/INFORM/INFORM${INDEX}.yaml"
     INPUT_PATH="${BASE_FOLDER}DATASET/COMBINATION/DATA${INDEX}.hdf5"
     # Run applications
-    python -u "${BASE_PATH}/FILE/FZB/INFORM.py" --index=$INDEX --folder=$BASE_FOLDER &
+    python -u "${BASE_PATH}FILE/FZB/INFORM.py" --index=$INDEX --folder=$BASE_FOLDER &
     srun -u -N 1 -n 1 --cpus-per-task=$SLURM_CPUS_PER_TASK python3 -m ceci rail.estimation.algos.flexzboost.FlexZBoostInformer --mpi  --name=$NAME --input=$INPUT_PATH --model=$MODEL_PATH --config=$CONFIG_PATH &
     # Control parallel execution
     if (( $INDEX % $SLURM_NTASKS == 0 )); then

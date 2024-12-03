@@ -72,7 +72,7 @@ def main(index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='FZB Informer')
+    PARSE = argparse.ArgumentParser(description='FZB Estimator')
     PARSE.add_argument('--index', type=int, required=True, help='The index of the datasets')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the datasets')
     
