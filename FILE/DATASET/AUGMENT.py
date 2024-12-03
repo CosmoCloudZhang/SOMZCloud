@@ -182,7 +182,7 @@ def augmentation(index, folder):
     color_data = data['mag_g_lsst'] - data['mag_z_lsst']
     
     # Selection
-    with h5py.File(os.path.join(dataset_folder, 'SELECTION/DATA{}.hdf5'.format(index + 1)), 'r') as file:
+    with h5py.File(os.path.join(dataset_folder, 'SELECTION/DATA{}.hdf5'.format(index)), 'r') as file:
         selection_data = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
     z_selection = selection_data['redshift']
     mag_selection = selection_data['mag_i_lsst']
@@ -268,12 +268,12 @@ def main(number, folder, directory):
             file['photometry'].create_dataset(key, data=value)
     
     # Augmentation
-    for index in range(number):
-        print('Index: {}'.format(index + 1))
+    for index in range(1, number + 1):
+        print('Index: {}'.format(index))
         
         data = augmentation(index, folder)
         
-        with h5py.File(os.path.join(dataset_folder, 'AUGMENTATION/DATA{}.hdf5'.format(index + 1)), 'w') as file:
+        with h5py.File(os.path.join(dataset_folder, 'AUGMENTATION/DATA{}.hdf5'.format(index)), 'w') as file:
             file.create_group('photometry')
             
             for key, value in data.items():

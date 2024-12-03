@@ -101,8 +101,8 @@ def main(number, folder, directory):
     dataset_folder = os.path.join(folder, 'DATASET/')
     
     # Application
-    for index in range(number):
-        print('Index: {:.0f}'.format(index + 1))
+    for index in range(1, number + 1):
+        print('Index: {:.0f}'.format(index))
         
         # Data
         data = application(directory)
@@ -111,7 +111,7 @@ def main(number, folder, directory):
         os.makedirs(dataset_folder, exist_ok=True)
         os.makedirs(os.path.join(dataset_folder, 'APPLICATION'), exist_ok=True)
         
-        with h5py.File(os.path.join(dataset_folder, 'APPLICATION/DATA{:.0f}.hdf5'.format(index + 1)), 'w') as file:
+        with h5py.File(os.path.join(dataset_folder, 'APPLICATION/DATA{:.0f}.hdf5'.format(index)), 'w') as file:
             file.create_group('photometry')
             
             for key, value in data.items():

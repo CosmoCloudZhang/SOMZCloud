@@ -19,7 +19,7 @@ def selection(index, directory):
     '''
     # Catalog
     catalog = {}
-    catalog_name = os.path.join(directory, 'training_samples/training_sample{}.hdf5'.format(index))
+    catalog_name = os.path.join(directory, 'training_samples/training_sample{}.hdf5'.format(index - 1))
     with h5py.File(catalog_name, 'r') as file:
         for key, value in file['photometry'].items():
             catalog[key] = value[...].astype(numpy.float32)
@@ -99,8 +99,8 @@ def main(number, folder, directory):
     dataset_folder = os.path.join(folder, 'DATASET/')
     
     # Index
-    for index in range(number):
-        print('Index: {:.0f}'.format(index + 1))
+    for index in range(1, number + 1):
+        print('Index: {:.0f}'.format(index))
         
         # Data
         data = selection(index, directory)
@@ -108,7 +108,7 @@ def main(number, folder, directory):
         # Save
         os.makedirs(dataset_folder, exist_ok=True)
         os.makedirs(os.path.join(dataset_folder, 'SELECTION'), exist_ok=True)
-        with h5py.File(os.path.join(dataset_folder, 'SELECTION/DATA{:.0f}.hdf5'.format(index + 1)), 'w') as file:
+        with h5py.File(os.path.join(dataset_folder, 'SELECTION/DATA{:.0f}.hdf5'.format(index)), 'w') as file:
             file.create_group('photometry')
             
             for key, value in data.items():

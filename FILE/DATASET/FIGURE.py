@@ -26,28 +26,28 @@ def plot_figure(index, folder):
     dataset_folder = os.path.join(folder, 'DATASET/')
     
     # Application
-    with h5py.File(os.path.join(dataset_folder, 'APPLICATION/DATA{}.hdf5'.format(index + 1)), 'r') as file:
+    with h5py.File(os.path.join(dataset_folder, 'APPLICATION/DATA{}.hdf5'.format(index)), 'r') as file:
         application_data = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
     z_application = application_data['redshift']
     mag_application = application_data['mag_i_lsst']
     color_application = numpy.subtract(application_data['mag_g_lsst'], application_data['mag_z_lsst'], where=(application_data['mag_g_lsst'] != 99.0) & (application_data['mag_z_lsst'] != 99.0), out=numpy.full_like(application_data['mag_i_lsst'], 99.0))
     
     # Selection
-    with h5py.File(os.path.join(dataset_folder, 'SELECTION/DATA{}.hdf5'.format(index + 1)), 'r') as file:
+    with h5py.File(os.path.join(dataset_folder, 'SELECTION/DATA{}.hdf5'.format(index)), 'r') as file:
         selection_data = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
     z_selection = selection_data['redshift']
     mag_selection = selection_data['mag_i_lsst']
     color_selection = numpy.subtract(selection_data['mag_g_lsst'], selection_data['mag_z_lsst'], where=(selection_data['mag_g_lsst'] != 99.0) & (selection_data['mag_z_lsst'] != 99.0), out=numpy.full_like(selection_data['mag_i_lsst'], 99.0))
     
     # Augmentation
-    with h5py.File(os.path.join(dataset_folder, 'AUGMENTATION/DATA{}.hdf5'.format(index + 1)), 'r') as file:
+    with h5py.File(os.path.join(dataset_folder, 'AUGMENTATION/DATA{}.hdf5'.format(index)), 'r') as file:
         augmentation_data = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
     z_augmentation = augmentation_data['redshift']
     mag_augmentation = augmentation_data['mag_i_lsst']
     color_augmentation = numpy.subtract(augmentation_data['mag_g_lsst'], augmentation_data['mag_z_lsst'], where=(augmentation_data['mag_g_lsst'] != 99.0) & (augmentation_data['mag_z_lsst'] != 99.0), out=numpy.full_like(augmentation_data['mag_i_lsst'], 99.0))
     
     # Combination
-    with h5py.File(os.path.join(dataset_folder, 'COMBINATION/DATA{}.hdf5'.format(index + 1)), 'r') as file:
+    with h5py.File(os.path.join(dataset_folder, 'COMBINATION/DATA{}.hdf5'.format(index)), 'r') as file:
         combination_data = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
     z_combination = combination_data['redshift']
     mag_combination = combination_data['mag_i_lsst']
@@ -158,14 +158,14 @@ def plot_figure(index, folder):
     os.makedirs(dataset_folder, exist_ok=True)
     os.makedirs(os.path.join(dataset_folder, 'FIGURE'), exist_ok=True)
     
-    figure.savefig(os.path.join(dataset_folder, 'FIGURE/FIGURE{}.png'.format(index + 1)), bbox_inches='tight', dpi=512)
+    figure.savefig(os.path.join(dataset_folder, 'FIGURE/FIGURE{}.png'.format(index)), bbox_inches='tight', dpi=512)
     pyplot.close(figure)
     
     # Duration
     end = time.time()
     duration = (end - start) / 60
     
-    print('Index: {} Time: {:.2f} minutes'.format(index + 1, duration))
+    print('Index: {} Time: {:.2f} minutes'.format(index, duration))
     return duration
 
 
@@ -196,7 +196,7 @@ def main(count, number, folder):
         print('Chunk: {}/{}'.format(chunk + 1, size))
         
         with multiprocessing.Pool(processes=count) as pool:
-            pool.starmap(plot_figure, [(index, folder) for index in range(chunk * count, (chunk + 1) * count)])
+            pool.starmap(plot_figure, [(index, folder) for index in range(chunk * count + 1, (chunk + 1) * count + 1)])
         
     # Return
     end = time.time()
