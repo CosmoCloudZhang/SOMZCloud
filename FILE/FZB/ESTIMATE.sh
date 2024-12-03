@@ -23,7 +23,7 @@ conda activate $RAILENV
 
 # Set environment
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-export HDF5_USE_FILE_LOCKING=True
+export HDF5_USE_FILE_LOCKING=FALSE
 export OMP_PROC_BIND=spread
 export OMP_PLACES=threads
 
