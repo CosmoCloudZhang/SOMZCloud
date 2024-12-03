@@ -1,20 +1,25 @@
 import os
+import time
 import yaml
 import argparse
 
+
 def main(index, folder):
-    """
-    Main function to create the INFORM.yaml file
+    '''
+    Main function to create the FZB estimator configuration file.
     
     Arguments:
-        index (int): Index of the dataset
-        folder (str): The base folder of the datasets
+        index (int): The index of the dataset.
+        folder (str): The base folder of the datasets.
     
     Returns:
-        None
-    """
+        duration (float): The duration of the function in minutes.
+    '''
+    # Start
+    start = time.time()
+    
     # Path
-    data_folder = os.path.join(folder, 'FZB')
+    fzb_folder = os.path.join(folder, 'FZB/')
     
     # Config
     config = {
@@ -51,12 +56,21 @@ def main(index, folder):
         }
     }
     
-    config_name = os.path.join(data_folder, 'ESTIMATE{}.yaml'.format(index))
+    os.makedirs(os.path.join(fzb_folder, 'ESTIMATE'), exist_ok=True)
+    config_name = os.path.join(fzb_folder, 'ESTIMATE/ESTIMATE{}.yaml'.format(index))
     with open(config_name, 'w') as config_file:
         yaml.dump(config, config_file, default_flow_style=False)
+    
+    # End
+    end = time.time()
+    duration = (end - start) / 60
+    
+    # Return
+    print('Index: {} Time: {:.2f} minutes'.format(index, duration))
+    return duration
+
 
 if __name__ == '__main__':
-    
     # Input
     PARSE = argparse.ArgumentParser(description='FZB Informer')
     PARSE.add_argument('--index', type=int, required=True, help='The index of the datasets')

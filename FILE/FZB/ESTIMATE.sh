@@ -27,16 +27,18 @@ export HDF5_USE_FILE_LOCKING=FALSE
 export OMP_PROC_BIND=spread
 export OMP_PLACES=threads
 
-# Initialize the parallisation
-LENGTH=400
+# Initialize the process
+NUMBER=16
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-for INDEX in $(seq 1 $LENGTH); do
-    # Set path variables
+BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/yhzhang/ZCloud/"
+
+for INDEX in $(seq 1 $NUMBER); do
+    # Set variables
     NAME="ESTIMATE${INDEX}"
-    MODEL_PATH="${BASE_FOLDER}/FZB/INFORM${INDEX}.pkl"
-    CONFIG_PATH="${BASE_FOLDER}/FZB/ESTIMATE${INDEX}.yaml"
-    OUTPUT_PATH="${BASE_FOLDER}/FZB/ESTIMATE${INDEX}.hdf5"
-    INPUT_PATH="${BASE_FOLDER}/APPLICATION/DATA${INDEX}.hdf5"
+    MODEL_PATH="${BASE_FOLDER}FZB/INFORM/INFORM${INDEX}.pkl"
+    CONFIG_PATH="${BASE_FOLDER}FZB/ESTIMATE/ESTIMATE${INDEX}.yaml"
+    OUTPUT_PATH="${BASE_FOLDER}FZB/ESTIMATE/ESTIMATE${INDEX}.hdf5"
+    INPUT_PATH="${BASE_FOLDER}DATASET/APPLICATION/DATA${INDEX}.hdf5"
     # Run applications
     python -u "${BASE_PATH}/FILE/FZB/ESTIMATE.py" --index=$INDEX --folder=$BASE_FOLDER &
     srun -u -N 1 -n 1 --cpus-per-task=$SLURM_CPUS_PER_TASK python3 -m ceci rail.estimation.algos.flexzboost.FlexZBoostEstimator --mpi --name=$NAME --input=$INPUT_PATH --model=$MODEL_PATH --config=$CONFIG_PATH --output=$OUTPUT_PATH &

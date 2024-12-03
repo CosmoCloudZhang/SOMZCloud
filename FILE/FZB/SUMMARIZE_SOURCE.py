@@ -7,51 +7,29 @@ from rail import core
 import multiprocessing
 
 
-def summarize(z_pdf, width):
-    """
-    The function to summarize the data.
+def summarize(index, folder):
+    '''
+    Summarize the redshift distribution of the lens samples.
     
     Arguments:
-        select_data (QPHandle): The data handle.
-        z_data (numpy.ndarray): The redshift data.
+        index (int): The index of the dataset.
+        folder (str): The base folder of the dataset.
     
     Returns:
-        numpy.ndarray: The summarized data.
-    """
-    sample_size, pdf_size = z_pdf.shape
-    summarize_data = numpy.zeros((width, pdf_size), dtype=numpy.float32)
-    
-    for n in range(width):
-        z_index = numpy.random.randint(0, sample_size, size=sample_size)
-        summarize_data[n, :] = numpy.mean(z_pdf[z_index, :], axis=0)
-    summarize_single = numpy.mean(z_pdf, axis=0)
-    return summarize_single, summarize_data
-
-
-def main(path, index):
-    """
-    The main function to resample the redshift and get ensemble distributions.
-    
-    Arguments:
-        path (str): The path to the base folder.
-        index (int): The index of the datasets.
-    
-    Returns:
-        float: The duration of the selection.
-    """
+        duration (float): The duration of the process.
+    '''
     # Data store
     start = time.time()
+    
+    # Path
+    fzb_folder = os.path.join(folder, 'FZB/')
+    
+    # Load
     data_store = core.stage.RailStage.data_store
     data_store.__class__.allow_overwrite = True
     
-    # Path
-    data_path = os.path.join(path, 'DATA/')
-    os.makedirs(os.path.join(data_path, 'FZB/SOURCE'), exist_ok=True)
-    os.makedirs(os.path.join(data_path, 'FZB/SOURCE/SOURCE{}'.format(index)), exist_ok=True)
-    
-    # Bin
-    with h5py.File(os.path.join(data_path, 'FZB/SOURCE/BIN.hdf5'), 'r') as file:
-        bin_source = file['bin'][index - 1, :].astype(numpy.float32)
+    with h5py.File(os.path.join(fzb_folder, 'SOURCE/BIN.hdf5'), 'r') as file:
+        bin_source = file['bin'][index, :].astype(numpy.float32)
     
     # Redshift
     z1 = 0.0
@@ -63,15 +41,21 @@ def main(path, index):
     # Summarize
     width = 1000
     for m in range(len(bin_source) - 1):
-        select_name = os.path.join(data_path, 'FZB/SOURCE/SOURCE{}/FZB_SELECT{}.hdf5'.format(index, m + 1))
-        select_data = data_store.read_file(key='select_data', path=select_name, handle_class=core.data.QPHandle)()
+        # Select
+        select_name = os.path.join(fzb_folder, 'SOURCE/SOURCE{}/SELECT{}.hdf5'.format(index + 1, m + 1))
+        select_data = data_store.read_file(key='select', path=select_name, handle_class=core.data.QPHandle)()
         
         z_pdf = select_data.pdf(z_grid)
-        summarize_single, summarize_data = summarize(z_pdf, width)
-        del z_pdf, select_name, select_data
+        sample_size, pdf_size = z_pdf.shape
+        summarize_data = numpy.zeros((width, pdf_size), dtype=numpy.float32)
+        
+        for n in range(width):
+            z_index = numpy.random.randint(0, sample_size, size=sample_size)
+            summarize_data[n, :] = numpy.mean(z_pdf[z_index, :], axis=0)
+        summarize_single = numpy.mean(z_pdf, axis=0)
         
         # Save the single
-        with h5py.File(os.path.join(data_path, 'FZB/SOURCE/SOURCE{}/FZB_SINGLE{}.hdf5'.format(index, m + 1)), 'w') as file:
+        with h5py.File(os.path.join(fzb_folder, 'SOURCE/SOURCE{}/SINGLE{}.hdf5'.format(index + 1, m + 1)), 'w') as file:
             file.create_group('meta')
             file.create_group('data')
             
@@ -79,9 +63,9 @@ def main(path, index):
             file['meta'].create_dataset(name='pdf_version', data=[0.0])
             file['meta'].create_dataset(name='bins', data=z_bin, dtype=numpy.float32)
             file['data'].create_dataset(name='pdfs', data=summarize_single, dtype=numpy.float32)
-        del summarize_single
+        
         # Save the data
-        with h5py.File(os.path.join(data_path, 'FZB/SOURCE/SOURCE{}/FZB_SUMMARIZE{}.hdf5'.format(index, m + 1)), 'w') as file:
+        with h5py.File(os.path.join(fzb_folder, 'SOURCE/SOURCE{}/DATA{}.hdf5'.format(index + 1, m + 1)), 'w') as file:
             file.create_group('meta')
             file.create_group('data')
             
@@ -89,7 +73,6 @@ def main(path, index):
             file['meta'].create_dataset(name='pdf_version', data=[0.0])
             file['meta'].create_dataset(name='bins', data=z_bin, dtype=numpy.float32)
             file['data'].create_dataset(name='pdfs', data=summarize_data, dtype=numpy.float32)
-        del summarize_data
     
     # Return
     end = time.time()
@@ -99,21 +82,48 @@ def main(path, index):
     return duration
 
 
-if __name__ == '__main__':
+def main(count, number, folder):
+    '''
+    Summarize the redshift distribution of the source samples.
     
-    # Input
-    PARSE = argparse.ArgumentParser(description='FZB Summarize')
-    PARSE.add_argument('--path', type=str, required=True, help='The path to the base folder')
-    PARSE.add_argument('--number', type=int, required=True, help='The number of the processes')
-    PARSE.add_argument('--length', type=int, required=True, help='The length of the train datasets')
+    Arguments:
+        count (int): The count of the process.
+        number (int): The number of the dataset.
+        folder (str): The base folder of the dataset.
     
-    PATH = PARSE.parse_args().path
-    NUMBER = PARSE.parse_args().number
-    LENGTH = PARSE.parse_args().length
+    Returns:
+        duration (float): The duration of the process.
+    '''
+    # Start
+    start = time.time()
     
     # Multiprocessing
-    SIZE = LENGTH // NUMBER
-    for CHUNK in range(SIZE):
-        print('CHUNK: {}'.format(CHUNK + 1))
-        with multiprocessing.Pool(processes=NUMBER) as POOL:
-            RESULT = POOL.starmap(main, [(PATH, INDEX) for INDEX in range(CHUNK * NUMBER + 1, (CHUNK + 1) * NUMBER + 1)])
+    size = number // count
+    for chunk in range(size):
+        print('CHUNK: {}'.format(chunk + 1))
+        with multiprocessing.Pool(processes=count) as pool:
+            pool.starmap(summarize, [(index, folder) for index in range(chunk * count, (chunk + 1) * count)])
+    
+    # Duration
+    end = time.time()
+    duration = (end - start) / 60
+    
+    # Return
+    print('Total Time: {:.2f} minutes'.format(duration))
+    return duration
+
+
+if __name__ == '__main__':
+    # Input
+    PARSE = argparse.ArgumentParser(description='FZB Summarize')
+    PARSE.add_argument('--count', type=int, required=True, help='The count of the process')
+    PARSE.add_argument('--number', type=int, required=True, help='The number of the dataset')
+    PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the dataset')
+    
+    # Parse
+    COUNT = PARSE.parse_args().count
+    NUMBER = PARSE.parse_args().number
+    FOLDER = PARSE.parse_args().folder
+    
+    # Output
+    OUTPUT = main(COUNT, NUMBER, FOLDER)

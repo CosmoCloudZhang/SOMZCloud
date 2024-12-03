@@ -21,7 +21,10 @@ module load cray-hdf5-parallel
 source $HOME/.bashrc
 conda activate $RAILENV
 
-# Initialize the parallisation
-LENGTH=400
+# Initialize the process
+NUMBER=400
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-python -u "${BASE_PATH}FILE/FZB/FZB_BIN.py" --path=$BASE_PATH --length=$LENGTH
+BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/yhzhang/ZCloud/"
+
+# Run applications
+python -u "${BASE_PATH}FILE/FZB/BIN.py" --number=$NUMBER --folder=$BASE_FOLDER

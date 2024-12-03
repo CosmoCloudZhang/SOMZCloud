@@ -6,9 +6,23 @@ from rail import core
 import multiprocessing
 from matplotlib import pyplot, colors, gridspec
 
+
 def plot_select(z_grid, z_mean, z_lens, z_source, mag_source):
+    '''
+    Plot the selection of lens and source samples.
     
-    mag1 = 14.0
+    Parameters:
+        z_grid (numpy.ndarray): The redshift grid of source samples.
+        z_mean (numpy.ndarray): The redshift mode of source samples.
+        z_lens (list): The redshift range of lens samples.
+        z_source (list): The redshift range of source samples.
+        mag_source (numpy.ndarray): The magnitudes of test application samples.
+    
+    Returns:
+        matplotlib.figure.Figure: The plotted figure.
+    '''
+    # Set variables
+    mag1 = 16.0
     mag2 = 26.0
     mag_size = 100
     mag_grid = numpy.linspace(mag1, mag2, mag_size + 1)
@@ -20,6 +34,7 @@ def plot_select(z_grid, z_mean, z_lens, z_source, mag_source):
     z1_source, z2_source = z_source
     z_lens_grid = numpy.linspace(z1_lens, z2_lens, z_grid.size + 1)
     
+    # Plot
     figure, plot = pyplot.subplots(nrows=1, ncols=1, figsize=(12, 8))
     
     z_mesh =plot.hist2d(x=z_mean, y=mag_source, bins=[z_grid, mag_grid], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')[-1]
@@ -46,7 +61,7 @@ def plot_select(z_grid, z_mean, z_lens, z_source, mag_source):
 
 
 def plot_redshift(z_grid, z_mean, z_true, z_lens, z_source, mag_source):
-    """
+    '''
     Plot the photometric redshift distribution of lens and source samples.
     
     Parameters:
@@ -59,9 +74,7 @@ def plot_redshift(z_grid, z_mean, z_true, z_lens, z_source, mag_source):
     
     Returns:
         matplotlib.figure.Figure: The plotted figure.
-    
-    """
-    
+    '''
     # Set variables
     z1_lens, z2_lens = z_lens
     z1_source, z2_source = z_source
@@ -69,11 +82,9 @@ def plot_redshift(z_grid, z_mean, z_true, z_lens, z_source, mag_source):
     slope = 4.0
     intersection = 18.0
     
-    grid_size = 100
-    z_grid = numpy.linspace(z_grid.min(), z_grid.max(), grid_size + 1)
-    
     sigma1 = 1e-4
     sigma2 = 1e+0
+    grid_size = z_grid.size
     sigma_grid = numpy.geomspace(sigma1, sigma2, grid_size + 1)
     
     select_source = (z1_source < z_mean) & (z_mean < z2_source)
@@ -162,31 +173,33 @@ def plot_redshift(z_grid, z_mean, z_true, z_lens, z_source, mag_source):
     return figure
 
 
-def main(path, index):
-    """
-    Main function of the plotter.
+def plot(index, folder):
+    '''
+    Plot the figures of the FZB modelling.
     
     Arguments:
-        path (str): The path to the base folder.
-        index (int): The index of the test application.
+        index (int): The index of the dataset.
+        folder (str): The base folder of the datasets.
     
     Returns:
         float: The duration of the plotter.
-    
-    """
-    # Data store
+    '''
+    # Start
     start = time.time()
+    
+    # Path
+    bin_folder = os.path.join(folder, 'BIN/')
+    model_folder = os.path.join(folder, 'FZB/')
+    data_folder = os.path.join(folder, 'DATASET/')
+    
+    # Load 
     data_store = core.stage.RailStage.data_store
     data_store.__class__.allow_overwrite = True
     
-    # Data
-    data_path = os.path.join(path, 'DATA/')
-    plot_path = os.path.join(path, 'PLOT/')
+    application_name = os.path.join(data_folder, 'APPLICATION/DATA{}.hdf5'.format(index + 1))
+    application_dataset = data_store.read_file(key='application_dataset', path=application_name, handle_class=core.data.TableHandle)()
     
-    test_name = os.path.join(data_path, 'SAMPLE/TEST_SAMPLE.hdf5')
-    estimate_name = os.path.join(data_path, 'FZB/FZB_ESTIMATE{}.hdf5'.format(index))
-    
-    test_data = data_store.read_file(key='test_data', path=test_name, handle_class=core.data.TableHandle)()
+    estimate_name = os.path.join(model_folder, 'ESTIMATE{}.hdf5'.format(index + 1))
     estimator = data_store.read_file(key='estimator', path=estimate_name, handle_class=core.data.QPHandle)()
     
     # Redshift
@@ -198,26 +211,22 @@ def main(path, index):
     z2_source = 3.0
     z_source = [z1_source, z2_source]
     
-    grid_size = 300
+    grid_size = 100
     z_grid = numpy.linspace(z1_source, z2_source, grid_size + 1)
     
     z_mean = numpy.concatenate(estimator.mean())
-    z_true = test_data['photometry']['redshift']
-    mag_source = test_data['photometry']['mag_i_lsst']
+    z_true = application_dataset['photometry']['redshift']
+    mag_source = application_dataset['photometry']['mag_i_lsst']
     
-    # Configuration
-    os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
-    pyplot.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
-    pyplot.rcParams['pgf.texsystem'] = 'pdflatex'
-    pyplot.rcParams['text.usetex'] = True
-    pyplot.rcParams['font.size'] = 25
-    
+    # Plot
+    os.makedirs(os.path.join(bin_folder, 'FIGURE/'), exist_ok=True)
     figure = plot_select(z_grid, z_mean, z_lens, z_source, mag_source)
-    figure.savefig(os.path.join(plot_path, 'SELECT/SELECT{}.pdf'.format(index)), bbox_inches='tight')
+    figure.savefig(os.path.join(bin_folder, 'FIGURE/FIGURE{}.png'.format(index)), bbox_inches='tight', dpi=512)
     pyplot.close(figure)
     
+    os.makedirs(os.path.join(model_folder, 'FIGURE/'), exist_ok=True)
     figure = plot_redshift(z_grid, z_mean, z_true, z_lens, z_source, mag_source)
-    figure.savefig(os.path.join(plot_path, 'REDSHIFT/REDSHIFT{}.pdf'.format(index)), bbox_inches='tight')
+    figure.savefig(os.path.join(model_folder, 'FIGURE/FIGURE{}.png'.format(index)), bbox_inches='tight', dpi=512)
     pyplot.close(figure)
     
     # Return
@@ -227,21 +236,56 @@ def main(path, index):
     print('Index:{}, Time: {:.2f} minutes'.format(index, duration))
     return duration
 
-if __name__ == '__main__':
+
+def main(count, number, folder):
+    '''
+    Main function of making figures.
     
+    Arguments:
+        count (int): The count of processes.
+        number (int): The number of datasets.
+        folder (str): The base folder of the datasets.
+    
+    Returns:
+        float: The duration of the plotter.
+    '''
+    # Start
+    start = time.time()
+    
+    # Configuration
+    os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
+    pyplot.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
+    pyplot.rcParams['pgf.texsystem'] = 'pdflatex'
+    pyplot.rcParams['text.usetex'] = True
+    pyplot.rcParams['font.size'] = 25
+    
+    # Plot
+    size = number // count
+    for chunk in range(size):
+        print('Chunk: {}'.format(chunk + 1))
+        with multiprocessing.Pool(processes=count) as pool:
+            pool.starmap(plot, [(index, folder) for index in range(chunk * count, (chunk + 1) * count)])
+    
+    # Duration
+    end = time.time()
+    duration = (end - start) / 60
+    
+    # Return
+    print('Total Time: {:.2f} minutes'.format(duration))
+    return duration
+
+
+if __name__ == '__main__':
     # Input
     PARSE = argparse.ArgumentParser(description='FZB Figure')
-    PARSE.add_argument('--path', type=str, required=True, help='The path to the base folder')
-    PARSE.add_argument('--number', type=int, required=True, help='The number of the processes')
-    PARSE.add_argument('--length', type=int, required=True, help='The length of the train datasets')
+    PARSE.add_argument('--count', type=int, required=True, help='The count of processes')
+    PARSE.add_argument('--number', type=int, required=True, help='The number of datasets')
+    PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the datasets')
     
-    PATH = PARSE.parse_args().path
+    # Parse
+    COUNT = PARSE.parse_args().count
     NUMBER = PARSE.parse_args().number
-    LENGTH = PARSE.parse_args().length
+    FOLDER = PARSE.parse_args().folder
     
-    # Multiprocessing
-    SIZE = LENGTH // NUMBER
-    for CHUNK in range(SIZE):
-        print('CHUNK: {}'.format(CHUNK + 1))
-        with multiprocessing.Pool(processes=NUMBER) as POOL:
-            RESULT = POOL.starmap(main, [(PATH, INDEX) for INDEX in range(CHUNK * NUMBER + 1, (CHUNK + 1) * NUMBER + 1)])
+    # Output
+    OUTPUT = main(COUNT, NUMBER, FOLDER)

@@ -22,13 +22,15 @@ source $HOME/.bashrc
 conda activate $RAILENV
 
 # Set OpenMP environment
-export OMP_NUM_THREADS=32
+export OMP_NUM_THREADS=16
 export OMP_PLACES=threads
 export OMP_PROC_Bind=spread
 
-# Initialize the parallisation
-NUMBER=8
-LENGTH=400
+# Initialize the process
+COUNT=16
+NUMBER=400
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-srun -n 1 --cpu-bind=none python -u "${BASE_PATH}FILE/FZB/FZB_SUMMARIZE_SELECT.py" --path=$BASE_PATH --number=$NUMBER --length=$LENGTH &
-wait
+BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/yhzhang/ZCloud/"
+
+# Run applications
+srun -n 1 --cpu-bind=none python -u "${BASE_PATH}FILE/FZB/SUMMARIZE_SELECT.py" --path=$BASE_PATH --COUNT=$COUNT --NUMBER=$NUMBER
