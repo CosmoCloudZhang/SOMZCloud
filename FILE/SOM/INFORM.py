@@ -2,22 +2,24 @@ import os
 import yaml
 import argparse
 
-def main(path):
-    """
-    The main function to create the som informer.
+
+def main(index, folder):
+    '''
+    Main function to create the SOM informer configuration file.
     
     Arguments:
-        path (str): The path to the
+        index (int): The index of the dataset.
+        folder (str): The base folder of the datasets.
     
     Returns:
-        None
-    """
+        duration (float): The duration of the function in minutes.
+    '''
     # Path
-    data_path = os.path.join(path, 'DATA/')
+    som_folder = os.path.join(folder, 'SOM/')
     
     # Config
     config = {
-        'SOM_INFORM': {
+        'INFORM{}'.format(index): {
             'aliases': {
                 'name': 'input_name',
                 'input': 'input_data', 
@@ -26,13 +28,13 @@ def main(path):
             'seed': 0, 
             'std_coeff': 0.5, 
             'maptype': 'toroid', 
-            'nondetect_val': 99.0, 
+            'nondetect_val': 30.0, 
             'grid_type': 'hexagonal', 
             'ref_band': 'mag_i_lsst',
             'column_usage': 'colors',
             'som_learning_rate': 0.5, 
             'hdf5_groupname': 'photometry', 
-            'n_rows': 200, 'n_columns': 200, 
+            'n_rows': 100, 'n_columns': 100, 
             'bands': [
                 'mag_u_lsst', 
                 'mag_g_lsst', 
@@ -52,15 +54,21 @@ def main(path):
         }
     }
     
-    config_name = os.path.join(data_path, 'SOM/SOM_INFORM.yaml')
+    os.makedirs(os.path.join(som_folder, 'INFORM'), exist_ok=True)
+    config_name = os.path.join(som_folder, 'INFORM/INFORM{}.yaml'.format(index))
     with open(config_name, 'w') as config_file:
         yaml.dump(config, config_file, default_flow_style=False)
 
+
 if __name__ == '__main__':
-    
     # Input
-    PARSE = argparse.ArgumentParser(description='SOM Informer')
-    PARSE.add_argument('--path', type=str, required=True, help='The path to the base folder')
+    PARSE = argparse.ArgumentParser(description='FZB Informer')
+    PARSE.add_argument('--index', type=int, required=True, help='The index of the datasets')
+    PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the datasets')
     
-    PATH = PARSE.parse_args().path
-    RESULT = main(PATH)
+    # Parse
+    INDEX = PARSE.parse_args().index
+    FOLDER = PARSE.parse_args().folder
+    
+    # Output
+    OUTPUT = main(INDEX, FOLDER)
