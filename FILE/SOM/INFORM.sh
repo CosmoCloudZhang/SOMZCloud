@@ -27,16 +27,17 @@ export OMP_PROC_BIND=spread
 export OMP_PLACES=threads
 
 # Initialize the process
-NUMBER=1
+NUMBER=400
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/yhzhang/ZCloud/"
 
-for INDEX in $(seq 1 $NUMBER); do
-    # Set variables
-    NAME="INFORM${INDEX}"
-    MODEL_PATH="${BASE_FOLDER}SOM/INFORM/INFORM${INDEX}.pkl"
-    CONFIG_PATH="${BASE_FOLDER}SOM/INFORM/INFORM${INDEX}.yaml"
-    INPUT_PATH="${BASE_FOLDER}DATASET/APPLICATION/DATA${INDEX}.hdf5"
-    # Run applications
-    python -u "${BASE_PATH}FILE/SOM/INFORM.py" --index=$INDEX --folder=$BASE_FOLDER &
-    srun -u -N 1 -n 1 --cpus-per-task=$SLURM_CPUS_PER_TASK python3 -m ceci rail.estimation.algos.somoclu_som.SOMocluInformer --mpi  --name=$NAME --input=$INPUT_PATH --model=$MODEL_PATH --config=$CONFIG_PATH
+# Set variables
+NAME="INFORM"
+MODEL_PATH="${BASE_FOLDER}SOM/INFORM/INFORM.pkl"
+INPUT_PATH="${BASE_FOLDER}SOM/INFORM/INFORM.hdf5"
+CONFIG_PATH="${BASE_FOLDER}SOM/INFORM/INFORM.yaml"
+
+# Run applications
+python -u "${BASE_PATH}FILE/SOM/INFORM.py" --number=$NUMBER --folder=$BASE_FOLDER &
+srun -u -N 1 -n 1 --cpus-per-task=$SLURM_CPUS_PER_TASK python3 -m ceci rail.estimation.algos.somoclu_som.SOMocluInformer --mpi --name=$NAME --input=$INPUT_PATH --model=$MODEL_PATH --config=$CONFIG_PATH & 
+wait
