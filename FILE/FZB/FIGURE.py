@@ -3,20 +3,18 @@ import time
 import numpy
 import argparse
 from rail import core
-import multiprocessing
 from matplotlib import pyplot, colors, gridspec
 
 
-def plot_select(z_grid, z_mean, z_lens, z_source, mag_source):
+def plot_select(z_lens, z_source, z_mean, mag_source):
     '''
     Plot the selection of lens and source samples.
     
     Parameters:
-        z_grid (numpy.ndarray): The redshift grid of source samples.
-        z_mean (numpy.ndarray): The redshift mode of source samples.
         z_lens (list): The redshift range of lens samples.
         z_source (list): The redshift range of source samples.
-        mag_source (numpy.ndarray): The magnitudes of test application samples.
+        z_mean (numpy.ndarray): The mean redshifts of source samples.
+        mag_source (numpy.ndarray): The i band magnitudes of source samples.
     
     Returns:
         matplotlib.figure.Figure: The plotted figure.
@@ -24,26 +22,28 @@ def plot_select(z_grid, z_mean, z_lens, z_source, mag_source):
     # Set variables
     mag1 = 16.0
     mag2 = 26.0
-    mag_size = 100
-    mag_grid = numpy.linspace(mag1, mag2, mag_size + 1)
+    grid_size = 100
+    mag_grid = numpy.linspace(mag1, mag2, grid_size + 1)
     
     slope = 4.0
     intersection = 18.0
     
     z1_lens, z2_lens = z_lens
     z1_source, z2_source = z_source
-    z_lens_grid = numpy.linspace(z1_lens, z2_lens, z_grid.size + 1)
+    
+    z_lens_grid = numpy.linspace(z1_lens, z2_lens, grid_size + 1)
+    z_source_grid = numpy.linspace(z1_source, z2_source, grid_size + 1)
     
     # Plot
     figure, plot = pyplot.subplots(nrows=1, ncols=1, figsize=(12, 8))
     
-    z_mesh =plot.hist2d(x=z_mean, y=mag_source, bins=[z_grid, mag_grid], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')[-1]
+    z_mesh =plot.hist2d(x=z_mean, y=mag_source, bins=[z_source_grid, mag_grid], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')[-1]
     
     plot.plot(z_lens_grid, slope * z_lens_grid + intersection, color='black', linestyle='--', linewidth=2.0)
     
-    plot.plot(numpy.ones(z_grid.size) * z1_lens, numpy.linspace(mag1, slope * z1_lens + intersection, z_grid.size), color='black', linestyle='--', linewidth=2.0)
+    plot.plot(numpy.ones(grid_size) * z1_lens, numpy.linspace(mag1, slope * z1_lens + intersection, grid_size), color='black', linestyle='--', linewidth=2.0)
     
-    plot.plot(numpy.ones(z_grid.size) * z2_lens, numpy.linspace(mag1, slope * z2_lens + intersection, z_grid.size), color='black', linestyle='--', linewidth=2.0)
+    plot.plot(numpy.ones(grid_size) * z2_lens, numpy.linspace(mag1, slope * z2_lens + intersection, grid_size), color='black', linestyle='--', linewidth=2.0)
     
     plot.set_ylim(mag1, mag2)
     plot.set_xlim(z1_source, z2_source)
@@ -60,31 +60,31 @@ def plot_select(z_grid, z_mean, z_lens, z_source, mag_source):
     return figure
 
 
-def plot_redshift(z_grid, z_mean, z_true, z_lens, z_source, mag_source):
+def plot_redshift(z_lens, z_source, z_mean, z_true, mag_source):
     '''
     Plot the photometric redshift distribution of lens and source samples.
     
     Parameters:
-        z_grid (numpy.ndarray): The redshift grid of source samples.
-        z_mean (numpy.ndarray): The redshift mode of source samples.
-        z_true (numpy.ndarray): The redshifts of test application samples.
         z_lens (list): The redshift range of lens samples.
         z_source (list): The redshift range of source samples.
-        mag_source (numpy.ndarray): The magnitudes of test application samples
+        z_mean (numpy.ndarray): The redshift mode of source samples.
+        z_true (numpy.ndarray): The true redshift of source samples.
+        mag_source (numpy.ndarray): The i band magnitudes of source samples.
     
     Returns:
         matplotlib.figure.Figure: The plotted figure.
     '''
     # Set variables
+    grid_size = 100
     z1_lens, z2_lens = z_lens
     z1_source, z2_source = z_source
+    z_grid = numpy.linspace(z1_source, z2_source, grid_size + 1)
     
     slope = 4.0
     intersection = 18.0
     
     sigma1 = 1e-4
     sigma2 = 1e+0
-    grid_size = z_grid.size
     sigma_grid = numpy.geomspace(sigma1, sigma2, grid_size + 1)
     
     select_source = (z1_source < z_mean) & (z_mean < z2_source)
@@ -173,12 +173,12 @@ def plot_redshift(z_grid, z_mean, z_true, z_lens, z_source, mag_source):
     return figure
 
 
-def plot(index, folder):
+def main(index, folder):
     '''
     Plot the figures of the FZB modelling.
     
     Arguments:
-        index (int): The index of the dataset.
+        index (int): The number of datasets.
         folder (str): The base folder of the datasets.
     
     Returns:
@@ -186,21 +186,30 @@ def plot(index, folder):
     '''
     # Start
     start = time.time()
+    print('Index:{}'.format(index))
     
     # Path
-    bin_folder = os.path.join(folder, 'BIN/')
-    model_folder = os.path.join(folder, 'FZB/')
-    data_folder = os.path.join(folder, 'DATASET/')
+    fzb_folder = os.path.join(folder, 'FZB/')
+    dataset_folder = os.path.join(folder, 'DATASET/')
+    os.makedirs(os.path.join(fzb_folder, 'FIGURE/'), exist_ok=True)
     
     # Load 
     data_store = core.stage.RailStage.data_store
     data_store.__class__.allow_overwrite = True
     
-    application_name = os.path.join(data_folder, 'APPLICATION/DATA{}.hdf5'.format(index + 1))
-    application_dataset = data_store.read_file(key='application_dataset', path=application_name, handle_class=core.data.TableHandle)()
+    # Load
+    application_name = os.path.join(dataset_folder, 'APPLICATION/DATA{}.hdf5'.format(index))
+    application_dataset = data_store.read_file(key='application', path=application_name, handle_class=core.data.TableHandle)()
     
-    estimate_name = os.path.join(model_folder, 'ESTIMATE{}.hdf5'.format(index + 1))
+    z_true = application_dataset['photometry']['redshift']
+    mag_source = application_dataset['photometry']['mag_i_lsst']
+    del application_dataset
+    
+    estimate_name = os.path.join(fzb_folder, 'ESTIMATE/ESTIMATE{}.hdf5'.format(index))
     estimator = data_store.read_file(key='estimator', path=estimate_name, handle_class=core.data.QPHandle)()
+    
+    z_mean = numpy.concatenate(estimator.mean())
+    del estimator
     
     # Redshift
     z1_lens = 0.2
@@ -211,47 +220,6 @@ def plot(index, folder):
     z2_source = 3.0
     z_source = [z1_source, z2_source]
     
-    grid_size = 100
-    z_grid = numpy.linspace(z1_source, z2_source, grid_size + 1)
-    
-    z_mean = numpy.concatenate(estimator.mean())
-    z_true = application_dataset['photometry']['redshift']
-    mag_source = application_dataset['photometry']['mag_i_lsst']
-    
-    # Plot
-    os.makedirs(os.path.join(bin_folder, 'FIGURE/'), exist_ok=True)
-    figure = plot_select(z_grid, z_mean, z_lens, z_source, mag_source)
-    figure.savefig(os.path.join(bin_folder, 'FIGURE/FIGURE{}.png'.format(index)), bbox_inches='tight', dpi=512)
-    pyplot.close(figure)
-    
-    os.makedirs(os.path.join(model_folder, 'FIGURE/'), exist_ok=True)
-    figure = plot_redshift(z_grid, z_mean, z_true, z_lens, z_source, mag_source)
-    figure.savefig(os.path.join(model_folder, 'FIGURE/FIGURE{}.png'.format(index)), bbox_inches='tight', dpi=512)
-    pyplot.close(figure)
-    
-    # Return
-    end = time.time()
-    duration = (end - start) / 60
-    
-    print('Index:{}, Time: {:.2f} minutes'.format(index, duration))
-    return duration
-
-
-def main(count, number, folder):
-    '''
-    Main function of making figures.
-    
-    Arguments:
-        count (int): The count of processes.
-        number (int): The number of datasets.
-        folder (str): The base folder of the datasets.
-    
-    Returns:
-        float: The duration of the plotter.
-    '''
-    # Start
-    start = time.time()
-    
     # Configuration
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
     pyplot.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
@@ -260,32 +228,33 @@ def main(count, number, folder):
     pyplot.rcParams['font.size'] = 25
     
     # Plot
-    size = number // count
-    for chunk in range(size):
-        print('Chunk: {}'.format(chunk + 1))
-        with multiprocessing.Pool(processes=count) as pool:
-            pool.starmap(plot, [(index, folder) for index in range(chunk * count, (chunk + 1) * count)])
+    os.makedirs(os.path.join(fzb_folder, 'FIGURE/SELECT'), exist_ok=True)
+    figure = plot_select(z_lens, z_source, z_mean, mag_source)
+    figure.savefig(os.path.join(fzb_folder, 'FIGURE/SELECT/FIGURE{}.png'.format(index)), bbox_inches='tight', dpi=512)
+    pyplot.close(figure)
     
-    # Duration
+    os.makedirs(os.path.join(fzb_folder, 'FIGURE/REDSHIFT'), exist_ok=True)
+    figure = plot_redshift(z_lens, z_source, z_mean, z_true, mag_source)
+    figure.savefig(os.path.join(fzb_folder, 'FIGURE/REDSHIFT/FIGURE{}.png'.format(index)), bbox_inches='tight', dpi=512)
+    pyplot.close(figure)
+    
+    # Return
     end = time.time()
     duration = (end - start) / 60
     
-    # Return
-    print('Total Time: {:.2f} minutes'.format(duration))
+    print('Time: {:.2f} minutes'.format(duration))
     return duration
 
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='FZB Figure')
-    PARSE.add_argument('--count', type=int, required=True, help='The count of processes')
-    PARSE.add_argument('--number', type=int, required=True, help='The number of datasets')
-    PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the datasets')
+    PARSE = argparse.ArgumentParser(description='Tomography Binning')
+    PARSE.add_argument('--index', type=int, help='The index of the dataset')
+    PARSE.add_argument('--folder', type=str, help='The path to the base folder')
     
     # Parse
-    COUNT = PARSE.parse_args().count
-    NUMBER = PARSE.parse_args().number
+    INDEX = PARSE.parse_args().index
     FOLDER = PARSE.parse_args().folder
     
     # Output
-    OUTPUT = main(COUNT, NUMBER, FOLDER)
+    OUTPUT = main(INDEX, FOLDER)

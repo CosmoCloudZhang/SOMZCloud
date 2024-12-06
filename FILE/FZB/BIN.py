@@ -6,12 +6,12 @@ import argparse
 from rail import core
 
 
-def main(number, folder):
+def main(index, folder):
     '''
     Bin the lens and source samples.
     
     Arguments:
-        number (int): The number of mock datasets.
+        index (int): The index of the dataset.
         folder (str): The base folder of the datasets.
     
     Returns:
@@ -19,9 +19,12 @@ def main(number, folder):
     '''
     # Start
     start = time.time()
+    print('Index: {}'.format(index))
     
     # Path
     fzb_folder = os.path.join(folder, 'FZB/')
+    os.makedirs(os.path.join(fzb_folder, 'LENS'), exist_ok=True)
+    os.makedirs(os.path.join(fzb_folder, 'SOURCE'), exist_ok=True)
     
     # Data
     data_store = core.stage.RailStage.data_store
@@ -29,36 +32,38 @@ def main(number, folder):
     
     # Bin
     lens_size = 5
-    bin_lens = numpy.zeros((number, lens_size + 1))
-    
     source_size = 5
     quantiles = numpy.linspace(0, 1, source_size + 1)
-    bin_source = numpy.zeros((number, source_size + 1))
     
-    for index in range(number):
-        print('Index: {}'.format(index + 1))
-        estimate_name = os.path.join(fzb_folder, 'ESTIMATE/ESTIMATE{}.hdf5'.format(index + 1))
-        estimator = data_store.read_file(key='estimator', path=estimate_name, handle_class=core.data.TableHandle)()
-        
-        # Lens
-        z1_lens = 0.2
-        z2_lens = 1.2
-        bin_lens[index, :] = numpy.linspace(z1_lens, z2_lens, lens_size + 1)
-        
-        z1_source = 0.0
-        z2_source = 3.0
-        z_mean = numpy.concatenate(estimator.mean())
-        
-        select_source = numpy.isfinite(z_mean) & (z1_source < z_mean) & (z_mean <= z2_source)
-        bin_source[index, :] = numpy.quantile(z_mean[select_source], quantiles)
+    # Estimator
+    estimate_name = os.path.join(fzb_folder, 'ESTIMATE/ESTIMATE{}.hdf5'.format(index))
+    estimator = data_store.read_file(key='estimator', path=estimate_name, handle_class=core.data.QPHandle)()
+    
+    z_mean = numpy.concatenate(estimator.mean())
+    del estimator
+    
+    # Lens
+    z1_lens = 0.2
+    z2_lens = 1.2
+    bin_lens = numpy.linspace(z1_lens, z2_lens, lens_size + 1)
+    
+    z1_source = 0.0
+    z2_source = 3.0
+    
+    select_source = numpy.isfinite(z_mean) & (z1_source < z_mean) & (z_mean < z2_source)
+    bin_source = numpy.quantile(z_mean[select_source], quantiles)
+    
     # Save
-    os.makedirs(os.path.join(fzb_folder, 'LENS'), exist_ok=True)
-    with h5py.File(os.path.join(fzb_folder, 'LENS/BIN.hdf5'), 'w') as file:
+    os.makedirs(os.path.join(fzb_folder, 'LENS/LENS{}'.format(index)), exist_ok=True)
+    with h5py.File(os.path.join(fzb_folder, 'LENS/LENS{}/BIN.hdf5'.format(index)), 'w') as file:
         file.create_dataset('bin', data=bin_lens)
     
-    os.makedirs(os.path.join(fzb_folder, 'SOURCE'), exist_ok=True)
-    with h5py.File(os.path.join(fzb_folder, 'SOURCE/BIN.hdf5'), 'w') as file:
+    os.makedirs(os.path.join(fzb_folder, 'SOURCE/SOURCE{}'.format(index)), exist_ok=True)
+    with h5py.File(os.path.join(fzb_folder, 'SOURCE/SOURCE{}/BIN.hdf5'.format(index)), 'w') as file:
         file.create_dataset('bin', data=bin_source)
+    
+    # Delete
+    del z_mean, bin_lens, bin_source, select_source
     
     # Duration
     end = time.time()
@@ -71,13 +76,13 @@ def main(number, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Binning')
-    PARSE.add_argument('--number', type=int, help='The number of mock datasets')
+    PARSE = argparse.ArgumentParser(description='Tomography Binning')
+    PARSE.add_argument('--index', type=int, help='The index of the dataset')
     PARSE.add_argument('--folder', type=str, help='The path to the base folder')
     
     # Parse
-    NUMBER = PARSE.parse_args().number
+    INDEX = PARSE.parse_args().index
     FOLDER = PARSE.parse_args().folder
     
     # Output
-    OUTPUT = main(NUMBER, FOLDER)
+    OUTPUT = main(INDEX, FOLDER)

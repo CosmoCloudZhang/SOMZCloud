@@ -1,10 +1,10 @@
 #!/bin/bash
 #SBATCH -A m1727
-#SBATCH -J SELECT
+#SBATCH -J FIGURE
 #SBATCH --nodes=1
 #SBATCH -q regular
 #SBATCH --ntasks=1
-#SBATCH --time=04:00:00
+#SBATCH --time=24:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
@@ -21,15 +21,12 @@ module load cray-hdf5-parallel
 source $HOME/.bashrc
 conda activate $RAILENV
 
-# Set OpenMP environment
-export OMP_NUM_THREADS=16
-export OMP_PLACES=threads
-export OMP_PROC_Bind=spread
-
 # Initialize the process
-NUMBER=16
-LENGTH=400
+NUMBER=400
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
+BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/yhzhang/ZCloud/"
 
 # Run applications
-srun -n 1 --cpu-bind=none python -u "${BASE_PATH}FILE/FZB/FZB_FIGURE.py" --path=$BASE_PATH --number=$NUMBER --length=$LENGTH
+for INDEX in $(seq 1 $NUMBER); do
+    python -u "${BASE_PATH}FILE/FZB/FIGURE.py" --index=$INDEX --folder=$BASE_FOLDER
+done
