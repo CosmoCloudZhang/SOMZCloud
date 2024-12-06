@@ -52,6 +52,8 @@ def main(index, folder):
     
     select_source = numpy.isfinite(z_mean) & (z1_source < z_mean) & (z_mean < z2_source)
     bin_source = numpy.quantile(z_mean[select_source], quantiles)
+    bin_source[-1] = z2_source
+    bin_source[0] = z1_source
     
     # Save
     os.makedirs(os.path.join(fzb_folder, 'LENS/LENS{}'.format(index)), exist_ok=True)
