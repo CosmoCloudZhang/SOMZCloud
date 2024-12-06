@@ -53,6 +53,7 @@ def main(number, folder):
             }, 
             'seed': 0, 
             'std_coeff': 0.5, 
+            'mag_limits': 30.0,
             'maptype': 'toroid', 
             'nondetect_val': 30.0, 
             'grid_type': 'hexagonal', 
