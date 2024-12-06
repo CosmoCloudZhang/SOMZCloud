@@ -32,7 +32,7 @@ def main(index, folder):
             }, 
             'mag_limits': 30.0,
             'chunk_size': 500000, 
-            'nondetect_val': 30.0, 
+            'nondetect_val': 99.0, 
             'ref_band': 'mag_i_lsst', 
             'output_mode': 'default',
             'qp_representation': 'interp',
