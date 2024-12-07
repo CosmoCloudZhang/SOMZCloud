@@ -96,9 +96,9 @@ def plot_redshift(z_lens, z_source, z_mean, z_true, mag_source):
     sigma_lens = delta_lens / (1 + z_true[select_lens])
     sigma_source = delta_source / (1 + z_true[select_source])
     
-    print('Lens: {} {}'.format(len(sigma_lens[sigma_lens > 0.1]) / len(sigma_lens) * 100, len(delta_lens[delta_lens > 1.0]) / len(delta_lens) * 100))
+    print('Lens: {} {}'.format(len(sigma_lens[sigma_lens > 0.15]) / len(sigma_lens) * 100, len(delta_lens[delta_lens > 1.0]) / len(delta_lens) * 100))
     
-    print('Source: {} {}'.format(len(sigma_source[sigma_source > 0.1]) / len(sigma_source) * 100, len(delta_source[delta_source > 1.0]) / len(delta_source) * 100))
+    print('Source: {} {}'.format(len(sigma_source[sigma_source > 0.15]) / len(sigma_source) * 100, len(delta_source[delta_source > 1.0]) / len(delta_source) * 100))
     
     # Plot
     figure = pyplot.figure(figsize=(15, 12))
@@ -203,6 +203,8 @@ def main(index, folder):
     
     z_true = application_dataset['photometry']['redshift']
     mag_source = application_dataset['photometry']['mag_i_lsst']
+    color_source = application_dataset['photometry']['mag_g_lsst'] - application_dataset['photometry']['mag_z_lsst']
+    
     del application_dataset
     
     estimate_name = os.path.join(fzb_folder, 'ESTIMATE/ESTIMATE{}.hdf5'.format(index))
@@ -210,7 +212,10 @@ def main(index, folder):
     
     z_mean = numpy.concatenate(estimator.mean())
     del estimator
-    
+    indices = numpy.isclose(z_mean, 1.50, rtol=0.001)
+    print(z_true[indices], z_true[indices].min(), z_true[indices].max())
+    print(mag_source[indices], mag_source[indices].min(), mag_source[indices].max())
+    print(color_source[indices], color_source[indices].min(), color_source[indices].max())
     # Redshift
     z1_lens = 0.2
     z2_lens = 1.2

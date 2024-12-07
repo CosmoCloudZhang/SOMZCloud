@@ -3,12 +3,12 @@
 #SBATCH -J SAMPLE
 #SBATCH --nodes=1
 #SBATCH -q regular
-#SBATCH --ntasks=4
 #SBATCH --time=04:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
 #SBATCH --cpus-per-task=64
+#SBATCH --ntasks-per-node=4
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
