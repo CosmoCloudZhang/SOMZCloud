@@ -2,13 +2,13 @@
 #SBATCH -A m1727
 #SBATCH --nodes=1
 #SBATCH -q regular
-#SBATCH --ntasks=1
 #SBATCH -J SOM_INFORM
 #SBATCH --time=48:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
 #SBATCH --cpus-per-task=256
+#SBATCH --ntasks-per-node=1
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -39,5 +39,5 @@ CONFIG_PATH="${BASE_FOLDER}SOM/INFORM/INFORM.yaml"
 
 # Run applications
 python -u "${BASE_PATH}FILE/SOM/INFORM.py" --number=$NUMBER --folder=$BASE_FOLDER &
-srun -u -N 1 -n 1 --cpus-per-task=$SLURM_CPUS_PER_TASK python3 -m ceci rail.estimation.algos.somoclu_som.SOMocluInformer --mpi --name=$NAME --input=$INPUT_PATH --model=$MODEL_PATH --config=$CONFIG_PATH & 
+srun -u -N 1 -n 1 --cpus-per-task=$SLURM_CPUS_PER_TASK python -m ceci rail.estimation.algos.somoclu_som.SOMocluInformer --mpi --memmon --name=$NAME --input=$INPUT_PATH --model=$MODEL_PATH --config=$CONFIG_PATH & 
 wait

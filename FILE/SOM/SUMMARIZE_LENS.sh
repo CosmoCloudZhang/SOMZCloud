@@ -1,14 +1,14 @@
 #!/bin/bash
 #SBATCH -A m1727
-#SBATCH --nodes=1
+#SBATCH --nodes=5
 #SBATCH -q regular
-#SBATCH --ntasks=16
 #SBATCH --time=48:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH --cpus-per-task=16
-#SBATCH -J SOM_SUMMARIZE_LENS1
+#SBATCH --cpus-per-task=8
+#SBATCH --ntasks-per-node=32
+#SBATCH -J SOM_SUMMARIZE_LENS
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -45,7 +45,7 @@ for INDEX in $(seq 1 $LENGTH); do
     CLUSTER_PATH="${BASE_PATH}/DATA/SOM/LENS/LENS${INDEX}/SOM_CELL_FILE${BIN}.hdf5"
     # Run applications
     python -u "${BASE_PATH}/FILE/SOM/SOM_SUMMARIZE_LENS.py" --path=$BASE_PATH --index=$INDEX &
-    srun -u -N 1 -n 1 --cpus-per-task=$SLURM_CPUS_PER_TASK python3 -m ceci rail.estimation.algos.somoclu_som.SOMocluSummarizer --mpi --name=$NAME --input=$INPUT_PATH --model=$MODEL_PATH --spec_input=$SPEC_PATH --config=$CONFIG_PATH --single_NZ=$SINGLE_PATH --output=$OUTPUT_PATH --uncovered_cluster_file=$CLUSTER_PATH --cellid_output=$CELLID_PATH &
+    srun -u -N 1 -n 1 --cpus-per-task=$SLURM_CPUS_PER_TASK python3 -m ceci rail.estimation.algos.somoclu_som.SOMocluSummarizer --mpi --memmon --name=$NAME --input=$INPUT_PATH --model=$MODEL_PATH --spec_input=$SPEC_PATH --config=$CONFIG_PATH --single_NZ=$SINGLE_PATH --output=$OUTPUT_PATH --uncovered_cluster_file=$CLUSTER_PATH --cellid_output=$CELLID_PATH &
     # Control parallel execution
     if (( $INDEX % $SLURM_NTASKS == 0 )); then
         wait 
