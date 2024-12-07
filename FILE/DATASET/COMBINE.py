@@ -39,6 +39,7 @@ def main(number, folder):
         band_list = ['u_lsst', 'g_lsst', 'r_lsst', 'i_lsst', 'z_lsst', 'y_lsst']
         for band in band_list:
             
+            # Photometry
             data['photometry']['mag_{}'.format(band)] = numpy.append(selection_data['mag_{}'.format(band)], augmentation_data['mag_{}'.format(band)])
             data['photometry']['mag_err_{}'.format(band)] = numpy.append(selection_data['mag_err_{}'.format(band)], augmentation_data['mag_err_{}'.format(band)])
         

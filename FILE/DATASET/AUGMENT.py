@@ -91,14 +91,18 @@ def dataset(folder):
     
     # Load
     with h5py.File(os.path.join(dataset_folder, 'AUGMENTATION/CATALOG.hdf5'), 'r') as file:
-        catalog = pandas.DataFrame({key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()})
+        catalog = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
     
     # Error
     error_model = LsstErrorModel(
         nYrObs=1, 
+        sigLim=3.0,
+        absFlux=True,
+        ndMode='sigLim', 
+        decorrelate=True,
         majorCol='major', 
         minorCol='minor', 
-        extendedType='auto', 
+        extendedType='auto',
         renameDict={
             'u': 'mag_u_lsst',
             'g': 'mag_g_lsst',
@@ -108,24 +112,21 @@ def dataset(folder):
             'y': 'mag_y_lsst'
         }
     )
-    print(error_model.getLimitingMags())
-    table = error_model(catalog)
+    
+    table = error_model(pandas.DataFrame(catalog))
     
     # Band
     band_list = ['u_lsst', 'g_lsst', 'r_lsst', 'i_lsst', 'z_lsst', 'y_lsst']
     for band in band_list:
         
         # Photometry
-        mag = catalog['mag_{}'.format(band)].values
+        mag = table['mag_{}'.format(band)].values
         mag_err = table['mag_{}_err'.format(band)].values
-        
-        # Sampling
-        epsilon = numpy.random.normal(0, 1, mag_err.shape)
-        mag = mag - 2.5 * numpy.log10(numpy.abs(1 + epsilon * mag_err * numpy.log(10) / 2.5))
         
         catalog['mag_{}'.format(band)] = mag
         catalog['mag_err_{}'.format(band)] = mag_err
         catalog['snr_{}'.format(band)] = 2.5 / numpy.log(10) / mag_err
+    
     # Redshift
     z1 = 0.0
     z2 = 3.0
@@ -137,28 +138,19 @@ def dataset(folder):
     select = select & (mag1 < catalog['mag_i_lsst']) & (catalog['mag_i_lsst'] < mag2)
     
     # SNR
-    snr1 = 3.0
+    snr1 = 5.0
     snr2 = 5.0
     select = select & (snr1 < catalog['snr_r_lsst']) & (catalog['snr_i_lsst'] > snr2)
     
     # Data
     data = {}
-    data['redshift'] = catalog['redshift'].values[select]
+    data['redshift'] = catalog['redshift'][select]
     
     for band in band_list:
-        
-        # Photometry
-        mag = catalog['mag_{}'.format(band)].values
-        mag_err = catalog['mag_err_{}'.format(band)].values
-        
-        # Mask
-        mask = catalog['snr_{}'.format(band)] < 3.0
-        mag_err[mask] = 30.0
-        mag[mask] = 30.0
-        
-        # Save
-        data['mag_{}'.format(band)] = mag[select]
-        data['mag_err_{}'.format(band)] = mag_err[select]
+        data['mag_{}'.format(band)] = catalog['mag_{}'.format(band)][select]
+        data['mag_err_{}'.format(band)] = catalog['mag_err_{}'.format(band)][select]
+    
+    # Save
     return data
 
 
@@ -203,8 +195,8 @@ def augmentation(index, folder):
     mag_bin = numpy.linspace(mag1, mag2, mag_size + 1)
     mag_grid = numpy.linspace(mag1 + mag_delta / 2, mag2 - mag_delta / 2, mag_size)
     
-    color1 = -2.0
-    color2 = +8.0
+    color1 = -1.5
+    color2 = +5.5
     color_size = 50
     color_delta = (color2 - color1) / color_size
     color_bin = numpy.linspace(color1, color2, color_size + 1)
@@ -217,8 +209,8 @@ def augmentation(index, folder):
     weight = scipy.interpolate.interpn(points=(z_grid, mag_grid, color_grid), values=factor, xi=numpy.stack([z_data, mag_data, color_data], axis=1), method='slinear', bounds_error=False, fill_value=0.0)
     weight = numpy.abs(weight) / numpy.sum(weight)
     
-    fraction1 = 0.10
-    fraction2 = 0.40
+    fraction1 = 0.1
+    fraction2 = 0.5
     fraction = numpy.random.uniform(fraction1, fraction2)
     
     count = numpy.round(len(z_selection) * fraction, decimals=0).astype(numpy.int32)

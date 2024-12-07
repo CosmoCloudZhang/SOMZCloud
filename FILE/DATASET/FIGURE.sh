@@ -2,13 +2,13 @@
 #SBATCH -A m1727
 #SBATCH --nodes=1
 #SBATCH -q regular
-#SBATCH --ntasks=1
 #SBATCH -J AUGMENT
 #SBATCH --time=04:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
 #SBATCH --cpus-per-task=256
+#SBATCH --ntasks-per-node=1
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -20,11 +20,6 @@ module load cray-hdf5-parallel
 # Activate the conda environment
 source $HOME/.bashrc
 conda activate $RAILENV
-
-# Set OpenMP environment
-export OMP_PLACES=threads
-export OMP_NUM_THREADS=16
-export OMP_PROC_Bind=spread
 
 # Initialize the process
 COUNT=16

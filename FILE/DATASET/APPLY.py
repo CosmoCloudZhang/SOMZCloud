@@ -2,8 +2,9 @@ import os
 import h5py
 import time
 import numpy
+import pandas
 import argparse
-
+from photerr import LsstErrorModel
 
 def application(directory):
     '''
@@ -26,21 +27,38 @@ def application(directory):
         for key, value in file['photometry'].items():
             catalog[key] = numpy.concatenate([catalog[key], value[...].astype(numpy.float32)], axis=0)
     
+    # Error
+    error_model = LsstErrorModel(
+        nYrObs=1, 
+        sigLim=3.0,
+        absFlux=True,
+        ndMode='sigLim', 
+        decorrelate=True,
+        extendedType='point', 
+        renameDict={
+            'u': 'mag_u_lsst',
+            'g': 'mag_g_lsst',
+            'r': 'mag_r_lsst',
+            'i': 'mag_i_lsst',
+            'z': 'mag_z_lsst',
+            'y': 'mag_y_lsst'
+        }
+    )
+    
+    table = error_model(pandas.DataFrame(catalog))
+    
     # Band
     band_list = ['u_lsst', 'g_lsst', 'r_lsst', 'i_lsst', 'z_lsst', 'y_lsst']
     for band in band_list:
         
         # Photometry
-        mag = catalog['mag_{}'.format(band)]
-        mag_err = catalog['mag_err_{}'.format(band)] * numpy.sqrt(10)
-        
-        # Sampling
-        epsilon = numpy.random.normal(0, 1, mag_err.shape)
-        mag = mag - 2.5 * numpy.log10(numpy.abs(1 + epsilon * mag_err * numpy.log(10) / 2.5))
+        mag = table['mag_{}'.format(band)].values
+        mag_err = table['mag_{}_err'.format(band)].values
         
         catalog['mag_{}'.format(band)] = mag
         catalog['mag_err_{}'.format(band)] = mag_err
         catalog['snr_{}'.format(band)] = 2.5 / numpy.log(10) / mag_err
+    
     # Redshift
     z1 = 0.0
     z2 = 3.0
@@ -52,7 +70,7 @@ def application(directory):
     select = select & (mag1 < catalog['mag_i_lsst']) & (catalog['mag_i_lsst'] < mag2)
     
     # SNR
-    snr1 = 3.0
+    snr1 = 5.0
     snr2 = 5.0
     select = select & (snr1 < catalog['snr_r_lsst']) & (catalog['snr_i_lsst'] > snr2)
     
@@ -66,19 +84,10 @@ def application(directory):
     data['redshift'] = catalog['redshift'][select][indices]
     
     for band in band_list:
-        
-        # Photometry
-        mag = catalog['mag_{}'.format(band)]
-        mag_err = catalog['mag_err_{}'.format(band)]
-        
-        # Mask
-        mask = catalog['snr_{}'.format(band)] < 3.0
-        mag_err[mask] = 30.0
-        mag[mask] = 30.0
-        
-        # Save
-        data['mag_{}'.format(band)] = mag[select][indices]
-        data['mag_err_{}'.format(band)] = mag_err[select][indices]
+        data['mag_{}'.format(band)] = catalog['mag_{}'.format(band)][select][indices]
+        data['mag_err_{}'.format(band)] = catalog['mag_err_{}'.format(band)][select][indices]
+    
+    # Save
     return data
 
 
