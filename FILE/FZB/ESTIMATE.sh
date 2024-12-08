@@ -41,7 +41,7 @@ for INDEX in $(seq 1 $NUMBER); do
     INPUT_PATH="${BASE_FOLDER}DATASET/APPLICATION/DATA${INDEX}.hdf5"
     # Run applications
     python -u "${BASE_PATH}FILE/FZB/ESTIMATE.py" --index=$INDEX --folder=$BASE_FOLDER &
-    srun -u -N 1 -n 1 --cpus-per-task=$SLURM_CPUS_PER_TASK python -m ceci rail.estimation.algos.flexzboost.FlexZBoostEstimator --mpi --memmon --name=$NAME --input=$INPUT_PATH --model=$MODEL_PATH --config=$CONFIG_PATH --output=$OUTPUT_PATH &
+    srun -u -N 1 -n 1 --cpus-per-task=$SLURM_CPUS_PER_TASK python -m ceci rail.estimation.algos.flexzboost.FlexZBoostEstimator --mpi --name=$NAME --input=$INPUT_PATH --model=$MODEL_PATH --config=$CONFIG_PATH --output=$OUTPUT_PATH &
     # Control parallel execution
     if (( $INDEX % $SLURM_NTASKS == 0 )); then
         wait

@@ -41,7 +41,7 @@ for INDEX in $(seq 1 $LENGTH); do
     OUTPUT_PATH="${BASE_PATH}/DATA/SOM/LENS/LENS${INDEX}/SUMMARIZE${SLURM_ARRAY}.hdf5"
     # Run applications
     python -u "${BASE_PATH}/FILE/FZB/SUMMARIZE_LENS.py" --path=$BASE_PATH --index=$INDEX &
-    srun -u -N 1 -n 1 --cpus-per-task=$SLURM_CPUS_PER_TASK python -m ceci rail.estimation.algos.naive_stack.NaiveStackSummarizer --mpi --memmon --name=$NAME --input=$INPUT_PATH --config=$CONFIG_PATH --single_NZ=$SINGLE_PATH --output=$OUTPUT_PATH &
+    srun -u -N 1 -n 1 --cpus-per-task=$SLURM_CPUS_PER_TASK python -m ceci rail.estimation.algos.naive_stack.NaiveStackSummarizer --mpi --name=$NAME --input=$INPUT_PATH --config=$CONFIG_PATH --single_NZ=$SINGLE_PATH --output=$OUTPUT_PATH &
     # Control parallel execution
     if (( $INDEX % $SLURM_NTASKS == 0 )); then
         wait 
