@@ -39,5 +39,5 @@ CONFIG_PATH="${BASE_FOLDER}SOM/INFORM/INFORM.yaml"
 
 # Run applications
 python -u "${BASE_PATH}FILE/SOM/INFORM.py" --number=$NUMBER --folder=$BASE_FOLDER &
-srun -u -N 1 -n 1 --cpus-per-task=$SLURM_CPUS_PER_TASK python -m ceci rail.estimation.algos.somoclu_som.SOMocluInformer --mpi --memmon --name=$NAME --input=$INPUT_PATH --model=$MODEL_PATH --config=$CONFIG_PATH & 
+srun -u -N 1 -n 1 --cpus-per-task=$SLURM_CPUS_PER_TASK python -m ceci rail.estimation.algos.somoclu_som.SOMocluInformer --mpi --name=$NAME --input=$INPUT_PATH --model=$MODEL_PATH --config=$CONFIG_PATH & 
 wait
