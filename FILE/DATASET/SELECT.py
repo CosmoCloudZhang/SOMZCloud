@@ -72,17 +72,13 @@ def selection(index, directory):
     snr2 = 5.0
     select = select & (snr1 < catalog['snr_r_lsst']) & (catalog['snr_i_lsst'] > snr2)
     
-    width = 100000
-    length = len(catalog['redshift'][select])
-    indices = numpy.random.choice(length, width, replace=True)
-    
     # Data
     data = {}
-    data['redshift'] = catalog['redshift'][select][indices]
+    data['redshift'] = catalog['redshift'][select]
     
     for band in band_list:
-        data['mag_{}'.format(band)] = catalog['mag_{}'.format(band)][select][indices]
-        data['mag_err_{}'.format(band)] = catalog['mag_err_{}'.format(band)][select][indices]
+        data['mag_{}'.format(band)] = catalog['mag_{}'.format(band)][select]
+        data['mag_err_{}'.format(band)] = catalog['mag_err_{}'.format(band)][select]
     
     # Save
     return data

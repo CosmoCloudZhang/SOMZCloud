@@ -75,7 +75,7 @@ def application(directory):
     select = select & (snr1 < catalog['snr_r_lsst']) & (catalog['snr_i_lsst'] > snr2)
     
     # Select
-    width = 5000000
+    width = 4000000
     length = len(catalog['redshift'][select])
     indices = numpy.random.choice(length, width, replace=True)
     

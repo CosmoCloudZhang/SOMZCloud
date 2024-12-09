@@ -210,7 +210,7 @@ def augmentation(index, folder):
     weight = numpy.abs(weight) / numpy.sum(weight)
     
     fraction1 = 0.1
-    fraction2 = 0.5
+    fraction2 = 0.4
     fraction = numpy.random.uniform(fraction1, fraction2)
     
     count = numpy.round(len(z_selection) * fraction, decimals=0).astype(numpy.int32)
