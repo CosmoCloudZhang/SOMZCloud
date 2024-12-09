@@ -203,7 +203,6 @@ def main(index, folder):
     
     z_true = application_dataset['photometry']['redshift']
     mag_source = application_dataset['photometry']['mag_i_lsst']
-    color_source = application_dataset['photometry']['mag_g_lsst'] - application_dataset['photometry']['mag_z_lsst']
     
     del application_dataset
     
@@ -212,10 +211,8 @@ def main(index, folder):
     
     z_mean = numpy.concatenate(estimator.mean())
     del estimator
-    indices = numpy.isclose(z_mean, 1.50, rtol=0.001)
-    print(z_true[indices], z_true[indices].min(), z_true[indices].max())
-    print(mag_source[indices], mag_source[indices].min(), mag_source[indices].max())
-    print(color_source[indices], color_source[indices].min(), color_source[indices].max())
+    indices = numpy.isclose(z_mean, 1.50, rtol=0.01)
+    print(len(z_true[indices]), z_true[indices].min(), z_true[indices].max())
     # Redshift
     z1_lens = 0.2
     z2_lens = 1.2
