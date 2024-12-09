@@ -37,13 +37,12 @@ def main(index, folder):
             'hdf5_groupname': 'photometry', 
             'zmin': 0.0, 'zmax': 3.0, 'nzbins': 301, 
             'trainfrac': 0.75, 'retrain_full': True,
-            'max_basis': 100, 'basis_system': 'Fourier', 
+            'max_basis': 50, 'basis_system': 'Fourier', 
             'bumpmin': 0.0, 'bumpmax': 0.5, 'nbump': 50, 
             'sharpmin': 0.5, 'sharpmax': 2.5, 'nsharp': 50, 
             'regression_params': {
-                'verbosity': 0, 
-                'max_depth': 16, 
-                'learning_rate': 0.25,
+                'max_depth': 8, 
+                'learning_rate': 0.1,
                 'objective': 'reg:squarederror'
             }, 
             'bands': [
