@@ -93,7 +93,7 @@ def plot_figure(index, folder):
     
     plot = figure.add_subplot(gridspec[0, 0])
     
-    plot.text(2.5, 16.5, r'$\mathrm{application}$')
+    plot.text(3.0, 16.5, r'$\mathrm{application}$')
     
     mesh = plot.hist2d(color_application, mag_application, bins=[color_bin, mag_bin], norm=normalize, cmap='plasma')[-1]
     
@@ -108,7 +108,7 @@ def plot_figure(index, folder):
     
     plot = figure.add_subplot(gridspec[0, 1])
     
-    plot.text(2.5, 16.5, r'$\mathrm{selection}$')
+    plot.text(3.0, 16.5, r'$\mathrm{selection}$')
     
     mesh = plot.hist2d(color_selection, mag_selection, bins=[color_bin, mag_bin], norm=normalize, cmap='plasma')[-1]
     
@@ -123,7 +123,7 @@ def plot_figure(index, folder):
     
     plot = figure.add_subplot(gridspec[1, 0])
     
-    plot.text(2.5, 16.5, r'$\mathrm{augmentation}$')
+    plot.text(3.0, 16.5, r'$\mathrm{augmentation}$')
     
     mesh = plot.hist2d(color_augmentation, mag_augmentation, bins=[color_bin, mag_bin], norm=normalize, cmap='plasma')[-1]
     
@@ -138,7 +138,7 @@ def plot_figure(index, folder):
     
     plot = figure.add_subplot(gridspec[1, 1])
     
-    plot.text(2.5, 16.5, r'$\mathrm{combination}$')
+    plot.text(3.0, 16.5, r'$\mathrm{combination}$')
     
     mesh = plot.hist2d(color_combination, mag_combination, bins=[color_bin, mag_bin], norm=normalize, cmap='plasma')[-1]
     
