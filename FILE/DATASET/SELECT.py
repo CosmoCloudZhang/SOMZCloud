@@ -6,7 +6,7 @@ import pandas
 import argparse
 from photerr import LsstErrorModel
 
-def selection(index, directory):
+def selection(number, directory):
     '''
     Create individual selection datasets
     
@@ -20,10 +20,15 @@ def selection(index, directory):
     '''
     # Catalog
     catalog = {}
-    catalog_name = os.path.join(directory, 'training_samples/training_sample{}.hdf5'.format(index - 1))
+    catalog_name = os.path.join(directory, 'training_samples/training_sample{}.hdf5'.format(numpy.random.randint(0, number)))
     with h5py.File(catalog_name, 'r') as file:
         for key, value in file['photometry'].items():
-            catalog[key] = value[...].astype(numpy.float32)
+            catalog[key] = value[:].astype(numpy.float32)
+    
+    catalog_name = os.path.join(directory, 'training_samples/training_sample{}.hdf5'.format(numpy.random.randint(0, number)))
+    with h5py.File(catalog_name, 'r') as file:
+        for key, value in file['photometry'].items():
+            catalog[key] = numpy.concatenate([catalog[key], value[:].astype(numpy.float32)])
     
     # Error
     error_model = LsstErrorModel(
@@ -72,13 +77,17 @@ def selection(index, directory):
     snr2 = 5.0
     select = select & (snr1 < catalog['snr_r_lsst']) & (catalog['snr_i_lsst'] > snr2)
     
+    width = 80000
+    length = len(catalog['redshift'][select])
+    indices = numpy.random.choice(length, width, replace=True)
+    
     # Data
     data = {}
-    data['redshift'] = catalog['redshift'][select]
+    data['redshift'] = catalog['redshift'][select][indices]
     
     for band in band_list:
-        data['mag_{}'.format(band)] = catalog['mag_{}'.format(band)][select]
-        data['mag_err_{}'.format(band)] = catalog['mag_err_{}'.format(band)][select]
+        data['mag_{}'.format(band)] = catalog['mag_{}'.format(band)][select][indices]
+        data['mag_err_{}'.format(band)] = catalog['mag_err_{}'.format(band)][select][indices]
     
     # Save
     return data
@@ -107,7 +116,7 @@ def main(number, folder, directory):
         print('Index: {:.0f}'.format(index))
         
         # Data
-        data = selection(index, directory)
+        data = selection(number, directory)
         
         # Save
         os.makedirs(dataset_folder, exist_ok=True)
