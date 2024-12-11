@@ -6,29 +6,24 @@ import pandas
 import argparse
 from photerr import LsstErrorModel
 
-def selection(number, directory):
+
+def selection(index, directory):
     '''
     Create individual selection datasets
     
     Arguments:
-        catalog (dict): The catalog data
-        select (numpy.ndarray): The selection of the catalog
-        band_list (list): The list of bands for LSST
+        index (int): The index of the dataset
+        directory (str): The base directory of the catalog
     
     Returns:
         data (dict): The selection dataset
     '''
     # Catalog
     catalog = {}
-    catalog_name = os.path.join(directory, 'training_samples/training_sample{}.hdf5'.format(numpy.random.randint(0, number)))
+    catalog_name = os.path.join(directory, 'training_samples/training_sample{}.hdf5'.format(index - 1))
     with h5py.File(catalog_name, 'r') as file:
         for key, value in file['photometry'].items():
             catalog[key] = value[:].astype(numpy.float32)
-    
-    catalog_name = os.path.join(directory, 'training_samples/training_sample{}.hdf5'.format(numpy.random.randint(0, number)))
-    with h5py.File(catalog_name, 'r') as file:
-        for key, value in file['photometry'].items():
-            catalog[key] = numpy.concatenate([catalog[key], value[:].astype(numpy.float32)])
     
     # Error
     error_model = LsstErrorModel(
@@ -77,17 +72,13 @@ def selection(number, directory):
     snr2 = 5.0
     select = select & (snr1 < catalog['snr_r_lsst']) & (catalog['snr_i_lsst'] > snr2)
     
-    width = 80000
-    length = len(catalog['redshift'][select])
-    indices = numpy.random.choice(length, width, replace=True)
-    
     # Data
     data = {}
-    data['redshift'] = catalog['redshift'][select][indices]
+    data['redshift'] = catalog['redshift'][select]
     
     for band in band_list:
-        data['mag_{}'.format(band)] = catalog['mag_{}'.format(band)][select][indices]
-        data['mag_err_{}'.format(band)] = catalog['mag_err_{}'.format(band)][select][indices]
+        data['mag_{}'.format(band)] = catalog['mag_{}'.format(band)][select]
+        data['mag_err_{}'.format(band)] = catalog['mag_err_{}'.format(band)][select]
     
     # Save
     return data
@@ -116,7 +107,7 @@ def main(number, folder, directory):
         print('Index: {:.0f}'.format(index))
         
         # Data
-        data = selection(number, directory)
+        data = selection(index, directory)
         
         # Save
         os.makedirs(dataset_folder, exist_ok=True)
