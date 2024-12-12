@@ -209,8 +209,8 @@ def augmentation(index, folder):
     weight = scipy.interpolate.interpn(points=(z_grid, mag_grid, color_grid), values=factor, xi=numpy.stack([z_data, mag_data, color_data], axis=1), method='slinear', bounds_error=False, fill_value=0.0)
     weight = numpy.abs(weight) / numpy.sum(weight)
     
-    fraction1 = 0.1
-    fraction2 = 0.4
+    fraction1 = 0.25
+    fraction2 = 0.50
     fraction = numpy.random.uniform(fraction1, fraction2)
     
     count = numpy.round(len(z_selection) * fraction, decimals=0).astype(numpy.int32)
