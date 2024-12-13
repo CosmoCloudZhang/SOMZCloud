@@ -41,8 +41,9 @@ def main(index, folder):
             'bumpmin': 0.0, 'bumpmax': 0.5, 'nbump': 50, 
             'sharpmin': 0.5, 'sharpmax': 2.5, 'nsharp': 50, 
             'regression_params': {
+                'verbosity': 0,
                 'max_depth': 8, 
-                'learning_rate': 0.1,
+                'learning_rate': 0.10,
                 'objective': 'reg:squarederror'
             }, 
             'bands': [

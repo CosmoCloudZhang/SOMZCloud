@@ -6,15 +6,15 @@ from rail import core
 from matplotlib import pyplot, colors, gridspec
 
 
-def plot_select(z_lens, z_source, z_mean, mag_source):
+def plot_select(z_lens, z_source, z_phot, mag_source):
     '''
     Plot the selection of lens and source samples.
     
     Parameters:
         z_lens (list): The redshift range of lens samples.
         z_source (list): The redshift range of source samples.
-        z_mean (numpy.ndarray): The mean redshifts of source samples.
-        mag_source (numpy.ndarray): The i band magnitudes of source samples.
+        z_phot (numpy.ndarray): The photometric redshift point estimates.
+        mag_source (numpy.ndarray): The i band apparent magnitudes of source samples.
     
     Returns:
         matplotlib.figure.Figure: The plotted figure.
@@ -22,7 +22,7 @@ def plot_select(z_lens, z_source, z_mean, mag_source):
     # Set variables
     mag1 = 16.0
     mag2 = 26.0
-    grid_size = 100
+    grid_size = 300
     mag_grid = numpy.linspace(mag1, mag2, grid_size + 1)
     
     slope = 4.0
@@ -35,9 +35,10 @@ def plot_select(z_lens, z_source, z_mean, mag_source):
     z_source_grid = numpy.linspace(z1_source, z2_source, grid_size + 1)
     
     # Plot
+    normalize = colors.LogNorm(vmin=1, vmax=10000)
     figure, plot = pyplot.subplots(nrows=1, ncols=1, figsize=(12, 8))
     
-    z_mesh =plot.hist2d(x=z_mean, y=mag_source, bins=[z_source_grid, mag_grid], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')[-1]
+    z_mesh =plot.hist2d(x=z_phot, y=mag_source, bins=[z_source_grid, mag_grid], norm=normalize, cmap='plasma')[-1]
     
     plot.plot(z_lens_grid, slope * z_lens_grid + intersection, color='black', linestyle='--', linewidth=2.0)
     
@@ -60,22 +61,22 @@ def plot_select(z_lens, z_source, z_mean, mag_source):
     return figure
 
 
-def plot_redshift(z_lens, z_source, z_mean, z_true, mag_source):
+def plot_redshift(z_lens, z_source, z_phot, z_true, mag_source):
     '''
     Plot the photometric redshift distribution of lens and source samples.
     
     Parameters:
         z_lens (list): The redshift range of lens samples.
         z_source (list): The redshift range of source samples.
-        z_mean (numpy.ndarray): The redshift mode of source samples.
-        z_true (numpy.ndarray): The true redshift of source samples.
-        mag_source (numpy.ndarray): The i band magnitudes of source samples.
+        z_phot (numpy.ndarray): The photometric redshift point estimates.
+        z_true (numpy.ndarray): The spectroscopic redshift of source samples.
+        mag_source (numpy.ndarray): The i band apparent magnitudes of source samples.
     
     Returns:
         matplotlib.figure.Figure: The plotted figure.
     '''
     # Set variables
-    grid_size = 100
+    grid_size = 300
     z1_lens, z2_lens = z_lens
     z1_source, z2_source = z_source
     z_grid = numpy.linspace(z1_source, z2_source, grid_size + 1)
@@ -87,11 +88,11 @@ def plot_redshift(z_lens, z_source, z_mean, z_true, mag_source):
     sigma2 = 1e+0
     sigma_grid = numpy.geomspace(sigma1, sigma2, grid_size + 1)
     
-    select_source = (z1_source < z_mean) & (z_mean < z2_source)
-    select_lens = (z1_lens < z_mean) & (z_mean < z2_lens) & (mag_source < slope * z_mean + intersection)
+    select_source = (z1_source < z_phot) & (z_phot < z2_source)
+    select_lens = (z1_lens < z_phot) & (z_phot < z2_lens) & (mag_source < slope * z_phot + intersection)
     
-    delta_lens = numpy.abs(z_mean[select_lens] - z_true[select_lens])
-    delta_source = numpy.abs(z_mean[select_source] - z_true[select_source])
+    delta_lens = numpy.abs(z_phot[select_lens] - z_true[select_lens])
+    delta_source = numpy.abs(z_phot[select_source] - z_true[select_source])
     
     sigma_lens = delta_lens / (1 + z_true[select_lens])
     sigma_source = delta_source / (1 + z_true[select_source])
@@ -102,27 +103,27 @@ def plot_redshift(z_lens, z_source, z_mean, z_true, mag_source):
     
     # Plot
     figure = pyplot.figure(figsize=(15, 12))
-    
+    normalize = colors.LogNorm(vmin=1, vmax=10000)
     plot = gridspec.GridSpec(nrows=2, ncols=2, figure=figure, height_ratios=[3, 1], width_ratios=[1, 1])
     
     # Plot 1
     plot1 = figure.add_subplot(plot[0, 0])
     
-    z_mesh = plot1.hist2d(x=z_mean[select_lens], y=z_true[select_lens], bins=[z_grid, z_grid], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')[-1]
+    z_mesh = plot1.hist2d(x=z_phot[select_lens], y=z_true[select_lens], bins=[z_grid, z_grid], norm=normalize, cmap='plasma')[-1]
     
     plot1.plot(z_grid, z_grid, color='black', linestyle='--', linewidth=2.0)
     
     plot1.set_xlim(z1_source, z2_source)
     plot1.set_ylim(z1_source, z2_source)
     
+    plot1.set_xticklabels([])
     plot1.set_ylabel(r'$z_\mathrm{spec}$')
-    plot1.get_xticklabels()[0].set_visible(False)
     plot1.get_yticklabels()[0].set_visible(False)
     
     # Plot 2
     plot2 = figure.add_subplot(plot[0, 1])
     
-    z_mesh = plot2.hist2d(x=z_mean[select_source], y=z_true[select_source], bins=[z_grid, z_grid], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')[-1]
+    z_mesh = plot2.hist2d(x=z_phot[select_source], y=z_true[select_source], bins=[z_grid, z_grid], norm=normalize, cmap='plasma')[-1]
     
     plot2.plot(z_grid, z_grid, color='black', linestyle='--', linewidth=2.0)
     
@@ -130,13 +131,13 @@ def plot_redshift(z_lens, z_source, z_mean, z_true, mag_source):
     plot2.set_ylim(z1_source, z2_source)
     plot2.set_xlabel(r'$z_\mathrm{phot}$')
     
+    plot2.set_xticklabels([])
     plot2.set_yticklabels([])
-    plot2.get_xticklabels()[0].set_visible(False)
     
     # Plot 3
     plot3 = figure.add_subplot(plot[1, 0])
     
-    z_mesh = plot3.hist2d(x=z_mean[select_lens], y=sigma_lens, bins=[z_grid, sigma_grid], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')[-1]
+    z_mesh = plot3.hist2d(x=z_phot[select_lens], y=sigma_lens, bins=[z_grid, sigma_grid], norm=normalize, cmap='plasma')[-1]
     
     plot3.plot(z_grid, 0.03 * numpy.ones(grid_size + 1), color='black', linestyle='--', linewidth=2.0)
     
@@ -150,7 +151,7 @@ def plot_redshift(z_lens, z_source, z_mean, z_true, mag_source):
     # Plot 4
     plot4 = figure.add_subplot(plot[1, 1])
     
-    z_mesh = plot4.hist2d(x=z_mean[select_source], y=sigma_source, bins=[z_grid, sigma_grid], norm=colors.LogNorm(vmin=1, vmax=5000), cmap='plasma')[-1]
+    z_mesh = plot4.hist2d(x=z_phot[select_source], y=sigma_source, bins=[z_grid, sigma_grid], norm=normalize, cmap='plasma')[-1]
     
     plot4.plot(z_grid, 0.05 * numpy.ones(grid_size + 1), color='black', linestyle='--', linewidth=2.0)
     
@@ -158,9 +159,7 @@ def plot_redshift(z_lens, z_source, z_mean, z_true, mag_source):
     plot4.set_ylim(sigma1, sigma2)
     plot4.set_xlim(z1_source, z2_source)
     
-    plot4.set_xticklabels([])
     plot4.set_yticklabels([])
-    
     plot4.set_xlabel(r'$z_\mathrm{phot}$')
     plot4.get_xticklabels()[0].set_visible(False)
     
@@ -193,6 +192,18 @@ def main(index, folder):
     dataset_folder = os.path.join(folder, 'DATASET/')
     os.makedirs(os.path.join(fzb_folder, 'FIGURE/'), exist_ok=True)
     
+    # Redshift
+    z1_lens = 0.2
+    z2_lens = 1.2
+    z_lens = [z1_lens, z2_lens]
+    
+    z1_source = 0.0
+    z2_source = 3.0
+    z_source = [z1_source, z2_source]
+    
+    grid_size = 300
+    z_grid = numpy.linspace(z1_source, z2_source, grid_size + 1)
+    
     # Load 
     data_store = core.stage.RailStage.data_store
     data_store.__class__.allow_overwrite = True
@@ -210,17 +221,10 @@ def main(index, folder):
     estimator = data_store.read_file(key='estimator', path=estimate_name, handle_class=core.data.QPHandle)()
     
     z_mean = numpy.concatenate(estimator.mean())
-    del estimator
-    indices = numpy.isclose(z_mean, 1.50, rtol=0.01)
-    print(len(z_true[indices]), z_true[indices].min(), z_true[indices].max())
-    # Redshift
-    z1_lens = 0.2
-    z2_lens = 1.2
-    z_lens = [z1_lens, z2_lens]
-    
-    z1_source = 0.0
-    z2_source = 3.0
-    z_source = [z1_source, z2_source]
+    z_median = numpy.concatenate(estimator.median())
+    z_mode = numpy.concatenate(estimator.mode(z_grid))
+    z_phot = numpy.average([z_mean, z_median, z_mode], axis=0)
+    del z_mean, z_median, z_mode, estimator
     
     # Configuration
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
@@ -231,12 +235,12 @@ def main(index, folder):
     
     # Plot
     os.makedirs(os.path.join(fzb_folder, 'FIGURE/SELECT'), exist_ok=True)
-    figure = plot_select(z_lens, z_source, z_mean, mag_source)
+    figure = plot_select(z_lens, z_source, z_phot, mag_source)
     figure.savefig(os.path.join(fzb_folder, 'FIGURE/SELECT/FIGURE{}.png'.format(index)), bbox_inches='tight', dpi=512)
     pyplot.close(figure)
     
     os.makedirs(os.path.join(fzb_folder, 'FIGURE/REDSHIFT'), exist_ok=True)
-    figure = plot_redshift(z_lens, z_source, z_mean, z_true, mag_source)
+    figure = plot_redshift(z_lens, z_source, z_phot, z_true, mag_source)
     figure.savefig(os.path.join(fzb_folder, 'FIGURE/REDSHIFT/FIGURE{}.png'.format(index)), bbox_inches='tight', dpi=512)
     pyplot.close(figure)
     

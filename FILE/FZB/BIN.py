@@ -35,23 +35,30 @@ def main(index, folder):
     source_size = 5
     quantiles = numpy.linspace(0, 1, source_size + 1)
     
+    # Redshift
+    z1_lens = 0.2
+    z2_lens = 1.2
+    
+    z1_source = 0.0
+    z2_source = 3.0
+    
+    grid_size = 300
+    z_grid = numpy.linspace(z1_source, z2_source, grid_size + 1)
+    
     # Estimator
     estimate_name = os.path.join(fzb_folder, 'ESTIMATE/ESTIMATE{}.hdf5'.format(index))
     estimator = data_store.read_file(key='estimator', path=estimate_name, handle_class=core.data.QPHandle)()
     
     z_mean = numpy.concatenate(estimator.mean())
-    del estimator
+    z_median = numpy.concatenate(estimator.median())
+    z_mode = numpy.concatenate(estimator.mode(z_grid))
+    z_phot = numpy.average([z_mean, z_median, z_mode], axis=0)
+    del z_mean, z_median, z_mode, estimator
     
-    # Lens
-    z1_lens = 0.2
-    z2_lens = 1.2
     bin_lens = numpy.linspace(z1_lens, z2_lens, lens_size + 1)
+    select_source = numpy.isfinite(z_phot) & (z1_source < z_phot) & (z_phot < z2_source)
     
-    z1_source = 0.0
-    z2_source = 3.0
-    
-    select_source = numpy.isfinite(z_mean) & (z1_source < z_mean) & (z_mean < z2_source)
-    bin_source = numpy.quantile(z_mean[select_source], quantiles)
+    bin_source = numpy.quantile(z_phot[select_source], quantiles)
     bin_source[-1] = z2_source
     bin_source[0] = z1_source
     
@@ -65,7 +72,7 @@ def main(index, folder):
         file.create_dataset('bin', data=bin_source)
     
     # Delete
-    del z_mean, bin_lens, bin_source, select_source
+    del z_phot, bin_lens, bin_source, select_source
     
     # Duration
     end = time.time()

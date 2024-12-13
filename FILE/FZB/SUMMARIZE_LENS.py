@@ -32,13 +32,13 @@ def main(bin, index, folder):
             }, 
             'seed': 0, 
             'nsamples': 1000, 
-            'chunk_size': 500000,
+            'chunk_size': 400000,
             'zmin': 0.0, 'zmax': 3.0, 'nzbins': 301
         }
     }
     
     os.makedirs(os.path.join(fzb_folder, 'LENS/LENS{}'.format(index)), exist_ok=True)
-    config_name = os.path.join(fzb_folder, 'LENS/LENS{}/SUMMARIZE{}.yml'.format(index, bin))
+    config_name = os.path.join(fzb_folder, 'LENS/LENS{}/SUMMARIZE{}.yaml'.format(index, bin))
     with open(config_name, 'w') as config_file:
         yaml.dump(config, config_file, default_flow_style=False)
     

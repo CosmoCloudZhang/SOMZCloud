@@ -3,12 +3,12 @@
 #SBATCH -J FIGURE
 #SBATCH --nodes=1
 #SBATCH -q regular
-#SBATCH --time=04:00:00
+#SBATCH --time=24:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH --cpus-per-task=32
-#SBATCH --ntasks-per-node=8
+#SBATCH --cpus-per-task=64
+#SBATCH --ntasks-per-node=4
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -34,7 +34,7 @@ BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/yhzhang/ZCloud/"
 
 # Run applications
 for INDEX in $(seq 1 $NUMBER); do
-    srun -u -N 1 -n 1 --cpus-per-task=$SLURM_CPUS_PER_TASK python3 -u "${BASE_PATH}FILE/FZB/FIGURE.py" --index=$INDEX --folder=$BASE_FOLDER & 
+    srun -u -N 1 -n 1 --cpus-per-task=$SLURM_CPUS_PER_TASK python -u "${BASE_PATH}FILE/FZB/FIGURE.py" --index=$INDEX --folder=$BASE_FOLDER & 
     # Control parallel execution
     if (( $INDEX % $SLURM_NTASKS == 0 )); then
         wait

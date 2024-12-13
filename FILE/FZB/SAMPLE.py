@@ -58,19 +58,22 @@ def main(index, folder):
     estimate_name = os.path.join(fzb_folder, 'ESTIMATE/ESTIMATE{}.hdf5'.format(index))
     estimator = data_store.read_file(key='estimator', path=estimate_name, handle_class=core.data.QPHandle)()
     
-    z_mean = numpy.concatenate(estimator.mean())
     z_pdf = estimator.pdf(z_grid)
-    del estimator
+    z_mean = numpy.concatenate(estimator.mean())
+    z_median = numpy.concatenate(estimator.median())
+    z_mode = numpy.concatenate(estimator.mode(z_grid))
+    z_phot = numpy.average([z_mean, z_median, z_mode], axis=0)
+    del z_mean, z_median, z_mode, estimator
     
     # Save Select
     slope = 4.0
     intercept = 18.0
-    select_source = numpy.isfinite(z_mean) & (z1_source < z_mean) & (z_mean < z2_source)
-    select_lens = numpy.isfinite(z_mean) & (z1_lens < z_mean) & (z_mean < z2_lens) & (mag_source < slope * z_mean + intercept)
+    select_source = numpy.isfinite(z_phot) & (z1_source < z_phot) & (z_phot < z2_source)
+    select_lens = numpy.isfinite(z_phot) & (z1_lens < z_phot) & (z_phot < z2_lens) & (mag_source < slope * z_phot + intercept)
     
     # Lens
     for m in range(len(bin_lens) - 1):
-        select_lens_bin = select_lens & (bin_lens[m] < z_mean) & (z_mean < bin_lens[m + 1])
+        select_lens_bin = select_lens & (bin_lens[m] < z_phot) & (z_phot < bin_lens[m + 1])
         
         with h5py.File(os.path.join(fzb_folder, 'LENS/LENS{}/SAMPLE{}.hdf5'.format(index, m + 1)), 'w') as file:    
             file.create_group(name='meta')
@@ -83,7 +86,7 @@ def main(index, folder):
     
     # Source
     for m in range(len(bin_source) - 1):
-        select_source_bin = select_source & (bin_source[m] < z_mean) & (z_mean < bin_source[m + 1])
+        select_source_bin = select_source & (bin_source[m] < z_phot) & (z_phot < bin_source[m + 1])
         
         with h5py.File(os.path.join(fzb_folder, 'SOURCE/SOURCE{}/SAMPLE{}.hdf5'.format(index, m + 1)), 'w') as file:
             file.create_group(name='meta')
