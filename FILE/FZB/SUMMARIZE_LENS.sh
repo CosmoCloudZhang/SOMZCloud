@@ -2,7 +2,7 @@
 #SBATCH -A m1727
 #SBATCH --nodes=5
 #SBATCH -q regular
-#SBATCH --time=04:00:00
+#SBATCH --time=48:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
@@ -33,7 +33,7 @@ BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/yhzhang/ZCloud/"
 
 for BIN in $(seq 1 $COUNT); do 
-    for INDEX in $(seq 1 $LENGTH); do
+    for INDEX in $(seq 1 $NUMBER); do
         # Set path of input variables
         NAME="SUMMARIZE_LENS${INDEX}"
         INPUT_PATH="${BASE_FOLDER}/FZB/LENS/LENS${INDEX}/SAMPLE${BIN}.hdf5"

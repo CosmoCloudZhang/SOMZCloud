@@ -32,7 +32,7 @@ NUMBER=400
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/yhzhang/ZCloud/"
 
-for INDEX in $(seq 201 $NUMBER); do
+for INDEX in $(seq 1 $NUMBER); do
     # Set variables
     NAME="ESTIMATE${INDEX}"
     MODEL_PATH="${BASE_FOLDER}FZB/INFORM/INFORM${INDEX}.pkl"

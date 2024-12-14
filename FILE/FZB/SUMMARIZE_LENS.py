@@ -32,8 +32,8 @@ def main(bin, index, folder):
             }, 
             'seed': 0, 
             'nsamples': 1000, 
-            'chunk_size': 400000,
-            'zmin': 0.0, 'zmax': 3.0, 'nzbins': 301
+            'chunk_size': 400000, 
+            'zmin': 0.0, 'zmax': 3.0, 'nzbins': 300
         }
     }
     
