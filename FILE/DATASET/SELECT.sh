@@ -24,7 +24,7 @@ conda activate $RAILENV
 # Initialize the process
 NUMBER=400
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/yhzhang/ZCloud/"
+BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/CosmoCloud/ZCloud/"
 BASE_DIRECTORY="/global/cfs/cdirs/lsst/groups/PZ/cosmoDC2_gold_samples/"
 
 # Run the application
