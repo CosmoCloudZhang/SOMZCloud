@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH -A m1727
-#SBATCH -J SELECT
 #SBATCH --nodes=4
 #SBATCH -q regular
+#SBATCH -J FZB_SELECT
 #SBATCH --time=48:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
