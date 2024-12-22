@@ -17,6 +17,7 @@ def main(index, folder):
     '''
     # Start
     start = time.time()
+    print('Index: {}'.format(index))
     
     # Path
     fzb_folder = os.path.join(folder, 'FZB/')
@@ -66,7 +67,7 @@ def main(index, folder):
     duration = (end - start) / 60
     
     # Return
-    print('Index: {} Time: {:.2f} minutes'.format(index, duration))
+    print('Time: {:.2f} minutes'.format(duration))
     return duration
 
 
