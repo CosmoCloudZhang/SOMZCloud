@@ -1,13 +1,13 @@
 #!/bin/bash
 #SBATCH -A m1727
-#SBATCH --nodes=5
+#SBATCH --nodes=4
 #SBATCH -q regular
 #SBATCH --time=48:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH --cpus-per-task=4
-#SBATCH --ntasks-per-node=64
+#SBATCH --cpus-per-task=64
+#SBATCH --ntasks-per-node=4
 #SBATCH -J FZB_SUMMARIZE_SOURCE
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
@@ -21,34 +21,23 @@ module load cray-hdf5-parallel
 source $HOME/.bashrc
 conda activate $RAILENV
 
-# Set OpenMP environment
-export OMP_NUM_THREADS=16
+# Set environment
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+export HDF5_USE_FILE_LOCKING=FALSE
+export OMP_PROC_BIND=spread
 export OMP_PLACES=threads
-export OMP_PROC_Bind=spread
 
 # Initialize the process
-COUNT=5
 NUMBER=400
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/yhzhang/ZCloud/"
+BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/CosmoCloud/ZCloud/"
 
-for BIN in $(seq 1 $COUNT); do 
-    for INDEX in $(seq 1 $NUMBER); do
-        # Set path of input variables
-        NAME="SUMMARIZE_SOURCE${INDEX}"
-        INPUT_PATH="${BASE_FOLDER}/FZB/SOURCE/SOURCE${INDEX}/SAMPLE${BIN}.hdf5"
-        CONFIG_PATH="${BASE_FOLDER}/FZB/SOURCE/SOURCE${INDEX}/SUMMARIZE${BIN}.yaml"
-        # Set path of output variables
-        SINGLE_PATH="${BASE_FOLDER}/FZB/SOURCE/SOURCE${INDEX}/SINGLE${BIN}.hdf5"
-        OUTPUT_PATH="${BASE_FOLDER}/FZB/SOURCE/SOURCE${INDEX}/SUMMARIZE${BIN}.hdf5"
-        # Run applications
-        python -u "${BASE_PATH}/FILE/FZB/SUMMARIZE_SOURCE.py" --bin=$BIN --index=$INDEX --folder=$BASE_FOLDER &
-        srun -u -N 1 -n 1 --cpus-per-task=$SLURM_CPUS_PER_TASK python -m ceci rail.estimation.algos.naive_stack.NaiveStackSummarizer --mpi --name=$NAME --input=$INPUT_PATH --config=$CONFIG_PATH --single_NZ=$SINGLE_PATH --output=$OUTPUT_PATH &
-        # Control parallel execution
-        if (( $INDEX % $SLURM_NTASKS_PER_NODE == 0 )); then
-            wait 
-        fi
-    done
-    wait
+# Run applications
+for INDEX in $(seq 1 $NUMBER); do
+    srun -u -N 1 -n 1 --cpu-bind=none python -u "${BASE_PATH}/FILE/FZB/SUMMARIZE_SOURCE.py" --index=$INDEX --folder=$BASE_FOLDER &
+    # Control parallel execution
+    if (( $INDEX % $SLURM_NTASKS == 0 )); then
+        wait 
+    fi
 done
 wait

@@ -1,67 +1,95 @@
 import os
 import time
-import yaml
+import h5py
+import numpy
 import argparse
+from rail import core
 
 
-def main(bin, index, folder):
+def main(index, folder):
     '''
-    Main function to create the FZB informer configuration file.
+    Summarize the redshift distribution of the lens samples.
     
     Arguments:
         index (int): The index of the dataset.
-        folder (str): The base folder of the datasets.
+        folder (str): The base folder of the dataset.
     
     Returns:
-        duration (float): The duration of the function in minutes.
+        duration (float): The duration of the process.
     '''
-    # Start
+    # Data store
     start = time.time()
+    print('Index:{}'.format(index))
     
     # Path
     fzb_folder = os.path.join(folder, 'FZB/')
     
-    # Config
-    config = {
-        'SUMMARIZE{}'.format(index): {
-            'aliases': {
-                'name': 'input_name',
-                'input': 'input_data', 
-                'output': 'output_data', 
-                'single_NZ': 'single_data'
-            }, 
-            'seed': 0, 
-            'nsamples': 1000, 
-            'chunk_size': 400000, 
-            'zmin': 0.0, 'zmax': 3.0, 'nzbins': 300
-        }
-    }
+    # Load
+    data_store = core.stage.RailStage.data_store
+    data_store.__class__.allow_overwrite = True
     
-    os.makedirs(os.path.join(fzb_folder, 'LENS/LENS{}'.format(index)), exist_ok=True)
-    config_name = os.path.join(fzb_folder, 'LENS/LENS{}/SUMMARIZE{}.yaml'.format(index, bin))
-    with open(config_name, 'w') as config_file:
-        yaml.dump(config, config_file, default_flow_style=False)
+    with h5py.File(os.path.join(fzb_folder, 'LENS/LENS{}/BIN.hdf5'.format(index)), 'r') as file:
+        bin_lens = file['bin'][:].astype(numpy.float32)
     
-    # End
+    # Redshift
+    z1 = 0.0
+    z2 = 3.0
+    grid_size = 300
+    z_grid = numpy.linspace(z1, z2, grid_size + 1)
+    
+    # Summarize
+    width = 1000
+    for m in range(1, len(bin_lens)):
+        # Sample
+        sample_name = os.path.join(fzb_folder, 'LENS/LENS{}/SAMPLE{}.hdf5'.format(index, m))
+        sample_data = data_store.read_file(key='sample', path=sample_name, handle_class=core.data.QPHandle)()
+        
+        z_pdf = sample_data.pdf(z_grid)
+        sample_size, pdf_size = z_pdf.shape
+        summarize_data = numpy.zeros((width, pdf_size), dtype=numpy.float32)
+        
+        for n in range(width):
+            z_index = numpy.random.randint(0, sample_size, size=sample_size)
+            summarize_data[n, :] = numpy.mean(z_pdf[z_index, :], axis=0)
+        summarize_single = numpy.mean(z_pdf, axis=0)
+        
+        # Save the single
+        with h5py.File(os.path.join(fzb_folder, 'LENS/LENS{}/SINGLE{}.hdf5'.format(index, m)), 'w') as file:
+            file.create_group('meta')
+            file.create_group('data')
+            
+            file['meta'].create_dataset(name='pdf_name', data=['hist'])
+            file['meta'].create_dataset(name='pdf_version', data=[0.0])
+            file['meta'].create_dataset(name='bins', data=z_grid, dtype=numpy.float32)
+            file['data'].create_dataset(name='pdfs', data=summarize_single, dtype=numpy.float32)
+        
+        # Save the data
+        with h5py.File(os.path.join(fzb_folder, 'LENS/LENS{}/SUMMARIZE{}.hdf5'.format(index, m)), 'w') as file:
+            file.create_group('meta')
+            file.create_group('data')
+            
+            file['meta'].create_dataset(name='pdf_name', data=['hist'])
+            file['meta'].create_dataset(name='pdf_version', data=[0.0])
+            file['meta'].create_dataset(name='bins', data=z_grid, dtype=numpy.float32)
+            file['data'].create_dataset(name='pdfs', data=summarize_data, dtype=numpy.float32)
+    
+    # Return
     end = time.time()
     duration = (end - start) / 60
     
-    # Return
-    print('Index: {} Time: {:.2f} minutes'.format(index, duration))
+    print('Time: {:.2f} minutes'.format(duration))
     return duration
 
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='FZB Summarizer')
-    PARSE.add_argument('--bin', type=str, required=True, help='The tomographic bin')
-    PARSE.add_argument('--index', type=int, required=True, help='The index of the datasets')
-    PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the datasets')
+    PARSE = argparse.ArgumentParser(description='FZB Summarize')
+    PARSE.add_argument('--index', type=int, required=True, help='The index of the dataset')
+    PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the dataset')
     
     # Parse
-    BIN = PARSE.parse_args().bin
     INDEX = PARSE.parse_args().index
     FOLDER = PARSE.parse_args().folder
     
     # Output
-    OUTPUT = main(BIN, INDEX, FOLDER)
+    OUTPUT = main(INDEX, FOLDER)

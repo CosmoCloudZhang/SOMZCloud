@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -A m1727
 #SBATCH -J FIGURE
-#SBATCH --nodes=1
+#SBATCH --nodes=4
 #SBATCH -q regular
 #SBATCH --time=24:00:00
 #SBATCH --mail-type=END
@@ -30,7 +30,7 @@ export OMP_PLACES=threads
 # Initialize the process
 NUMBER=400
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/yhzhang/ZCloud/"
+BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/CosmoCloud/ZCloud/"
 
 # Run applications
 for INDEX in $(seq 1 $NUMBER); do

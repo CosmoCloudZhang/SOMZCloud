@@ -30,7 +30,7 @@ export OMP_PLACES=threads
 # Initialize the process
 NUMBER=400
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/yhzhang/ZCloud/"
+BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/CosmoCloud/ZCloud/"
 
 for INDEX in $(seq 1 $NUMBER); do
     # Set variables
@@ -43,7 +43,7 @@ for INDEX in $(seq 1 $NUMBER); do
     python -u "${BASE_PATH}FILE/FZB/ESTIMATE.py" --index=$INDEX --folder=$BASE_FOLDER &
     srun -u -N 1 -n 1 --cpus-per-task=$SLURM_CPUS_PER_TASK python -m ceci rail.estimation.algos.flexzboost.FlexZBoostEstimator --mpi --name=$NAME --input=$INPUT_PATH --model=$MODEL_PATH --config=$CONFIG_PATH --output=$OUTPUT_PATH &
     # Control parallel execution
-    if (( $INDEX % $SLURM_NTASKS_PER_NODE == 0 )); then
+    if (( $INDEX % $SLURM_NTASKS == 0 )); then
         wait
     fi
 done
