@@ -1,14 +1,14 @@
 #!/bin/bash
 #SBATCH -A m1727
-#SBATCH -J SELECT
-#SBATCH --nodes=1
+#SBATCH --nodes=4
 #SBATCH -q regular
-#SBATCH --ntasks=1
+#SBATCH -J SOM_SAMPLE
 #SBATCH --time=04:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH --cpus-per-task=256
+#SBATCH --cpus-per-task=16
+#SBATCH --ntasks-per-node=16
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -21,13 +21,23 @@ module load cray-hdf5-parallel
 source $HOME/.bashrc
 conda activate $RAILENV
 
-# Set OpenMP environment
-export OMP_NUM_THREADS=32
+# Set environment
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+export HDF5_USE_FILE_LOCKING=FALSE
+export OMP_PROC_BIND=spread
 export OMP_PLACES=threads
-export OMP_PROC_Bind=spread
 
-# Initialize the parallisation
-NUMBER=8
-LENGTH=400
+# Initialize process
+NUMBER=400
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-srun -n 1 --cpu-bind=none python -u "${BASE_PATH/FILE/SOM/SOM_SELECT.py}" --path=$BASE_PATH --number=$NUMBER --length=$LENGTH
+BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/CosmoCloud/ZCloud/"
+
+# Run applications
+for INDEX in $(seq 1 $NUMBER); do
+    srun -u -N 1 -n 1 --cpus-per-task=$SLURM_CPUS_PER_TASK python -u "${BASE_PATH}FILE/SOM/SELECT.py" --index=$INDEX --folder=$BASE_FOLDER & 
+    # Control parallel execution
+    if (( $INDEX % $SLURM_NTASKS == 0 )); then
+        wait
+    fi
+done
+wait
