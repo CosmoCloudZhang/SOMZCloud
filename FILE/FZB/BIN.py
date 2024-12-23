@@ -26,10 +26,6 @@ def main(index, folder):
     os.makedirs(os.path.join(fzb_folder, 'LENS'), exist_ok=True)
     os.makedirs(os.path.join(fzb_folder, 'SOURCE'), exist_ok=True)
     
-    # Data
-    data_store = core.stage.RailStage.data_store
-    data_store.__class__.allow_overwrite = True
-    
     # Bin
     lens_size = 5
     source_size = 5
@@ -45,7 +41,10 @@ def main(index, folder):
     grid_size = 300
     z_grid = numpy.linspace(z1_source, z2_source, grid_size + 1)
     
-    # Estimator
+    # Load
+    data_store = core.stage.RailStage.data_store
+    data_store.__class__.allow_overwrite = True
+    
     estimate_name = os.path.join(fzb_folder, 'ESTIMATE/ESTIMATE{}.hdf5'.format(index))
     estimator = data_store.read_file(key='estimator', path=estimate_name, handle_class=core.data.QPHandle)()
     

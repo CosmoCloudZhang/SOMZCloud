@@ -29,10 +29,10 @@ def main(index, folder):
     data_store = core.stage.RailStage.data_store
     data_store.__class__.allow_overwrite = True
     
-    application_name = os.path.join(dataset_folder, 'APPLICATION/DATA{}.hdf5'.format(index + 1))
+    application_name = os.path.join(dataset_folder, 'APPLICATION/DATA{}.hdf5'.format(index))
     application_dataset = data_store.read_file(key='application', path=application_name, handle_class=core.data.TableHandle)()
     
-    estimate_name = os.path.join(fzb_folder, 'ESTIMATE/ESTIMATE{}.hdf5'.format(index + 1))
+    estimate_name = os.path.join(fzb_folder, 'ESTIMATE/ESTIMATE{}.hdf5'.format(index))
     estimator = data_store.read_file(key='estimator', path=estimate_name, handle_class=core.data.QPHandle)()
     
     # Bin
@@ -51,8 +51,10 @@ def main(index, folder):
     
     width = 1000
     grid_size = 300
+    z_delta = (z2_source - z1_source) / grid_size
     z_grid = numpy.linspace(z1_source, z2_source, grid_size + 1)
     
+    # Estimate
     z_mean = numpy.concatenate(estimator.mean())
     z_median = numpy.concatenate(estimator.median())
     z_mode = numpy.concatenate(estimator.mode(z_grid))
@@ -69,16 +71,25 @@ def main(index, folder):
     
     # Lens
     for m in range(len(bin_lens) - 1):
-        lens_single = numpy.zeros(grid_size)
-        lens_sample = numpy.zeros((width, grid_size), dtype=numpy.float32)
+        # Select
+        lens_single = numpy.zeros(grid_size + 1)
+        lens_sample = numpy.zeros((width, grid_size + 1))
+        z_select = z_true[select_lens & (bin_lens[m] < z_phot) & (z_phot < bin_lens[m + 1])]
         
+        # Single
+        histogram = numpy.histogram(z_select, bins=z_grid, range=(z_grid.min(), z_grid.max()), density=True)[0]
+        single = numpy.interp(x=z_grid, xp=(z_grid[+1:] + z_grid[:-1]) / 2, fp=histogram, left=0.0, right=0.0)
+        lens_single = single / single.sum() / z_delta
+        
+        # Sample
         for n in range(width):
-            select = select_lens & (bin_lens[m] < z_phot) & (z_phot < bin_lens[m + 1])
-            lens_single = numpy.histogram(z_true[select], bins=z_grid, range=(z_grid.min(), z_grid.max()), density=True)[0]
+            z_sample = numpy.random.choice(z_select, z_select.size, replace=True)
             
-            z_data = numpy.random.choice(z_true[select], z_true[select].size, replace=True)
-            lens_sample[n, :] = numpy.histogram(z_data, bins=z_grid, range=(z_grid.min(), z_grid.max()), density=True)[0]
+            histogram = numpy.histogram(z_sample, bins=z_grid, range=(z_grid.min(), z_grid.max()), density=True)[0]
+            sample = numpy.interp(x=z_grid, xp=(z_grid[+1:] + z_grid[:-1]) / 2, fp=histogram, left=0.0, right=0.0)
+            lens_sample[n, :] = sample / sample.sum() / z_delta
         
+        # Save
         lens_data = {'single':lens_single, 'sample': lens_sample}
         with h5py.File(os.path.join(fzb_folder, 'LENS/LENS{}/SELECT{}.hdf5'.format(index, m + 1)), 'w') as file:
             for key, value in lens_data.items():
@@ -86,16 +97,25 @@ def main(index, folder):
     
     # Source
     for m in range(len(bin_source) - 1):
-        source_single = numpy.zeros(grid_size)
-        source_sample = numpy.zeros((width, grid_size), dtype=numpy.float32)
+        # Select
+        source_single = numpy.zeros(grid_size + 1)
+        source_sample = numpy.zeros((width, grid_size + 1))
+        z_select = z_true[select_source & (bin_source[m] < z_phot) & (z_phot < bin_source[m + 1])]
         
+        # Single
+        histogram = numpy.histogram(z_select, bins=z_grid, range=(z_grid.min(), z_grid.max()), density=True)[0]
+        single = numpy.interp(x=z_grid, xp=(z_grid[+1:] + z_grid[:-1]) / 2, fp=histogram, left=0.0, right=0.0)
+        source_single = single / single.sum() / z_delta
+        
+        # Sample
         for n in range(width):
-            select = select_source & (bin_source[m] < z_phot) & (z_phot < bin_source[m + 1])
-            source_single = numpy.histogram(z_true[select], bins=z_grid, range=(z_grid.min(), z_grid.max()), density=True)[0]
+            z_sample = numpy.random.choice(z_select, z_select.size, replace=True)
             
-            z_data = numpy.random.choice(z_true[select], z_true[select].size, replace=True)
-            source_sample[n, :] = numpy.histogram(z_data, bins=z_grid, range=(z_grid.min(), z_grid.max()), density=True)[0]
+            histogram = numpy.histogram(z_sample, bins=z_grid, range=(z_grid.min(), z_grid.max()), density=True)[0]
+            sample = numpy.interp(x=z_grid, xp=(z_grid[+1:] + z_grid[:-1]) / 2, fp=histogram, left=0.0, right=0.0)
+            source_sample[n, :] = sample / sample.sum() / z_delta
         
+        # Save
         source_data = {'single':source_single, 'sample': source_sample}
         with h5py.File(os.path.join(fzb_folder, 'SOURCE/SOURCE{}/SELECT{}.hdf5'.format(index, m + 1)), 'w') as file:
             for key, value in source_data.items():
