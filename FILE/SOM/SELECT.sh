@@ -2,8 +2,8 @@
 #SBATCH -A m1727
 #SBATCH --nodes=4
 #SBATCH -q regular
-#SBATCH -J SOM_SAMPLE
-#SBATCH --time=04:00:00
+#SBATCH -J SOM_SELECT
+#SBATCH --time=48:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
@@ -28,7 +28,7 @@ export OMP_PROC_BIND=spread
 export OMP_PLACES=threads
 
 # Initialize process
-NUMBER=400
+NUMBER=64
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/CosmoCloud/ZCloud/"
 

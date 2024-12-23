@@ -4,67 +4,121 @@ import h5py
 import numpy
 import argparse
 from rail import core
-import multiprocessing
 
 
-def main(path, index):
-    """
-    The main function to select the samples based on the redshift and magnitude criteria.
+def main(index, folder):
+    '''
+    Summarize the true redshift distribution of the lens and source samples.
     
     Arguments:
-        path (str): The path to the base folder.
-        index (int): The index of the datasets.
+        index (int): The index of the dataset.
+        folder (str): The path to the base folder.
     
     Returns:
-        float: The duration of the selection.
-    """
-    # Data store
+        duration (float): The time taken to summarize the redshift distribution.
+    '''
+    # Start
     start = time.time()
-    data_path = os.path.join(path, 'DATA/')
+    print('Index:{}'.format(index))
     
-    # Data store
-    data_store = core.stage.RailStage.data_store
-    data_store.__class__.allow_overwrite = True
+    # Path
+    som_folder = os.path.join(folder, 'SOM')
     
-    # Data
-    width = 1000
-    bin_size = 5
-    grid_size = 300
+    # Bin
+    with h5py.File(os.path.join(som_folder, 'LENS/LENS{}/BIN.hdf5'.format(index)), 'r') as file:
+        bin_lens = file['bin'][:].astype(numpy.float32)
     
+    with h5py.File(os.path.join(som_folder, 'SOURCE/SOURCE{}/BIN.hdf5'.format(index)), 'r') as file:
+        bin_source = file['bin'][:].astype(numpy.float32)
+    
+    # Redshift
     z1 = 0.0
     z2 = 3.0
+    grid_size = 300
+    z_delta = (z2 - z1) / grid_size
     z_grid = numpy.linspace(z1, z2, grid_size + 1)
+    z_data = numpy.linspace(z1 + z_delta / 2, z2 - z_delta / 2, grid_size)
     
-    # Select
-    for m in range(bin_size):
-        select_name = os.path.join(data_path, 'SOM/LENS/LENS{}/SELECT{}.hdf5'.format(index, m + 1))
-        cell_name = os.path.join(data_path, 'SOM/LENS/LENS{}/SOM_CELLID{}.hdf5'.format(index, m + 1))
-        cluster_name = os.path.join(data_path, 'SOM/LENS/LENS{}/SOM_CELL_FILE{}.hdf5'.format(index, m + 1))
+    # Load
+    data_store = core.stage.RailStage.data_store
+    data_store.__class__.allow_overwrite = True
+    width = 1000
+    
+    # Lens
+    for m in range(1, len(bin_lens)):
+        # Select
+        cell_name = os.path.join(som_folder, 'LENS/LENS{}/CELL{}.hdf5'.format(index, m))
+        sample_name = os.path.join(som_folder, 'LENS/LENS{}/SAMPLE{}.hdf5'.format(index, m))
+        cluster_name = os.path.join(som_folder, 'LENS/LENS{}/CLUSTER{}.hdf5'.format(index, m))
         
-        cell_data = data_store.read_file(key='test_data', path=cell_name, handle_class=core.data.TableHandle)()
-        select_data = data_store.read_file(key='test_data', path=select_name, handle_class=core.data.TableHandle)()
-        cluster_data = data_store.read_file(key='test_data', path=cluster_name, handle_class=core.data.TableHandle)()
+        cell_data = data_store.read_file(key='cell', path=cell_name, handle_class=core.data.TableHandle)()
+        sample_data = data_store.read_file(key='sample', path=sample_name, handle_class=core.data.TableHandle)()
+        cluster_data = data_store.read_file(key='cluster', path=cluster_name, handle_class=core.data.TableHandle)()
         
         cell_id = cell_data['cluster_ind'][:].astype(numpy.int32)
         cluster_id = cluster_data['uncovered_clusters'][:].astype(numpy.int32)
-        redshift = select_data['photometry']['redshift'][:].astype(numpy.float32)
+        z_true = sample_data['photometry']['redshift'][:].astype(numpy.float32)
         
-        z_pdf = numpy.zeros((width, grid_size))
-        z_select = redshift[~numpy.isin(cell_id, cluster_id)]
-        z_sample = numpy.random.choice(z_select, size=(width, z_select.size), replace=True)
+        # Single
+        lens_single = numpy.zeros(grid_size + 1)
+        lens_sample = numpy.zeros((width, grid_size + 1))
+        z_select = z_true[~numpy.isin(cell_id, cluster_id)]
         
-        for k in range(width):
-            z_pdf[k, :] = numpy.histogram(z_sample[k, :], bins=z_grid, density=True, range=(z1, z2))[0]
+        histogram = numpy.histogram(z_select, bins=z_grid, density=True, range=(z1, z2))[0]
+        single = numpy.interp(x=z_grid, xp=z_data, fp=histogram, left=0.0, right=0.0)
+        lens_single = single / single.sum() / z_delta
         
-        with h5py.File(os.path.join(data_path, 'SOM/LENS/LENS{}/SOM_SUMMARIZE_SELECT{}.hdf5'.format(index, m + 1)), 'w') as file:
+        # Sample
+        for n in range(width):
+            z_sample = numpy.random.choice(z_select, size=(width, z_select.size), replace=True)
             
-            file.create_group(name='meta')
-            file.create_group(name='data')
+            histogram = numpy.histogram(z_sample[n, :], bins=z_grid, density=True, range=(z1, z2))[0]
+            sample = numpy.interp(x=z_grid, xp=z_data, fp=histogram, left=0.0, right=0.0)
+            lens_sample[n, :] = sample / sample.sum() / z_delta
+        
+        # Save
+        lens_data = {'single': lens_single, 'sample': lens_sample}
+        with h5py.File(os.path.join(som_folder, 'LENS/LENS{}/SELECT{}.hdf5'.format(index, m)), 'w') as file:
+            for key, value in lens_data.items():
+                file.create_dataset(key, data=value)
+    
+    # Source
+    for m in range(1, len(bin_source)):
+        # Select
+        cell_name = os.path.join(som_folder, 'SOURCE/SOURCE{}/CELL{}.hdf5'.format(index, m))
+        sample_name = os.path.join(som_folder, 'SOURCE/SOURCE{}/SAMPLE{}.hdf5'.format(index, m))
+        cluster_name = os.path.join(som_folder, 'SOURCE/SOURCE{}/CLUSTER{}.hdf5'.format(index, m))
+        
+        cell_data = data_store.read_file(key='cell', path=cell_name, handle_class=core.data.TableHandle)()
+        sample_data = data_store.read_file(key='sample', path=sample_name, handle_class=core.data.TableHandle)()
+        cluster_data = data_store.read_file(key='cluster', path=cluster_name, handle_class=core.data.TableHandle)()
+        
+        cell_id = cell_data['cluster_ind'][:].astype(numpy.int32)
+        cluster_id = cluster_data['uncovered_clusters'][:].astype(numpy.int32)
+        z_true = sample_data['photometry']['redshift'][:].astype(numpy.float32)
+        
+        # Single
+        source_single = numpy.zeros(grid_size + 1)
+        source_sample = numpy.zeros((width, grid_size + 1))
+        z_select = z_true[~numpy.isin(cell_id, cluster_id)]
+        
+        histogram = numpy.histogram(z_select, bins=z_grid, density=True, range=(z1, z2))[0]
+        single = numpy.interp(x=z_grid, xp=z_data, fp=histogram, left=0.0, right=0.0)
+        source_single = single / single.sum() / z_delta
+        
+        # Sample
+        for n in range(width):
+            z_sample = numpy.random.choice(z_select, size=(width, z_select.size), replace=True)
             
-            file['meta'].create_dataset('pdf_version', data=[0.0])
-            file['meta'].create_dataset('pdf_name', data=['interp'])
-            file['data'].create_dataset('yvals', data=z_pdf, dtype=numpy.float32)
-            file['meta'].create_dataset('xvals', data=[z_grid], dtype=numpy.float32)
+            histogram = numpy.histogram(z_sample[n, :], bins=z_grid, density=True, range=(z1, z2))[0]
+            sample = numpy.interp(x=z_grid, xp=z_data, fp=histogram, left=0.0, right=0.0)
+            source_sample[n, :] = sample / sample.sum() / z_delta
+        
+        # Save
+        source_data = {'single': source_single, 'sample': source_sample}
+        with h5py.File(os.path.join(som_folder, 'SOURCE/SOURCE{}/SELECT{}.hdf5'.format(index, m)), 'w') as file:
+            for key, value in source_data.items():
+                file.create_dataset(key, data=value)
     
     # Return
     end = time.time()
@@ -76,7 +130,7 @@ def main(path, index):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='SOM Figure')
+    PARSE = argparse.ArgumentParser(description='SOM Select')
     PARSE.add_argument('--index', type=int, help='The index of the dataset')
     PARSE.add_argument('--folder', type=str, help='The path to the base folder')
     
