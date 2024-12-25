@@ -2,13 +2,13 @@
 #SBATCH -A m1727
 #SBATCH --nodes=1
 #SBATCH -q regular
-#SBATCH --ntasks=1
-#SBATCH --time=24:00:00
+#SBATCH --time=48:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH -J ENSEMBLE_LENS
 #SBATCH --cpus-per-task=256
+#SBATCH --ntasks-per-node=1
+#SBATCH -J FZB_SELECT_LENS
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -21,9 +21,15 @@ module load cray-hdf5-parallel
 source $HOME/.bashrc
 conda activate $RAILENV
 
-# Initialize the parallisation
-SIZE=5
-WIDTH=1000
-LENGTH=400
+# Set environment
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+export HDF5_USE_FILE_LOCKING=FALSE
+export OMP_PROC_BIND=spread
+export OMP_PLACES=threads
+
+# Initialize the process
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-python -u "${BASE_PATH}FILE/ENSEMBLE/LENS/FZB_ENSEMBLE.py" --path=$BASE_PATH --size=$SIZE --width=$WIDTH --length=$LENGTH
+BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/CosmoCloud/ZCloud/"
+
+# Run applications
+python -u "${BASE_PATH}/FILE/ENSEMBLE/FZB/SELECT_LENS.py" --folder=$BASE_FOLDER
