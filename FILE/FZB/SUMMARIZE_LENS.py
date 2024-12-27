@@ -23,6 +23,7 @@ def main(index, folder):
     
     # Path
     fzb_folder = os.path.join(folder, 'FZB/')
+    som_folder = os.path.join(folder, 'SOM/')
     
     # Load
     data_store = core.stage.RailStage.data_store
@@ -40,17 +41,31 @@ def main(index, folder):
     # Summarize
     width = 1000
     for m in range(1, len(bin_lens)):
+        # Cell
+        cell_name = os.path.join(som_folder, 'LENS/LENS{}/CELL{}.hdf5'.format(index, m))
+        cell_data = data_store.read_file(key='cell', path=cell_name, handle_class=core.data.TableHandle)()
+        
+        # Cluster
+        cluster_name = os.path.join(som_folder, 'LENS/LENS{}/CLUSTER{}.hdf5'.format(index, m))
+        cluster_data = data_store.read_file(key='cluster', path=cluster_name, handle_class=core.data.TableHandle)()
+        
         # Sample
         sample_name = os.path.join(fzb_folder, 'LENS/LENS{}/SAMPLE{}.hdf5'.format(index, m))
         sample_data = data_store.read_file(key='sample', path=sample_name, handle_class=core.data.QPHandle)()
         
-        z_pdf = sample_data.pdf(z_grid)
+        # Select
+        cluster_id = cluster_data['uncovered_clusters'][:].astype(numpy.int32)
+        cell_id = cell_data['cluster_ind'][:].astype(numpy.int32)
+        
+        select = ~numpy.isin(cell_id, cluster_id)
+        z_pdf = sample_data.pdf(z_grid)[select, :]
+        
         sample_size, pdf_size = z_pdf.shape
         summarize_data = numpy.zeros((width, pdf_size), dtype=numpy.float32)
         
         for n in range(width):
-            z_index = numpy.random.randint(0, sample_size, size=sample_size)
-            summarize_data[n, :] = numpy.mean(z_pdf[z_index, :], axis=0)
+            z_sample = numpy.random.randint(0, sample_size, size=sample_size)
+            summarize_data[n, :] = numpy.mean(z_pdf[z_sample, :], axis=0)
         summarize_single = numpy.mean(z_pdf, axis=0)
         
         # Save the single

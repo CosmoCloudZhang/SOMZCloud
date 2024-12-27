@@ -6,8 +6,8 @@
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH --cpus-per-task=64
-#SBATCH --ntasks-per-node=4
+#SBATCH --cpus-per-task=32
+#SBATCH --ntasks-per-node=8
 #SBATCH -J FZB_SUMMARIZE_SOURCE
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 

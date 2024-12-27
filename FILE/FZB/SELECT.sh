@@ -3,7 +3,7 @@
 #SBATCH --nodes=4
 #SBATCH -q regular
 #SBATCH -J FZB_SELECT
-#SBATCH --time=48:00:00
+#SBATCH --time=24:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
