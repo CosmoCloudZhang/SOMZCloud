@@ -8,7 +8,7 @@ import argparse
 
 def main(folder):
     '''
-    Compute the ensemble tomographic redshift distributions for the lens galaxies.
+    Compute the ensemble tomographic redshift distributions for the SOURCE galaxies.
     
     Arguments:
         folder (str): The base folder containing the datasets.
@@ -20,20 +20,20 @@ def main(folder):
     start = time.time()
     
     # Path
-    fzb_folder = os.path.join(folder, 'FZB/')
+    som_folder = os.path.join(folder, 'SOM/')
     ensemble_folder = os.path.join(folder, 'ENSEMBLE/')
     
     os.makedirs(ensemble_folder, exist_ok=True)
-    os.makedirs(os.path.join(ensemble_folder, 'LENS/'), exist_ok=True)
+    os.makedirs(os.path.join(ensemble_folder, 'SOURCE/'), exist_ok=True)
     
     # Load
     data = []  
-    for i in range(len([name for name in os.listdir(os.path.join(fzb_folder, 'LENS/')) if 'LENS' in name])):
+    for i in range(len([name for name in os.listdir(os.path.join(som_folder, 'SOURCE/')) if 'SOURCE' in name])):
     
         data.append([])
-        for j in range(len([name for name in os.listdir(os.path.join(fzb_folder, 'LENS/LENS{}/'.format(i + 1))) if name.startswith('SELECT') and name.endswith('.hdf5')])):
+        for j in range(len([name for name in os.listdir(os.path.join(som_folder, 'SOURCE/SOURCE{}/'.format(i + 1))) if name.startswith('SELECT') and name.endswith('.hdf5')])):
             
-            with h5py.File(os.path.join(fzb_folder, 'LENS/LENS{}/SELECT{}.hdf5'.format(i + 1, j + 1)), 'r') as file:
+            with h5py.File(os.path.join(som_folder, 'SOURCE/SOURCE{}/SELECT{}.hdf5'.format(i + 1, j + 1)), 'r') as file:
                 data[i].append(file['sample'][:].astype(numpy.float32))
     data = numpy.array(data)
     
@@ -59,7 +59,7 @@ def main(folder):
         value = value / scipy.integrate.trapezoid(y=value, x=z_grid, axis=1)[:, numpy.newaxis]
         ensemble[k, :, :] = value
     
-    with h5py.File(os.path.join(ensemble_folder, 'LENS/FZB_SELECT.hdf5'), 'w') as file:
+    with h5py.File(os.path.join(ensemble_folder, 'SOURCE/SOM_SELECT.hdf5'), 'w') as file:
         file.create_dataset('ensemble', data=ensemble, dtype=numpy.float32)
     
     # Return
@@ -72,7 +72,7 @@ def main(folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='FZB Ensemble')
+    PARSE = argparse.ArgumentParser(description='SOM Ensemble')
     PARSE.add_argument('--folder', dest='folder', type=str, help='The base folder containing the datasets.')
     
     # Parse

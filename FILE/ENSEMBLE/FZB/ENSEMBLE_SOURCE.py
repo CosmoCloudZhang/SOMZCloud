@@ -31,7 +31,7 @@ def main(folder):
     for i in range(len([name for name in os.listdir(os.path.join(fzb_folder, 'SOURCE/')) if 'SOURCE' in name])):
     
         data.append([])
-        for j in range(len([name for name in os.listdir(os.path.join(fzb_folder, 'SOURCE/SOURCE{}/'.format(i + 1))) if 'SUMMARIZE' in name])):
+        for j in range(len([name for name in os.listdir(os.path.join(fzb_folder, 'SOURCE/SOURCE{}/'.format(i + 1))) if name.startswith('SUMMARIZE') and name.endswith('.hdf5')])):
             
             with h5py.File(os.path.join(fzb_folder, 'SOURCE/SOURCE{}/SUMMARIZE{}.hdf5'.format(i + 1, j + 1)), 'r') as file:
                 data[i].append(file['data']['pdfs'][:].astype(numpy.float32))
