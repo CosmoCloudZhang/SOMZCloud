@@ -70,10 +70,10 @@ def main(index, folder):
         lens_single = single / single.sum() / z_delta
         
         # Sample
-        z_sample = numpy.random.choice(z_select, size=(width, z_select.size), replace=True)
         for n in range(width):
+            z_sample = numpy.random.choice(z_select, size=z_select.size, replace=True)
             
-            histogram = numpy.histogram(z_sample[n, :], bins=z_grid, density=True, range=(z1, z2))[0]
+            histogram = numpy.histogram(z_sample, bins=z_grid, density=True, range=(z1, z2))[0]
             sample = numpy.interp(x=z_grid, xp=z_data, fp=histogram, left=0.0, right=0.0)
             lens_sample[n, :] = sample / sample.sum() / z_delta
         
@@ -109,10 +109,10 @@ def main(index, folder):
         source_single = single / single.sum() / z_delta
         
         # Sample
-        z_sample = numpy.random.choice(z_select, size=(width, z_select.size), replace=True)
         for n in range(width):
+            z_sample = numpy.random.choice(z_select, size=z_select.size, replace=True)
             
-            histogram = numpy.histogram(z_sample[n, :], bins=z_grid, density=True, range=(z1, z2))[0]
+            histogram = numpy.histogram(z_sample, bins=z_grid, density=True, range=(z1, z2))[0]
             sample = numpy.interp(x=z_grid, xp=z_data, fp=histogram, left=0.0, right=0.0)
             source_sample[n, :] = sample / sample.sum() / z_delta
         
