@@ -28,7 +28,7 @@ export OMP_PROC_BIND=spread
 export OMP_PLACES=threads
 
 # Initialize process
-NUMBER=64
+NUMBER=400
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/CosmoCloud/ZCloud/"
 

@@ -63,14 +63,15 @@ def main(index, folder):
         lens_single = numpy.zeros(grid_size + 1)
         lens_sample = numpy.zeros((width, grid_size + 1))
         z_select = z_true[~numpy.isin(cell_id, cluster_id)]
+        del cell_id, cluster_id, cell_data, cluster_data, sample_data
         
         histogram = numpy.histogram(z_select, bins=z_grid, density=True, range=(z1, z2))[0]
         single = numpy.interp(x=z_grid, xp=z_data, fp=histogram, left=0.0, right=0.0)
         lens_single = single / single.sum() / z_delta
         
         # Sample
+        z_sample = numpy.random.choice(z_select, size=(width, z_select.size), replace=True)
         for n in range(width):
-            z_sample = numpy.random.choice(z_select, size=(width, z_select.size), replace=True)
             
             histogram = numpy.histogram(z_sample[n, :], bins=z_grid, density=True, range=(z1, z2))[0]
             sample = numpy.interp(x=z_grid, xp=z_data, fp=histogram, left=0.0, right=0.0)
@@ -101,14 +102,15 @@ def main(index, folder):
         source_single = numpy.zeros(grid_size + 1)
         source_sample = numpy.zeros((width, grid_size + 1))
         z_select = z_true[~numpy.isin(cell_id, cluster_id)]
+        del cell_id, cluster_id, cell_data, cluster_data, sample_data
         
         histogram = numpy.histogram(z_select, bins=z_grid, density=True, range=(z1, z2))[0]
         single = numpy.interp(x=z_grid, xp=z_data, fp=histogram, left=0.0, right=0.0)
         source_single = single / single.sum() / z_delta
         
         # Sample
+        z_sample = numpy.random.choice(z_select, size=(width, z_select.size), replace=True)
         for n in range(width):
-            z_sample = numpy.random.choice(z_select, size=(width, z_select.size), replace=True)
             
             histogram = numpy.histogram(z_sample[n, :], bins=z_grid, density=True, range=(z1, z2))[0]
             sample = numpy.interp(x=z_grid, xp=z_data, fp=histogram, left=0.0, right=0.0)
