@@ -82,8 +82,8 @@ def main(index, folder):
         lens_single = single / single.sum() / z_delta
         
         # Sample
+        z_sample = numpy.random.choice(z_select, z_select.size, replace=True)
         for n in range(width):
-            z_sample = numpy.random.choice(z_select, z_select.size, replace=True)
             
             histogram = numpy.histogram(z_sample, bins=z_grid, range=(z_grid.min(), z_grid.max()), density=True)[0]
             sample = numpy.interp(x=z_grid, xp=(z_grid[+1:] + z_grid[:-1]) / 2, fp=histogram, left=0.0, right=0.0)
@@ -108,8 +108,8 @@ def main(index, folder):
         source_single = single / single.sum() / z_delta
         
         # Sample
+        z_sample = numpy.random.choice(z_select, z_select.size, replace=True)
         for n in range(width):
-            z_sample = numpy.random.choice(z_select, z_select.size, replace=True)
             
             histogram = numpy.histogram(z_sample, bins=z_grid, range=(z_grid.min(), z_grid.max()), density=True)[0]
             sample = numpy.interp(x=z_grid, xp=(z_grid[+1:] + z_grid[:-1]) / 2, fp=histogram, left=0.0, right=0.0)
