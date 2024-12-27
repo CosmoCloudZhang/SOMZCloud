@@ -60,7 +60,7 @@ def main(folder):
         ensemble[k, :, :] = value
     
     with h5py.File(os.path.join(ensemble_folder, 'SOURCE/FZB_ENSEMBLE.hdf5'), 'w') as file:
-        file.create_dataset('sample', data=ensemble, dtype=numpy.float32)
+        file.create_dataset('ensemble', data=ensemble, dtype=numpy.float32)
     
     # Return
     end = time.time()
