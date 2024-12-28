@@ -21,20 +21,15 @@ def main(folder):
     
     # Path
     ensemble_folder = os.path.join(folder, 'ENSEMBLE')
-    os.makedirs(os.path.join(ensemble_folder, 'FIGURE'), exist_ok=True)
     
     # Ensemble
-    with h5py.File(os.path.join(ensemble_folder, 'LENS/FZB_SELECT.hdf5'), 'r') as file:
-        lens_select = file['ensemble'][:].astype(numpy.float32)
+    with h5py.File(os.path.join(ensemble_folder, 'ENSEMBLE_LENS.hdf5'), 'r') as file:
+        lens_data = file['data'][:].astype(numpy.float32)
+        lens_select = file['select'][:].astype(numpy.float32)
     
-    with h5py.File(os.path.join(ensemble_folder, 'SOURCE/FZB_SELECT.hdf5'), 'r') as file:
-        source_select = file['ensemble'][:].astype(numpy.float32)
-    
-    with h5py.File(os.path.join(ensemble_folder, 'LENS/FZB_ENSEMBLE.hdf5'), 'r') as file:
-        lens_ensemble = file['ensemble'][:].astype(numpy.float32)
-    
-    with h5py.File(os.path.join(ensemble_folder, 'SOURCE/FZB_ENSEMBLE.hdf5'), 'r') as file:
-        source_ensemble = file['ensemble'][:].astype(numpy.float32)
+    with h5py.File(os.path.join(ensemble_folder, 'ENSEMBLE_SOURCE.hdf5'), 'r') as file:
+        source_data = file['data'][:].astype(numpy.float32)
+        source_select = file['select'][:].astype(numpy.float32)
     
     z1 = 0.0
     z2 = 3.0
@@ -43,17 +38,17 @@ def main(folder):
     z_delta = (z2 - z1) / grid_size
     z_grid = numpy.linspace(z1, z2, grid_size + 1)
     
+    lens_mean_data = numpy.sum(lens_data * z_grid[numpy.newaxis, numpy.newaxis, :], axis=2) * z_delta
+    source_mean_data = numpy.sum(source_data * z_grid[numpy.newaxis, numpy.newaxis, :], axis=2) * z_delta
+    
     lens_mean_select = numpy.sum(lens_select * z_grid[numpy.newaxis, numpy.newaxis, :], axis=2) * z_delta
     source_mean_select = numpy.sum(source_select * z_grid[numpy.newaxis, numpy.newaxis, :], axis=2) * z_delta
-    
-    lens_mean_ensemble = numpy.sum(lens_ensemble * z_grid[numpy.newaxis, numpy.newaxis, :], axis=2) * z_delta
-    source_mean_ensemble = numpy.sum(source_ensemble * z_grid[numpy.newaxis, numpy.newaxis, :], axis=2) * z_delta
     
     lens_center_select = numpy.median(lens_mean_select, axis=0)
     source_center_select = numpy.median(source_mean_select, axis=0)
     
-    lens_center_ensemble = numpy.median(lens_mean_ensemble, axis=0)
-    source_center_ensemble = numpy.median(source_mean_ensemble, axis=0)
+    lens_center_data = numpy.median(lens_mean_data, axis=0)
+    source_center_data = numpy.median(source_mean_data, axis=0)
     
     # Configuration
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
@@ -71,9 +66,9 @@ def main(folder):
     for m in range(bin_size):
         plot[m, 0].hist(lens_mean_select[:, m], bins=size, range=(lens_center_select[m] - lens_shift[m], lens_center_select[m] + lens_shift[m]), color='darkblue', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 0].hist(lens_mean_ensemble[:, m], bins=size, range=(lens_center_select[m] - lens_shift[m], lens_center_select[m] + lens_shift[m]), color='darkred', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 0].hist(lens_mean_data[:, m], bins=size, range=(lens_center_select[m] - lens_shift[m], lens_center_select[m] + lens_shift[m]), color='darkred', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 0].text(lens_center_select[m] - lens_shift[m] / 2, 80, r'$\Delta \langle z \rangle = {:.3f}$'.format(lens_center_ensemble[m] - lens_center_select[m]), fontsize=20, ha='center')
+        plot[m, 0].text(lens_center_select[m] - lens_shift[m] / 2, 80, r'$\Delta \langle z \rangle = {:.3f}$'.format(lens_center_data[m] - lens_center_select[m]), fontsize=20, ha='center')
         
         plot[m, 0].set_ylim(0, 120)
         plot[m, 0].set_yticklabels([])
@@ -85,9 +80,9 @@ def main(folder):
         
         plot[m, 1].hist(source_mean_select[:, m], bins=size, range=(source_center_select[m] - source_shift[m], source_center_select[m] + source_shift[m]), color='darkblue', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 1].hist(source_mean_ensemble[:, m], bins=size, range=(source_center_select[m] - source_shift[m], source_center_select[m] + source_shift[m]), color='darkred', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 1].hist(source_mean_data[:, m], bins=size, range=(source_center_select[m] - source_shift[m], source_center_select[m] + source_shift[m]), color='darkred', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 1].text(source_center_select[m] - source_shift[m] / 2, 80, r'$\Delta \langle z \rangle = {:.3f}$'.format(source_center_ensemble[m] - source_center_select[m]), fontsize=20, ha='center')
+        plot[m, 1].text(source_center_select[m] - source_shift[m] / 2, 80, r'$\Delta \langle z \rangle = {:.3f}$'.format(source_center_data[m] - source_center_select[m]), fontsize=20, ha='center')
         
         plot[m, 1].set_ylim(0, 120)
         plot[m, 1].set_yticklabels([])
@@ -97,7 +92,7 @@ def main(folder):
             plot[m, 1].set_xlabel(r'$\langle z \rangle$')
         
     figure.subplots_adjust(wspace=0.0, hspace=0.2)
-    figure.savefig(os.path.join(ensemble_folder, 'FIGURE/FZB_FIGURE.png'), bbox_inches='tight', dpi=512)
+    figure.savefig(os.path.join(ensemble_folder, 'FIGURE.png'), bbox_inches='tight', dpi=512)
     
     # Return
     end = time.time()

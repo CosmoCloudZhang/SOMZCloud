@@ -8,7 +8,7 @@
 #SBATCH -o LOG/%x_%j.out
 #SBATCH --cpus-per-task=256
 #SBATCH --ntasks-per-node=1
-#SBATCH -J SOM_SELECT_SOURCE
+#SBATCH -J FZB_ENSEMBLE_SOURCE
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -32,4 +32,4 @@ BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/CosmoCloud/ZCloud/"
 
 # Run applications
-python -u "${BASE_PATH}/FILE/ENSEMBLE/SOM/SELECT_SOURCE.py" --folder=$BASE_FOLDER
+python -u "${BASE_PATH}/FILE/ENSEMBLE/ENSEMBLE_SOURCE.py" --folder=$BASE_FOLDER

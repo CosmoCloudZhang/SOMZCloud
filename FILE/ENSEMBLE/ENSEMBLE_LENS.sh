@@ -2,13 +2,13 @@
 #SBATCH -A m1727
 #SBATCH --nodes=1
 #SBATCH -q regular
-#SBATCH -J FZB_FIGURE
-#SBATCH --time=04:00:00
+#SBATCH --time=48:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
 #SBATCH --cpus-per-task=256
 #SBATCH --ntasks-per-node=1
+#SBATCH -J FZB_ENSEMBLE_LENS
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -32,4 +32,4 @@ BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/CosmoCloud/ZCloud/"
 
 # Run applications
-python -u "${BASE_PATH}FILE/ENSEMBLE/SOM/FIGURE.py" --folder=$BASE_FOLDER
+python -u "${BASE_PATH}/FILE/ENSEMBLE/ENSEMBLE_LENS.py" --folder=$BASE_FOLDER

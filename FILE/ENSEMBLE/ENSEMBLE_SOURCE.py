@@ -21,12 +21,10 @@ def main(folder):
     
     # Path
     fzb_folder = os.path.join(folder, 'FZB/')
+    som_folder = os.path.join(folder, 'SOM/')
     ensemble_folder = os.path.join(folder, 'ENSEMBLE/')
     
-    os.makedirs(ensemble_folder, exist_ok=True)
-    os.makedirs(os.path.join(ensemble_folder, 'SOURCE/'), exist_ok=True)
-    
-    # Load
+    # Load Data
     data = []  
     for i in range(len([name for name in os.listdir(os.path.join(fzb_folder, 'SOURCE/')) if 'SOURCE' in name])):
     
@@ -45,8 +43,8 @@ def main(folder):
     z2 = 3.0
     z_grid = numpy.linspace(z1, z2, size)
     
-    # Ensemble
-    ensemble = numpy.zeros((number, width, size))
+    # Ensemble Data
+    ensemble_data = numpy.zeros((number, width, size))
     for k in range(number):
         
         n = numpy.arange(length, dtype=numpy.int32)
@@ -57,10 +55,46 @@ def main(folder):
         
         value = numpy.maximum(numpy.sum(beta[:, numpy.newaxis, numpy.newaxis] * data[n, :, m, :], axis=0), 0.0)
         value = value / scipy.integrate.trapezoid(y=value, x=z_grid, axis=1)[:, numpy.newaxis]
-        ensemble[k, :, :] = value
+        ensemble_data[k, :, :] = value
     
-    with h5py.File(os.path.join(ensemble_folder, 'SOURCE/FZB_ENSEMBLE.hdf5'), 'w') as file:
-        file.create_dataset('ensemble', data=ensemble, dtype=numpy.float32)
+    with h5py.File(os.path.join(ensemble_folder, 'ENSEMBLE_SOURCE.hdf5'), 'w') as file:
+        file.create_dataset('data', data=ensemble_data, dtype=numpy.float32)
+    
+    # Load Select
+    select = []  
+    for i in range(len([name for name in os.listdir(os.path.join(som_folder, 'SOURCE/')) if 'SOURCE' in name])):
+    
+        select.append([])
+        for j in range(len([name for name in os.listdir(os.path.join(som_folder, 'SOURCE/SOURCE{}/'.format(i + 1))) if name.startswith('SELECT') and name.endswith('.hdf5')])):
+            
+            with h5py.File(os.path.join(som_folder, 'SOURCE/SOURCE{}/SELECT{}.hdf5'.format(i + 1, j + 1)), 'r') as file:
+                select[i].append(file['sample'][:].astype(numpy.float32))
+    select = numpy.array(select)
+    
+    length, width, height, size = numpy.shape(select)
+    number = length * height
+    
+    # Redshift
+    z1 = 0.0
+    z2 = 3.0
+    z_grid = numpy.linspace(z1, z2, size)
+    
+    # Ensemble Select
+    ensemble_select = numpy.zeros((number, width, size))
+    for k in range(number):
+        
+        n = numpy.arange(length, dtype=numpy.int32)
+        m = numpy.random.choice(numpy.arange(height, dtype=numpy.int32), size=length, replace=True)
+        
+        alpha = numpy.random.dirichlet(numpy.ones(length), size=1).flatten()
+        beta = numpy.random.dirichlet(alpha, size=1).flatten()
+        
+        value = numpy.maximum(numpy.sum(beta[:, numpy.newaxis, numpy.newaxis] * select[n, :, m, :], axis=0), 0.0)
+        value = value / scipy.integrate.trapezoid(y=value, x=z_grid, axis=1)[:, numpy.newaxis]
+        ensemble_select[k, :, :] = value
+    
+    with h5py.File(os.path.join(ensemble_folder, 'ENSEMBLE_SOURCE.hdf5'), 'a') as file:
+        file.create_dataset('select', data=ensemble_select, dtype=numpy.float32)
     
     # Return
     end = time.time()
@@ -72,7 +106,7 @@ def main(folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='FZB Ensemble')
+    PARSE = argparse.ArgumentParser(description='Ensemble Source')
     PARSE.add_argument('--folder', dest='folder', type=str, help='The base folder containing the datasets.')
     
     # Parse
