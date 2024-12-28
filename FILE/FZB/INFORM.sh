@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -A m1727
-#SBATCH --nodes=1
+#SBATCH --nodes=4
 #SBATCH -q regular
 #SBATCH -J FZB_INFORM
 #SBATCH --time=48:00:00
