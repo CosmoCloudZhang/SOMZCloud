@@ -23,7 +23,6 @@ def main(index, folder):
     
     # Path
     fzb_folder = os.path.join(folder, 'FZB/')
-    som_folder = os.path.join(folder, 'SOM/')
     
     # Load
     data_store = core.stage.RailStage.data_store
@@ -41,24 +40,12 @@ def main(index, folder):
     # Summarize
     width = 1000
     for m in range(1, len(bin_source)):
-        # Cell
-        cell_name = os.path.join(som_folder, 'SOURCE/SOURCE{}/CELL{}.hdf5'.format(index, m))
-        cell_data = data_store.read_file(key='cell', path=cell_name, handle_class=core.data.TableHandle)()
-        
-        # Cluster
-        cluster_name = os.path.join(som_folder, 'SOURCE/SOURCE{}/CLUSTER{}.hdf5'.format(index, m))
-        cluster_data = data_store.read_file(key='cluster', path=cluster_name, handle_class=core.data.TableHandle)()
-        
         # Sample
         sample_name = os.path.join(fzb_folder, 'SOURCE/SOURCE{}/SAMPLE{}.hdf5'.format(index, m))
         sample_data = data_store.read_file(key='sample', path=sample_name, handle_class=core.data.QPHandle)()
         
-        # Select
-        cluster_id = cluster_data['uncovered_clusters'][:].astype(numpy.int32)
-        cell_id = cell_data['cluster_ind'][:].astype(numpy.int32)
-        
-        select = ~numpy.isin(cell_id, cluster_id)
-        z_pdf = sample_data.pdf(z_grid)[select, :]
+        z_pdf = sample_data.pdf(z_grid)
+        del sample_data
         
         sample_size, pdf_size = z_pdf.shape
         summarize_data = numpy.zeros((width, pdf_size), dtype=numpy.float32)
