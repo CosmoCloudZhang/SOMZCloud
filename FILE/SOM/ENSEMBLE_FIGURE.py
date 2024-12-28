@@ -2,6 +2,7 @@ import os
 import time
 import h5py
 import numpy
+import scipy
 import argparse
 from matplotlib import pyplot
 
@@ -35,14 +36,13 @@ def main(folder):
     z2 = 3.0
     bin_size = 5
     grid_size = 300
-    z_delta = (z2 - z1) / grid_size
     z_grid = numpy.linspace(z1, z2, grid_size + 1)
     
-    lens_mean_data = numpy.sum(lens_data * z_grid[numpy.newaxis, numpy.newaxis, :], axis=2) * z_delta
-    source_mean_data = numpy.sum(source_data * z_grid[numpy.newaxis, numpy.newaxis, :], axis=2) * z_delta
+    lens_mean_data = scipy.integrate.trapezoid(x=z_grid, y=lens_data * z_grid[numpy.newaxis, numpy.newaxis, :], axis=2)
+    source_mean_data = scipy.integrate.trapezoid(x=z_grid, y=source_data * z_grid[numpy.newaxis, numpy.newaxis, :], axis=2)
     
-    lens_mean_select = numpy.sum(lens_select * z_grid[numpy.newaxis, numpy.newaxis, :], axis=2) * z_delta
-    source_mean_select = numpy.sum(source_select * z_grid[numpy.newaxis, numpy.newaxis, :], axis=2) * z_delta
+    lens_mean_select = scipy.integrate.trapezoid(x=z_grid, y=lens_select * z_grid[numpy.newaxis, numpy.newaxis, :], axis=2)
+    source_mean_select = scipy.integrate.trapezoid(x=z_grid, y=source_select * z_grid[numpy.newaxis, numpy.newaxis, :], axis=2)
     
     lens_center_select = numpy.median(lens_mean_select, axis=0)
     source_center_select = numpy.median(source_mean_select, axis=0)
