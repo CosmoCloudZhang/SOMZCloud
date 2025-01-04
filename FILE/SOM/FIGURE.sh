@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -A m1727
-#SBATCH --nodes=1
+#SBATCH --nodes=4
 #SBATCH -q regular
 #SBATCH -J SOM_FIGURE
 #SBATCH --time=04:00:00

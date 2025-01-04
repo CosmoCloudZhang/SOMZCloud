@@ -41,7 +41,7 @@ def main(index, folder):
     # SOM
     model = input_model['som']
     column_list = ['mag_u_lsst', 'mag_g_lsst', 'mag_r_lsst', 'mag_i_lsst', 'mag_z_lsst', 'mag_y_lsst']
-    input = somoclu_som._computemagcolordata(data=input_data, mag_column_name='mag_i_lsst', column_names=column_list, colusage='colors')
+    input = somoclu_som._computemagcolordata(data=input_data, mag_column_name='mag_i_lsst', column_names=column_list, colusage='magandcolors')
     
     output = somoclu_som.get_bmus(model, input)
     mean_redshift = numpy.zeros((input_model['n_rows'], input_model['n_columns']))
