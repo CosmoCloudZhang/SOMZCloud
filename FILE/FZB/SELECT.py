@@ -2,6 +2,7 @@ import os
 import time
 import h5py
 import numpy
+import scipy
 import argparse
 from rail import core
 
@@ -51,7 +52,6 @@ def main(index, folder):
     
     width = 1000
     grid_size = 300
-    z_delta = (z2_source - z1_source) / grid_size
     z_grid = numpy.linspace(z1_source, z2_source, grid_size + 1)
     
     # Estimate
@@ -79,7 +79,7 @@ def main(index, folder):
         # Single
         histogram = numpy.histogram(z_select, bins=z_grid, range=(z_grid.min(), z_grid.max()), density=True)[0]
         single = numpy.interp(x=z_grid, xp=(z_grid[+1:] + z_grid[:-1]) / 2, fp=histogram, left=0.0, right=0.0)
-        lens_single = single / single.sum() / z_delta
+        lens_single = single / scipy.integrate.trapezoid(x=z_grid, y=single, axis=0)
         
         # Sample
         for n in range(width):
@@ -87,7 +87,7 @@ def main(index, folder):
             
             histogram = numpy.histogram(z_sample, bins=z_grid, range=(z_grid.min(), z_grid.max()), density=True)[0]
             sample = numpy.interp(x=z_grid, xp=(z_grid[+1:] + z_grid[:-1]) / 2, fp=histogram, left=0.0, right=0.0)
-            lens_sample[n, :] = sample / sample.sum() / z_delta
+            lens_sample[n, :] = sample / scipy.integrate.trapezoid(x=z_grid, y=sample, axis=0)
         
         # Save
         lens_data = {'single':lens_single, 'sample': lens_sample}
@@ -105,7 +105,7 @@ def main(index, folder):
         # Single
         histogram = numpy.histogram(z_select, bins=z_grid, range=(z_grid.min(), z_grid.max()), density=True)[0]
         single = numpy.interp(x=z_grid, xp=(z_grid[+1:] + z_grid[:-1]) / 2, fp=histogram, left=0.0, right=0.0)
-        source_single = single / single.sum() / z_delta
+        source_single = single / scipy.integrate.trapezoid(x=z_grid, y=single, axis=0)
         
         # Sample
         z_sample = numpy.random.choice(z_select, z_select.size, replace=True)
@@ -113,7 +113,7 @@ def main(index, folder):
             
             histogram = numpy.histogram(z_sample, bins=z_grid, range=(z_grid.min(), z_grid.max()), density=True)[0]
             sample = numpy.interp(x=z_grid, xp=(z_grid[+1:] + z_grid[:-1]) / 2, fp=histogram, left=0.0, right=0.0)
-            source_sample[n, :] = sample / sample.sum() / z_delta
+            source_sample[n, :] = sample / scipy.integrate.trapezoid(x=z_grid, y=sample, axis=0)
         
         # Save
         source_data = {'single':source_single, 'sample': source_sample}
