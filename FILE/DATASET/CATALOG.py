@@ -11,10 +11,10 @@ import GCRCatalogs
 
 def main(folder):
     '''
-    Generate the photometrically-selected SIMULATION galaxy catalogs.
+    Generate the photometrically-selected galaxy catalogs.
     
     Arguments:
-        folder (str): The base folder of the Augmentation datasets.
+        folder (str): The base folder of the catalogs
     
     Returns:
         duration (float): The duration of the process
@@ -51,10 +51,22 @@ def main(folder):
         ])
         
         # Save
-        print(len(observation['redshift_true']))
         with h5py.File(os.path.join(dataset_folder, 'CATALOG/OBSERVATION_{}.hdf5'.format(value)), 'w') as file:
-            for key in observation.keys():
-                file.create_dataset(key, data=observation[key], dtype=numpy.float32)
+            file.create_dataset('mag_u_lsst', data=observation['mag_u_lsst'], dtype=numpy.float32)
+            file.create_dataset('mag_g_lsst', data=observation['mag_g_lsst'], dtype=numpy.float32)
+            file.create_dataset('mag_r_lsst', data=observation['mag_r_lsst'], dtype=numpy.float32)
+            file.create_dataset('mag_i_lsst', data=observation['mag_i_lsst'], dtype=numpy.float32)
+            file.create_dataset('mag_z_lsst', data=observation['mag_z_lsst'], dtype=numpy.float32)
+            file.create_dataset('mag_y_lsst', data=observation['mag_y_lsst'], dtype=numpy.float32)
+            
+            file.create_dataset('redshift', data=observation['redshift_true'], dtype=numpy.float32)
+            file.create_dataset('magnification', data=observation['magnification'], dtype=numpy.float32)
+            file.create_dataset('bulge_to_total_ratio', data=observation['bulge_to_total_ratio'], dtype=numpy.float32)
+            
+            file.create_dataset('major_disk', data=observation['size_disk_true'], dtype=numpy.float32)
+            file.create_dataset('major_bulge', data=observation['size_bulge_true'], dtype=numpy.float32)
+            file.create_dataset('ellipticity_disk', data=observation['ellipticity_disk_true'], dtype=numpy.float32)
+            file.create_dataset('ellipticity_bulge', data=observation['ellipticity_bulge_true'], dtype=numpy.float32)
     
     # Simulation
     with open(os.path.join(dataset_folder, 'CATALOG/SIMULATE.yaml'), 'r') as file:
@@ -83,8 +95,21 @@ def main(folder):
         # Save
         print(len(simulation['redshift_true']))
         with h5py.File(os.path.join(dataset_folder, 'CATALOG/SIMULATION_{}.hdf5'.format(value)), 'w') as file:
-            for key in simulation.keys():
-                file.create_dataset(key, data=simulation[key], dtype=numpy.float32)
+            file.create_dataset('mag_u_lsst', data=simulation['mag_u_lsst'], dtype=numpy.float32)
+            file.create_dataset('mag_g_lsst', data=simulation['mag_g_lsst'], dtype=numpy.float32)
+            file.create_dataset('mag_r_lsst', data=simulation['mag_r_lsst'], dtype=numpy.float32)
+            file.create_dataset('mag_i_lsst', data=simulation['mag_i_lsst'], dtype=numpy.float32)
+            file.create_dataset('mag_z_lsst', data=simulation['mag_z_lsst'], dtype=numpy.float32)
+            file.create_dataset('mag_y_lsst', data=simulation['mag_y_lsst'], dtype=numpy.float32)
+            
+            file.create_dataset('redshift', data=simulation['redshift_true'], dtype=numpy.float32)
+            file.create_dataset('magnification', data=simulation['magnification'], dtype=numpy.float32)
+            file.create_dataset('bulge_to_total_ratio', data=simulation['bulge_to_total_ratio_i'], dtype=numpy.float32)
+            
+            file.create_dataset('major_disk', data=simulation['size_disk_true'], dtype=numpy.float32)
+            file.create_dataset('major_bulge', data=simulation['size_bulge_true'], dtype=numpy.float32)
+            file.create_dataset('ellipticity_disk', data=simulation['ellipticity_disk_true'], dtype=numpy.float32)
+            file.create_dataset('ellipticity_bulge', data=simulation['ellipticity_bulge_true'], dtype=numpy.float32)
     
     # Duration
     end = time.time()
@@ -98,7 +123,7 @@ def main(folder):
 if __name__ == '__main__':
     # Input
     PARSE = argparse.ArgumentParser(description='Catalog')
-    PARSE.add_argument('--folder', type=str, required=True, help='The base folder containing the datasets')
+    PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the catalogs')
     
     # Parse
     FOLDER = PARSE.parse_args().folder
