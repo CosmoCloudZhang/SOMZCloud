@@ -2,13 +2,13 @@
 #SBATCH -A m1727
 #SBATCH --nodes=4
 #SBATCH -q regular
-#SBATCH -J SOM_SELECT
 #SBATCH --time=48:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH --cpus-per-task=16
-#SBATCH --ntasks-per-node=16
+#SBATCH -J SOM_Y1_INFORM
+#SBATCH --cpus-per-task=256
+#SBATCH --ntasks-per-node=1
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -22,22 +22,24 @@ source $HOME/.bashrc
 conda activate $RAILENV
 
 # Set environment
+export NUMEXPR_MAX_THREADS=$SLURM_CPUS_PER_TASK
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 export HDF5_USE_FILE_LOCKING=FALSE
 export OMP_PROC_BIND=spread
 export OMP_PLACES=threads
 
-# Initialize process
-NUMBER=400
+# Initialize the process
+TAG="Y1"
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/CosmoCloud/ZCloud/"
 
+# Set variables
+NAME="INFORM"
+MODEL_NAME="${BASE_FOLDER}SOM/${TAG}/INFORM/INFORM.pkl"
+INPUT_NAME="${BASE_FOLDER}SOM/${TAG}/INFORM/INFORM.hdf5"
+CONFIG_NAME="${BASE_FOLDER}SOM/${TAG}/INFORM/INFORM.yaml"
+
 # Run applications
-for INDEX in $(seq 1 $NUMBER); do
-    srun -u -N 1 -n 1 --cpus-per-task=$SLURM_CPUS_PER_TASK python -u "${BASE_PATH}FILE/SOM/SELECT.py" --index=$INDEX --folder=$BASE_FOLDER & 
-    # Control parallel execution
-    if (( $INDEX % $SLURM_NTASKS == 0 )); then
-        wait
-    fi
-done
+python -u "${BASE_PATH}FILE/SOM/${TAG}/INFORM.py" --tag=$TAG --folder=$BASE_FOLDER &&
+python -m ceci rail.estimation.algos.somoclu_som.SOMocluInformer --mpi --name=$NAME --input=$INPUT_NAME --model=$MODEL_NAME --config=$CONFIG_NAME & 
 wait
