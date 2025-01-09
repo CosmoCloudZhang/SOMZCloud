@@ -1,6 +1,5 @@
 #!/bin/bash
 #SBATCH -A m1727
-#SBATCH -J SAMPLE
 #SBATCH -q regular
 #SBATCH --ntasks=1
 #SBATCH --time=04:00:00
@@ -9,6 +8,7 @@
 #SBATCH -o LOG/%x_%j.out
 #SBATCH --cpus-per-task=256
 #SBATCH --ntasks-per-node=1
+#SBATCH -J DATASET_Y1_APPLY
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -21,11 +21,17 @@ module load cray-hdf5-parallel
 source $HOME/.bashrc
 conda activate $RAILENV
 
+# Set environment
+export NUMEXPR_MAX_THREADS=$SLURM_CPUS_PER_TASK
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+export HDF5_USE_FILE_LOCKING=FALSE
+export OMP_PROC_BIND=spread
+export OMP_PLACES=threads
+
 # Initialize the process
-NUMBER=400
+NUMBER=500
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/CosmoCloud/ZCloud/"
-BASE_DIRECTORY="/global/cfs/cdirs/lsst/groups/PZ/cosmoDC2_gold_samples/"
 
 # Run the application
-python -u "${BASE_PATH}FILE/DATASET/APPLY.py" --number=$NUMBER --folder=$BASE_FOLDER --directory=$BASE_DIRECTORY
+python -u "${BASE_PATH}FILE/DATASET/APPLY.py" --number=$NUMBER --folder=$BASE_FOLDER

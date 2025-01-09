@@ -6,27 +6,28 @@ import pandas
 import argparse
 from photerr import LsstErrorModel
 
-def application(directory):
+
+def main(tag, number, folder):
     '''
-    Create individual application datasets
+    Create the application datasets
     
     Arguments:
-        directory (str): The base directory of the catalog
+        tag (str): The tag of observing conditions
+        number (int): The number of the application datasets
+        folder (str): The base folder containing the catalog
     
     Returns:
-        data (dict): The application dataset
+        duration (float): The duration of the process
     '''
-    catalog = {}
-    catalog_name1 = os.path.join(directory, 'cosmoDC2_gold_test_catalog.hdf5')
-    with h5py.File(catalog_name1, 'r') as file:
-        for key, value in file['photometry'].items():
-            catalog[key] = value[...].astype(numpy.float32)
+    # Path
+    start = time.time()
     
-    catalog_name2 = os.path.join(directory, 'cosmoDC2_gold_augmentation_catalog.hdf5')
-    with h5py.File(catalog_name2, 'r') as file:
-        for key, value in file['photometry'].items():
-            catalog[key] = numpy.concatenate([catalog[key], value[...].astype(numpy.float32)], axis=0)
+    # Path
+    dataset_folder = os.path.join(folder, 'DATASET/')
     
+    # Catalog
+    with h5py.File(os.path.join(dataset_folder, '{}/OBSERVATION/OBSERVATION.hdf5'.format(tag)), 'r') as file:
+        catalog = {key: file[key][:].astype(numpy.float32) for key in file.keys()}
     # Error
     error_model = LsstErrorModel(
         nYrObs=1, 
@@ -46,6 +47,11 @@ def application(directory):
     )
     
     table = error_model(pandas.DataFrame(catalog))
+    # Application
+    for index in range(1, number + 1):
+        print('Index: {:.0f}'.format(index))
+        
+
     
     # Band
     band_list = ['u_lsst', 'g_lsst', 'r_lsst', 'i_lsst', 'z_lsst', 'y_lsst']
@@ -88,43 +94,15 @@ def application(directory):
         data['mag_err_{}'.format(band)] = catalog['mag_err_{}'.format(band)][select][indices]
     
     # Save
-    return data
-
-
-def main(number, folder, directory):
-    '''
-    Create the application datasets
+    os.makedirs(dataset_folder, exist_ok=True)
+    os.makedirs(os.path.join(dataset_folder, 'APPLICATION'), exist_ok=True)
     
-    Arguments:
-        number (int): The number of datasets
-        folder (str): The base folder of the catalog
-        directory (str): The base directory of the catalog
-    
-    Returns:
-        duration (float): The duration of the process
-    '''
-    # Path
-    start = time.time()
-    
-    # Path
-    dataset_folder = os.path.join(folder, 'DATASET/')
-    
-    # Application
-    for index in range(1, number + 1):
-        print('Index: {:.0f}'.format(index))
+    with h5py.File(os.path.join(dataset_folder, 'APPLICATION/DATA{:.0f}.hdf5'.format(index)), 'w') as file:
+        file.create_group('photometry')
         
-        # Data
-        data = application(directory)
-        
-        # Save
-        os.makedirs(dataset_folder, exist_ok=True)
-        os.makedirs(os.path.join(dataset_folder, 'APPLICATION'), exist_ok=True)
-        
-        with h5py.File(os.path.join(dataset_folder, 'APPLICATION/DATA{:.0f}.hdf5'.format(index)), 'w') as file:
-            file.create_group('photometry')
-            
-            for key, value in data.items():
-                file['photometry'].create_dataset(key, data=value)
+        for key, value in data.items():
+            file['photometry'].create_dataset(key, data=value)
+    
     # Duration
     end = time.time()
     duration = (end - start) / 60
@@ -139,12 +117,10 @@ if __name__ == '__main__':
     PARSE = argparse.ArgumentParser(description='Application dataset')
     PARSE.add_argument('--number', type=int, required=True, help='The number of datasets')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the catalog')
-    PARSE.add_argument('--directory', type=str, required=True, help='The base directory of the catalog')
     
     # Argument
     NUMBER = PARSE.parse_args().number
     FOLDER = PARSE.parse_args().folder
-    DIRECTORY = PARSE.parse_args().directory
     
     # Output
-    OUTPUT = main(NUMBER, FOLDER, DIRECTORY)
+    OUTPUT = main(NUMBER, FOLDER)
