@@ -4,10 +4,10 @@
 #SBATCH -q regular
 #SBATCH --time=48:00:00
 #SBATCH --mail-type=END
-#SBATCH --constraint=cpu
+#SBATCH --constraint=gpu
 #SBATCH -o LOG/%x_%j.out
 #SBATCH -J SOM_Y10_INFORM
-#SBATCH --cpus-per-task=256
+#SBATCH --cpus-per-task=128
 #SBATCH --ntasks-per-node=1
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
