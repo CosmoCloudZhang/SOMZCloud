@@ -34,7 +34,7 @@ def main(tag, index, folder):
     
     # Error
     error_model = LsstErrorModel(
-        nYrObs=1, 
+        nYrObs=10, 
         sigLim=3.0,
         absFlux=True,
         ndMode='sigLim', 
