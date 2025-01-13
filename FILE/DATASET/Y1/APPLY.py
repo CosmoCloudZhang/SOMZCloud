@@ -7,13 +7,13 @@ import argparse
 from photerr import LsstErrorModel
 
 
-def main(tag, index, folder):
+def main(tag, number, folder):
     '''
     Create the application datasets
     
     Arguments:
         tag (str): The tag of observing conditions
-        index (int): The index of the application datasets
+        number (int): The number of the application datasets
         folder (str): The base folder containing the datasets
     
     Returns:
@@ -21,7 +21,6 @@ def main(tag, index, folder):
     '''
     # Path
     start = time.time()
-    print('Index: {:.0f}'.format(index))
     
     # Path
     dataset_folder = os.path.join(folder, 'DATASET/')
@@ -29,8 +28,29 @@ def main(tag, index, folder):
     os.makedirs(os.path.join(dataset_folder, '{}/APPLICATION/'.format(tag)), exist_ok=True)
     
     # Catalog
+    catalog = {}
     with h5py.File(os.path.join(dataset_folder, '{}/OBSERVATION/OBSERVATION.hdf5'.format(tag)), 'r') as file:
-        catalog = {key: file[key][:].astype(numpy.float32) for key in file.keys()}
+        catalog['major'] = file['major'][:].astype(numpy.float32)
+        catalog['minor'] = file['minor'][:].astype(numpy.float32)
+        catalog['redshift'] = file['redshift'][:].astype(numpy.float32)
+        catalog['mag_u_lsst'] = file['mag_u_lsst'][:].astype(numpy.float32)
+        catalog['mag_g_lsst'] = file['mag_g_lsst'][:].astype(numpy.float32)
+        catalog['mag_r_lsst'] = file['mag_r_lsst'][:].astype(numpy.float32)
+        catalog['mag_i_lsst'] = file['mag_i_lsst'][:].astype(numpy.float32)
+        catalog['mag_z_lsst'] = file['mag_z_lsst'][:].astype(numpy.float32)
+        catalog['mag_y_lsst'] = file['mag_y_lsst'][:].astype(numpy.float32)
+    
+    # Selection
+    z1 = 0.05
+    z2 = 2.95
+    select = (z1 < catalog['redshift']) & (catalog['redshift'] < z2)
+    
+    magnitude1 = 15
+    magnitude2 = 30
+    select = select & (magnitude1 < catalog['mag_i_lsst']) & (catalog['mag_i_lsst'] < magnitude2)
+    
+    for key in catalog:
+        catalog[key] = catalog[key][select]
     
     # Error
     error_model = LsstErrorModel(
@@ -53,27 +73,30 @@ def main(tag, index, folder):
     )
     
     # Application
-    table = error_model(pandas.DataFrame(catalog))
-    select = numpy.random.choice(len(table), len(table), replace=True)
-    
-    # Save
-    with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'w') as file:
-        file.create_group('photometry')
-        file['photometry'].create_dataset('redshift', data=table['redshift'].values[select])
+    for index in range(1, number + 1):
+        print('Index: {:.0f}'.format(index))
         
-        file['photometry'].create_dataset('mag_u_lsst', data=table['mag_u_lsst'].values[select])
-        file['photometry'].create_dataset('mag_g_lsst', data=table['mag_g_lsst'].values[select])
-        file['photometry'].create_dataset('mag_r_lsst', data=table['mag_r_lsst'].values[select])
-        file['photometry'].create_dataset('mag_i_lsst', data=table['mag_i_lsst'].values[select])
-        file['photometry'].create_dataset('mag_z_lsst', data=table['mag_z_lsst'].values[select])
-        file['photometry'].create_dataset('mag_y_lsst', data=table['mag_y_lsst'].values[select])
+        table = error_model(pandas.DataFrame(catalog))
+        indices = numpy.random.choice(len(table['redshift'].values), len(table['redshift'].values), replace=True)
         
-        file['photometry'].create_dataset('mag_u_lsst_err', data=table['mag_u_lsst_err'].values[select])
-        file['photometry'].create_dataset('mag_g_lsst_err', data=table['mag_g_lsst_err'].values[select])
-        file['photometry'].create_dataset('mag_r_lsst_err', data=table['mag_r_lsst_err'].values[select])
-        file['photometry'].create_dataset('mag_i_lsst_err', data=table['mag_i_lsst_err'].values[select])
-        file['photometry'].create_dataset('mag_z_lsst_err', data=table['mag_z_lsst_err'].values[select])
-        file['photometry'].create_dataset('mag_y_lsst_err', data=table['mag_y_lsst_err'].values[select])
+        # Save
+        with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'w') as file:
+            file.create_group('photometry')
+            file['photometry'].create_dataset('redshift', data=table['redshift'].values[indices])
+            
+            file['photometry'].create_dataset('mag_u_lsst', data=table['mag_u_lsst'].values[indices])
+            file['photometry'].create_dataset('mag_g_lsst', data=table['mag_g_lsst'].values[indices])
+            file['photometry'].create_dataset('mag_r_lsst', data=table['mag_r_lsst'].values[indices])
+            file['photometry'].create_dataset('mag_i_lsst', data=table['mag_i_lsst'].values[indices])
+            file['photometry'].create_dataset('mag_z_lsst', data=table['mag_z_lsst'].values[indices])
+            file['photometry'].create_dataset('mag_y_lsst', data=table['mag_y_lsst'].values[indices])
+            
+            file['photometry'].create_dataset('mag_u_lsst_err', data=table['mag_u_lsst_err'].values[indices])
+            file['photometry'].create_dataset('mag_g_lsst_err', data=table['mag_g_lsst_err'].values[indices])
+            file['photometry'].create_dataset('mag_r_lsst_err', data=table['mag_r_lsst_err'].values[indices])
+            file['photometry'].create_dataset('mag_i_lsst_err', data=table['mag_i_lsst_err'].values[indices])
+            file['photometry'].create_dataset('mag_z_lsst_err', data=table['mag_z_lsst_err'].values[indices])
+            file['photometry'].create_dataset('mag_y_lsst_err', data=table['mag_y_lsst_err'].values[indices])
     
     # Duration
     end = time.time()
@@ -88,13 +111,13 @@ if __name__ == '__main__':
     # Input
     PARSE = argparse.ArgumentParser(description='Application dataset')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of observing conditions')
-    PARSE.add_argument('--index', type=int, required=True, help='The index of the application datasets')
+    PARSE.add_argument('--number', type=int, required=True, help='The number of the application datasets')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder containing the datasets')
     
     # Argument
     TAG = PARSE.parse_args().tag
-    INDEX = PARSE.parse_args().index
+    NUMBER = PARSE.parse_args().number
     FOLDER = PARSE.parse_args().folder
     
     # Output
-    OUTPUT = main(TAG, INDEX, FOLDER)
+    OUTPUT = main(TAG, NUMBER, FOLDER)

@@ -31,36 +31,29 @@ def main(tag, number, folder):
         # Catalog
         with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
             catalog = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
-        length = len(catalog['redshift'])
-        
-        # Fraction
-        fraction1 = 0.2
-        fraction2 = 0.8
-        fraction = numpy.random.uniform(low=fraction1, high=fraction2)
-        select = numpy.isin(numpy.arange(length), numpy.random.choice(length, int(length * fraction), replace=False))
         
         # Redshift
-        redshift1 = 0.5
-        redshift2 = 2.0
-        redshift = numpy.random.uniform(low=redshift1, high=redshift2)
-        select = select & (catalog['redshift'] < redshift)
+        z1 = 0.5
+        z2 = 2.0
+        z = numpy.random.uniform(low=z1, high=z2)
         
         # Magnitude
         magnitude1 = 20
         magnitude2 = 24
         magnitude = numpy.random.uniform(low=magnitude1, high=magnitude2)
-        select = select & (catalog['mag_i_lsst'] < magnitude)
         
         # SOM Coordinates
         coordinate1 = numpy.random.randint(low=0, high=100)
         coordinate2 = numpy.random.randint(low=0, high=100)
-        print(fraction, redshift, magnitude, numpy.sum(select))
+        
+        # Selection
+        select = (catalog['redshift'] < z) & (catalog['mag_i_lsst'] < magnitude)
+        print(z, magnitude, numpy.sum(select))
         
         # Save
         with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, index)), 'w') as file:
             file.create_group('meta')
-            file['meta'].create_dataset('fraction', data=fraction)
-            file['meta'].create_dataset('redshift', data=redshift)
+            file['meta'].create_dataset('z', data=z)
             file['meta'].create_dataset('magnitude', data=magnitude)
             file['meta'].create_dataset('coordinate1', data=coordinate1)
             file['meta'].create_dataset('coordinate2', data=coordinate2)

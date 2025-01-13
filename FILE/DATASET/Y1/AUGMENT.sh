@@ -1,14 +1,14 @@
 #!/bin/bash
 #SBATCH -A m1727
-#SBATCH --nodes=1
 #SBATCH -q regular
-#SBATCH -J AUGMENT
+#SBATCH --ntasks=1
 #SBATCH --time=04:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
 #SBATCH --cpus-per-task=256
 #SBATCH --ntasks-per-node=1
+#SBATCH -J DATASET_Y1_AUGMENT
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -21,11 +21,19 @@ module load cray-hdf5-parallel
 source $HOME/.bashrc
 conda activate $RAILENV
 
+# Set environment
+export NUMEXPR_MAX_THREADS=$SLURM_CPUS_PER_TASK
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+export HDF5_USE_FILE_LOCKING=FALSE
+export OMP_PROC_BIND=spread
+export OMP_PLACES=threads
+
 # Initialize the process
-NUMBER=400
+TAG="Y1"
+NUMBER=500
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/CosmoCloud/ZCloud/"
-BASE_DIRECTORY="/global/cfs/cdirs/lsst/projecta/lsst/groups/CS/roman_rubin_2023_v1.1.3/"
 
 # Run the application
-python -u "${BASE_PATH}FILE/DATASET/AUGMENT.py" --number=$NUMBER --folder=$BASE_FOLDER --directory=$BASE_DIRECTORY
+for INDEX in $(seq 1 $NUMBER); do
+    srun -u -N 1 -n $SLURM_NTASKS_PER_NODE -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}FILE/DATASET/${TAG}/AUGMENT.py" --tag=$TAG --index=$INDEX --folder=$BASE_FOLDER

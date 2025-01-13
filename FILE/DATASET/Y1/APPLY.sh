@@ -35,5 +35,4 @@ BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/CosmoCloud/ZCloud/"
 
 # Run the application
-for INDEX $(seq 1 $NUMBER); do
-    srun -u -N 1 -n $SLURM_NTASKS_PER_NODE -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}FILE/DATASET/${TAG}/APPLY.py" --tag=$TAG --index=$INDEX --folder=$BASE_FOLDER
+python -u "${BASE_PATH}FILE/DATASET/${TAG}/APPLY.py" --tag=$TAG --number=$NUMBER --folder=$BASE_FOLDER
