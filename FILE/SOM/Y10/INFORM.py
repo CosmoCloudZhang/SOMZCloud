@@ -64,7 +64,7 @@ def main(tag, folder):
             'grid_type': 'hexagonal', 
             'ref_band': 'mag_i_lsst',
             'column_usage': 'colors',
-            'som_learning_rate': 0.5,
+            'som_learning_rate': 0.1,
             'hdf5_groupname': 'photometry', 
             'n_rows': 100, 'n_columns': 100, 
             'bands': [
