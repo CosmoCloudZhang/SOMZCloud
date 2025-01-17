@@ -2,18 +2,17 @@ import os
 import h5py
 import time
 import numpy
-import pandas
 import argparse
-from photerr import LsstErrorModel
+from rail import core
+from rail.estimation.algos import somoclu_som
 
-
-def main(tag, index, folder):
+def main(tag, number, folder):
     '''
     Create the augmentation datasets
     
     Arguments:
         tag (str): The tag of observing conditions
-        index (int): The index of the augmentation datasets
+        number (int): The number of the augmentation datasets
         folder (str): The base folder containing the datasets
     
     Returns:
@@ -21,71 +20,107 @@ def main(tag, index, folder):
     '''
     # Path
     start = time.time()
-    print('Index: {:.0f}'.format(index))
     
     # Path
+    som_folder = os.path.join(folder, 'SOM/')
     dataset_folder = os.path.join(folder, 'DATASET/')
+    
     os.makedirs(os.path.join(dataset_folder, '{}'.format(tag)), exist_ok=True)
     os.makedirs(os.path.join(dataset_folder, '{}/AUGMENTATION/'.format(tag)), exist_ok=True)
     
-    # Catalog
-    with h5py.File(os.path.join(dataset_folder, '{}/SIMULATION/SIMULATION.hdf5'.format(tag)), 'r') as file:
-        catalog = {key: file[key][:].astype(numpy.float32) for key in file.keys()}
+    # SOM
+    data_store = core.stage.RailStage.data_store
+    data_store.__class__.allow_overwrite = True
     
-    # Error
-    error_model = LsstErrorModel(
-        nYrObs=1, 
-        sigLim=3.0,
-        absFlux=True,
-        ndMode='sigLim', 
-        majorCol='major', 
-        minorCol='minor', 
-        decorrelate=True,
-        extendedType='auto',
-        renameDict={
-            'u': 'mag_u_lsst',
-            'g': 'mag_g_lsst',
-            'r': 'mag_r_lsst',
-            'i': 'mag_i_lsst',
-            'z': 'mag_z_lsst',
-            'y': 'mag_y_lsst'
-        }
-    )
+    model_name = os.path.join(som_folder, '{}/INFORM/INFORM.pkl'.format(tag))
+    column_list = ['mag_u_lsst', 'mag_g_lsst', 'mag_r_lsst', 'mag_i_lsst', 'mag_z_lsst', 'mag_y_lsst']
+    model = data_store.read_file(key='model', path=model_name, handle_class=core.data.ModelHandle)()
     
-    # AUGMENTATION
-    table = error_model(pandas.DataFrame(catalog))
-    
-    # Redshift
-    z1 = 0.5
-    z2 = 2.5
-    z = numpy.random.uniform(low=z1, high=z2)
-    
-    # Magnitude
-    magnitude1 = 20
-    magnitude2 = 24
-    magnitude = numpy.random.uniform(low=magnitude1, high=magnitude2)
-    
-    # Selection
-    select = (table['redshift'] < z) & (table['mag_i_lsst'] < magnitude)
-    
-    # Save
-    with h5py.File(os.path.join(dataset_folder, '{}/AUGMENTATION/DATA{}.hdf5'.format(tag, index)), 'w') as file:
-        file.create_group('photometry')
-        file['photometry'].create_dataset('redshift', data=table['redshift'].values[~select])
+    # Loop
+    numpy.random.seed(0)
+    for index in range(1, number + 1):
+        print('Index: {}'.format(index))
         
-        file['photometry'].create_dataset('mag_u_lsst', data=table['mag_u_lsst'].values[~select])
-        file['photometry'].create_dataset('mag_g_lsst', data=table['mag_g_lsst'].values[~select])
-        file['photometry'].create_dataset('mag_r_lsst', data=table['mag_r_lsst'].values[~select])
-        file['photometry'].create_dataset('mag_i_lsst', data=table['mag_i_lsst'].values[~select])
-        file['photometry'].create_dataset('mag_z_lsst', data=table['mag_z_lsst'].values[~select])
-        file['photometry'].create_dataset('mag_y_lsst', data=table['mag_y_lsst'].values[~select])
+        # Catalog
+        with h5py.File(os.path.join(dataset_folder, '{}/SELECTION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+            catalog = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
+        length = len(catalog['redshift'])
         
-        file['photometry'].create_dataset('mag_u_lsst_err', data=table['mag_u_lsst_err'].values[~select])
-        file['photometry'].create_dataset('mag_g_lsst_err', data=table['mag_g_lsst_err'].values[~select])
-        file['photometry'].create_dataset('mag_r_lsst_err', data=table['mag_r_lsst_err'].values[~select])
-        file['photometry'].create_dataset('mag_i_lsst_err', data=table['mag_i_lsst_err'].values[~select])
-        file['photometry'].create_dataset('mag_z_lsst_err', data=table['mag_z_lsst_err'].values[~select])
-        file['photometry'].create_dataset('mag_y_lsst_err', data=table['mag_y_lsst_err'].values[~select])
+        with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+            meta = {key: file['meta'][key][:].astype(numpy.float32) for key in file['meta'].keys()}
+            table = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
+        count = len(table['redshift'])
+        
+        # Redshift
+        redshift = meta['redshift']
+        filter = catalog['redshift'] > redshift
+        
+        # Magnitude
+        magnitude = meta['magnitude']
+        filter = filter | (catalog['mag_i_lsst'] > magnitude)
+        
+        # Fraction
+        fraction = count / numpy.sum(filter)
+        indices = numpy.arange(length)[filter][numpy.random.uniform(low=0, high=1, size=numpy.sum(filter)) > fraction]
+        filter[indices] = False
+        
+        for key in catalog.keys():
+            catalog[key] = catalog[key][filter]
+        
+        # Table SOM
+        table_column = somoclu_som._computemagcolordata(data=table, mag_column_name='mag_i_lsst', column_names=column_list, colusage='colors')
+        table_coordinate = somoclu_som.get_bmus(model['som'], table_column)
+        
+        table_coordinate1 = table_coordinate[:, 0]
+        table_coordinate2 = table_coordinate[:, 1]
+        
+        table_label = table_coordinate1 * model['n_columns'] + table_coordinate2
+        table_occupation = numpy.bincount(table_label, minlength=model['n_rows'] * model['n_columns'])
+        
+        # Catalog SOM
+        catalog_column = somoclu_som._computemagcolordata(data=catalog, mag_column_name='mag_i_lsst', column_names=column_list, colusage='colors')
+        catalog_coordinate = somoclu_som.get_bmus(model['som'], catalog_column)
+        
+        catalog_coordinate1 = catalog_coordinate[:, 0]
+        catalog_coordinate2 = catalog_coordinate[:, 1]
+        
+        catalog_label = catalog_coordinate1 * model['n_columns'] + catalog_coordinate2
+        
+        select_label = table_label[table_occupation < table_occupation.max() / 2]
+        
+        select = numpy.isin(catalog_coordinate1 * model['n_columns'] + catalog_coordinate2, select_label)
+        
+        coordinate1 = catalog_coordinate1[select]
+        coordinate2 = catalog_coordinate2[select]
+        label = coordinate1 * model['n_columns'] + coordinate2
+        
+        # Save
+        with h5py.File(os.path.join(dataset_folder, '{}/AUGMENTATION/DATA{}.hdf5'.format(tag, index)), 'w') as file:
+            file.create_group('meta')
+            file['meta'].create_dataset('fraction', data=fraction)
+            file['meta'].create_dataset('redshift', data=redshift)
+            file['meta'].create_dataset('magnitude', data=magnitude)
+            
+            file['meta'].create_dataset('label', data=label)
+            file['meta'].create_dataset('coordinate1', data=coordinate1)
+            file['meta'].create_dataset('coordinate2', data=coordinate2)
+            
+            file.create_group('photometry')
+            file['photometry'].create_dataset('redshift', data=catalog['redshift'][select])
+            
+            file['photometry'].create_dataset('mag_u_lsst', data=catalog['mag_u_lsst'][select])
+            file['photometry'].create_dataset('mag_g_lsst', data=catalog['mag_g_lsst'][select])
+            file['photometry'].create_dataset('mag_r_lsst', data=catalog['mag_r_lsst'][select])
+            file['photometry'].create_dataset('mag_i_lsst', data=catalog['mag_i_lsst'][select])
+            file['photometry'].create_dataset('mag_z_lsst', data=catalog['mag_z_lsst'][select])
+            file['photometry'].create_dataset('mag_y_lsst', data=catalog['mag_y_lsst'][select])
+            
+            file['photometry'].create_dataset('mag_u_lsst_err', data=catalog['mag_u_lsst_err'][select])
+            file['photometry'].create_dataset('mag_g_lsst_err', data=catalog['mag_g_lsst_err'][select])
+            file['photometry'].create_dataset('mag_r_lsst_err', data=catalog['mag_r_lsst_err'][select])
+            file['photometry'].create_dataset('mag_i_lsst_err', data=catalog['mag_i_lsst_err'][select])
+            file['photometry'].create_dataset('mag_z_lsst_err', data=catalog['mag_z_lsst_err'][select])
+            file['photometry'].create_dataset('mag_y_lsst_err', data=catalog['mag_y_lsst_err'][select])
     
     # Duration
     end = time.time()
@@ -98,15 +133,15 @@ def main(tag, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Augmentation datasets')
+    PARSE = argparse.ArgumentParser(description='Augmentation Datasets')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of observing conditions')
-    PARSE.add_argument('--index', type=int, required=True, help='The index of the augmentation datasets')
+    PARSE.add_argument('--number', type=int, required=True, help='The number of the augmentation datasets')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder containing the datasets')
     
     # Argument
     TAG = PARSE.parse_args().tag
-    INDEX = PARSE.parse_args().index
+    NUMBER = PARSE.parse_args().number
     FOLDER = PARSE.parse_args().folder
     
     # Output
-    OUTPUT = main(TAG, INDEX, FOLDER)
+    OUTPUT = main(TAG, NUMBER, FOLDER)

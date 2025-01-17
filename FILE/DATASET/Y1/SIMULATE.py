@@ -10,10 +10,10 @@ from photerr import LsstErrorModel
 
 def main(tag, folder):
     '''
-    Generate the photometrically-selected simulation galaxy catalogs.
+    Generate the photometrically-selected simulation datasets
     
     Arguments:
-        folder (str): The base folder of the catalog.
+        folder (str): The base folder of the datasets
     
     Returns:
         duration (float): The duration of the process
@@ -34,7 +34,7 @@ def main(tag, folder):
         ndMode='sigLim', 
         majorCol='major', 
         minorCol='minor', 
-        decorrelate=False,
+        decorrelate=True,
         extendedType='auto',
         renameDict={
             'u': 'mag_u_lsst',
@@ -87,7 +87,7 @@ def main(tag, folder):
         
         mu1 = flux1 / error1
         mu2 = flux2 / error2
-        catalog['mu'] = (flux1 * exposure['mag_r_lsst'] / numpy.square(error1) + flux2 * exposure['mag_i_lsst'] / numpy.square(error2)) / numpy.sqrt(exposure['mag_r_lsst'] / numpy.square(error1) + exposure['mag_i_lsst'] / numpy.square(error2))
+        table['mu'] = (flux1 * exposure['mag_r_lsst'] / numpy.square(error1) + flux2 * exposure['mag_i_lsst'] / numpy.square(error2)) / numpy.sqrt(exposure['mag_r_lsst'] / numpy.square(error1) + exposure['mag_i_lsst'] / numpy.square(error2))
         
         factor_disk = 1.46
         factor_bulge = 4.66
@@ -101,7 +101,7 @@ def main(tag, folder):
         
         eta1 = numpy.square(radius / radius_psf1)
         eta2 = numpy.square(radius / radius_psf2)
-        catalog['eta'] = (exposure['mag_r_lsst'] / numpy.square(error1) + exposure['mag_i_lsst'] / numpy.square(error2)) * numpy.square(radius) / (exposure['mag_r_lsst'] * numpy.square(radius_psf1 / error1) + exposure['mag_i_lsst'] * numpy.square(radius_psf2 / error2))
+        table['eta'] = (exposure['mag_r_lsst'] / numpy.square(error1) + exposure['mag_i_lsst'] / numpy.square(error2)) * numpy.square(radius) / (exposure['mag_r_lsst'] * numpy.square(radius_psf1 / error1) + exposure['mag_i_lsst'] * numpy.square(radius_psf2 / error2))
         
         a = 1.58
         b = 5.03
@@ -109,30 +109,26 @@ def main(tag, folder):
         
         sigma1 = a / mu1 * (1 + numpy.power(b / eta1, c))
         sigma2 = a / mu2 * (1 + numpy.power(b / eta2, c))
-        catalog['sigma'] = 1 / numpy.sqrt(exposure['mag_r_lsst'] / numpy.square(sigma1) + exposure['mag_i_lsst'] / numpy.square(sigma2))
+        table['sigma'] = 1 / numpy.sqrt(exposure['mag_r_lsst'] / numpy.square(sigma1) + exposure['mag_i_lsst'] / numpy.square(sigma2))
         
-        for band in band_list:
-            index = 2.5 / numpy.log(10) * table['mag_{}_err'.format(band)] < 3.0
-            catalog['mag_{}_err'.format(band)] = table['mag_{}_err'.format(band)]
-            catalog['mag_{}'.format(band)][index] = table['mag_{}'.format(band)][index]
+        # Select
+        factor = 1.0
+        sigma0 = 0.26
+        select = table['sigma']  < factor * sigma0
+        print('Number: {:.0f}'.format(numpy.sum(select)))
+        print('Effective number: {:.0f}'.format(numpy.sum((numpy.square(sigma0) / (numpy.square(sigma0) + numpy.square(table['sigma'])))[select])))
         
         # Save
         with h5py.File(os.path.join(dataset_folder, '{}/SIMULATION/SIMULATION_{}.hdf5'.format(tag, value)), 'w') as file:
             for key in catalog.keys():
                 file.create_dataset(key, data=catalog[key], dtype=numpy.float32)
         
-        # Select
-        factor = 1.0
-        sigma0 = 0.26
-        select = catalog['sigma']  < factor * sigma0
-        print('Number: {:.0f}'.format(numpy.sum(select)))
-        print('Effective number: {:.0f}'.format(numpy.sum((numpy.square(sigma0) / (numpy.square(sigma0) + numpy.square(catalog['sigma'])))[select])))
-        
-        for key in catalog.keys():
+        # Append
+        for key in table.keys():
             if key in data.keys():
-                data[key] = numpy.concatenate([data[key], catalog[key][select]])
+                data[key] = numpy.concatenate([data[key], table[key][select]])
             else:
-                data[key] = catalog[key][select]
+                data[key] = table[key][select]
         
         # Delete
         del table, catalog, major_disk, major_bulge, minor_disk, minor_bulge, fraction, flux0, flux1, flux2, error1, error2, radius_disk, radius_bulge, radius, radius_psf1, radius_psf2, a, b, c
@@ -153,9 +149,9 @@ def main(tag, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Simulation Catalog')
+    PARSE = argparse.ArgumentParser(description='Simulation Datasets')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
-    PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the catalog')
+    PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the datasets')
     
     # Parse
     TAG = PARSE.parse_args().tag

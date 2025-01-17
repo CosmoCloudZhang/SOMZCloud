@@ -9,11 +9,11 @@ from photerr import LsstErrorModel
 
 def main(tag, number, folder):
     '''
-    Create the application datasets
+    Create the selection datasets
     
     Arguments:
         tag (str): The tag of observing conditions
-        number (int): The number of the application datasets
+        number (int): The number of the selection datasets
         folder (str): The base folder containing the datasets
     
     Returns:
@@ -25,11 +25,11 @@ def main(tag, number, folder):
     # Path
     dataset_folder = os.path.join(folder, 'DATASET/')
     os.makedirs(os.path.join(dataset_folder, '{}'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(dataset_folder, '{}/APPLICATION/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(dataset_folder, '{}/SELECTION/'.format(tag)), exist_ok=True)
     
     # Catalog
     catalog = {}
-    with h5py.File(os.path.join(dataset_folder, '{}/OBSERVATION/OBSERVATION.hdf5'.format(tag)), 'r') as file:
+    with h5py.File(os.path.join(dataset_folder, '{}/SIMULATION/SIMULATION.hdf5'.format(tag)), 'r') as file:
         catalog['major'] = file['major'][:].astype(numpy.float32)
         catalog['minor'] = file['minor'][:].astype(numpy.float32)
         catalog['redshift'] = file['redshift'][:].astype(numpy.float32)
@@ -72,14 +72,14 @@ def main(tag, number, folder):
         }
     )
     
-    # Application
+    # Selection
     for index in range(1, number + 1):
         print('Index: {:.0f}'.format(index))
         
         table = error_model(pandas.DataFrame(catalog))
         
         # Save
-        with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'w') as file:
+        with h5py.File(os.path.join(dataset_folder, '{}/SELECTION/DATA{}.hdf5'.format(tag, index)), 'w') as file:
             file.create_group('photometry')
             file['photometry'].create_dataset('redshift', data=table['redshift'].values)
             
@@ -108,9 +108,9 @@ def main(tag, number, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Application Datasets')
+    PARSE = argparse.ArgumentParser(description='Selection Datasets')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of observing conditions')
-    PARSE.add_argument('--number', type=int, required=True, help='The number of the application datasets')
+    PARSE.add_argument('--number', type=int, required=True, help='The number of the selection datasets')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder containing the datasets')
     
     # Argument

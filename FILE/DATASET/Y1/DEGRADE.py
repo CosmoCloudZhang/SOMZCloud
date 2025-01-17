@@ -3,7 +3,8 @@ import h5py
 import time
 import numpy
 import argparse
-
+from rail import core
+from rail.estimation.algos import somoclu_som
 
 def main(tag, number, folder):
     '''
@@ -21,10 +22,22 @@ def main(tag, number, folder):
     start = time.time()
     
     # Path
+    som_folder = os.path.join(folder, 'SOM/')
     dataset_folder = os.path.join(folder, 'DATASET/')
+    
     os.makedirs(os.path.join(dataset_folder, '{}'.format(tag)), exist_ok=True)
     os.makedirs(os.path.join(dataset_folder, '{}/DEGRADATION/'.format(tag)), exist_ok=True)
     
+    # SOM
+    data_store = core.stage.RailStage.data_store
+    data_store.__class__.allow_overwrite = True
+    
+    model_name = os.path.join(som_folder, '{}/INFORM/INFORM.pkl'.format(tag))
+    column_list = ['mag_u_lsst', 'mag_g_lsst', 'mag_r_lsst', 'mag_i_lsst', 'mag_z_lsst', 'mag_y_lsst']
+    model = data_store.read_file(key='model', path=model_name, handle_class=core.data.ModelHandle)()
+    
+    # Loop
+    numpy.random.seed(0)
     for index in range(1, number + 1):
         print('Index: {}'.format(index))
         
@@ -33,28 +46,40 @@ def main(tag, number, folder):
             catalog = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
         length = len(catalog['redshift'])
         
-        # Fraction
-        fraction1 = 0.2
-        fraction2 = 0.8
-        fraction = numpy.random.uniform(low=fraction1, high=fraction2)
-        select = numpy.isin(numpy.arange(length), numpy.random.choice(length, int(length * fraction), replace=False))
-        
         # Redshift
         redshift1 = 0.5
         redshift2 = 2.0
         redshift = numpy.random.uniform(low=redshift1, high=redshift2)
-        select = select & (catalog['redshift'] < redshift)
+        filter = (catalog['redshift'] < redshift)
         
         # Magnitude
         magnitude1 = 20
         magnitude2 = 24
         magnitude = numpy.random.uniform(low=magnitude1, high=magnitude2)
-        select = select & (catalog['mag_i_lsst'] < magnitude)
+        filter = filter & (catalog['mag_i_lsst'] < magnitude)
         
-        # SOM Coordinates
-        coordinate1 = numpy.random.randint(low=0, high=100)
-        coordinate2 = numpy.random.randint(low=0, high=100)
-        print(fraction, redshift, magnitude, numpy.sum(select))
+        # Fraction
+        count = 200000
+        fraction = count / numpy.sum(filter)
+        indices = numpy.arange(length)[filter][numpy.random.uniform(low=0, high=1, size=numpy.sum(filter)) > fraction]
+        filter[indices] = False
+        
+        # Color 
+        for key in catalog.keys():
+            catalog[key] = catalog[key][filter]
+        catalog_column = somoclu_som._computemagcolordata(data=catalog, mag_column_name='mag_i_lsst', column_names=column_list, colusage='colors')
+        
+        catalog_coordinate = somoclu_som.get_bmus(model['som'], catalog_column)
+        catalog_coordinate1 = catalog_coordinate[:, 0]
+        catalog_coordinate2 = catalog_coordinate[:, 1]
+        
+        catalog_label = numpy.unique(catalog_coordinate1 * model['n_columns'] + catalog_coordinate2)
+        select_label = numpy.random.choice(catalog_label, size=catalog_label.size // 2, replace=False)
+        select = numpy.isin(catalog_coordinate1 * model['n_columns'] + catalog_coordinate2, select_label)
+        
+        coordinate1 = catalog_coordinate1[select]
+        coordinate2 = catalog_coordinate2[select]
+        label = coordinate1 * model['n_columns'] + coordinate2
         
         # Save
         with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, index)), 'w') as file:
@@ -62,6 +87,8 @@ def main(tag, number, folder):
             file['meta'].create_dataset('fraction', data=fraction)
             file['meta'].create_dataset('redshift', data=redshift)
             file['meta'].create_dataset('magnitude', data=magnitude)
+            
+            file['meta'].create_dataset('label', data=label)
             file['meta'].create_dataset('coordinate1', data=coordinate1)
             file['meta'].create_dataset('coordinate2', data=coordinate2)
             
@@ -81,7 +108,7 @@ def main(tag, number, folder):
             file['photometry'].create_dataset('mag_i_lsst_err', data=catalog['mag_i_lsst_err'][select])
             file['photometry'].create_dataset('mag_z_lsst_err', data=catalog['mag_z_lsst_err'][select])
             file['photometry'].create_dataset('mag_y_lsst_err', data=catalog['mag_y_lsst_err'][select])
-        
+    
     # Duration
     end = time.time()
     duration = (end - start) / 60

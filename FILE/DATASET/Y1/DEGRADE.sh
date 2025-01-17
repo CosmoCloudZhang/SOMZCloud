@@ -1,7 +1,6 @@
 #!/bin/bash
 #SBATCH -A m1727
 #SBATCH -q regular
-#SBATCH --ntasks=1
 #SBATCH --time=04:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
@@ -22,8 +21,8 @@ source $HOME/.bashrc
 conda activate $RAILENV
 
 # Set environment
-export NUMEXPR_MAX_THREADS=$SLURM_CPUS_PER_TASK
-export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+#export NUMEXPR_MAX_THREADS=$SLURM_CPUS_PER_TASK
+#export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 export HDF5_USE_FILE_LOCKING=FALSE
 export OMP_PROC_BIND=spread
 export OMP_PLACES=threads

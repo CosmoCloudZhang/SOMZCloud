@@ -7,7 +7,7 @@
 #SBATCH -o LOG/%x_%j.out
 #SBATCH --cpus-per-task=256
 #SBATCH --ntasks-per-node=1
-#SBATCH -J DATASET_Y1_SIMULATE
+#SBATCH -J DATASET_Y1_SELECT
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -29,8 +29,9 @@ export OMP_PLACES=threads
 
 # Initialize the process
 TAG="Y1"
+NUMBER=500
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/CosmoCloud/ZCloud/"
 
 # Run the application
-python -u "${BASE_PATH}FILE/DATASET/${TAG}/SIMULATE.py" --tag=$TAG --folder=$BASE_FOLDER
+python -u "${BASE_PATH}FILE/DATASET/${TAG}/SELECT.py" --tag=$TAG --number=$NUMBER --folder=$BASE_FOLDER
