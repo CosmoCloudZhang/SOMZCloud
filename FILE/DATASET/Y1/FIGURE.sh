@@ -24,7 +24,7 @@ conda activate $RAILENV
 # Initialize the process
 NUMBER=500
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/CosmoCloud/ZCloud/"
+BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 
 # Run the application
 srun -n 1 --cpu-bind=none python -u "${BASE_PATH}FILE/DATASET/FIGURE.py" --count=$COUNT --number=$NUMBER --folder=$BASE_FOLDER

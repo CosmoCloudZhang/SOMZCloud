@@ -1,5 +1,6 @@
 #!/bin/bash
 #SBATCH -A m1727
+#SBATCH --nodes=1
 #SBATCH -q regular
 #SBATCH --time=04:00:00
 #SBATCH --mail-type=END
@@ -31,7 +32,7 @@ export OMP_PLACES=threads
 TAG="Y10"
 NUMBER=500
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/CosmoCloud/ZCloud/"
+BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 
 # Run the application
 python -u "${BASE_PATH}FILE/DATASET/${TAG}/DEGRADE.py" --tag=$TAG --number=$NUMBER --folder=$BASE_FOLDER

@@ -111,6 +111,10 @@ def main(tag, folder):
         sigma2 = a / mu2 * (1 + numpy.power(b / eta2, c))
         table['sigma'] = 1 / numpy.sqrt(exposure['mag_r_lsst'] / numpy.square(sigma1) + exposure['mag_i_lsst'] / numpy.square(sigma2))
         
+        catalog['mu'] = table['mu']
+        catalog['eta'] = table['eta']
+        catalog['sigma'] = table['sigma']
+        
         # Select
         factor = 1.0
         sigma0 = 0.26
@@ -121,7 +125,7 @@ def main(tag, folder):
         # Save
         with h5py.File(os.path.join(dataset_folder, '{}/OBSERVATION/OBSERVATION_{}.hdf5'.format(tag, value)), 'w') as file:
             for key in catalog.keys():
-                file.create_dataset(key, data=catalog[key], dtype=numpy.float32)
+                file.create_dataset(key, data=catalog[key][select], dtype=numpy.float32)
         
         # Append
         for key in table.keys():

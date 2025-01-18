@@ -118,10 +118,14 @@ def main(tag, folder):
         print('Number: {:.0f}'.format(numpy.sum(select)))
         print('Effective number: {:.0f}'.format(numpy.sum((numpy.square(sigma0) / (numpy.square(sigma0) + numpy.square(table['sigma'])))[select])))
         
+        catalog['mu'] = table['mu']
+        catalog['eta'] = table['eta']
+        catalog['sigma'] = table['sigma']
+        
         # Save
         with h5py.File(os.path.join(dataset_folder, '{}/SIMULATION/SIMULATION_{}.hdf5'.format(tag, value)), 'w') as file:
             for key in catalog.keys():
-                file.create_dataset(key, data=catalog[key], dtype=numpy.float32)
+                file.create_dataset(key, data=catalog[key][select], dtype=numpy.float32)
         
         # Append
         for key in table.keys():

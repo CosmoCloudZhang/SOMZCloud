@@ -42,34 +42,45 @@ def main(tag, number, folder):
         print('Index: {}'.format(index))
         
         # Catalog
+        catalog = {
+            'morphology': {},
+            'photometry': {}
+        }
+        
         with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-            catalog = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
-        length = len(catalog['redshift'])
+            catalog['morphology'] = {key: file['morphology'][key][:].astype(numpy.float32) for key in file['morphology'].keys()}
+            catalog['photometry'] = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
         
         # Redshift
-        redshift1 = 0.5
-        redshift2 = 2.0
+        redshift1 = 1.0
+        redshift2 = 2.5
         redshift = numpy.random.uniform(low=redshift1, high=redshift2)
-        filter = (catalog['redshift'] < redshift)
+        filter = (catalog['photometry']['redshift'] < redshift)
         
         # Magnitude
-        magnitude1 = 20
-        magnitude2 = 24
+        magnitude1 = 21
+        magnitude2 = 25
         magnitude = numpy.random.uniform(low=magnitude1, high=magnitude2)
-        filter = filter & (catalog['mag_i_lsst'] < magnitude)
+        filter = filter & (catalog['photometry']['mag_i_lsst'] < magnitude)
         
         # Fraction
-        count = 200000
+        count = 500000
         fraction = count / numpy.sum(filter)
-        indices = numpy.arange(length)[filter][numpy.random.uniform(low=0, high=1, size=numpy.sum(filter)) > fraction]
+        indices = numpy.arange(len(catalog['photometry']['redshift']))[filter]
+        indices = indices[numpy.random.uniform(low=0, high=1, size=numpy.sum(filter)) > fraction]
         filter[indices] = False
         
-        # Color 
-        for key in catalog.keys():
-            catalog[key] = catalog[key][filter]
-        catalog_column = somoclu_som._computemagcolordata(data=catalog, mag_column_name='mag_i_lsst', column_names=column_list, colusage='colors')
+        # Filter
+        for key in catalog['morphology'].keys():
+            catalog['morphology'][key] = catalog['morphology'][key][filter]
         
+        for key in catalog['photometry'].keys():
+            catalog['photometry'][key] = catalog['photometry'][key][filter]
+        
+        # SOM
+        catalog_column = somoclu_som._computemagcolordata(data=catalog['photometry'], mag_column_name='mag_i_lsst', column_names=column_list, colusage='colors')
         catalog_coordinate = somoclu_som.get_bmus(model['som'], catalog_column)
+        
         catalog_coordinate1 = catalog_coordinate[:, 0]
         catalog_coordinate2 = catalog_coordinate[:, 1]
         
@@ -84,31 +95,21 @@ def main(tag, number, folder):
         # Save
         with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, index)), 'w') as file:
             file.create_group('meta')
-            file['meta'].create_dataset('fraction', data=fraction)
-            file['meta'].create_dataset('redshift', data=redshift)
-            file['meta'].create_dataset('magnitude', data=magnitude)
+            file['meta'].create_dataset('fraction', data=fraction, dtype=numpy.float32)
+            file['meta'].create_dataset('redshift', data=redshift, dtype=numpy.float32)
+            file['meta'].create_dataset('magnitude', data=magnitude, dtype=numpy.float32)
             
-            file['meta'].create_dataset('label', data=label)
-            file['meta'].create_dataset('coordinate1', data=coordinate1)
-            file['meta'].create_dataset('coordinate2', data=coordinate2)
+            file['meta'].create_dataset('label', data=label, dtype=numpy.int32)
+            file['meta'].create_dataset('coordinate1', data=coordinate1, dtype=numpy.int32)
+            file['meta'].create_dataset('coordinate2', data=coordinate2, dtype=numpy.int32)
+            
+            file.create_group('morphology')
+            for key in catalog['morphology'].keys():
+                file['morphology'].create_dataset(key, data=catalog['morphology'][key][select], dtype=numpy.float32)
             
             file.create_group('photometry')
-            file['photometry'].create_dataset('redshift', data=catalog['redshift'][select])
-            
-            file['photometry'].create_dataset('mag_u_lsst', data=catalog['mag_u_lsst'][select])
-            file['photometry'].create_dataset('mag_g_lsst', data=catalog['mag_g_lsst'][select])
-            file['photometry'].create_dataset('mag_r_lsst', data=catalog['mag_r_lsst'][select])
-            file['photometry'].create_dataset('mag_i_lsst', data=catalog['mag_i_lsst'][select])
-            file['photometry'].create_dataset('mag_z_lsst', data=catalog['mag_z_lsst'][select])
-            file['photometry'].create_dataset('mag_y_lsst', data=catalog['mag_y_lsst'][select])
-            
-            file['photometry'].create_dataset('mag_u_lsst_err', data=catalog['mag_u_lsst_err'][select])
-            file['photometry'].create_dataset('mag_g_lsst_err', data=catalog['mag_g_lsst_err'][select])
-            file['photometry'].create_dataset('mag_r_lsst_err', data=catalog['mag_r_lsst_err'][select])
-            file['photometry'].create_dataset('mag_i_lsst_err', data=catalog['mag_i_lsst_err'][select])
-            file['photometry'].create_dataset('mag_z_lsst_err', data=catalog['mag_z_lsst_err'][select])
-            file['photometry'].create_dataset('mag_y_lsst_err', data=catalog['mag_y_lsst_err'][select])
-    
+            for key in catalog['photometry'].keys():
+                file['photometry'].create_dataset(key, data=catalog['photometry'][key][select], dtype=numpy.float32)
     # Duration
     end = time.time()
     duration = (end - start) / 60

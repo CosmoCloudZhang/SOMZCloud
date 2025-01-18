@@ -42,48 +42,33 @@ def main(tag, number, folder):
         print('Index: {}'.format(index))
         
         # Catalog
-        catalog = {
-            'morphology': {},
-            'photometry': {}
-        }
-        
         with h5py.File(os.path.join(dataset_folder, '{}/SELECTION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-            catalog['morphology'] = {key: file['morphology'][key][:].astype(numpy.float32) for key in file['morphology'].keys()}
-            catalog['photometry'] = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
-        
-        # Table
-        table = {
-            'morphology': {},
-            'photometry': {}
-        }
+            catalog = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
+        length = len(catalog['redshift'])
         
         with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-            table['morphology'] = {key: file['morphology'][key][:].astype(numpy.float32) for key in file['morphology'].keys()}
-            table['photometry'] = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
+            meta = {key: file['meta'][key][:].astype(numpy.float32) for key in file['meta'].keys()}
+            table = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
+        count = len(table['redshift'])
         
         # Redshift
-        redshift = numpy.max(table['photometry']['redshift'])
-        filter = catalog['photometry']['redshift'] > redshift
+        redshift = meta['redshift']
+        filter = catalog['redshift'] > redshift
         
         # Magnitude
-        magnitude = numpy.max(table['photometry']['mag_i_lsst'])
-        filter = filter | (catalog['photometry']['mag_i_lsst'] > magnitude)
+        magnitude = meta['magnitude']
+        filter = filter | (catalog['mag_i_lsst'] > magnitude)
         
         # Fraction
-        fraction = len(table['photometry']['redshift']) / numpy.sum(filter)
-        indices = numpy.arange(len(catalog['photometry']['redshift']))[filter]
-        indices = indices[numpy.random.uniform(low=0, high=1, size=numpy.sum(filter)) > fraction]
+        fraction = count / numpy.sum(filter)
+        indices = numpy.arange(length)[filter][numpy.random.uniform(low=0, high=1, size=numpy.sum(filter)) > fraction]
         filter[indices] = False
         
-        # Filter
-        for key in catalog['morphology'].keys():
-            catalog['morphology'][key] = catalog['morphology'][key][filter]
-        
-        for key in catalog['photometry'].keys():
-            catalog['photometry'][key] = catalog['photometry'][key][filter]
+        for key in catalog.keys():
+            catalog[key] = catalog[key][filter]
         
         # Table SOM
-        table_column = somoclu_som._computemagcolordata(data=table['photometry'], mag_column_name='mag_i_lsst', column_names=column_list, colusage='colors')
+        table_column = somoclu_som._computemagcolordata(data=table, mag_column_name='mag_i_lsst', column_names=column_list, colusage='colors')
         table_coordinate = somoclu_som.get_bmus(model['som'], table_column)
         
         table_coordinate1 = table_coordinate[:, 0]
@@ -91,17 +76,19 @@ def main(tag, number, folder):
         
         table_label = table_coordinate1 * model['n_columns'] + table_coordinate2
         table_occupation = numpy.bincount(table_label, minlength=model['n_rows'] * model['n_columns'])
-        print(numpy.unique(table_label).size, table_occupation.min(), table_occupation.max())
+        
         # Catalog SOM
-        catalog_column = somoclu_som._computemagcolordata(data=catalog['photometry'], mag_column_name='mag_i_lsst', column_names=column_list, colusage='colors')
+        catalog_column = somoclu_som._computemagcolordata(data=catalog, mag_column_name='mag_i_lsst', column_names=column_list, colusage='colors')
         catalog_coordinate = somoclu_som.get_bmus(model['som'], catalog_column)
         
         catalog_coordinate1 = catalog_coordinate[:, 0]
         catalog_coordinate2 = catalog_coordinate[:, 1]
         
-        select_label = table_label[table_occupation < (table_occupation.max() / 2)]
+        catalog_label = catalog_coordinate1 * model['n_columns'] + catalog_coordinate2
+        
+        select_label = table_label[table_occupation < table_occupation.max() / 2]
+        
         select = numpy.isin(catalog_coordinate1 * model['n_columns'] + catalog_coordinate2, select_label)
-        print(select_label.size, numpy.sum(select))
         
         coordinate1 = catalog_coordinate1[select]
         coordinate2 = catalog_coordinate2[select]
@@ -118,13 +105,23 @@ def main(tag, number, folder):
             file['meta'].create_dataset('coordinate1', data=coordinate1)
             file['meta'].create_dataset('coordinate2', data=coordinate2)
             
-            file.create_group('morphology')
-            for key in catalog['morphology'].keys():
-                file['morphology'].create_dataset(key, data=catalog['morphology'][key][select], dtype=numpy.float32)
-            
             file.create_group('photometry')
-            for key in catalog['photometry'].keys():
-                file['photometry'].create_dataset(key, data=catalog['photometry'][key][select], dtype=numpy.float32)
+            file['photometry'].create_dataset('redshift', data=catalog['redshift'][select])
+            
+            file['photometry'].create_dataset('mag_u_lsst', data=catalog['mag_u_lsst'][select])
+            file['photometry'].create_dataset('mag_g_lsst', data=catalog['mag_g_lsst'][select])
+            file['photometry'].create_dataset('mag_r_lsst', data=catalog['mag_r_lsst'][select])
+            file['photometry'].create_dataset('mag_i_lsst', data=catalog['mag_i_lsst'][select])
+            file['photometry'].create_dataset('mag_z_lsst', data=catalog['mag_z_lsst'][select])
+            file['photometry'].create_dataset('mag_y_lsst', data=catalog['mag_y_lsst'][select])
+            
+            file['photometry'].create_dataset('mag_u_lsst_err', data=catalog['mag_u_lsst_err'][select])
+            file['photometry'].create_dataset('mag_g_lsst_err', data=catalog['mag_g_lsst_err'][select])
+            file['photometry'].create_dataset('mag_r_lsst_err', data=catalog['mag_r_lsst_err'][select])
+            file['photometry'].create_dataset('mag_i_lsst_err', data=catalog['mag_i_lsst_err'][select])
+            file['photometry'].create_dataset('mag_z_lsst_err', data=catalog['mag_z_lsst_err'][select])
+            file['photometry'].create_dataset('mag_y_lsst_err', data=catalog['mag_y_lsst_err'][select])
+    
     # Duration
     end = time.time()
     duration = (end - start) / 60
