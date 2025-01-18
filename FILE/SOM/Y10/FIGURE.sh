@@ -30,7 +30,7 @@ export OMP_PLACES=threads
 # Initialize process
 NUMBER=400
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/CosmoCloud/ZCloud/"
+BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 
 # Run applications
 for INDEX in $(seq 1 $NUMBER); do

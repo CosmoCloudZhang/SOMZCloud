@@ -31,7 +31,7 @@ export OMP_PLACES=threads
 # Initialize the process
 TAG="Y1"
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/CosmoCloud/ZCloud/"
+BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 
 # Set variables
 NAME="INFORM"
