@@ -4,13 +4,14 @@ import time
 import numpy
 import argparse
 
-def main(number, folder):
+def main(tag, number, folder):
     '''
     Combine the datasets
     
     Arguments:
-        number (int): The number of datasets
-        folder (str): The base folder of the datasets
+        tag (str): The tag of the configuration
+        number (int): The number of the combination datasets
+        folder (str): The base folder of the combination datasets
     
     Returns:
         duration (float): The duration of the process
@@ -24,33 +25,38 @@ def main(number, folder):
     for index in range(1, number + 1):
         print('Index: {}'.format(index))
         
-        # Selection
-        with h5py.File(os.path.join(dataset_folder, 'SELECTION/DATA{}.hdf5'.format(index)), 'r') as file:
-            selection_data = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
-            
+        # Degradation
+        degradation_dataset = {
+            'morphology': {},
+            'photometry': {}
+        }
+        
+        with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+            degradation_dataset['morphology'] = {key: file['morphology'][key][:].astype(numpy.float32) for key in file['morphology'].keys()}
+            degradation_dataset['photometry'] = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
+        
         # Augmentation
-        with h5py.File(os.path.join(dataset_folder, 'AUGMENTATION/DATA{}.hdf5'.format(index)), 'r') as file:
-            augmentation_data = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
+        augmentation_dataset = {
+            'morphology': {},
+            'photometry': {}
+        }
         
-        # Combine
-        data = {'photometry': {}}
-        data['photometry']['redshift'] = numpy.append(selection_data['redshift'], augmentation_data['redshift'])
-        
-        band_list = ['u_lsst', 'g_lsst', 'r_lsst', 'i_lsst', 'z_lsst', 'y_lsst']
-        for band in band_list:
-            
-            # Photometry
-            data['photometry']['mag_{}'.format(band)] = numpy.append(selection_data['mag_{}'.format(band)], augmentation_data['mag_{}'.format(band)])
-            data['photometry']['mag_err_{}'.format(band)] = numpy.append(selection_data['mag_err_{}'.format(band)], augmentation_data['mag_err_{}'.format(band)])
+        with h5py.File(os.path.join(dataset_folder, '{}/AUGMENTATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+            augmentation_dataset['morphology'] = {key: file['morphology'][key][:].astype(numpy.float32) for key in file['morphology'].keys()}
+            augmentation_dataset['photometry'] = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
         
         # Save
-        os.makedirs(dataset_folder, exist_ok=True)
-        os.makedirs(os.path.join(dataset_folder, 'COMBINATION'), exist_ok=True)
+        os.makedirs(os.path.join(dataset_folder, '{}/'.format(tag)), exist_ok=True)
+        os.makedirs(os.path.join(dataset_folder, '{}/COMBINATION/'.format(tag)), exist_ok=True)
         
-        with h5py.File(os.path.join(dataset_folder, 'COMBINATION/DATA{}.hdf5'.format(index)), 'w') as file:
+        with h5py.File(os.path.join(dataset_folder, '{}/COMBINATION/DATA{}.hdf5'.format(tag, index)), 'w') as file:
+            file.create_group('morphology')
+            for key in degradation_dataset['morphology'].keys():
+                file['morphology'].create_dataset(key, data=numpy.append(degradation_dataset['morphology'][key], augmentation_dataset['morphology'][key], axis=0))
+            
             file.create_group('photometry')
-            for key, value in data['photometry'].items():
-                file['photometry'].create_dataset(key, data=value)
+            for key in degradation_dataset['photometry'].keys():
+                file['photometry'].create_dataset(key, data=numpy.append(degradation_dataset['photometry'][key], augmentation_dataset['photometry'][key], axis=0))
     
     # Duration
     end = time.time()
@@ -64,12 +70,14 @@ def main(number, folder):
 if __name__ == '__main__':
     # Input
     PARSE = argparse.ArgumentParser(description='Combination Datasets')
-    PARSE.add_argument('--number', type=int, required=True, help='The number of the datasets')
-    PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the datasets')
+    PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
+    PARSE.add_argument('--number', type=int, required=True, help='The number of the combination datasets')
+    PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the combination datasets')
     
     # Parse
+    TAG = PARSE.parse_args().tag
     NUMBER = PARSE.parse_args().number
     FOLDER = PARSE.parse_args().folder
     
     # Output
-    OUTPUT = main(NUMBER, FOLDER)
+    OUTPUT = main(TAG, NUMBER, FOLDER)

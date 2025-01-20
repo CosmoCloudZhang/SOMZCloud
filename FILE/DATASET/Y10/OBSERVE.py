@@ -10,9 +10,10 @@ from photerr import LsstErrorModel
 
 def main(tag, folder):
     '''
-    Generate the photometrically-selected observation datasets
+    Generate the observation datasets
     
     Arguments:
+        tag (str): The tag of the configuration
         folder (str): The base folder of the datasets
     
     Returns:
@@ -58,7 +59,7 @@ def main(tag, folder):
         observation_list = yaml.safe_load(file)['healpix_pixels']
     
     # Loop
-    data = {}
+    observation = {}
     for value in observation_list:
         print('ID: {}'.format(value))
         
@@ -76,18 +77,18 @@ def main(tag, folder):
         catalog['major'] = fraction * major_bulge + (1 - fraction) * major_disk
         catalog['minor'] = fraction * minor_bulge + (1 - fraction) * minor_disk
         
-        table = error_model(pandas.DataFrame(catalog))
+        observation_catalog = error_model(pandas.DataFrame(catalog))
         
         flux0 = 3631e6
         flux1 = flux0 * numpy.power(10, -0.4 * catalog['mag_r_lsst'])
         flux2 = flux0 * numpy.power(10, -0.4 * catalog['mag_i_lsst'])
         
-        error1 = 2.5 / numpy.log(10) * table['mag_r_lsst_err'] * flux1 * numpy.sqrt(exposure['mag_r_lsst'])
-        error2 = 2.5 / numpy.log(10) * table['mag_i_lsst_err'] * flux2 * numpy.sqrt(exposure['mag_i_lsst'])
+        error1 = 2.5 / numpy.log(10) * observation_catalog['mag_r_lsst_err'] * flux1 * numpy.sqrt(exposure['mag_r_lsst'])
+        error2 = 2.5 / numpy.log(10) * observation_catalog['mag_i_lsst_err'] * flux2 * numpy.sqrt(exposure['mag_i_lsst'])
         
         mu1 = flux1 / error1
         mu2 = flux2 / error2
-        table['mu'] = (flux1 * exposure['mag_r_lsst'] / numpy.square(error1) + flux2 * exposure['mag_i_lsst'] / numpy.square(error2)) / numpy.sqrt(exposure['mag_r_lsst'] / numpy.square(error1) + exposure['mag_i_lsst'] / numpy.square(error2))
+        observation_catalog['mu'] = (flux1 * exposure['mag_r_lsst'] / numpy.square(error1) + flux2 * exposure['mag_i_lsst'] / numpy.square(error2)) / numpy.sqrt(exposure['mag_r_lsst'] / numpy.square(error1) + exposure['mag_i_lsst'] / numpy.square(error2))
         
         factor_disk = 1.46
         factor_bulge = 4.66
@@ -101,7 +102,7 @@ def main(tag, folder):
         
         eta1 = numpy.square(radius / radius_psf1)
         eta2 = numpy.square(radius / radius_psf2)
-        table['eta'] = (exposure['mag_r_lsst'] / numpy.square(error1) + exposure['mag_i_lsst'] / numpy.square(error2)) * numpy.square(radius) / (exposure['mag_r_lsst'] * numpy.square(radius_psf1 / error1) + exposure['mag_i_lsst'] * numpy.square(radius_psf2 / error2))
+        observation_catalog['eta'] = (exposure['mag_r_lsst'] / numpy.square(error1) + exposure['mag_i_lsst'] / numpy.square(error2)) * numpy.square(radius) / (exposure['mag_r_lsst'] * numpy.square(radius_psf1 / error1) + exposure['mag_i_lsst'] * numpy.square(radius_psf2 / error2))
         
         a = 1.58
         b = 5.03
@@ -109,18 +110,18 @@ def main(tag, folder):
         
         sigma1 = a / mu1 * (1 + numpy.power(b / eta1, c))
         sigma2 = a / mu2 * (1 + numpy.power(b / eta2, c))
-        table['sigma'] = 1 / numpy.sqrt(exposure['mag_r_lsst'] / numpy.square(sigma1) + exposure['mag_i_lsst'] / numpy.square(sigma2))
+        observation_catalog['sigma'] = 1 / numpy.sqrt(exposure['mag_r_lsst'] / numpy.square(sigma1) + exposure['mag_i_lsst'] / numpy.square(sigma2))
         
         # Select
         factor = 1.0
         sigma0 = 0.26
-        select = table['sigma']  < factor * sigma0
+        select = observation_catalog['sigma']  < factor * sigma0
         print('Number: {:.0f}'.format(numpy.sum(select)))
-        print('Effective number: {:.0f}'.format(numpy.sum((numpy.square(sigma0) / (numpy.square(sigma0) + numpy.square(table['sigma'])))[select])))
+        print('Effective number: {:.0f}'.format(numpy.sum((numpy.square(sigma0) / (numpy.square(sigma0) + numpy.square(observation_catalog['sigma'])))[select])))
         
-        catalog['mu'] = table['mu']
-        catalog['eta'] = table['eta']
-        catalog['sigma'] = table['sigma']
+        catalog['mu'] = observation_catalog['mu']
+        catalog['eta'] = observation_catalog['eta']
+        catalog['sigma'] = observation_catalog['sigma']
         
         # Save
         with h5py.File(os.path.join(dataset_folder, '{}/OBSERVATION/OBSERVATION_{}.hdf5'.format(tag, value)), 'w') as file:
@@ -128,19 +129,19 @@ def main(tag, folder):
                 file.create_dataset(key, data=catalog[key][select], dtype=numpy.float32)
         
         # Append
-        for key in table.keys():
-            if key in data.keys():
-                data[key] = numpy.concatenate([data[key], table[key][select]])
+        for key in observation_catalog.keys():
+            if key in observation.keys():
+                observation[key] = numpy.concatenate([observation[key], observation_catalog[key][select]])
             else:
-                data[key] = table[key][select]
+                observation[key] = observation_catalog[key][select]
         
         # Delete
-        del table, catalog, major_disk, major_bulge, minor_disk, minor_bulge, fraction, flux0, flux1, flux2, error1, error2, radius_disk, radius_bulge, radius, radius_psf1, radius_psf2, a, b, c
+        del observation_catalog, catalog, major_disk, major_bulge, minor_disk, minor_bulge, fraction, flux0, flux1, flux2, error1, error2, radius_disk, radius_bulge, radius, radius_psf1, radius_psf2, a, b, c
     
     # Save
     with h5py.File(os.path.join(dataset_folder, '{}/OBSERVATION/OBSERVATION.hdf5'.format(tag)), 'w') as file:
-        for key in data.keys():
-            file.create_dataset(key, data=data[key], dtype=numpy.float32)
+        for key in observation.keys():
+            file.create_dataset(key, data=observation[key], dtype=numpy.float32)
     
     # Duration
     end = time.time()

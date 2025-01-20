@@ -11,9 +11,9 @@ def main(tag, number, folder):
     Create the degradation datasets
     
     Arguments:
-        tag (str): The tag of observing conditions
+        tag (str): The tag of the configuration
         number (int): The number of the degradation datasets
-        folder (str): The base folder containing the datasets
+        folder (str): The base folder of the degradation datasets
     
     Returns:
         duration (float): The duration of the process
@@ -41,56 +41,55 @@ def main(tag, number, folder):
     for index in range(1, number + 1):
         print('Index: {}'.format(index))
         
-        # Catalog
-        catalog = {
+        # Application
+        application_dataset = {
             'morphology': {},
             'photometry': {}
         }
         
         with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-            catalog['morphology'] = {key: file['morphology'][key][:].astype(numpy.float32) for key in file['morphology'].keys()}
-            catalog['photometry'] = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
+            application_dataset['morphology'] = {key: file['morphology'][key][:].astype(numpy.float32) for key in file['morphology'].keys()}
+            application_dataset['photometry'] = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
         
         # Redshift
         redshift1 = 1.0
         redshift2 = 2.5
         redshift = numpy.random.uniform(low=redshift1, high=redshift2)
-        filter = (catalog['photometry']['redshift'] < redshift)
+        filter = (application_dataset['photometry']['redshift'] < redshift)
         
         # Magnitude
         magnitude1 = 21
         magnitude2 = 25
         magnitude = numpy.random.uniform(low=magnitude1, high=magnitude2)
-        filter = filter & (catalog['photometry']['mag_i_lsst'] < magnitude)
+        filter = filter & (application_dataset['photometry']['mag_i_lsst'] < magnitude)
         
         # Fraction
-        count = 500000
-        fraction = count / numpy.sum(filter)
-        indices = numpy.arange(len(catalog['photometry']['redshift']))[filter]
-        indices = indices[numpy.random.uniform(low=0, high=1, size=numpy.sum(filter)) > fraction]
-        filter[indices] = False
+        size = 250000
+        fraction1 = 0.5
+        fraction2 = 1.0
+        fraction = numpy.random.uniform(low=fraction1, high=fraction2)
+        indices = numpy.random.choice(numpy.arange(len(application_dataset['photometry']['redshift']))[filter], size=int(size / fraction), replace=True)
         
-        # Filter
-        for key in catalog['morphology'].keys():
-            catalog['morphology'][key] = catalog['morphology'][key][filter]
+        for key in application_dataset['morphology'].keys():
+            application_dataset['morphology'][key] = application_dataset['morphology'][key][indices]
         
-        for key in catalog['photometry'].keys():
-            catalog['photometry'][key] = catalog['photometry'][key][filter]
+        for key in application_dataset['photometry'].keys():
+            application_dataset['photometry'][key] = application_dataset['photometry'][key][indices]
         
-        # SOM
-        catalog_column = somoclu_som._computemagcolordata(data=catalog['photometry'], mag_column_name='mag_i_lsst', column_names=column_list, colusage='colors')
+        catalog_column = somoclu_som._computemagcolordata(data=application_dataset['photometry'], mag_column_name='mag_i_lsst', column_names=column_list, colusage='colors')
         catalog_coordinate = somoclu_som.get_bmus(model['som'], catalog_column)
         
         catalog_coordinate1 = catalog_coordinate[:, 0]
         catalog_coordinate2 = catalog_coordinate[:, 1]
+        catalog_label = catalog_coordinate1 * model['n_columns'] + catalog_coordinate2
         
-        catalog_label = numpy.unique(catalog_coordinate1 * model['n_columns'] + catalog_coordinate2)
-        select_label = numpy.random.choice(catalog_label, size=catalog_label.size // 2, replace=False)
+        select_size = int(fraction * len(numpy.unique(catalog_label)))
+        select_label = numpy.random.choice(numpy.unique(catalog_label), size=select_size, replace=False)
         select = numpy.isin(catalog_coordinate1 * model['n_columns'] + catalog_coordinate2, select_label)
         
+        label = catalog_label[select]
         coordinate1 = catalog_coordinate1[select]
         coordinate2 = catalog_coordinate2[select]
-        label = coordinate1 * model['n_columns'] + coordinate2
         
         # Save
         with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, index)), 'w') as file:
@@ -104,12 +103,12 @@ def main(tag, number, folder):
             file['meta'].create_dataset('coordinate2', data=coordinate2, dtype=numpy.int32)
             
             file.create_group('morphology')
-            for key in catalog['morphology'].keys():
-                file['morphology'].create_dataset(key, data=catalog['morphology'][key][select], dtype=numpy.float32)
+            for key in application_dataset['morphology'].keys():
+                file['morphology'].create_dataset(key, data=application_dataset['morphology'][key][select], dtype=numpy.float32)
             
             file.create_group('photometry')
-            for key in catalog['photometry'].keys():
-                file['photometry'].create_dataset(key, data=catalog['photometry'][key][select], dtype=numpy.float32)
+            for key in application_dataset['photometry'].keys():
+                file['photometry'].create_dataset(key, data=application_dataset['photometry'][key][select], dtype=numpy.float32)
     # Duration
     end = time.time()
     duration = (end - start) / 60
@@ -122,9 +121,9 @@ def main(tag, number, folder):
 if __name__ == '__main__':
     # Input
     PARSE = argparse.ArgumentParser(description='Degradation datasets')
-    PARSE.add_argument('--tag', type=str, required=True, help='The tag of observing conditions')
+    PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
     PARSE.add_argument('--number', type=int, required=True, help='The number of the degradation datasets')
-    PARSE.add_argument('--folder', type=str, required=True, help='The base folder containing the datasets')
+    PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the degradation datasets')
     
     # Argument
     TAG = PARSE.parse_args().tag
