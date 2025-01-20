@@ -4,16 +4,17 @@ import yaml
 import argparse
 
 
-def main(index, folder):
+def main(tag, index, folder):
     '''
     Main function to create the FZB estimator configuration file.
     
     Arguments:
-        index (int): The index of the dataset.
-        folder (str): The base folder of the datasets.
+        tag (str): The tag of the configuration
+        index (int): The index of all the datasets
+        folder (str): The base folder of all the datasets
     
     Returns:
-        duration (float): The duration of the function in minutes.
+        duration (float): The duration of the function in minutes
     '''
     # Start
     start = time.time()
@@ -31,7 +32,7 @@ def main(index, folder):
                 'model': 'input_model',
                 'output': 'output_data'
             }, 
-            'chunk_size': 400000, 
+            'chunk_size': 500000, 
             'nondetect_val': 99.0, 
             'ref_band': 'mag_i_lsst', 
             'output_mode': 'default',
@@ -47,18 +48,20 @@ def main(index, folder):
                 'mag_y_lsst'
             ], 
             'err_bands': [
-                'mag_err_u_lsst', 
-                'mag_err_g_lsst', 
-                'mag_err_r_lsst', 
-                'mag_err_i_lsst', 
-                'mag_err_z_lsst', 
-                'mag_err_y_lsst'
+                'mag_u_lsst_err', 
+                'mag_g_lsst_err', 
+                'mag_r_lsst_err', 
+                'mag_i_lsst_err', 
+                'mag_z_lsst_err', 
+                'mag_y_lsst_err'
             ]
         }
     }
     
-    os.makedirs(os.path.join(fzb_folder, 'ESTIMATE'), exist_ok=True)
-    config_name = os.path.join(fzb_folder, 'ESTIMATE/ESTIMATE{}.yaml'.format(index))
+    os.makedirs(os.path.join(fzb_folder, '{}/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(fzb_folder, '{}/ESTIMATE/'.format(tag)), exist_ok=True)
+    
+    config_name = os.path.join(fzb_folder, '{}/ESTIMATE/ESTIMATE{}.yaml'.format(tag, index))
     with open(config_name, 'w') as config_file:
         yaml.dump(config, config_file, default_flow_style=False)
     
@@ -74,12 +77,14 @@ def main(index, folder):
 if __name__ == '__main__':
     # Input
     PARSE = argparse.ArgumentParser(description='FZB Estimator')
-    PARSE.add_argument('--index', type=int, required=True, help='The index of the datasets')
-    PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the datasets')
+    PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
+    PARSE.add_argument('--index', type=int, required=True, help='The index of all the datasets')
+    PARSE.add_argument('--folder', type=str, required=True, help='The base folder of all the datasets')
     
     # Parse
+    TAG = PARSE.parse_args().tag
     INDEX = PARSE.parse_args().index
     FOLDER = PARSE.parse_args().folder
     
     # Output
-    OUTPUT = main(INDEX, FOLDER)
+    OUTPUT = main(TAG, INDEX, FOLDER)
