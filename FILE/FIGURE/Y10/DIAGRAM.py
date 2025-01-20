@@ -1,0 +1,161 @@
+import os
+import h5py
+import time
+import numpy
+import argparse
+from matplotlib import colors, pyplot
+from matplotlib.gridspec import GridSpec
+
+
+def main(tag, index, folder):
+    '''
+    Plot the figure of the color-magnitude diagram
+    
+    Arguments:
+        tag (str): The tag of the configuration
+        index (int): The index of all the datasets
+        folder (str): The base folder of all the datasets
+    
+    Returns:
+        duration (float): The duration of the process
+    '''
+    # Start
+    start = time.time()
+    print('Index: {}'.format(index))
+    
+    # Path
+    figure_folder = os.path.join(folder, 'FIGURE/')
+    dataset_folder = os.path.join(folder, 'DATASET/')
+    
+    # Plot
+    os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
+    pyplot.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
+    pyplot.rcParams['pgf.texsystem'] = 'pdflatex'
+    pyplot.rcParams['text.usetex'] = True
+    pyplot.rcParams['font.size'] = 20
+    
+    # Application
+    with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+        magnitude_application = file['photometry']['mag_i_lsst'][:].astype(numpy.float32)
+        color_application = file['photometry']['mag_g_lsst'][:].astype(numpy.float32) - file['photometry']['mag_z_lsst'][:].astype(numpy.float32)
+    
+    # Degradation
+    with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+        magnitude_degradation = file['photometry']['mag_i_lsst'][:].astype(numpy.float32)
+        color_degradation = file['photometry']['mag_g_lsst'][:].astype(numpy.float32) - file['photometry']['mag_z_lsst'][:].astype(numpy.float32)
+    
+    # Augmentation
+    with h5py.File(os.path.join(dataset_folder, '{}/AUGMENTATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+        magnitude_augmentation = file['photometry']['mag_i_lsst'][:].astype(numpy.float32)
+        color_augmentation = file['photometry']['mag_g_lsst'][:].astype(numpy.float32) - file['photometry']['mag_z_lsst'][:].astype(numpy.float32)
+    
+    # Combination
+    with h5py.File(os.path.join(dataset_folder, '{}/COMBINATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+        magnitude_combination = file['photometry']['mag_i_lsst'][:].astype(numpy.float32)
+        color_combination = file['photometry']['mag_g_lsst'][:].astype(numpy.float32) - file['photometry']['mag_z_lsst'][:].astype(numpy.float32)
+    
+    # Bin
+    magnitude1 = 15.0
+    magnitude2 = 26.0
+    magnitude_size = 50
+    magnitude_bin = numpy.linspace(magnitude1, magnitude2, magnitude_size + 1)
+    
+    color1 = -1.5
+    color2 = +5.5
+    color_size = 50
+    color_bin = numpy.linspace(color1, color2, color_size + 1)
+    
+    figure = pyplot.figure(figsize = (12, 16))
+    normalize = colors.LogNorm(vmin=1, vmax=50000)
+    gridspec = GridSpec(nrows=2, ncols=2, figure=figure, top=0.70, bottom=0.15, hspace=0.0, wspace=0.0)
+    
+    plot = figure.add_subplot(gridspec[0, 0])
+    
+    plot.text(3.0, 16.5, r'$\mathrm{application}$')
+    
+    mesh = plot.hist2d(color_application, magnitude_application, bins=[color_bin, magnitude_bin], norm=normalize, cmap='plasma')[-1]
+    
+    plot.set_ylabel(r'$i$')
+    plot.set_xticklabels([])
+    
+    plot.get_yticklabels()[0].set_visible(False)
+    plot.get_xticklabels()[0].set_visible(False)
+    
+    plot.set_xlim(color_bin.min(), color_bin.max())
+    plot.set_ylim(magnitude_bin.min(), magnitude_bin.max())
+    
+    plot = figure.add_subplot(gridspec[0, 1])
+    
+    plot.text(3.0, 16.5, r'$\mathrm{degradation}$')
+    
+    mesh = plot.hist2d(color_degradation, magnitude_degradation, bins=[color_bin, magnitude_bin], norm=normalize, cmap='plasma')[-1]
+    
+    plot.set_yticklabels([])
+    plot.set_xticklabels([])
+    
+    plot.get_yticklabels()[0].set_visible(False)
+    plot.get_xticklabels()[0].set_visible(False)
+    
+    plot.set_xlim(color_bin.min(), color_bin.max())
+    plot.set_ylim(magnitude_bin.min(), magnitude_bin.max())
+    
+    plot = figure.add_subplot(gridspec[1, 0])
+    
+    plot.text(3.0, 16.5, r'$\mathrm{augmentation}$')
+    
+    mesh = plot.hist2d(color_augmentation, magnitude_augmentation, bins=[color_bin, magnitude_bin], norm=normalize, cmap='plasma')[-1]
+    
+    plot.set_xlim(color_bin.min(), color_bin.max())
+    plot.set_ylim(magnitude_bin.min(), magnitude_bin.max())
+    
+    plot.get_yticklabels()[0].set_visible(False)
+    plot.get_xticklabels()[0].set_visible(False)
+    
+    plot.set_ylabel(r'$i$')
+    plot.set_xlabel(r'$g - z$')
+    
+    plot = figure.add_subplot(gridspec[1, 1])
+    
+    plot.text(3.0, 16.5, r'$\mathrm{combination}$')
+    
+    mesh = plot.hist2d(color_combination, magnitude_combination, bins=[color_bin, magnitude_bin], norm=normalize, cmap='plasma')[-1]
+    
+    plot.set_xlim(color_bin.min(), color_bin.max())
+    plot.set_ylim(magnitude_bin.min(), magnitude_bin.max())
+    
+    plot.get_yticklabels()[0].set_visible(False)
+    plot.get_xticklabels()[0].set_visible(False)
+    
+    plot.set_yticklabels([])
+    plot.set_xlabel(r'$g - z$')
+    
+    color_bar = figure.colorbar(mesh, cax=figure.add_axes([0.15, 0.05, 0.70, 0.05]), orientation='horizontal')
+    color_bar.set_label(r'$\mathrm{Counts}$')
+    figure.subplots_adjust(bottom=0.15)
+    
+    os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(figure_folder, '{}/DIAGRAM/'.format(tag)), exist_ok=True)
+    figure.savefig(os.path.join(figure_folder, '{}/DIAGRAM/FIGURE{}.png'.format(tag, index)), format='png', bbox_inches='tight', dpi=512)
+    
+    # Duration
+    end = time.time()
+    duration = (end - start) / 60
+    
+    print('Time: {:.2f} minutes'.format(duration))
+    return duration
+
+
+if __name__ == '__main__':
+    # Input
+    PARSE = argparse.ArgumentParser(description='Figure Diagram')
+    PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
+    PARSE.add_argument('--index', type=int, required=True, help='The index of all the datasets')
+    PARSE.add_argument('--folder', type=str, required=True, help='The base folder of all the datasets')
+    
+    # Parse
+    TAG = PARSE.parse_args().tag
+    INDEX = PARSE.parse_args().index
+    FOLDER = PARSE.parse_args().folder
+    
+    # Output
+    OUTPUT = main(TAG, INDEX, FOLDER)
