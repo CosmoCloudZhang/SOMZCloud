@@ -58,6 +58,8 @@ def main(tag, folder):
                 'input': 'input_data', 
                 'model': 'input_model',
             }, 
+            'n_rows': 50, 
+            'n_columns': 50, 
             'std_coeff': 0.5, 
             'maptype': 'toroid', 
             'nondetect_val': 99.0, 
@@ -66,7 +68,6 @@ def main(tag, folder):
             'column_usage': 'colors',
             'som_learning_rate': 0.1,
             'hdf5_groupname': 'photometry', 
-            'n_rows': 100, 'n_columns': 100, 
             'bands': [
                 'mag_u_lsst', 
                 'mag_g_lsst', 
