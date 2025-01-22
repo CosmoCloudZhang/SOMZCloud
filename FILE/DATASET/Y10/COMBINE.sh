@@ -35,4 +35,4 @@ BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 
 # Run the application
-python -u "${BASE_PATH}FILE/DATASET/${TAG}/COMBINE.py" --tag=$TAG --number=$NUMBER --folder=$BASE_FOLDER
+srun -N 1 -n 1 -c $SLURM_CPUS_PER_TASK --cpu_bind=cores python -u "${BASE_PATH}FILE/DATASET/${TAG}/COMBINE.py" --tag=$TAG --number=$NUMBER --folder=$BASE_FOLDER

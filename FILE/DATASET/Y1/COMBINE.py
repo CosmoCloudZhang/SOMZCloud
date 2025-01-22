@@ -27,21 +27,37 @@ def main(tag, number, folder):
         
         # Degradation
         degradation_dataset = {
+            'meta': {},
             'morphology': {},
             'photometry': {}
         }
         
         with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+            degradation_dataset['meta']['mean'] = file['meta']['mean'][:].astype(numpy.float32)
+            degradation_dataset['meta']['occupation'] = file['meta']['occupation'][:].astype(numpy.float32)
+            
+            degradation_dataset['meta']['label'] = file['meta']['label'][:].astype(numpy.int32)
+            degradation_dataset['meta']['coordinate1'] = file['meta']['coordinate1'][:].astype(numpy.int32)
+            degradation_dataset['meta']['coordinate2'] = file['meta']['coordinate2'][:].astype(numpy.int32)
+            
             degradation_dataset['morphology'] = {key: file['morphology'][key][:].astype(numpy.float32) for key in file['morphology'].keys()}
             degradation_dataset['photometry'] = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
         
         # Augmentation
         augmentation_dataset = {
+            'meta': {},
             'morphology': {},
             'photometry': {}
         }
         
         with h5py.File(os.path.join(dataset_folder, '{}/AUGMENTATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+            augmentation_dataset['meta']['mean'] = file['meta']['mean'][:].astype(numpy.float32)
+            augmentation_dataset['meta']['occupation'] = file['meta']['occupation'][:].astype(numpy.float32)
+            
+            augmentation_dataset['meta']['label'] = file['meta']['label'][:].astype(numpy.float32)
+            augmentation_dataset['meta']['coordinate1'] = file['meta']['coordinate1'][:].astype(numpy.float32)
+            augmentation_dataset['meta']['coordinate2'] = file['meta']['coordinate2'][:].astype(numpy.float32)
+            
             augmentation_dataset['morphology'] = {key: file['morphology'][key][:].astype(numpy.float32) for key in file['morphology'].keys()}
             augmentation_dataset['photometry'] = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
         
@@ -50,6 +66,14 @@ def main(tag, number, folder):
         os.makedirs(os.path.join(dataset_folder, '{}/COMBINATION/'.format(tag)), exist_ok=True)
         
         with h5py.File(os.path.join(dataset_folder, '{}/COMBINATION/DATA{}.hdf5'.format(tag, index)), 'w') as file:
+            file.create_group('meta')
+            file['meta'].create_dataset('occupation', data=degradation_dataset['meta']['occupation'] + augmentation_dataset['meta']['occupation'])
+            file['meta'].create_dataset('mean', data=(degradation_dataset['meta']['mean'] * degradation_dataset['meta']['occupation'] + augmentation_dataset['meta']['mean'] * augmentation_dataset['meta']['occupation']) / (degradation_dataset['meta']['occupation'] + augmentation_dataset['meta']['occupation']))
+            
+            file['meta'].create_dataset('label', data=numpy.append(degradation_dataset['meta']['label'], augmentation_dataset['meta']['label'], axis=0))
+            file['meta'].create_dataset('coordinate1', data=numpy.append(degradation_dataset['meta']['coordinate1'], augmentation_dataset['meta']['coordinate1'], axis=0))
+            file['meta'].create_dataset('coordinate2', data=numpy.append(degradation_dataset['meta']['coordinate2'], augmentation_dataset['meta']['coordinate2'], axis=0))
+            
             file.create_group('morphology')
             for key in degradation_dataset['morphology'].keys():
                 file['morphology'].create_dataset(key, data=numpy.append(degradation_dataset['morphology'][key], augmentation_dataset['morphology'][key], axis=0))
