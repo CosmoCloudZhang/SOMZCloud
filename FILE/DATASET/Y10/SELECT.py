@@ -91,19 +91,6 @@ def main(tag, index, folder):
             simulation_dataset['mag_y_lsst'] = numpy.append(simulation_dataset['mag_y_lsst'], file['mag_y_lsst'][:].astype(numpy.float32), axis=0)
     print(len(simulation_dataset['redshift']))
     
-    # Redshift
-    z1 = 0.05
-    z2 = 2.95
-    select = (z1 < simulation_dataset['redshift']) & (simulation_dataset['redshift'] < z2)
-    
-    # Magnitude
-    magnitude1 = 15
-    magnitude2 = 30
-    select = select & (magnitude1 < simulation_dataset['mag_i_lsst']) & (simulation_dataset['mag_i_lsst'] < magnitude2)
-    
-    for key in simulation_dataset:
-        simulation_dataset[key] = simulation_dataset[key][select]
-    
     # Error
     error_model = LsstErrorModel(
         nYrObs=10, 

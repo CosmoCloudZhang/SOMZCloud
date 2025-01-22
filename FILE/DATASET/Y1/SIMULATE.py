@@ -112,16 +112,25 @@ def main(tag, folder):
         sigma2 = a / mu2 * (1 + numpy.power(b / eta2, c))
         simulation_catalog['sigma'] = 1 / numpy.sqrt(exposure['mag_r_lsst'] / numpy.square(sigma1) + exposure['mag_i_lsst'] / numpy.square(sigma2))
         
-        # Select
-        factor = 1.0
-        sigma0 = 0.26
-        select = simulation_catalog['sigma']  < factor * sigma0
-        print('Number: {:.0f}'.format(numpy.sum(select)))
-        print('Effective number: {:.0f}'.format(numpy.sum((numpy.square(sigma0) / (numpy.square(sigma0) + numpy.square(simulation_catalog['sigma'])))[select])))
-        
         catalog['mu'] = simulation_catalog['mu']
         catalog['eta'] = simulation_catalog['eta']
         catalog['sigma'] = simulation_catalog['sigma']
+        
+        # Select
+        factor = 1.00
+        sigma0 = 0.26
+        select = simulation_catalog['sigma']  < factor * sigma0
+        
+        z1 = 0.05
+        z2 = 2.95
+        select = select & (z1 < simulation_catalog['redshift']) & (simulation_catalog['redshift'] < z2)
+        
+        magnitude1 = 15
+        magnitude2 = 30
+        select = select & (magnitude1 < simulation_catalog['mag_i_lsst']) & (simulation_catalog['mag_i_lsst'] < magnitude2)
+        
+        print('Number: {:.0f}'.format(numpy.sum(select)))
+        print('Effective number: {:.0f}'.format(numpy.sum((numpy.square(sigma0) / (numpy.square(sigma0) + numpy.square(simulation_catalog['sigma'])))[select])))
         
         # Save
         with h5py.File(os.path.join(dataset_folder, '{}/SIMULATION/SIMULATION_{}.hdf5'.format(tag, value)), 'w') as file:

@@ -120,6 +120,15 @@ def main(tag, folder):
         factor = 1.0
         sigma0 = 0.26
         select = observation_catalog['sigma']  < factor * sigma0
+        
+        z1 = 0.05
+        z2 = 2.95
+        select = select & (z1 < observation_catalog['redshift']) & (observation_catalog['redshift'] < z2)
+        
+        magnitude1 = 15
+        magnitude2 = 30
+        select = select & (magnitude1 < observation_catalog['mag_i_lsst']) & (observation_catalog['mag_i_lsst'] < magnitude2)
+        
         print('Number: {:.0f}'.format(numpy.sum(select)))
         print('Effective number: {:.0f}'.format(numpy.sum((numpy.square(sigma0) / (numpy.square(sigma0) + numpy.square(observation_catalog['sigma'])))[select])))
         
