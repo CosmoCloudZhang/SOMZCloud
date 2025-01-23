@@ -56,13 +56,13 @@ def main(tag, index, folder):
     
     # Bin
     magnitude1 = 15.0
-    magnitude2 = 26.0
-    magnitude_size = 50
+    magnitude2 = 27.0
+    magnitude_size = 60
     magnitude_bin = numpy.linspace(magnitude1, magnitude2, magnitude_size + 1)
     
     color1 = -1.5
     color2 = +5.5
-    color_size = 50
+    color_size = 60
     color_bin = numpy.linspace(color1, color2, color_size + 1)
     
     figure = pyplot.figure(figsize = (12, 16))

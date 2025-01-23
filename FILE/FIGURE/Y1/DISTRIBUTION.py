@@ -8,7 +8,7 @@ from matplotlib import pyplot
 
 def main(tag, index, folder):
     '''
-    Plot the histogram of the redshift
+    Plot the distribution of the redshifts
     
     Arguments:
         tag (str): The tag of the configuration
@@ -72,8 +72,8 @@ def main(tag, index, folder):
     plot.set_ylabel(r'$\mathcal{P}(z)$')
     
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(figure_folder, '{}/HISTOGRAM/'.format(tag)), exist_ok=True)
-    figure.savefig(os.path.join(figure_folder, '{}/HISTOGRAM/FIGURE{}.png'.format(tag, index)), format='png', bbox_inches='tight', dpi=512)
+    os.makedirs(os.path.join(figure_folder, '{}/DISTRIBUTION/'.format(tag)), exist_ok=True)
+    figure.savefig(os.path.join(figure_folder, '{}/DISTRIBUTION/FIGURE{}.png'.format(tag, index)), format='png', bbox_inches='tight', dpi=512)
     
     # Duration
     end = time.time()
@@ -85,7 +85,7 @@ def main(tag, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Figure Histogram')
+    PARSE = argparse.ArgumentParser(description='Figure Distribution')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
     PARSE.add_argument('--index', type=int, required=True, help='The index of all the datasets')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of all the datasets')

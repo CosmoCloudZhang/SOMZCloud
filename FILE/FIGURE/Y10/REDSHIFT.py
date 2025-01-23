@@ -45,7 +45,7 @@ def main(tag, index, folder):
     application_name = os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index))
     application_dataset = data_store.read_file(key='application', path=application_name, handle_class=core.data.TableHandle)()
     
-    z_true = application_dataset['photometry']['redshift']
+    z_spec = application_dataset['photometry']['redshift']
     magnitude = application_dataset['photometry']['mag_i_lsst']
     del application_dataset
     
@@ -74,11 +74,11 @@ def main(tag, index, folder):
     select_source = numpy.isfinite(z_phot) & (z1_source < z_phot) & (z_phot < z2_source)
     select_lens = numpy.isfinite(z_phot) & (z1_lens < z_phot) & (z_phot < z2_lens) & (magnitude < slope * z_phot + intersection)
     
-    delta_lens = numpy.abs(z_phot[select_lens] - z_true[select_lens])
-    delta_source = numpy.abs(z_phot[select_source] - z_true[select_source])
+    delta_lens = numpy.abs(z_phot[select_lens] - z_spec[select_lens])
+    delta_source = numpy.abs(z_phot[select_source] - z_spec[select_source])
     
-    sigma_lens = delta_lens / (1 + z_true[select_lens])
-    sigma_source = delta_source / (1 + z_true[select_source])
+    sigma_lens = delta_lens / (1 + z_spec[select_lens])
+    sigma_source = delta_source / (1 + z_spec[select_source])
     
     print('Lens: {} {}'.format(len(sigma_lens[sigma_lens > 0.15]) / len(sigma_lens) * 100, len(delta_lens[delta_lens > 1.0]) / len(delta_lens) * 100))
     
@@ -92,7 +92,7 @@ def main(tag, index, folder):
     # Plot 1
     plot1 = figure.add_subplot(plot[0, 0])
     
-    z_mesh = plot1.hist2d(x=z_phot[select_lens], y=z_true[select_lens], bins=[z_grid, z_grid], norm=normalize, cmap='plasma')[-1]
+    z_mesh = plot1.hist2d(x=z_phot[select_lens], y=z_spec[select_lens], bins=[z_grid, z_grid], norm=normalize, cmap='plasma')[-1]
     
     plot1.plot(z_grid, z_grid, color='black', linestyle='--', linewidth=2.0)
     
@@ -106,7 +106,7 @@ def main(tag, index, folder):
     # Plot 2
     plot2 = figure.add_subplot(plot[0, 1])
     
-    z_mesh = plot2.hist2d(x=z_phot[select_source], y=z_true[select_source], bins=[z_grid, z_grid], norm=normalize, cmap='plasma')[-1]
+    z_mesh = plot2.hist2d(x=z_phot[select_source], y=z_spec[select_source], bins=[z_grid, z_grid], norm=normalize, cmap='plasma')[-1]
     
     plot2.plot(z_grid, z_grid, color='black', linestyle='--', linewidth=2.0)
     
