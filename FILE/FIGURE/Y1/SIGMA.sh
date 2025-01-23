@@ -6,9 +6,9 @@
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
+#SBATCH -J FIGURE_Y1_SIGMA
 #SBATCH --cpus-per-task=256
 #SBATCH --ntasks-per-node=1
-#SBATCH -J FIGURE_Y1_REDSHIFT
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -21,25 +21,10 @@ module load cray-hdf5-parallel
 source $HOME/.bashrc
 conda activate $RAILENV
 
-# Set environment
-export NUMEXPR_MAX_THREADS=$SLURM_CPUS_PER_TASK
-export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-export HDF5_USE_FILE_LOCKING=FALSE
-export OMP_PROC_BIND=spread
-export OMP_PLACES=threads
-
 # Initialize the process
 TAG="Y1"
-NUMBER=500
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 
 # Run the application
-for INDEX in $(seq 1 $NUMBER); do
-    srun -N 1 -n 1 -c $SLURM_CPUS_PER_TASK --cpu_bind=cores python -u "${BASE_PATH}FILE/FIGURE/${TAG}/REDSHIFT.py" --tag=$TAG --index=$INDEX --folder=$BASE_FOLDER & 
-    # Control parallel execution
-    if (( $INDEX % $SLURM_NTASKS == 0 )); then
-        wait
-    fi
-done
-wait
+python -u "${BASE_PATH}FILE/FIGURE/${TAG}/SIGMA.py" --tag=${TAG} --folder=$BASE_FOLDER

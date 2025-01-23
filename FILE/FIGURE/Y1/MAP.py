@@ -87,7 +87,9 @@ def main(tag, index, folder):
     
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)
     os.makedirs(os.path.join(figure_folder, '{}/MAP/'.format(tag)), exist_ok=True)
+    
     figure.savefig(os.path.join(figure_folder, '{}/MAP/FIGURE{}.png'.format(tag, index)), format='png', bbox_inches='tight', dpi=512)
+    pyplot.close(figure)
     
     # Duration
     end = time.time()
