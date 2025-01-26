@@ -3,8 +3,9 @@ import h5py
 import time
 import yaml
 import numpy
+import pandas
 import argparse
-
+from photerr import LsstErrorModel
 
 def main(tag, folder):
     '''
@@ -27,28 +28,70 @@ def main(tag, folder):
     os.makedirs(os.path.join(som_folder, '{}'.format(tag)), exist_ok=True)
     os.makedirs(os.path.join(som_folder, '{}/INFORM/'.format(tag)), exist_ok=True)
     
-    # Catalog
+    # Error
+    error_model = LsstErrorModel(
+        nYrObs=1, 
+        sigLim=3.0,
+        absFlux=True,
+        ndMode='sigLim', 
+        majorCol='major', 
+        minorCol='minor', 
+        decorrelate=True,
+        extendedType='auto',
+        renameDict={
+            'u': 'mag_u_lsst',
+            'g': 'mag_g_lsst',
+            'r': 'mag_r_lsst',
+            'i': 'mag_i_lsst',
+            'z': 'mag_z_lsst',
+            'y': 'mag_y_lsst'
+        }
+    )
+    
+    # Observation
     with h5py.File(os.path.join(dataset_folder, '{}/OBSERVATION/OBSERVATION.hdf5'.format(tag)), 'r') as file:
-        catalog = {key: file[key][:].astype(numpy.float32) for key in file.keys()}
+        observation_dataset = {key: file[key][:].astype(numpy.float32) for key in file.keys()}
+    
+    # Inform
+    inform_dataset = dict(error_model(pandas.DataFrame(observation_dataset), random_state=0))
     
     # Write
     with h5py.File(os.path.join(som_folder, '{}/INFORM/INFORM.hdf5'.format(tag)), 'w') as file:
         file.create_group('photometry')
-        file['photometry'].create_dataset('redshift', data=catalog['redshift'])
+        file['photometry'].create_dataset('redshift', data=inform_dataset['redshift'], dtype=numpy.float32)
+        file['photometry'].create_dataset('redshift_true', data=inform_dataset['redshift_true'], dtype=numpy.float32)
         
-        file['photometry'].create_dataset('mag_u_lsst', data=catalog['mag_u_lsst'])
-        file['photometry'].create_dataset('mag_g_lsst', data=catalog['mag_g_lsst'])
-        file['photometry'].create_dataset('mag_r_lsst', data=catalog['mag_r_lsst'])
-        file['photometry'].create_dataset('mag_i_lsst', data=catalog['mag_i_lsst'])
-        file['photometry'].create_dataset('mag_z_lsst', data=catalog['mag_z_lsst'])
-        file['photometry'].create_dataset('mag_y_lsst', data=catalog['mag_y_lsst'])
+        file['photometry'].create_dataset('mag_u_lsst', data=inform_dataset['mag_u_lsst'], dtype=numpy.float32)
+        file['photometry'].create_dataset('mag_g_lsst', data=inform_dataset['mag_g_lsst'], dtype=numpy.float32)
+        file['photometry'].create_dataset('mag_r_lsst', data=inform_dataset['mag_r_lsst'], dtype=numpy.float32)
+        file['photometry'].create_dataset('mag_i_lsst', data=inform_dataset['mag_i_lsst'], dtype=numpy.float32)
+        file['photometry'].create_dataset('mag_z_lsst', data=inform_dataset['mag_z_lsst'], dtype=numpy.float32)
+        file['photometry'].create_dataset('mag_y_lsst', data=inform_dataset['mag_y_lsst'], dtype=numpy.float32)
         
-        file['photometry'].create_dataset('mag_u_lsst_err', data=catalog['mag_u_lsst_err'])
-        file['photometry'].create_dataset('mag_g_lsst_err', data=catalog['mag_g_lsst_err'])
-        file['photometry'].create_dataset('mag_r_lsst_err', data=catalog['mag_r_lsst_err'])
-        file['photometry'].create_dataset('mag_i_lsst_err', data=catalog['mag_i_lsst_err'])
-        file['photometry'].create_dataset('mag_z_lsst_err', data=catalog['mag_z_lsst_err'])
-        file['photometry'].create_dataset('mag_y_lsst_err', data=catalog['mag_y_lsst_err'])
+        file['photometry'].create_dataset('mag_u_lsst_err', data=inform_dataset['mag_u_lsst_err'], dtype=numpy.float32)
+        file['photometry'].create_dataset('mag_g_lsst_err', data=inform_dataset['mag_g_lsst_err'], dtype=numpy.float32)
+        file['photometry'].create_dataset('mag_r_lsst_err', data=inform_dataset['mag_r_lsst_err'], dtype=numpy.float32)
+        file['photometry'].create_dataset('mag_i_lsst_err', data=inform_dataset['mag_i_lsst_err'], dtype=numpy.float32)
+        file['photometry'].create_dataset('mag_z_lsst_err', data=inform_dataset['mag_z_lsst_err'], dtype=numpy.float32)
+        file['photometry'].create_dataset('mag_y_lsst_err', data=inform_dataset['mag_y_lsst_err'], dtype=numpy.float32)
+        
+        file.create_group('morphology')
+        file['morphology'].create_dataset('value', data=inform_dataset['value'], dtype=numpy.float32)
+        file['morphology'].create_dataset('galaxy_id', data=inform_dataset['galaxy_id'], dtype=numpy.float32)
+        
+        file['morphology'].create_dataset('mu', data=inform_dataset['mu'], dtype=numpy.float32)
+        file['morphology'].create_dataset('eta', data=inform_dataset['eta'], dtype=numpy.float32)
+        file['morphology'].create_dataset('sigma', data=inform_dataset['sigma'], dtype=numpy.float32)
+        
+        file['morphology'].create_dataset('major', data=inform_dataset['major'], dtype=numpy.float32)
+        file['morphology'].create_dataset('minor', data=inform_dataset['minor'], dtype=numpy.float32)
+        
+        file['morphology'].create_dataset('major_disk', data=inform_dataset['major_disk'], dtype=numpy.float32)
+        file['morphology'].create_dataset('major_bulge', data=inform_dataset['major_bulge'], dtype=numpy.float32)
+        
+        file['morphology'].create_dataset('ellipticity_disk', data=inform_dataset['ellipticity_disk'], dtype=numpy.float32)
+        file['morphology'].create_dataset('ellipticity_bulge', data=inform_dataset['ellipticity_bulge'], dtype=numpy.float32)
+        file['morphology'].create_dataset('bulge_to_total_ratio', data=inform_dataset['bulge_to_total_ratio'], dtype=numpy.float32)
     
     # Config
     config = {
@@ -65,8 +108,8 @@ def main(tag, folder):
             'nondetect_val': 99.0, 
             'grid_type': 'hexagonal', 
             'ref_band': 'mag_i_lsst',
-            'column_usage': 'colors',
-            'som_learning_rate': 0.1,
+            'som_learning_rate': 0.1, 
+            'column_usage': 'magandcolors',
             'hdf5_groupname': 'photometry', 
             'bands': [
                 'mag_u_lsst', 
