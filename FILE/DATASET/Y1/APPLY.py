@@ -1,13 +1,13 @@
 import os
 import h5py
 import time
-import yaml
 import numpy
 import pandas
 import argparse
 from rail import core
 from photerr import LsstErrorModel
 from rail.estimation.algos import somoclu_som
+
 
 def main(tag, index, folder):
     '''
@@ -29,66 +29,12 @@ def main(tag, index, folder):
     som_folder = os.path.join(folder, 'SOM/')
     dataset_folder = os.path.join(folder, 'DATASET/')
     
-    os.makedirs(os.path.join(dataset_folder, 'CATALOG/'), exist_ok=True)
-    os.makedirs(os.path.join(dataset_folder, '{}/OBSERVATION/'.format(tag)), exist_ok=True)
-    
     os.makedirs(os.path.join(dataset_folder, '{}'.format(tag)), exist_ok=True)
     os.makedirs(os.path.join(dataset_folder, '{}/APPLICATION/'.format(tag)), exist_ok=True)
     
-    # Observation
-    with open(os.path.join(dataset_folder, 'CATALOG/OBSERVE.yaml'), 'r') as file:
-        observation_list = yaml.safe_load(file)['healpix_pixels']
-    
     # Load
-    observation_dataset = {
-        'mu': numpy.array([]),
-        'eta': numpy.array([]),
-        'sigma': numpy.array([]),
-        'major': numpy.array([]), 
-        'minor': numpy.array([]),
-        'redshift': numpy.array([]),
-        'mag_u_lsst': numpy.array([]),
-        'mag_g_lsst': numpy.array([]),
-        'mag_r_lsst': numpy.array([]),
-        'mag_i_lsst': numpy.array([]),
-        'mag_z_lsst': numpy.array([]),
-        'mag_y_lsst': numpy.array([]),
-        'major_disk': numpy.array([]),
-        'major_bulge': numpy.array([]), 
-        'magnification': numpy.array([]),
-        'ellipticity_disk': numpy.array([]),
-        'ellipticity_bulge': numpy.array([]), 
-        'bulge_to_total_ratio': numpy.array([])
-    }
-    
-    for value in observation_list:
-        
-        with h5py.File(os.path.join(dataset_folder, '{}/OBSERVATION/OBSERVATION_{}.hdf5'.format(tag, value)), 'r') as file:
-            
-            observation_dataset['mu'] = numpy.append(observation_dataset['mu'], file['mu'][:].astype(numpy.float32), axis=0)
-            observation_dataset['eta'] = numpy.append(observation_dataset['eta'], file['eta'][:].astype(numpy.float32), axis=0)
-            observation_dataset['sigma'] = numpy.append(observation_dataset['sigma'], file['sigma'][:].astype(numpy.float32), axis=0)
-            
-            observation_dataset['major'] = numpy.append(observation_dataset['major'], file['major'][:].astype(numpy.float32), axis=0)
-            observation_dataset['minor'] = numpy.append(observation_dataset['minor'], file['minor'][:].astype(numpy.float32), axis=0)
-            
-            observation_dataset['major_disk'] = numpy.append(observation_dataset['major_disk'], file['major_disk'][:].astype(numpy.float32), axis=0)
-            observation_dataset['major_bulge'] = numpy.append(observation_dataset['major_bulge'], file['major_bulge'][:].astype(numpy.float32), axis=0)
-            
-            observation_dataset['ellipticity_disk'] = numpy.append(observation_dataset['ellipticity_disk'], file['ellipticity_disk'][:].astype(numpy.float32), axis=0)
-            observation_dataset['ellipticity_bulge'] = numpy.append(observation_dataset['ellipticity_bulge'], file['ellipticity_bulge'][:].astype(numpy.float32), axis=0)
-            
-            observation_dataset['redshift'] = numpy.append(observation_dataset['redshift'], file['redshift'][:].astype(numpy.float32), axis=0)
-            observation_dataset['magnification'] = numpy.append(observation_dataset['magnification'], file['magnification'][:].astype(numpy.float32), axis=0)
-            observation_dataset['bulge_to_total_ratio'] = numpy.append(observation_dataset['bulge_to_total_ratio'], file['bulge_to_total_ratio'][:].astype(numpy.float32), axis=0)
-            
-            observation_dataset['mag_u_lsst'] = numpy.append(observation_dataset['mag_u_lsst'], file['mag_u_lsst'][:].astype(numpy.float32), axis=0)
-            observation_dataset['mag_g_lsst'] = numpy.append(observation_dataset['mag_g_lsst'], file['mag_g_lsst'][:].astype(numpy.float32), axis=0)
-            observation_dataset['mag_r_lsst'] = numpy.append(observation_dataset['mag_r_lsst'], file['mag_r_lsst'][:].astype(numpy.float32), axis=0)
-            observation_dataset['mag_i_lsst'] = numpy.append(observation_dataset['mag_i_lsst'], file['mag_i_lsst'][:].astype(numpy.float32), axis=0)
-            observation_dataset['mag_z_lsst'] = numpy.append(observation_dataset['mag_z_lsst'], file['mag_z_lsst'][:].astype(numpy.float32), axis=0)
-            observation_dataset['mag_y_lsst'] = numpy.append(observation_dataset['mag_y_lsst'], file['mag_y_lsst'][:].astype(numpy.float32), axis=0)
-    print(len(observation_dataset['redshift']))
+    with h5py.File(os.path.join(dataset_folder, '{}/OBSERVATION/OBSERVATION.hdf5'.format(tag)), 'r') as file:
+        observation_dataset = {key: file[key][:].astype(numpy.float32) for key in file.keys()}
     
     # Error
     error_model = LsstErrorModel(
@@ -111,7 +57,7 @@ def main(tag, index, folder):
     )
     
     # Application
-    application_dataset = error_model(pandas.DataFrame(observation_dataset), random_state=index)
+    application_dataset = dict(error_model(pandas.DataFrame(observation_dataset), random_state=index))
     
     # SOM
     data_store = core.stage.RailStage.data_store
@@ -130,27 +76,30 @@ def main(tag, index, folder):
         stop = min((m + 1) * chunk, application_size)
         application = {key: application_dataset[key][begin: stop].astype(numpy.float32) for key in column_list}
         
-        application_column = somoclu_som._computemagcolordata(data=application, mag_column_name='mag_i_lsst', column_names=column_list, colusage='colors')
+        application_column = somoclu_som._computemagcolordata(data=application, mag_column_name='mag_i_lsst', column_names=column_list, colusage='magandcolors')
         application_coordinate[begin: stop, :] = somoclu_som.get_bmus(model['som'], application_column)
     
     application_coordinate1 = application_coordinate[:, 0]
     application_coordinate2 = application_coordinate[:, 1]
     application_label = application_coordinate1 * model['n_columns'] + application_coordinate2
-    application_occupation = numpy.bincount(application_label, minlength=model['n_rows'] * model['n_columns'])
-    application_mean = numpy.divide(numpy.bincount(application_label, weights=application_dataset['redshift'], minlength=model['n_rows'] * model['n_columns']), application_occupation, out=numpy.ones(model['n_rows'] * model['n_columns']) * numpy.nan, where=application_occupation != 0)
+    
+    som_size = model['n_columns'] * model['n_rows']
+    application_count = numpy.bincount(application_label, minlength=som_size)
+    application_mean = numpy.divide(numpy.bincount(application_label, weights=application_dataset['redshift'], minlength=som_size), application_count, out=numpy.ones(som_size) * numpy.nan, where=application_count != 0)
     
     # Save
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'w') as file:
         file.create_group('meta')
+        file['meta'].create_dataset('mean', data=application_mean, dtype=numpy.float32)
+        file['meta'].create_dataset('count', data=application_count, dtype=numpy.int32)
+        
         file['meta'].create_dataset('label', data=application_label, dtype=numpy.int32)
         file['meta'].create_dataset('coordinate1', data=application_coordinate1, dtype=numpy.int32)
         file['meta'].create_dataset('coordinate2', data=application_coordinate2, dtype=numpy.int32)
         
-        file['meta'].create_dataset('mean', data=application_mean, dtype=numpy.float32)
-        file['meta'].create_dataset('occupation', data=application_occupation, dtype=numpy.int32)
-        
         file.create_group('photometry')
         file['photometry'].create_dataset('redshift', data=application_dataset['redshift'], dtype=numpy.float32)
+        file['photometry'].create_dataset('redshift_true', data=application_dataset['redshift_true'], dtype=numpy.float32)
         
         file['photometry'].create_dataset('mag_u_lsst', data=application_dataset['mag_u_lsst'], dtype=numpy.float32)
         file['photometry'].create_dataset('mag_g_lsst', data=application_dataset['mag_g_lsst'], dtype=numpy.float32)
@@ -167,6 +116,9 @@ def main(tag, index, folder):
         file['photometry'].create_dataset('mag_y_lsst_err', data=application_dataset['mag_y_lsst_err'], dtype=numpy.float32)
         
         file.create_group('morphology')
+        file['morphology'].create_dataset('value', data=application_dataset['value'], dtype=numpy.float32)
+        file['morphology'].create_dataset('galaxy_id', data=application_dataset['galaxy_id'], dtype=numpy.float32)
+        
         file['morphology'].create_dataset('mu', data=application_dataset['mu'], dtype=numpy.float32)
         file['morphology'].create_dataset('eta', data=application_dataset['eta'], dtype=numpy.float32)
         file['morphology'].create_dataset('sigma', data=application_dataset['sigma'], dtype=numpy.float32)

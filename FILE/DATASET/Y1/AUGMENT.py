@@ -33,7 +33,7 @@ def main(tag, index, folder):
     
     # Degradation
     with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        degradation_occupation = file['meta']['occupation'][:].astype(numpy.float32)
+        degradation_count = file['meta']['count'][:].astype(numpy.float32)
         degradation_redshift = file['photometry']['redshift'][:].astype(numpy.float32)
         degradation_magnitude = file['photometry']['mag_i_lsst'][:].astype(numpy.float32)
     degradation_size = len(degradation_redshift)
@@ -52,23 +52,26 @@ def main(tag, index, folder):
     
     selection_label = selection_dataset['meta']['label']
     selection_size = len(selection_dataset['photometry']['redshift'])
-    filter = numpy.isin(selection_label, numpy.arange(len(degradation_occupation))[degradation_occupation == 0])
     
-    # Redshift
-    redshift = numpy.max(degradation_redshift)
-    filter = filter | (selection_dataset['photometry']['redshift'] > redshift)
+    fraction = numpy.sum(degradation_count == 0) / len(degradation_count)
+    filter = numpy.isin(selection_label, numpy.arange(len(degradation_count))[degradation_count == 0])
     
     # Magnitude
     magnitude = numpy.max(degradation_magnitude)
     filter = filter | (selection_dataset['photometry']['mag_i_lsst'] > magnitude)
     
-    # Choice
-    fraction = numpy.sum(degradation_occupation > 0) / len(degradation_occupation)
-    indices = numpy.random.choice(numpy.arange(selection_size)[filter], size=int((1 - fraction) * degradation_size), replace=False)
+    # Redshift
+    redshift = numpy.max(degradation_redshift)
+    filter = filter | (selection_dataset['photometry']['redshift'] > redshift)
+    
+    # Fraction
+    size1 = int(0.25 * degradation_size)
+    size2 = int(0.75 * degradation_size)
+    size = numpy.random.randint(low=size1, high=size2)
+    indices = numpy.random.choice(numpy.arange(selection_size)[filter], size=size, replace=False)
     
     # Augmentation
     augmentation_dataset = {
-        'meta': {'fraction': fraction, 'redshift': redshift, 'magnitude': magnitude},
         'morphology': {key: selection_dataset['morphology'][key][indices] for key in selection_dataset['morphology'].keys()},
         'photometry': {key: selection_dataset['photometry'][key][indices] for key in selection_dataset['photometry'].keys()}
     }
@@ -90,28 +93,32 @@ def main(tag, index, folder):
         stop = min((m + 1) * chunk, augmentation_size)
         augmentation = {key: augmentation_dataset['photometry'][key][begin: stop].astype(numpy.float32) for key in column_list}
         
-        augmentation_column = somoclu_som._computemagcolordata(data=augmentation, mag_column_name='mag_i_lsst', column_names=column_list, colusage='colors')
+        augmentation_column = somoclu_som._computemagcolordata(data=augmentation, mag_column_name='mag_i_lsst', column_names=column_list, colusage='magandcolors')
         augmentation_coordinate[begin: stop, :] = somoclu_som.get_bmus(model['som'], augmentation_column)
     
     augmentation_coordinate1 = augmentation_coordinate[:, 0]
     augmentation_coordinate2 = augmentation_coordinate[:, 1]
     augmentation_label = augmentation_coordinate1 * model['n_columns'] + augmentation_coordinate2
     
-    augmentation_occupation = numpy.bincount(augmentation_label, minlength=model['n_rows'] * model['n_columns'])
-    augmentation_mean = numpy.divide(numpy.bincount(augmentation_label, weights=augmentation_dataset['photometry']['redshift'], minlength=model['n_rows'] * model['n_columns']), augmentation_occupation, out=numpy.ones(model['n_rows'] * model['n_columns']) * numpy.nan, where=augmentation_occupation != 0)
-    
-    augmentation_dataset['meta']['label'] = augmentation_label
-    augmentation_dataset['meta']['coordinate1'] = augmentation_coordinate1
-    augmentation_dataset['meta']['coordinate2'] = augmentation_coordinate2
-    
-    augmentation_dataset['meta']['mean'] = augmentation_mean
-    augmentation_dataset['meta']['occupation'] = augmentation_occupation
+    som_size = model['n_columns'] * model['n_rows']
+    augmentation_count = numpy.bincount(augmentation_label, minlength=som_size)
+    augmentation_mean = numpy.divide(numpy.bincount(augmentation_label, weights=augmentation_dataset['photometry']['redshift'], minlength=som_size), augmentation_count, out=numpy.ones(som_size) * numpy.nan, where=augmentation_count != 0)
     
     # Save
     with h5py.File(os.path.join(dataset_folder, '{}/AUGMENTATION/DATA{}.hdf5'.format(tag, index)), 'w') as file:
         file.create_group('meta')
-        for key in augmentation_dataset['meta'].keys():
-            file['meta'].create_dataset(key, data=augmentation_dataset['meta'][key], dtype=numpy.float32)
+        
+        file['meta'].create_dataset('size', data=size, dtype=numpy.int32)
+        file['meta'].create_dataset('fraction', data=fraction, dtype=numpy.float32)
+        file['meta'].create_dataset('redshift', data=redshift, dtype=numpy.float32)
+        file['meta'].create_dataset('magnitude', data=magnitude, dtype=numpy.float32)
+        
+        file['meta'].create_dataset('mean', data=augmentation_mean, dtype=numpy.float32)
+        file['meta'].create_dataset('count', data=augmentation_count, dtype=numpy.int32)
+        
+        file['meta'].create_dataset('label', data=augmentation_label, dtype=numpy.int32)
+        file['meta'].create_dataset('coordinate1', data=augmentation_coordinate1, dtype=numpy.int32)
+        file['meta'].create_dataset('coordinate2', data=augmentation_coordinate2, dtype=numpy.int32)
         
         file.create_group('morphology')
         for key in selection_dataset['morphology'].keys():

@@ -34,11 +34,11 @@ def main(tag, number, folder):
         
         with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
             degradation_dataset['meta']['mean'] = numpy.nan_to_num(file['meta']['mean'][:].astype(numpy.float32))
-            degradation_dataset['meta']['occupation'] = file['meta']['occupation'][:].astype(numpy.float32)
+            degradation_dataset['meta']['count'] = file['meta']['count'][:].astype(numpy.int32)
             
-            degradation_dataset['meta']['label'] = file['meta']['label'][:].astype(numpy.float32)
-            degradation_dataset['meta']['coordinate1'] = file['meta']['coordinate1'][:].astype(numpy.float32)
-            degradation_dataset['meta']['coordinate2'] = file['meta']['coordinate2'][:].astype(numpy.float32)
+            degradation_dataset['meta']['label'] = file['meta']['label'][:].astype(numpy.int32)
+            degradation_dataset['meta']['coordinate1'] = file['meta']['coordinate1'][:].astype(numpy.int32)
+            degradation_dataset['meta']['coordinate2'] = file['meta']['coordinate2'][:].astype(numpy.int32)
             
             degradation_dataset['morphology'] = {key: file['morphology'][key][:].astype(numpy.float32) for key in file['morphology'].keys()}
             degradation_dataset['photometry'] = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
@@ -52,21 +52,21 @@ def main(tag, number, folder):
         
         with h5py.File(os.path.join(dataset_folder, '{}/AUGMENTATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
             augmentation_dataset['meta']['mean'] = numpy.nan_to_num(file['meta']['mean'][:].astype(numpy.float32))
-            augmentation_dataset['meta']['occupation'] = file['meta']['occupation'][:].astype(numpy.float32)
+            augmentation_dataset['meta']['count'] = file['meta']['count'][:].astype(numpy.int32)
             
-            augmentation_dataset['meta']['label'] = file['meta']['label'][:].astype(numpy.float32)
-            augmentation_dataset['meta']['coordinate1'] = file['meta']['coordinate1'][:].astype(numpy.float32)
-            augmentation_dataset['meta']['coordinate2'] = file['meta']['coordinate2'][:].astype(numpy.float32)
+            augmentation_dataset['meta']['label'] = file['meta']['label'][:].astype(numpy.int32)
+            augmentation_dataset['meta']['coordinate1'] = file['meta']['coordinate1'][:].astype(numpy.int32)
+            augmentation_dataset['meta']['coordinate2'] = file['meta']['coordinate2'][:].astype(numpy.int32)
             
             augmentation_dataset['morphology'] = {key: file['morphology'][key][:].astype(numpy.float32) for key in file['morphology'].keys()}
             augmentation_dataset['photometry'] = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
         
         # Combine
-        degradation_sum = degradation_dataset['meta']['mean'] * degradation_dataset['meta']['occupation']
-        augmentation_sum = augmentation_dataset['meta']['mean'] * augmentation_dataset['meta']['occupation']
+        degradation_sum = degradation_dataset['meta']['mean'] * degradation_dataset['meta']['count']
+        augmentation_sum = augmentation_dataset['meta']['mean'] * augmentation_dataset['meta']['count']
         
-        occupation = degradation_dataset['meta']['occupation'] + augmentation_dataset['meta']['occupation']
-        mean = numpy.divide(degradation_sum + augmentation_sum, occupation, out=numpy.ones_like(occupation) * numpy.nan, where=occupation != 0)
+        count = degradation_dataset['meta']['count'] + augmentation_dataset['meta']['count']
+        mean = numpy.divide(degradation_sum + augmentation_sum, count, out=numpy.ones_like(count) * numpy.nan, where=count != 0)
         
         # Save
         os.makedirs(os.path.join(dataset_folder, '{}/'.format(tag)), exist_ok=True)
@@ -74,20 +74,20 @@ def main(tag, number, folder):
         
         with h5py.File(os.path.join(dataset_folder, '{}/COMBINATION/DATA{}.hdf5'.format(tag, index)), 'w') as file:
             file.create_group('meta')
-            file['meta'].create_dataset('mean', data=mean)
-            file['meta'].create_dataset('occupation', data=occupation)
+            file['meta'].create_dataset('mean', data=mean, dtype=numpy.float32)
+            file['meta'].create_dataset('count', data=count, dtype=numpy.int32)
             
-            file['meta'].create_dataset('label', data=numpy.append(degradation_dataset['meta']['label'], augmentation_dataset['meta']['label'], axis=0))
-            file['meta'].create_dataset('coordinate1', data=numpy.append(degradation_dataset['meta']['coordinate1'], augmentation_dataset['meta']['coordinate1'], axis=0))
-            file['meta'].create_dataset('coordinate2', data=numpy.append(degradation_dataset['meta']['coordinate2'], augmentation_dataset['meta']['coordinate2'], axis=0))
+            file['meta'].create_dataset('label', data=numpy.append(degradation_dataset['meta']['label'], augmentation_dataset['meta']['label'], axis=0), dtype=numpy.int32)
+            file['meta'].create_dataset('coordinate1', data=numpy.append(degradation_dataset['meta']['coordinate1'], augmentation_dataset['meta']['coordinate1'], axis=0), dtype=numpy.int32)
+            file['meta'].create_dataset('coordinate2', data=numpy.append(degradation_dataset['meta']['coordinate2'], augmentation_dataset['meta']['coordinate2'], axis=0), dtype=numpy.int32)
             
             file.create_group('morphology')
             for key in degradation_dataset['morphology'].keys():
-                file['morphology'].create_dataset(key, data=numpy.append(degradation_dataset['morphology'][key], augmentation_dataset['morphology'][key], axis=0))
+                file['morphology'].create_dataset(key, data=numpy.append(degradation_dataset['morphology'][key], augmentation_dataset['morphology'][key], axis=0), dtype=numpy.float32)
             
             file.create_group('photometry')
             for key in degradation_dataset['photometry'].keys():
-                file['photometry'].create_dataset(key, data=numpy.append(degradation_dataset['photometry'][key], augmentation_dataset['photometry'][key], axis=0))
+                file['photometry'].create_dataset(key, data=numpy.append(degradation_dataset['photometry'][key], augmentation_dataset['photometry'][key], axis=0), dtype=numpy.float32)
     
     # Duration
     end = time.time()

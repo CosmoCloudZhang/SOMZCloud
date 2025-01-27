@@ -6,6 +6,7 @@ import argparse
 from rail import core
 from rail.estimation.algos import somoclu_som
 
+
 def main(tag, index, folder):
     '''
     Create the degradation datasets
@@ -42,17 +43,17 @@ def main(tag, index, folder):
         application_dataset['morphology'] = {key: file['morphology'][key][:].astype(numpy.float32) for key in file['morphology'].keys()}
         application_dataset['photometry'] = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
     
-    # Redshift
-    redshift1 = 0.5
-    redshift2 = 2.0
-    redshift = numpy.random.uniform(low=redshift1, high=redshift2)
-    select = (application_dataset['photometry']['redshift'] < redshift)
-    
     # Magnitude
     magnitude1 = 20
     magnitude2 = 24
     magnitude = numpy.random.uniform(low=magnitude1, high=magnitude2)
-    select = select & (application_dataset['photometry']['mag_i_lsst'] < magnitude)
+    select = (application_dataset['photometry']['mag_i_lsst'] < magnitude)
+    
+    # Redshift
+    redshift1 = 0.5
+    redshift2 = 2.0
+    redshift = numpy.random.uniform(low=redshift1, high=redshift2)
+    select = select & (application_dataset['photometry']['redshift'] < redshift)
     
     # Fraction
     fraction1 = 0.5
@@ -66,14 +67,16 @@ def main(tag, index, folder):
     select_label = numpy.random.choice(numpy.unique(application_label[select]), size=label_size, replace=False)
     select = select & numpy.isin(application_label, select_label)
     
-    # Choice
-    choice_size = 100000
+    # Size
+    size1 = 100000
+    size2 = 200000
+    size = numpy.minimum(numpy.random.randint(low=size1, high=size2), numpy.sum(select))
+    
     application_size = len(application_dataset['photometry']['redshift'])
-    indices = numpy.random.choice(numpy.arange(application_size)[select], size=numpy.minimum(choice_size, numpy.sum(select)), replace=False)
+    indices = numpy.random.choice(numpy.arange(application_size)[select], size=size, replace=False)
     
     # Degradation
     degradation_dataset = {
-        'meta': {'fraction': fraction, 'redshift': redshift, 'magnitude': magnitude},
         'morphology': {key: application_dataset['morphology'][key][indices] for key in application_dataset['morphology'].keys()},
         'photometry': {key: application_dataset['photometry'][key][indices] for key in application_dataset['photometry'].keys()}
     }
@@ -95,28 +98,32 @@ def main(tag, index, folder):
         stop = min((m + 1) * chunk, degradation_size)
         degradation = {key: degradation_dataset['photometry'][key][begin: stop].astype(numpy.float32) for key in column_list}
         
-        degradation_column = somoclu_som._computemagcolordata(data=degradation, mag_column_name='mag_i_lsst', column_names=column_list, colusage='colors')
+        degradation_column = somoclu_som._computemagcolordata(data=degradation, mag_column_name='mag_i_lsst', column_names=column_list, colusage='magandcolors')
         degradation_coordinate[begin: stop, :] = somoclu_som.get_bmus(model['som'], degradation_column)
     
     degradation_coordinate1 = degradation_coordinate[:, 0]
     degradation_coordinate2 = degradation_coordinate[:, 1]
     degradation_label = degradation_coordinate1 * model['n_columns'] + degradation_coordinate2
     
-    degradation_occupation = numpy.bincount(degradation_label, minlength=model['n_rows'] * model['n_columns'])
-    degradation_mean = numpy.divide(numpy.bincount(degradation_label, weights=degradation_dataset['photometry']['redshift'], minlength=model['n_rows'] * model['n_columns']), degradation_occupation, out=numpy.ones(model['n_rows'] * model['n_columns']) * numpy.nan, where=degradation_occupation != 0)
-    
-    degradation_dataset['meta']['label'] = degradation_label
-    degradation_dataset['meta']['coordinate1'] = degradation_coordinate1
-    degradation_dataset['meta']['coordinate2'] = degradation_coordinate2
-    
-    degradation_dataset['meta']['mean'] = degradation_mean
-    degradation_dataset['meta']['occupation'] = degradation_occupation
+    som_size = model['n_columns'] * model['n_rows']
+    degradation_count = numpy.bincount(degradation_label, minlength=som_size)
+    degradation_mean = numpy.divide(numpy.bincount(degradation_label, weights=degradation_dataset['photometry']['redshift'], minlength=som_size), degradation_count, out=numpy.ones(som_size) * numpy.nan, where=degradation_count != 0)
     
     # Save
     with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, index)), 'w') as file:
         file.create_group('meta')
-        for key in degradation_dataset['meta'].keys():
-            file['meta'].create_dataset(key, data=degradation_dataset['meta'][key], dtype=numpy.float32)
+        
+        file['meta'].create_dataset('size', data=size, dtype=numpy.int32)
+        file['meta'].create_dataset('fraction', data=fraction, dtype=numpy.float32)
+        file['meta'].create_dataset('redshift', data=redshift, dtype=numpy.float32)
+        file['meta'].create_dataset('magnitude', data=magnitude, dtype=numpy.float32)
+        
+        file['meta'].create_dataset('mean', data=degradation_mean, dtype=numpy.float32)
+        file['meta'].create_dataset('count', data=degradation_count, dtype=numpy.int32)
+        
+        file['meta'].create_dataset('label', data=degradation_label, dtype=numpy.int32)
+        file['meta'].create_dataset('coordinate1', data=degradation_coordinate1, dtype=numpy.int32)
+        file['meta'].create_dataset('coordinate2', data=degradation_coordinate2, dtype=numpy.int32)
         
         file.create_group('morphology')
         for key in degradation_dataset['morphology'].keys():
