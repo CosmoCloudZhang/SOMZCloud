@@ -6,13 +6,14 @@ import argparse
 from rail import core
 
 
-def main(index, folder):
+def main(tag, index, folder):
     '''
-    Summarize the redshift distribution of the lens samples.
+    Summarize the redshift distribution of the lens samples
     
     Arguments:
-        index (int): The index of the dataset.
-        folder (str): The base folder of the dataset.
+        tag (str): The tag of the configuration
+        index (int): The index of all the datasets
+        folder (str): The base folder of all the datasets
     
     Returns:
         duration (float): The duration of the process.
@@ -24,22 +25,24 @@ def main(index, folder):
     # Path
     fzb_folder = os.path.join(folder, 'FZB/')
     
-    # Load
-    data_store = core.stage.RailStage.data_store
-    data_store.__class__.allow_overwrite = True
-    
-    with h5py.File(os.path.join(fzb_folder, 'LENS/LENS{}/BIN.hdf5'.format(index)), 'r') as file:
-        bin_lens = file['bin'][:].astype(numpy.float32)
-    
     # Redshift
     z1 = 0.0
     z2 = 3.0
     grid_size = 300
+    sample_size = 1000
     z_grid = numpy.linspace(z1, z2, grid_size + 1)
     
+    # Select
+    with h5py.File(os.path.join(fzb_folder, '{}/LENS/LENS{}/SELECT.hdf5'.format(tag, index)), 'r') as file:
+        lens_bin = file['bin'][:].astype(numpy.float32)
+        lens_select = file['select'][:].astype(numpy.int32)
+    
+    # Load
+    data_store = core.stage.RailStage.data_store
+    data_store.__class__.allow_overwrite = True
+    
     # Summarize
-    width = 1000
-    for m in range(1, len(bin_lens)):
+    for m in range(len(lens_bin) - 1):
         # Sample
         sample_name = os.path.join(fzb_folder, 'LENS/LENS{}/SAMPLE{}.hdf5'.format(index, m))
         sample_data = data_store.read_file(key='sample', path=sample_name, handle_class=core.data.QPHandle)()
@@ -48,9 +51,9 @@ def main(index, folder):
         del sample_data
         
         sample_size, pdf_size = z_pdf.shape
-        summarize_data = numpy.zeros((width, pdf_size), dtype=numpy.float32)
+        summarize_data = numpy.zeros((sample_size, pdf_size), dtype=numpy.float32)
         
-        for n in range(width):
+        for n in range(sample_size):
             z_sample = numpy.random.randint(0, sample_size, size=sample_size)
             summarize_data[n, :] = numpy.mean(z_pdf[z_sample, :], axis=0)
         summarize_single = numpy.mean(z_pdf, axis=0)
