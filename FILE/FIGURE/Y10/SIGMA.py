@@ -61,6 +61,10 @@ def main(tag, folder):
     
     mesh = plot.imshow(map, origin='lower', cmap='viridis', extent=[mu1, mu2, eta1, eta2], aspect='auto')
     
+    plot.plot(mu_edge, numpy.ones(size + 1) * 0.1, color='black', linestyle='--', linewidth=2.5)
+    
+    plot.plot(numpy.ones(size + 1) * 10, eta_edge, color='black', linestyle='--', linewidth=2.5)
+    
     plot.set_xlim(mu1, mu2)
     plot.set_ylim(eta1, eta2)
     

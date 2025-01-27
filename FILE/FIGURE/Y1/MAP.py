@@ -63,27 +63,23 @@ def main(tag, index, folder):
     
     mesh = plot[0, 0].imshow(application_mean.reshape(model['n_rows'], model['n_columns']), norm=normalize, cmap='coolwarm')
     plot[0, 0].set_title(r'$\mathrm{application}$')
-    plot[0, 0].set_xticklabels([])
-    plot[0, 0].set_yticklabels([])
+    plot[0, 0].axis('off')
     
     mesh = plot[0, 1].imshow(degradation_mean.reshape(model['n_rows'], model['n_columns']), norm=normalize, cmap='coolwarm')
     plot[0, 1].set_title(r'$\mathrm{degradation}$')
-    plot[0, 1].set_xticklabels([])
-    plot[0, 1].set_yticklabels([])
+    plot[0, 1].axis('off')
     
     mesh = plot[1, 0].imshow(augmentation_mean.reshape(model['n_rows'], model['n_columns']), norm=normalize, cmap='coolwarm')
     plot[1, 0].set_title(r'$\mathrm{augmentation}$')
-    plot[1, 0].set_xticklabels([])
-    plot[1, 0].set_yticklabels([])
+    plot[1, 0].axis('off')
     
     mesh = plot[1, 1].imshow(combination_mean.reshape(model['n_rows'], model['n_columns']), norm=normalize, cmap='coolwarm')
     plot[1, 1].set_title(r'$\mathrm{combination}$')
-    plot[1, 1].set_xticklabels([])
-    plot[1, 1].set_yticklabels([])
+    plot[1, 1].axis('off')
     
     color_bar = figure.colorbar(mesh, cax=figure.add_axes([0.15, 0.05, 0.70, 0.05]), orientation='horizontal')
+    figure.subplots_adjust(bottom=0.12, hspace=0.10, wspace=0.05)
     color_bar.set_label(r'$\mathrm{Mean \, Redshift}$')
-    figure.subplots_adjust(bottom=0.15)
     
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)
     os.makedirs(os.path.join(figure_folder, '{}/MAP/'.format(tag)), exist_ok=True)

@@ -6,7 +6,7 @@
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH -J FIGURE_Y10_SOM
+#SBATCH -J FIGURE_Y10_MAP
 #SBATCH --cpus-per-task=16
 #SBATCH --ntasks-per-node=16
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
