@@ -37,10 +37,22 @@ def main(tag, index, folder):
         simulation_dataset = {key: file[key][:].astype(numpy.float32) for key in file.keys()}
     simulation_size = len(simulation_dataset['redshift'])
     
+    with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+        application_size = len(file['photometry']['redshift'])
+        application_count = file['meta']['count'][:].astype(numpy.int32)
+    
+    # SOM
+    data_store = core.stage.RailStage.data_store
+    data_store.__class__.allow_overwrite = True
+    
+    model_name = os.path.join(som_folder, '{}/INFORM/INFORM.pkl'.format(tag))
+    column_list = ['mag_u_lsst', 'mag_g_lsst', 'mag_r_lsst', 'mag_i_lsst', 'mag_z_lsst', 'mag_y_lsst']
+    model = data_store.read_file(key='model', path=model_name, handle_class=core.data.ModelHandle)()
+    
     # Error
     error_model = LsstErrorModel(
         nYrObs=10, 
-        sigLim=3.0,
+        sigLim=1.0,
         absFlux=True,
         ndMode='sigLim', 
         majorCol='major', 
@@ -57,37 +69,38 @@ def main(tag, index, folder):
         }
     )
     
-    with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        application_size = len(file['photometry']['redshift'])
-    
-    indices = numpy.random.choice(simulation_size, size=application_size, replace=False)
-    selection_dataset = dict(error_model(pandas.DataFrame(simulation_dataset).iloc[indices], random_state=index))
-    
-    # SOM
-    data_store = core.stage.RailStage.data_store
-    data_store.__class__.allow_overwrite = True
-    
-    model_name = os.path.join(som_folder, '{}/INFORM/INFORM.pkl'.format(tag))
-    column_list = ['mag_u_lsst', 'mag_g_lsst', 'mag_r_lsst', 'mag_i_lsst', 'mag_z_lsst', 'mag_y_lsst']
-    model = data_store.read_file(key='model', path=model_name, handle_class=core.data.ModelHandle)()
+    simulation_dataset = dict(error_model(pandas.DataFrame(simulation_dataset), random_state=index))
     
     chunk = 100000
-    selection_size = len(selection_dataset['redshift'])
-    selection_coordinate = numpy.zeros((selection_size, 2), dtype=numpy.int32)
+    simulation_size = len(simulation_dataset['redshift'])
+    simulation_coordinate = numpy.zeros((simulation_size, 2), dtype=numpy.int32)
     
-    for m in range(selection_size // chunk + 1):
+    for m in range(simulation_size // chunk + 1):
         begin = m * chunk
-        stop = min((m + 1) * chunk, selection_size)
-        selection = {key: selection_dataset[key][begin: stop].astype(numpy.float32) for key in column_list}
+        stop = min((m + 1) * chunk, simulation_size)
+        simulation = {key: simulation_dataset[key][begin: stop].astype(numpy.float32) for key in column_list}
         
-        selection_column = somoclu_som._computemagcolordata(data=selection, mag_column_name='mag_i_lsst', column_names=column_list, colusage='magandcolors')
-        selection_coordinate[begin: stop, :] = somoclu_som.get_bmus(model['som'], selection_column)
+        simulation_column = somoclu_som._computemagcolordata(data=simulation, mag_column_name='mag_i_lsst', column_names=column_list, colusage='colors')
+        simulation_coordinate[begin: stop, :] = somoclu_som.get_bmus(model['som'], simulation_column)
     
-    selection_coordinate1 = selection_coordinate[:, 0]
-    selection_coordinate2 = selection_coordinate[:, 1]
-    selection_label = selection_coordinate1 * model['n_columns'] + selection_coordinate2
+    simulation_coordinate1 = simulation_coordinate[:, 0]
+    simulation_coordinate2 = simulation_coordinate[:, 1]
+    simulation_label = simulation_coordinate1 * model['n_columns'] + simulation_coordinate2
     
     som_size = model['n_rows'] * model['n_columns']
+    simulation_count = numpy.bincount(simulation_label, minlength=som_size)
+    
+    weight = numpy.divide(application_count, simulation_count, out=numpy.zeros(som_size), where=simulation_count != 0)
+    simulation_weight = weight[simulation_label] / numpy.sum(weight[simulation_label])
+    
+    # Selection
+    indices = numpy.random.choice(simulation_size, size=application_size, replace=False, p=simulation_weight)
+    selection_dataset = {key: simulation_dataset[key][indices].astype(numpy.float32) for key in simulation_dataset.keys()}
+    
+    selection_coordinate1 = simulation_coordinate1[indices]
+    selection_coordinate2 = simulation_coordinate2[indices]
+    selection_label = selection_coordinate1 * model['n_columns'] + selection_coordinate2
+    
     selection_count = numpy.bincount(selection_label, minlength=som_size)
     selection_mean = numpy.divide(numpy.bincount(selection_label, weights=selection_dataset['redshift'], minlength=som_size), selection_count, out=numpy.ones(som_size) * numpy.nan, where=selection_count != 0)
     

@@ -2,12 +2,12 @@
 #SBATCH -A m1727
 #SBATCH --nodes=4
 #SBATCH -q regular
-#SBATCH --time=04:00:00
+#SBATCH --time=06:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH --cpus-per-task=16
-#SBATCH --ntasks-per-node=16
+#SBATCH --cpus-per-task=32
+#SBATCH --ntasks-per-node=8
 #SBATCH -J DATASET_Y10_SELECT
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
@@ -35,7 +35,7 @@ BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 
 # Run the application
-for INDEX in $(seq 1 $NUMBER); do
+for INDEX in $(seq 257 $NUMBER); do
     srun -N 1 -n 1 -c $SLURM_CPUS_PER_TASK --cpu_bind=cores python -u "${BASE_PATH}FILE/DATASET/${TAG}/SELECT.py" --tag=$TAG --index=$INDEX --folder=$BASE_FOLDER & 
     # Control parallel execution
     if (( $INDEX % $SLURM_NTASKS == 0 )); then

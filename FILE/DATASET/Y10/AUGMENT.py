@@ -93,7 +93,7 @@ def main(tag, index, folder):
         stop = min((m + 1) * chunk, augmentation_size)
         augmentation = {key: augmentation_dataset['photometry'][key][begin: stop].astype(numpy.float32) for key in column_list}
         
-        augmentation_column = somoclu_som._computemagcolordata(data=augmentation, mag_column_name='mag_i_lsst', column_names=column_list, colusage='magandcolors')
+        augmentation_column = somoclu_som._computemagcolordata(data=augmentation, mag_column_name='mag_i_lsst', column_names=column_list, colusage='colors')
         augmentation_coordinate[begin: stop, :] = somoclu_som.get_bmus(model['som'], augmentation_column)
     
     augmentation_coordinate1 = augmentation_coordinate[:, 0]

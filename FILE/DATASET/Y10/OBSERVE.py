@@ -30,7 +30,7 @@ def main(tag, folder):
     # Model
     error_model = LsstErrorModel(
         nYrObs=10, 
-        sigLim=3.0,
+        sigLim=1.0,
         absFlux=True,
         ndMode='sigLim', 
         majorCol='major', 

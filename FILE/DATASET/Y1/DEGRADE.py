@@ -98,7 +98,7 @@ def main(tag, index, folder):
         stop = min((m + 1) * chunk, degradation_size)
         degradation = {key: degradation_dataset['photometry'][key][begin: stop].astype(numpy.float32) for key in column_list}
         
-        degradation_column = somoclu_som._computemagcolordata(data=degradation, mag_column_name='mag_i_lsst', column_names=column_list, colusage='magandcolors')
+        degradation_column = somoclu_som._computemagcolordata(data=degradation, mag_column_name='mag_i_lsst', column_names=column_list, colusage='colors')
         degradation_coordinate[begin: stop, :] = somoclu_som.get_bmus(model['som'], degradation_column)
     
     degradation_coordinate1 = degradation_coordinate[:, 0]

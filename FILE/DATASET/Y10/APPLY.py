@@ -39,7 +39,7 @@ def main(tag, index, folder):
     # Error
     error_model = LsstErrorModel(
         nYrObs=10, 
-        sigLim=3.0,
+        sigLim=1.0,
         absFlux=True,
         ndMode='sigLim', 
         majorCol='major', 
@@ -76,7 +76,7 @@ def main(tag, index, folder):
         stop = min((m + 1) * chunk, application_size)
         application = {key: application_dataset[key][begin: stop].astype(numpy.float32) for key in column_list}
         
-        application_column = somoclu_som._computemagcolordata(data=application, mag_column_name='mag_i_lsst', column_names=column_list, colusage='magandcolors')
+        application_column = somoclu_som._computemagcolordata(data=application, mag_column_name='mag_i_lsst', column_names=column_list, colusage='colors')
         application_coordinate[begin: stop, :] = somoclu_som.get_bmus(model['som'], application_column)
     
     application_coordinate1 = application_coordinate[:, 0]
