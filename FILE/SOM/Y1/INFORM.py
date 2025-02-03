@@ -31,7 +31,7 @@ def main(tag, folder):
     # Error
     error_model = LsstErrorModel(
         nYrObs=1, 
-        sigLim=3.0,
+        sigLim=1.0,
         absFlux=True,
         ndMode='sigLim', 
         majorCol='major', 
@@ -108,8 +108,8 @@ def main(tag, folder):
             'nondetect_val': 99.0, 
             'grid_type': 'hexagonal', 
             'ref_band': 'mag_i_lsst',
+            'column_usage': 'colors',
             'som_learning_rate': 0.1, 
-            'column_usage': 'magandcolors',
             'hdf5_groupname': 'photometry', 
             'bands': [
                 'mag_u_lsst', 
