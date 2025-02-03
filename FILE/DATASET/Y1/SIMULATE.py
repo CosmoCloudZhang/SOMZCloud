@@ -124,7 +124,7 @@ def main(tag, folder):
         
         z1 = 0.0
         z2 = 3.0
-        select = select & (z1 < catalog['redshift']) & (catalog['redshift'] < z2)
+        select = select & (z1 < catalog['redshift_true']) & (catalog['redshift_true'] < z2)
         
         magnitude1 = 16
         magnitude2 = 30
