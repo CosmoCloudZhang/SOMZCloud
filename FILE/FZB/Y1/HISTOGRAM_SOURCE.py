@@ -4,7 +4,6 @@ import h5py
 import numpy
 import scipy
 import argparse
-from rail import core
 
 
 def main(tag, index, folder):
@@ -34,16 +33,9 @@ def main(tag, index, folder):
     sample_size = 1000
     z_grid = numpy.linspace(z1, z2, grid_size + 1)
     
-    # Load
-    data_store = core.stage.RailStage.data_store
-    data_store.__class__.allow_overwrite = True
-    
     # Application
-    application_name = os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index))
-    application_dataset = data_store.read_file(key='application', path=application_name, handle_class=core.data.TableHandle)()
-    
-    z_spec = application_dataset['photometry']['redshift']
-    del application_dataset
+    with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/APPLICATION{}.hdf5'.format(tag, index)), 'r') as file:
+        z_true = file['photometry']['redshift_true'][:]
     
     # Bin
     with h5py.File(os.path.join(fzb_folder, '{}/SOURCE/SOURCE{}/SELECT.hdf5'.format(tag, index)), 'r') as file:
@@ -53,7 +45,7 @@ def main(tag, index, folder):
     # Lens
     for m in range(len(source_bin) - 1):
         # Select
-        z_select = z_spec[source_select[m, :]]
+        z_select = z_true[source_select[m, :]]
         
         # Single
         histogram = numpy.histogram(z_select, bins=z_grid, range=(z_grid.min(), z_grid.max()), density=True)[0]

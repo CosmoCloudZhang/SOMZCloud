@@ -39,7 +39,7 @@ def main(tag, index, folder):
             'hdf5_groupname': 'photometry', 
             'trainfrac': 0.8, 'retrain_full': True,
             'zmin': 0.0, 'zmax': 3.0, 'nzbins': 301, 
-            'max_basis': 50, 'basis_system': 'Fourier', 
+            'max_basis': 100, 'basis_system': 'Fourier', 
             'bumpmin': 0.0, 'bumpmax': 0.5, 'nbump': 50, 
             'sharpmin': 0.5, 'sharpmax': 2.5, 'nsharp': 50, 
             'regression_params': {

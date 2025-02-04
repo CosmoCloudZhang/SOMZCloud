@@ -2,13 +2,13 @@
 #SBATCH -A m1727
 #SBATCH --nodes=4
 #SBATCH -q regular
-#SBATCH --time=48:00:00
+#SBATCH --time=12:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
 #SBATCH -J FZB_Y10_INFORM
-#SBATCH --cpus-per-task=8
-#SBATCH --ntasks-per-node=32
+#SBATCH --cpus-per-task=4
+#SBATCH --ntasks-per-node=64
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
