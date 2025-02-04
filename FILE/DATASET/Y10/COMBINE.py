@@ -40,6 +40,11 @@ def main(tag, number, folder):
             degradation_dataset['meta']['coordinate1'] = file['meta']['coordinate1'][:].astype(numpy.int32)
             degradation_dataset['meta']['coordinate2'] = file['meta']['coordinate2'][:].astype(numpy.int32)
             
+            degradation_dataset['meta']['size'] = file['meta']['size'][...]
+            degradation_dataset['meta']['fraction'] = file['meta']['fraction'][...]
+            degradation_dataset['meta']['redshift'] = file['meta']['redshift'][...]
+            degradation_dataset['meta']['magnitude'] = file['meta']['magnitude'][...]
+            
             degradation_dataset['morphology'] = {key: file['morphology'][key][:].astype(numpy.float32) for key in file['morphology'].keys()}
             degradation_dataset['photometry'] = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
         
@@ -57,6 +62,11 @@ def main(tag, number, folder):
             augmentation_dataset['meta']['label'] = file['meta']['label'][:].astype(numpy.int32)
             augmentation_dataset['meta']['coordinate1'] = file['meta']['coordinate1'][:].astype(numpy.int32)
             augmentation_dataset['meta']['coordinate2'] = file['meta']['coordinate2'][:].astype(numpy.int32)
+            
+            augmentation_dataset['meta']['size'] = file['meta']['size'][...]
+            augmentation_dataset['meta']['fraction'] = file['meta']['fraction'][...]
+            augmentation_dataset['meta']['redshift'] = file['meta']['redshift'][...]
+            augmentation_dataset['meta']['magnitude'] = file['meta']['magnitude'][...]
             
             augmentation_dataset['morphology'] = {key: file['morphology'][key][:].astype(numpy.float32) for key in file['morphology'].keys()}
             augmentation_dataset['photometry'] = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
@@ -80,6 +90,16 @@ def main(tag, number, folder):
             file['meta'].create_dataset('label', data=numpy.append(degradation_dataset['meta']['label'], augmentation_dataset['meta']['label'], axis=0), dtype=numpy.int32)
             file['meta'].create_dataset('coordinate1', data=numpy.append(degradation_dataset['meta']['coordinate1'], augmentation_dataset['meta']['coordinate1'], axis=0), dtype=numpy.int32)
             file['meta'].create_dataset('coordinate2', data=numpy.append(degradation_dataset['meta']['coordinate2'], augmentation_dataset['meta']['coordinate2'], axis=0), dtype=numpy.int32)
+            
+            file['meta'].create_dataset('size1', data=degradation_dataset['meta']['size'], dtype=numpy.int32)
+            file['meta'].create_dataset('fraction1', data=degradation_dataset['meta']['fraction'], dtype=numpy.float32)
+            file['meta'].create_dataset('redshift1', data=degradation_dataset['meta']['redshift'], dtype=numpy.float32)
+            file['meta'].create_dataset('magnitude1', data=degradation_dataset['meta']['magnitude'], dtype=numpy.float32)
+            
+            file['meta'].create_dataset('size2', data=augmentation_dataset['meta']['size'], dtype=numpy.int32)
+            file['meta'].create_dataset('fraction2', data=augmentation_dataset['meta']['fraction'], dtype=numpy.float32)
+            file['meta'].create_dataset('redshift2', data=augmentation_dataset['meta']['redshift'], dtype=numpy.float32)
+            file['meta'].create_dataset('magnitude2', data=augmentation_dataset['meta']['magnitude'], dtype=numpy.float32)
             
             file.create_group('morphology')
             for key in degradation_dataset['morphology'].keys():
