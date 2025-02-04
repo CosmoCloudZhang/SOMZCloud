@@ -6,8 +6,8 @@
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH --cpus-per-task=256
-#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=16
+#SBATCH --ntasks-per-node=16
 #SBATCH -J FIGURE_Y10_REDSHIFT
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
@@ -30,7 +30,7 @@ export OMP_PLACES=threads
 
 # Initialize the process
 TAG="Y10"
-NUMBER=4
+NUMBER=500
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 

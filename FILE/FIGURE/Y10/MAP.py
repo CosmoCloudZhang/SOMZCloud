@@ -44,36 +44,40 @@ def main(tag, index, folder):
     # Application
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         application_mean = file['meta']['mean'][:].astype(numpy.float32)
+    application_map = application_mean.reshape(model['n_rows'], model['n_columns'])
     
     # Degradation
     with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         degradation_mean = file['meta']['mean'][:].astype(numpy.float32)
+    degradation_map = degradation_mean.reshape(model['n_rows'], model['n_columns'])
     
     # Augmentation
     with h5py.File(os.path.join(dataset_folder, '{}/AUGMENTATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         augmentation_mean = file['meta']['mean'][:].astype(numpy.float32)
+    augmentation_map = augmentation_mean.reshape(model['n_rows'], model['n_columns'])
     
     # Combination
     with h5py.File(os.path.join(dataset_folder, '{}/COMBINATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         combination_mean = file['meta']['mean'][:].astype(numpy.float32)
+    combination_map = combination_mean.reshape(model['n_rows'], model['n_columns'])
     
     # Plot
     normalize = colors.Normalize(vmin=0.0, vmax=2.0)
     figure, plot = pyplot.subplots(nrows=2, ncols=2, figsize=(12, 12))
     
-    mesh = plot[0, 0].imshow(application_mean.reshape(model['n_rows'], model['n_columns']), norm=normalize, cmap='coolwarm')
+    mesh = plot[0, 0].imshow(application_map, norm=normalize, cmap='coolwarm')
     plot[0, 0].set_title(r'$\mathrm{application}$')
     plot[0, 0].axis('off')
     
-    mesh = plot[0, 1].imshow(degradation_mean.reshape(model['n_rows'], model['n_columns']), norm=normalize, cmap='coolwarm')
+    mesh = plot[0, 1].imshow(degradation_map, norm=normalize, cmap='coolwarm')
     plot[0, 1].set_title(r'$\mathrm{degradation}$')
     plot[0, 1].axis('off')
     
-    mesh = plot[1, 0].imshow(augmentation_mean.reshape(model['n_rows'], model['n_columns']), norm=normalize, cmap='coolwarm')
+    mesh = plot[1, 0].imshow(augmentation_map, norm=normalize, cmap='coolwarm')
     plot[1, 0].set_title(r'$\mathrm{augmentation}$')
     plot[1, 0].axis('off')
     
-    mesh = plot[1, 1].imshow(combination_mean.reshape(model['n_rows'], model['n_columns']), norm=normalize, cmap='coolwarm')
+    mesh = plot[1, 1].imshow(combination_map, norm=normalize, cmap='coolwarm')
     plot[1, 1].set_title(r'$\mathrm{combination}$')
     plot[1, 1].axis('off')
     
@@ -97,7 +101,7 @@ def main(tag, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Figure Dataset')
+    PARSE = argparse.ArgumentParser(description='Figure Map')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
     PARSE.add_argument('--index', type=int, required=True, help='The index of all suites of datasets')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of all suites of datasets')

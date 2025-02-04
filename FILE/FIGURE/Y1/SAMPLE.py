@@ -1,14 +1,14 @@
 import os
+import h5py
 import time
 import numpy
 import argparse
-from rail import core
 from matplotlib import pyplot, colors
 
 
 def main(tag, index, folder):
     '''
-    Plot the figures of the sample selection
+    Plot the figures of the redshift estimation
     
     Arguments:
         tag (str): The tag of the configuration
@@ -28,39 +28,29 @@ def main(tag, index, folder):
     dataset_folder = os.path.join(folder, 'DATASET/')
     
     # Redshift
+    # Redshift
     z1_lens = 0.2
     z2_lens = 1.2
     
-    z1_source = 0.0
-    z2_source = 3.0
+    z1_source = 0.1
+    z2_source = 2.9
     
+    z1 = 0.0
+    z2 = 3.0
     grid_size = 300
-    z_grid = numpy.linspace(z1_source, z2_source, grid_size + 1)
     
     # Magnitude
-    magnitude1 = 15.0
-    magnitude2 = 26.0
+    magnitude1 = 16.0
+    magnitude2 = 27.0
     magnitude_grid = numpy.linspace(magnitude1, magnitude2, grid_size + 1)
     
-    # Load 
-    data_store = core.stage.RailStage.data_store
-    data_store.__class__.allow_overwrite = True
+    # Application
+    with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+        application_magnitude = file['photometry']['mag_i_lsst'][:].astype(numpy.float32)
     
-    # Load
-    application_name = os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index))
-    application_dataset = data_store.read_file(key='application', path=application_name, handle_class=core.data.TableHandle)()
-    
-    magnitude = application_dataset['photometry']['mag_i_lsst']
-    del application_dataset
-    
-    estimate_name = os.path.join(fzb_folder, '{}/ESTIMATE/ESTIMATE{}.hdf5'.format(tag, index))
-    estimator = data_store.read_file(key='estimator', path=estimate_name, handle_class=core.data.QPHandle)()
-    
-    z_mean = numpy.concatenate(estimator.mean())
-    z_median = numpy.concatenate(estimator.median())
-    z_mode = numpy.concatenate(estimator.mode(z_grid))
-    z_phot = numpy.average([z_mean, z_median, z_mode], axis=0)
-    del z_mean, z_median, z_mode, estimator
+    # Estimator
+    with h5py.File(os.path.join(fzb_folder, '{}/LENS/LENS{}/SELECT.hdf5'.format(tag, index)), 'r') as file:
+        z_phot = file['z_phot'][:].astype(numpy.float32)
     
     # Configuration
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
@@ -79,15 +69,19 @@ def main(tag, index, folder):
     normalize = colors.LogNorm(vmin=1, vmax=10000)
     figure, plot = pyplot.subplots(nrows=1, ncols=1, figsize=(12, 8))
     
-    z_mesh =plot.hist2d(x=z_phot, y=magnitude, bins=[z_source_grid, magnitude_grid], norm=normalize, cmap='plasma')[-1]
+    z_mesh =plot.hist2d(x=z_phot, y=application_magnitude, bins=[z_source_grid, magnitude_grid], norm=normalize, cmap='plasma')[-1]
     
-    plot.plot(z_lens_grid, slope * z_lens_grid + intersection, color='black', linestyle='--', linewidth=2.0)
+    plot.plot(z_lens_grid, slope * z_lens_grid + intersection, color='black', linestyle='--', linewidth=2.5)
     
-    plot.plot(numpy.ones(grid_size) * z1_lens, numpy.linspace(magnitude1, slope * z1_lens + intersection, grid_size), color='black', linestyle='--', linewidth=2.0)
+    plot.plot(numpy.ones(grid_size) * z1_lens, numpy.linspace(magnitude1, slope * z1_lens + intersection, grid_size), color='black', linestyle='--', linewidth=2.5)
     
-    plot.plot(numpy.ones(grid_size) * z2_lens, numpy.linspace(magnitude1, slope * z2_lens + intersection, grid_size), color='black', linestyle='--', linewidth=2.0)
+    plot.plot(numpy.ones(grid_size) * z2_lens, numpy.linspace(magnitude1, slope * z2_lens + intersection, grid_size), color='black', linestyle='--', linewidth=2.5)
     
-    plot.set_xlim(z1_source, z2_source)
+    plot.plot(numpy.ones(grid_size) * z1_source, numpy.linspace(magnitude1, slope * z1_source + intersection, grid_size), color='black', linestyle=':', linewidth=2.5)
+    
+    plot.plot(numpy.ones(grid_size) * z2_source, numpy.linspace(magnitude1, slope * z2_source + intersection, grid_size), color='black', linestyle=':', linewidth=2.5)
+    
+    plot.set_xlim(z1, z2)
     plot.set_ylim(magnitude1, magnitude2)
     
     plot.set_ylabel(r'$i$')
@@ -98,7 +92,7 @@ def main(tag, index, folder):
     figure.subplots_adjust(bottom=0.20, wspace=0.00, hspace=0.00)
     color_bar.set_label(r'$\mathrm{Counts}$')
     
-    # Return figure
+    # Save
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)
     os.makedirs(os.path.join(figure_folder, '{}/SAMPLE/'.format(tag)), exist_ok=True)
     

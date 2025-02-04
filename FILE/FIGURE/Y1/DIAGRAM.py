@@ -55,7 +55,7 @@ def main(tag, index, folder):
         color_combination = file['photometry']['mag_g_lsst'][:].astype(numpy.float32) - file['photometry']['mag_z_lsst'][:].astype(numpy.float32)
     
     # Bin
-    magnitude1 = 15.0
+    magnitude1 = 16.0
     magnitude2 = 27.0
     magnitude_size = 60
     magnitude_bin = numpy.linspace(magnitude1, magnitude2, magnitude_size + 1)
@@ -71,9 +71,9 @@ def main(tag, index, folder):
     
     plot = figure.add_subplot(gridspec[0, 0])
     
-    plot.text(3.0, 16.5, r'$\mathrm{application}$')
+    plot.text(3.0, 17.0, r'$\mathrm{application}$')
     
-    mesh = plot.hist2d(color_application, magnitude_application, bins=[color_bin, magnitude_bin], norm=normalize, cmap='plasma')[-1]
+    mesh = plot.hist2d(color_application, magnitude_application, bins=[color_bin, magnitude_bin], norm=normalize, cmap='magma')[-1]
     
     plot.set_ylabel(r'$i$')
     plot.set_xticklabels([])
@@ -86,9 +86,9 @@ def main(tag, index, folder):
     
     plot = figure.add_subplot(gridspec[0, 1])
     
-    plot.text(3.0, 16.5, r'$\mathrm{degradation}$')
+    plot.text(3.0, 17.0, r'$\mathrm{degradation}$')
     
-    mesh = plot.hist2d(color_degradation, magnitude_degradation, bins=[color_bin, magnitude_bin], norm=normalize, cmap='plasma')[-1]
+    mesh = plot.hist2d(color_degradation, magnitude_degradation, bins=[color_bin, magnitude_bin], norm=normalize, cmap='magma')[-1]
     
     plot.set_yticklabels([])
     plot.set_xticklabels([])
@@ -101,9 +101,9 @@ def main(tag, index, folder):
     
     plot = figure.add_subplot(gridspec[1, 0])
     
-    plot.text(3.0, 16.5, r'$\mathrm{augmentation}$')
+    plot.text(3.0, 17.0, r'$\mathrm{augmentation}$')
     
-    mesh = plot.hist2d(color_augmentation, magnitude_augmentation, bins=[color_bin, magnitude_bin], norm=normalize, cmap='plasma')[-1]
+    mesh = plot.hist2d(color_augmentation, magnitude_augmentation, bins=[color_bin, magnitude_bin], norm=normalize, cmap='magma')[-1]
     
     plot.set_xlim(color_bin.min(), color_bin.max())
     plot.set_ylim(magnitude_bin.min(), magnitude_bin.max())
@@ -116,9 +116,9 @@ def main(tag, index, folder):
     
     plot = figure.add_subplot(gridspec[1, 1])
     
-    plot.text(3.0, 16.5, r'$\mathrm{combination}$')
+    plot.text(3.0, 17.0, r'$\mathrm{combination}$')
     
-    mesh = plot.hist2d(color_combination, magnitude_combination, bins=[color_bin, magnitude_bin], norm=normalize, cmap='plasma')[-1]
+    mesh = plot.hist2d(color_combination, magnitude_combination, bins=[color_bin, magnitude_bin], norm=normalize, cmap='magma')[-1]
     
     plot.set_xlim(color_bin.min(), color_bin.max())
     plot.set_ylim(magnitude_bin.min(), magnitude_bin.max())
