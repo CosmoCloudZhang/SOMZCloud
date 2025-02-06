@@ -37,7 +37,8 @@ def main(tag, index, folder):
     
     z1 = 0.0
     z2 = 3.0
-    grid_size = 300
+    grid_size = 100
+    z_grid = numpy.linspace(z1, z2, grid_size + 1)
     
     # Magnitude
     magnitude1 = 16.0
@@ -49,7 +50,7 @@ def main(tag, index, folder):
         application_magnitude = file['photometry']['mag_i_lsst'][:].astype(numpy.float32)
     
     # Estimator
-    with h5py.File(os.path.join(fzb_folder, '{}/LENS/LENS{}/SELECT.hdf5'.format(tag, index)), 'r') as file:
+    with h5py.File(os.path.join(fzb_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         z_phot = file['z_phot'][:].astype(numpy.float32)
     
     # Configuration
@@ -62,24 +63,22 @@ def main(tag, index, folder):
     # Set variables
     slope = 4.0
     intersection = 18.0
-    z_lens_grid = numpy.linspace(z1_lens, z2_lens, grid_size + 1)
-    z_source_grid = numpy.linspace(z1_source, z2_source, grid_size + 1)
     
     # Plot
     normalize = colors.LogNorm(vmin=1, vmax=10000)
     figure, plot = pyplot.subplots(nrows=1, ncols=1, figsize=(12, 8))
     
-    z_mesh =plot.hist2d(x=z_phot, y=application_magnitude, bins=[z_source_grid, magnitude_grid], norm=normalize, cmap='plasma')[-1]
+    z_mesh =plot.hist2d(x=z_phot, y=application_magnitude, bins=[z_grid, magnitude_grid], norm=normalize, cmap='plasma')[-1]
     
-    plot.plot(z_lens_grid, slope * z_lens_grid + intersection, color='black', linestyle='--', linewidth=2.5)
+    plot.plot(numpy.ones(grid_size) * z1_source, numpy.linspace(magnitude1, magnitude2, grid_size), color='black', linestyle='--', linewidth=2.5)
     
-    plot.plot(numpy.ones(grid_size) * z1_lens, numpy.linspace(magnitude1, slope * z1_lens + intersection, grid_size), color='black', linestyle='--', linewidth=2.5)
+    plot.plot(numpy.ones(grid_size) * z2_source, numpy.linspace(magnitude1, magnitude2, grid_size), color='black', linestyle='--', linewidth=2.5)
     
-    plot.plot(numpy.ones(grid_size) * z2_lens, numpy.linspace(magnitude1, slope * z2_lens + intersection, grid_size), color='black', linestyle='--', linewidth=2.5)
+    plot.plot(numpy.ones(grid_size) * z1_lens, numpy.linspace(magnitude1, slope * z1_lens + intersection, grid_size), color='black', linestyle='-.', linewidth=2.5)
     
-    plot.plot(numpy.ones(grid_size) * z1_source, numpy.linspace(magnitude1, slope * z1_source + intersection, grid_size), color='black', linestyle=':', linewidth=2.5)
+    plot.plot(numpy.ones(grid_size) * z2_lens, numpy.linspace(magnitude1, slope * z2_lens + intersection, grid_size), color='black', linestyle='-.', linewidth=2.5)
     
-    plot.plot(numpy.ones(grid_size) * z2_source, numpy.linspace(magnitude1, slope * z2_source + intersection, grid_size), color='black', linestyle=':', linewidth=2.5)
+    plot.plot(numpy.linspace(z1_lens, z2_lens, grid_size + 1), slope * numpy.linspace(z1_lens, z2_lens, grid_size + 1) + intersection, color='black', linestyle='-.', linewidth=2.5)
     
     plot.set_xlim(z1, z2)
     plot.set_ylim(magnitude1, magnitude2)

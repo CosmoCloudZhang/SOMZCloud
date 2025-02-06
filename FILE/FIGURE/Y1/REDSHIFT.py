@@ -29,7 +29,8 @@ def main(tag, index, folder):
     # Redshift
     z1 = 0.0
     z2 = 3.0
-    grid_size = 300
+    
+    grid_size = 100
     z_grid = numpy.linspace(z1, z2, grid_size + 1)
     
     # Lens
@@ -53,30 +54,20 @@ def main(tag, index, folder):
     sigma2 = 1e+0
     sigma_grid = numpy.geomspace(sigma1, sigma2, grid_size + 1)
     
-    delta_lens = numpy.abs(z_phot_lens - z_true_lens)
-    delta_source = numpy.abs(z_phot_source - z_true_source)
+    sigma_lens = numpy.abs(z_phot_lens - z_true_lens) / (1 + z_true_lens)
+    sigma_source = numpy.abs(z_phot_source - z_true_source) / (1 + z_true_source)
     
-    sigma_lens = delta_lens / (1 + z_true_lens)
-    sigma_source = delta_source / (1 + z_true_source)
+    sigma_mean_lens = numpy.zeros(grid_size)
+    sigma_mean_source = numpy.zeros(grid_size)
     
-    bin_size = 30
-    z_bin = numpy.linspace(z1, z2, bin_size + 1)
-    
-    sigma_mean_lens = numpy.zeros(bin_size)
-    sigma_mean_source = numpy.zeros(bin_size)
-    
-    for m in range(bin_size):
-        select_lens = (z_bin[m] <= z_phot_lens) & (z_phot_lens < z_bin[m + 1])
+    for m in range(grid_size):
+        select_lens = (z_grid[m] <= z_phot_lens) & (z_phot_lens < z_grid[m + 1])
         if numpy.sum(select_lens) > 0:
             sigma_mean_lens[m] = numpy.mean(sigma_lens[select_lens])
         
-        select_source = (z_bin[m] <= z_phot_source) & (z_phot_source < z_bin[m + 1])
+        select_source = (z_grid[m] <= z_phot_source) & (z_phot_source < z_grid[m + 1])
         if numpy.sum(select_source) > 0:
             sigma_mean_source[m] = numpy.mean(sigma_source[select_source])
-    
-    print('Lens: {} {} {}'.format(numpy.median(sigma_lens), len(sigma_lens[sigma_lens > 0.15]) / len(sigma_lens) * 100, len(delta_lens[delta_lens > 1.0]) / len(delta_lens) * 100))
-    
-    print('Source: {} {} {}'.format(numpy.median(sigma_source), len(sigma_source[sigma_source > 0.15]) / len(sigma_source) * 100, len(delta_source[delta_source > 1.0]) / len(delta_source) * 100))
     
     # Plot
     figure = pyplot.figure(figsize=(15, 12))
@@ -88,7 +79,11 @@ def main(tag, index, folder):
     
     z_mesh = plot1.hist2d(x=z_phot_lens, y=z_true_lens, bins=[z_grid, z_grid], norm=normalize, cmap='plasma')[-1]
     
-    plot1.plot(z_grid, z_grid, color='black', linestyle='--', linewidth=2.5)
+    plot1.plot(z_grid, z_grid - 0.15 * (1 + z_grid), color='black', linestyle='-.', linewidth=2.5)
+    
+    plot1.plot(z_grid, z_grid + 0.15 * (1 + z_grid), color='black', linestyle='-.', linewidth=2.5)
+    
+    plot1.plot(z_grid, z_grid, color='black', linestyle='-', linewidth=2.5)
     
     plot1.set_xlim(z1, z2)
     plot1.set_ylim(z1, z2)
@@ -102,7 +97,11 @@ def main(tag, index, folder):
     
     z_mesh = plot2.hist2d(x=z_phot_source, y=z_true_source, bins=[z_grid, z_grid], norm=normalize, cmap='plasma')[-1]
     
-    plot2.plot(z_grid, z_grid, color='black', linestyle='--', linewidth=2.5)
+    plot2.plot(z_grid, z_grid - 0.15 * (1 + z_grid), color='black', linestyle='-.', linewidth=2.5)
+    
+    plot2.plot(z_grid, z_grid + 0.15 * (1 + z_grid), color='black', linestyle='-.', linewidth=2.5)
+    
+    plot2.plot(z_grid, z_grid, color='black', linestyle='-', linewidth=2.5)
     
     plot2.set_xlim(z1, z2)
     plot2.set_ylim(z1, z2)
@@ -116,9 +115,9 @@ def main(tag, index, folder):
     
     z_mesh = plot3.hist2d(x=z_phot_lens, y=sigma_lens, bins=[z_grid, sigma_grid], norm=normalize, cmap='plasma')[-1]
     
-    plot3.plot((z_bin[1:] + z_bin[:-1]) / 2, sigma_mean_lens, color='black', linestyle='-', linewidth=2.5)
+    plot3.plot((z_grid[1:] + z_grid[:-1]) / 2, sigma_mean_lens, color='black', linestyle='--', linewidth=2.5)
     
-    plot3.plot(z_grid, 0.03 * numpy.ones(grid_size + 1), color='black', linestyle='--', linewidth=2.5)
+    plot3.plot(z_grid, 0.03 * numpy.ones(grid_size + 1), color='black', linestyle=':', linewidth=2.5)
     
     plot3.set_xlim(z1, z2)
     plot3.set_ylim(sigma1, sigma2)
@@ -132,9 +131,9 @@ def main(tag, index, folder):
     
     z_mesh = plot4.hist2d(x=z_phot_source, y=sigma_source, bins=[z_grid, sigma_grid], norm=normalize, cmap='plasma')[-1]
     
-    plot4.plot((z_bin[1:] + z_bin[:-1]) / 2, sigma_mean_source, color='black', linestyle='-', linewidth=2.5)
+    plot4.plot((z_grid[1:] + z_grid[:-1]) / 2, sigma_mean_source, color='black', linestyle='--', linewidth=2.5)
     
-    plot4.plot(z_grid, 0.05 * numpy.ones(grid_size + 1), color='black', linestyle='--', linewidth=2.5)
+    plot4.plot(z_grid, 0.05 * numpy.ones(grid_size + 1), color='black', linestyle=':', linewidth=2.5)
     
     plot4.set_xlim(z1, z2)
     plot4.set_ylim(sigma1, sigma2)
@@ -165,7 +164,7 @@ def main(tag, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Figure Redshift')
+    PARSE = argparse.ArgumentParser(description='Figure Sample')
     PARSE.add_argument('--tag', type=str, help='The tag of the configuration')
     PARSE.add_argument('--index', type=int, help='The index of all the datasets')
     PARSE.add_argument('--folder', type=str, help='The base folder of all the datasets')
