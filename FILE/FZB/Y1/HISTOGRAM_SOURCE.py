@@ -8,7 +8,7 @@ import argparse
 
 def main(tag, index, folder):
     '''
-    Histogram of the spec redshifts of the source samples
+    Histogram of the spec redshifts of the SOURCE samples
     
     Arguments:
         tag (str): The tag of the configuration
@@ -30,42 +30,44 @@ def main(tag, index, folder):
     z1 = 0.0
     z2 = 3.0
     grid_size = 300
-    sample_size = 1000
+    z_delta = (z2 - z1) / grid_size
     z_grid = numpy.linspace(z1, z2, grid_size + 1)
+    z_bin = numpy.linspace(z1 - z_delta / 2, z2 + z_delta / 2, z_grid.size + 1)
     
     # Application
-    with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/APPLICATION{}.hdf5'.format(tag, index)), 'r') as file:
+    with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         z_true = file['photometry']['redshift_true'][:]
     
     # Bin
     with h5py.File(os.path.join(fzb_folder, '{}/SOURCE/SOURCE{}/SELECT.hdf5'.format(tag, index)), 'r') as file:
         source_bin = file['bin'][:].astype(numpy.float32)
-        source_select = file['select'][:].astype(numpy.bool)
+        source_select = file['select'][:].astype(bool)
+    source_bin_size = len(source_bin) - 1
+    sample_size = 1000
     
-    # Lens
+    # Source
+    source_single = numpy.zeros((source_bin_size, grid_size + 1))
+    source_sample = numpy.zeros((source_bin_size, sample_size, grid_size + 1))
+    
     for m in range(len(source_bin) - 1):
         # Select
         z_select = z_true[source_select[m, :]]
         
         # Single
-        histogram = numpy.histogram(z_select, bins=z_grid, range=(z_grid.min(), z_grid.max()), density=True)[0]
-        single = numpy.interp(x=z_grid, xp=(z_grid[+1:] + z_grid[:-1]) / 2, fp=histogram, left=0.0, right=0.0)
-        source_single = single / scipy.integrate.trapezoid(x=z_grid, y=single, axis=0)
+        histogram = numpy.histogram(z_select, bins=z_bin, range=(z1, z2), density=True)[0]
+        source_single[m, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
         
         # Sample
-        source_sample = numpy.zeros((sample_size, grid_size + 1))
         for n in range(sample_size):
             z_sample = numpy.random.choice(z_select, len(z_select), replace=True)
             
-            histogram = numpy.histogram(z_sample, bins=z_grid, range=(z_grid.min(), z_grid.max()), density=True)[0]
-            sample = numpy.interp(x=z_grid, xp=(z_grid[+1:] + z_grid[:-1]) / 2, fp=histogram, left=0.0, right=0.0)
-            source_sample[n, :] = sample / scipy.integrate.trapezoid(x=z_grid, y=sample, axis=0)
-        
-        # Save
-        source_data = {'single': source_single, 'sample': source_sample}
-        with h5py.File(os.path.join(fzb_folder, 'SOURCE/SOURCE{}/SELECT{}.hdf5'.format(index, m + 1)), 'w') as file:
-            for key, value in source_data.items():
-                file.create_dataset(key, data=value)
+            histogram = numpy.histogram(z_sample, bins=z_bin, range=(z1, z2), density=True)[0]
+            source_sample[m, n, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
+    
+    # Save
+    with h5py.File(os.path.join(fzb_folder, '{}/SOURCE/SOURCE{}/HISTOGRAM.hdf5'.format(tag, index)), 'w') as file:
+        file.create_dataset('single', data=source_single, dtype=numpy.float32)
+        file.create_dataset('sample', data=source_sample, dtype=numpy.float32)
     
     # Duration
     end = time.time()

@@ -30,18 +30,20 @@ def main(tag, index, folder):
     z1 = 0.0
     z2 = 3.0
     grid_size = 300
-    sample_size = 1000
+    z_delta = (z2 - z1) / grid_size
     z_grid = numpy.linspace(z1, z2, grid_size + 1)
+    z_bin = numpy.linspace(z1 - z_delta / 2, z2 + z_delta / 2, z_grid.size + 1)
     
     # Application
-    with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/APPLICATION{}.hdf5'.format(tag, index)), 'r') as file:
+    with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         z_true = file['photometry']['redshift_true'][:]
     
     # Bin
     with h5py.File(os.path.join(fzb_folder, '{}/LENS/LENS{}/SELECT.hdf5'.format(tag, index)), 'r') as file:
         lens_bin = file['bin'][:].astype(numpy.float32)
-        lens_select = file['select'][:].astype(numpy.bool)
+        lens_select = file['select'][:].astype(bool)
     lens_bin_size = len(lens_bin) - 1
+    sample_size = 1000
     
     # Lens
     lens_single = numpy.zeros((lens_bin_size, grid_size + 1))
@@ -52,24 +54,20 @@ def main(tag, index, folder):
         z_select = z_true[lens_select[m, :]]
         
         # Single
-        histogram = numpy.histogram(z_select, bins=z_grid, range=(z_grid.min(), z_grid.max()), density=True)[0]
-        single = numpy.interp(x=z_grid, xp=(z_grid[+1:] + z_grid[:-1]) / 2, fp=histogram, left=0.0, right=0.0)
-        lens_single[m, :] = single / scipy.integrate.trapezoid(x=z_grid, y=single, axis=0)
+        histogram = numpy.histogram(z_select, bins=z_bin, range=(z1, z2), density=True)[0]
+        lens_single[m, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
         
         # Sample
-        lens_sample = numpy.zeros((sample_size, grid_size + 1))
         for n in range(sample_size):
             z_sample = numpy.random.choice(z_select, len(z_select), replace=True)
             
-            histogram = numpy.histogram(z_sample, bins=z_grid, range=(z_grid.min(), z_grid.max()), density=True)[0]
-            sample = numpy.interp(x=z_grid, xp=(z_grid[+1:] + z_grid[:-1]) / 2, fp=histogram, left=0.0, right=0.0)
-            lens_sample[m, n, :] = sample / scipy.integrate.trapezoid(x=z_grid, y=sample, axis=0)
+            histogram = numpy.histogram(z_sample, bins=z_bin, range=(z1, z2), density=True)[0]
+            lens_sample[m, n, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
     
     # Save
-    lens_data = {'single': lens_single, 'sample': lens_sample}
-    with h5py.File(os.path.join(fzb_folder, 'LENS/LENS{}/HISTOGRAM.hdf5'.format(index)), 'w'):
-        for key, value in lens_data.items():
-            file.create_dataset(key, data=value)
+    with h5py.File(os.path.join(fzb_folder, '{}/LENS/LENS{}/HISTOGRAM.hdf5'.format(tag, index)), 'w') as file:
+        file.create_dataset('single', data=lens_single, dtype=numpy.float32)
+        file.create_dataset('sample', data=lens_sample, dtype=numpy.float32)
     
     # Duration
     end = time.time()
