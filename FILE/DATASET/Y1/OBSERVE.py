@@ -143,7 +143,7 @@ def main(tag, folder):
             file.create_dataset(key, data=observation[key], dtype=numpy.float32)
     
     print('Number: {:.0f}'.format(len(observation['redshift'])))
-    print('Effective number: {:.0f}'.format(numpy.sum((numpy.square(sigma0) / (numpy.square(sigma0) + numpy.square(observation['sigma']))))))
+    print('Effective number: {:.0f}'.format(numpy.square(sigma0) * numpy.sum(1 / (numpy.square(sigma0) + numpy.square(observation['sigma'])))))
     
     # Duration
     end = time.time()

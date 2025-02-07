@@ -90,11 +90,11 @@ def main(tag, index, folder):
     som_size = model['n_rows'] * model['n_columns']
     simulation_count = numpy.bincount(simulation_label, minlength=som_size)
     
-    weight = numpy.divide(application_count, simulation_count, out=numpy.zeros(som_size), where=simulation_count != 0)
-    simulation_weight = weight[simulation_label] / numpy.sum(weight[simulation_label])
+    simulation_weight = numpy.divide(application_count, simulation_count, out=numpy.zeros(som_size), where=simulation_count != 0)
+    simulation_probability = simulation_weight[simulation_label] / numpy.sum(simulation_weight[simulation_label])
     
     # Selection
-    indices = numpy.random.choice(simulation_size, size=application_size, replace=False, p=simulation_weight)
+    indices = numpy.random.choice(simulation_size, size=application_size, replace=False, p=simulation_probability)
     selection_dataset = {key: simulation_dataset[key][indices].astype(numpy.float32) for key in simulation_dataset.keys()}
     
     selection_coordinate1 = simulation_coordinate1[indices]
