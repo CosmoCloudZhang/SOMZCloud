@@ -36,9 +36,15 @@ def main(tag, index, folder):
     
     # Application
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        z_true = file['photometry']['redshift_true'][:]
+        application_label = file['meta']['label'][:].astype(numpy.int32)
+        application_redshift_true = file['photometry']['redshift_true'][:].astype(numpy.float32)
     
-    # Bin
+    # Combination
+    with h5py.File(os.path.join(dataset_folder, '{}/COMBINATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+        combination_count = file['meta']['count'][:].astype(numpy.int32)
+    som_size = len(combination_count)
+    
+    # Select
     with h5py.File(os.path.join(fzb_folder, '{}/LENS/LENS{}/SELECT.hdf5'.format(tag, index)), 'r') as file:
         lens_bin = file['bin'][:].astype(numpy.float32)
         lens_select = file['select'][:].astype(bool)
@@ -49,19 +55,32 @@ def main(tag, index, folder):
     lens_single = numpy.zeros((lens_bin_size, grid_size + 1))
     lens_sample = numpy.zeros((lens_bin_size, sample_size, grid_size + 1))
     
-    for m in range(len(lens_bin) - 1):
+    for m in range(lens_bin_size):
         # Select
-        z_select = z_true[lens_select[m, :]]
+        select = lens_select[m, :]
+        select_size = numpy.sum(select)
+        z_select = application_redshift_true[select]
+        
+        # Weight
+        application_label_select = application_label[select]
+        application_count_select = numpy.bincount(application_label_select, minlength=som_size)
+        application_weight_select = numpy.divide(application_count_select, combination_count, out=numpy.zeros(som_size), where=combination_count != 0)[application_label_select]
         
         # Single
-        histogram = numpy.histogram(z_select, bins=z_bin, range=(z1, z2), density=True)[0]
+        histogram = numpy.histogram(z_select, bins=z_bin, range=(z1, z2), density=True, weights=application_weight_select)[0]
         lens_single[m, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
         
         # Sample
         for n in range(sample_size):
-            z_sample = numpy.random.choice(z_select, len(z_select), replace=True)
+            indices = numpy.random.choice(numpy.arange(select_size), select_size, replace=True)
+            z_sample = z_select[indices]
             
-            histogram = numpy.histogram(z_sample, bins=z_bin, range=(z1, z2), density=True)[0]
+            # Weight
+            application_label_sample = application_label_select[indices]
+            application_count_sample = numpy.bincount(application_label_sample, minlength=som_size)
+            application_weight_sample = numpy.divide(application_count_sample, combination_count, out=numpy.zeros(som_size), where=combination_count != 0)[application_label_sample]
+            
+            histogram = numpy.histogram(z_sample, bins=z_bin, range=(z1, z2), density=True, weights=application_weight_sample)[0]
             lens_sample[m, n, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
     
     # Save
