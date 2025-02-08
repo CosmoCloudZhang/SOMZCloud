@@ -35,8 +35,9 @@ def main(folder):
         catalog = GCRCatalogs.load_catalog('roman_rubin_2023_v1.1.3_elais', config_overwrite={'healpix_pixels': [value]})
         
         observation = catalog.get_quantities([
+            'ra',
+            'dec',
             'redshift',
-            'galaxy_id',
             'mag_u_lsst', 
             'mag_g_lsst',
             'mag_r_lsst',
@@ -66,8 +67,10 @@ def main(folder):
             file.create_dataset('redshift_true', data=observation['redshift_true'], dtype=numpy.float32)
             file.create_dataset('magnification', data=observation['magnification'], dtype=numpy.float32)
             
-            file.create_dataset('galaxy_id', data=observation['galaxy_id'], dtype=numpy.float32)
-            file.create_dataset('value', data=numpy.ones(len(observation['galaxy_id'])) * value, dtype=numpy.float32)
+            file.create_dataset('ra', data=observation['ra'], dtype=numpy.float32)
+            file.create_dataset('dec', data=observation['dec'], dtype=numpy.float32)
+            file.create_dataset('id', data=numpy.arange(len(observation['redshift'])), dtype=numpy.int32)
+            file.create_dataset('value', data=numpy.ones(len(observation['redshift'])) * value, dtype=numpy.int32)
             
             file.create_dataset('major_disk', data=observation['size_disk_true'], dtype=numpy.float32)
             file.create_dataset('major_bulge', data=observation['size_bulge_true'], dtype=numpy.float32)
@@ -84,8 +87,9 @@ def main(folder):
         catalog = GCRCatalogs.load_catalog('cosmoDC2_v1.1.4_image', config_overwrite={'healpix_pixels': [value]})
         
         simulation = catalog.get_quantities([
+            'ra',
+            'dec',
             'redshift',
-            'galaxy_id',
             'mag_u_lsst', 
             'mag_g_lsst',
             'mag_r_lsst',
@@ -115,8 +119,10 @@ def main(folder):
             file.create_dataset('redshift_true', data=simulation['redshift_true'], dtype=numpy.float32)
             file.create_dataset('magnification', data=simulation['magnification'], dtype=numpy.float32)
             
-            file.create_dataset('galaxy_id', data=simulation['galaxy_id'], dtype=numpy.float32)
-            file.create_dataset('value', data=numpy.ones(len(simulation['galaxy_id'])) * value, dtype=numpy.float32)
+            file.create_dataset('ra', data=simulation['ra'], dtype=numpy.float32)
+            file.create_dataset('dec', data=simulation['dec'], dtype=numpy.float32)
+            file.create_dataset('id', data=numpy.arange(len(simulation['redshift'])), dtype=numpy.int32)
+            file.create_dataset('value', data=numpy.ones(len(simulation['redshift'])) * value, dtype=numpy.int32)
             
             file.create_dataset('major_disk', data=simulation['size_disk_true'], dtype=numpy.float32)
             file.create_dataset('major_bulge', data=simulation['size_bulge_true'], dtype=numpy.float32)

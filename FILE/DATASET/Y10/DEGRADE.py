@@ -39,9 +39,9 @@ def main(tag, index, folder):
     }
     
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        application_dataset['meta'] = {key: file['meta'][key][:].astype(numpy.float32) for key in file['meta'].keys()}
-        application_dataset['morphology'] = {key: file['morphology'][key][:].astype(numpy.float32) for key in file['morphology'].keys()}
-        application_dataset['photometry'] = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
+        application_dataset['meta'] = {key: file['meta'][key][...] for key in file['meta'].keys()}
+        application_dataset['morphology'] = {key: file['morphology'][key][...] for key in file['morphology'].keys()}
+        application_dataset['photometry'] = {key: file['photometry'][key][...] for key in file['photometry'].keys()}
     
     # Magnitude
     magnitude1 = 21
@@ -60,12 +60,12 @@ def main(tag, index, folder):
     fraction2 = 1.0
     fraction = numpy.random.uniform(low=fraction1, high=fraction2)
     
-    # Label
-    application_label = application_dataset['meta']['label']
-    label_size = int(fraction * len(numpy.unique(application_label[select])))
+    # Cell
+    application_cell_id = application_dataset['meta']['cell_id']
+    select_cell_size = int(fraction * len(numpy.unique(application_cell_id[select])))
     
-    select_label = numpy.random.choice(numpy.unique(application_label[select]), size=label_size, replace=False)
-    select = select & numpy.isin(application_label, select_label)
+    select_cell = numpy.random.choice(numpy.unique(application_cell_id[select]), size=select_cell_size, replace=False)
+    select = select & numpy.isin(application_cell_id, select_cell)
     
     # Size
     size1 = 250000
@@ -86,28 +86,27 @@ def main(tag, index, folder):
     data_store.__class__.allow_overwrite = True
     
     model_name = os.path.join(som_folder, '{}/INFORM/INFORM.pkl'.format(tag))
-    column_list = ['mag_u_lsst', 'mag_g_lsst', 'mag_r_lsst', 'mag_i_lsst', 'mag_z_lsst', 'mag_y_lsst']
     model = data_store.read_file(key='model', path=model_name, handle_class=core.data.ModelHandle)()
     
     chunk = 100000
     degradation_size = len(degradation_dataset['photometry']['redshift'])
-    degradation_coordinate = numpy.zeros((degradation_size, 2), dtype=numpy.int32)
+    degradation_cell_coordinate = numpy.zeros((degradation_size, 2), dtype=numpy.int32)
     
     for m in range(degradation_size // chunk + 1):
         begin = m * chunk
         stop = min((m + 1) * chunk, degradation_size)
-        degradation = {key: degradation_dataset['photometry'][key][begin: stop].astype(numpy.float32) for key in column_list}
+        degradation = {key: degradation_dataset['photometry'][key][begin: stop].astype(numpy.float32) for key in model['usecols']}
         
-        degradation_column = somoclu_som._computemagcolordata(data=degradation, mag_column_name='mag_i_lsst', column_names=column_list, colusage='colors')
-        degradation_coordinate[begin: stop, :] = somoclu_som.get_bmus(model['som'], degradation_column)
+        degradation_column = somoclu_som._computemagcolordata(data=degradation, mag_column_name=model['ref_column'], column_names=model['usecols'], colusage=model['column_usage'])
+        degradation_cell_coordinate[begin: stop, :] = somoclu_som.get_bmus(model['som'], degradation_column)
     
-    degradation_coordinate1 = degradation_coordinate[:, 0]
-    degradation_coordinate2 = degradation_coordinate[:, 1]
-    degradation_label = degradation_coordinate1 * model['n_columns'] + degradation_coordinate2
+    degradation_cell_coordinate1 = degradation_cell_coordinate[:, 0]
+    degradation_cell_coordinate2 = degradation_cell_coordinate[:, 1]
+    degradation_cell_id = numpy.ravel_multi_index(numpy.transpose(degradation_cell_coordinate), (model['n_rows'], model['n_columns']))
     
-    som_size = model['n_columns'] * model['n_rows']
-    degradation_count = numpy.bincount(degradation_label, minlength=som_size)
-    degradation_mean = numpy.divide(numpy.bincount(degradation_label, weights=degradation_dataset['photometry']['redshift'], minlength=som_size), degradation_count, out=numpy.ones(som_size) * numpy.nan, where=degradation_count != 0)
+    cell_size = model['n_rows'] * model['n_columns']
+    degradation_cell_count = numpy.bincount(degradation_cell_id, minlength=cell_size)
+    degradation_cell_mean = numpy.divide(numpy.bincount(degradation_cell_id, weights=degradation_dataset['photometry']['redshift'], minlength=cell_size), degradation_cell_count, out=numpy.ones(cell_size) * numpy.nan, where=degradation_cell_count != 0)
     
     # Save
     with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, index)), 'w') as file:
@@ -118,20 +117,23 @@ def main(tag, index, folder):
         file['meta'].create_dataset('redshift', data=redshift, dtype=numpy.float32)
         file['meta'].create_dataset('magnitude', data=magnitude, dtype=numpy.float32)
         
-        file['meta'].create_dataset('mean', data=degradation_mean, dtype=numpy.float32)
-        file['meta'].create_dataset('count', data=degradation_count, dtype=numpy.int32)
+        file['meta'].create_dataset('cell_size1', data=model['n_rows'], dtype=numpy.int32)
+        file['meta'].create_dataset('cell_size2', data=model['n_columns'], dtype=numpy.int32)
         
-        file['meta'].create_dataset('label', data=degradation_label, dtype=numpy.int32)
-        file['meta'].create_dataset('coordinate1', data=degradation_coordinate1, dtype=numpy.int32)
-        file['meta'].create_dataset('coordinate2', data=degradation_coordinate2, dtype=numpy.int32)
+        file['meta'].create_dataset('cell_id', data=degradation_cell_id, dtype=numpy.int32)
+        file['meta'].create_dataset('cell_coordinate1', data=degradation_cell_coordinate1, dtype=numpy.int32)
+        file['meta'].create_dataset('cell_coordinate2', data=degradation_cell_coordinate2, dtype=numpy.int32)
+        
+        file['meta'].create_dataset('cell_mean', data=degradation_cell_mean, dtype=numpy.float32)
+        file['meta'].create_dataset('cell_count', data=degradation_cell_count, dtype=numpy.int32)
         
         file.create_group('morphology')
         for key in degradation_dataset['morphology'].keys():
-            file['morphology'].create_dataset(key, data=degradation_dataset['morphology'][key], dtype=numpy.float32)
+            file['morphology'].create_dataset(key, data=degradation_dataset['morphology'][key], dtype=degradation_dataset['morphology'][key].dtype)
         
         file.create_group('photometry')
         for key in degradation_dataset['photometry'].keys():
-            file['photometry'].create_dataset(key, data=degradation_dataset['photometry'][key], dtype=numpy.float32)
+            file['photometry'].create_dataset(key, data=degradation_dataset['photometry'][key], dtype=degradation_dataset['photometry'][key].dtype)
     
     # Duration
     end = time.time()

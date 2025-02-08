@@ -33,9 +33,9 @@ def main(tag, index, folder):
     
     # Degradation
     with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        degradation_count = file['meta']['count'][:].astype(numpy.float32)
-        degradation_redshift = file['photometry']['redshift'][:].astype(numpy.float32)
-        degradation_magnitude = file['photometry']['mag_i_lsst'][:].astype(numpy.float32)
+        degradation_count = file['meta']['count'][...]
+        degradation_redshift = file['photometry']['redshift'][...]
+        degradation_magnitude = file['photometry']['mag_i_lsst'][...]
     degradation_size = len(degradation_redshift)
     
     # Selection
@@ -46,15 +46,15 @@ def main(tag, index, folder):
     }
     
     with h5py.File(os.path.join(dataset_folder, '{}/SELECTION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        selection_dataset['meta'] = {key: file['meta'][key][:].astype(numpy.float32) for key in file['meta'].keys()}
-        selection_dataset['morphology'] = {key: file['morphology'][key][:].astype(numpy.float32) for key in file['morphology'].keys()}
-        selection_dataset['photometry'] = {key: file['photometry'][key][:].astype(numpy.float32) for key in file['photometry'].keys()}
+        selection_dataset['meta'] = {key: file['meta'][key][...] for key in file['meta'].keys()}
+        selection_dataset['morphology'] = {key: file['morphology'][key][...] for key in file['morphology'].keys()}
+        selection_dataset['photometry'] = {key: file['photometry'][key][...] for key in file['photometry'].keys()}
     
-    selection_label = selection_dataset['meta']['label']
+    selection_cell_id = selection_dataset['meta']['cell_id']
     selection_size = len(selection_dataset['photometry']['redshift'])
     
     fraction = numpy.sum(degradation_count == 0) / len(degradation_count)
-    filter = numpy.isin(selection_label, numpy.arange(len(degradation_count))[degradation_count == 0])
+    filter = numpy.isin(selection_cell_id, numpy.arange(len(degradation_count))[degradation_count == 0])
     
     # Magnitude
     magnitude = numpy.max(degradation_magnitude)
@@ -81,28 +81,27 @@ def main(tag, index, folder):
     data_store.__class__.allow_overwrite = True
     
     model_name = os.path.join(som_folder, '{}/INFORM/INFORM.pkl'.format(tag))
-    column_list = ['mag_u_lsst', 'mag_g_lsst', 'mag_r_lsst', 'mag_i_lsst', 'mag_z_lsst', 'mag_y_lsst']
     model = data_store.read_file(key='model', path=model_name, handle_class=core.data.ModelHandle)()
     
     chunk = 100000
     augmentation_size = len(augmentation_dataset['photometry']['redshift'])
-    augmentation_coordinate = numpy.zeros((augmentation_size, 2), dtype=numpy.int32)
+    augmentation_cell_coordinate = numpy.zeros((augmentation_size, 2), dtype=numpy.int32)
     
     for m in range(augmentation_size // chunk + 1):
         begin = m * chunk
         stop = min((m + 1) * chunk, augmentation_size)
-        augmentation = {key: augmentation_dataset['photometry'][key][begin: stop].astype(numpy.float32) for key in column_list}
+        augmentation = {key: augmentation_dataset['photometry'][key][begin: stop].astype(numpy.float32) for key in model['usecols']}
         
-        augmentation_column = somoclu_som._computemagcolordata(data=augmentation, mag_column_name='mag_i_lsst', column_names=column_list, colusage='colors')
-        augmentation_coordinate[begin: stop, :] = somoclu_som.get_bmus(model['som'], augmentation_column)
+        augmentation_column = somoclu_som._computemagcolordata(data=augmentation, mag_column_name=model['ref_column'], column_names=model['usecols'], colusage=model['column_usage'])
+        augmentation_cell_coordinate[begin: stop, :] = somoclu_som.get_bmus(model['som'], augmentation_column)
     
-    augmentation_coordinate1 = augmentation_coordinate[:, 0]
-    augmentation_coordinate2 = augmentation_coordinate[:, 1]
-    augmentation_label = augmentation_coordinate1 * model['n_columns'] + augmentation_coordinate2
+    augmentation_cell_coordinate1 = augmentation_cell_coordinate[:, 0]
+    augmentation_cell_coordinate2 = augmentation_cell_coordinate[:, 1]
+    augmentation_cell_id = numpy.ravel_multi_index(numpy.transpose(augmentation_cell_coordinate), dims=(model['n_rows'], model['n_columns']))
     
-    som_size = model['n_columns'] * model['n_rows']
-    augmentation_count = numpy.bincount(augmentation_label, minlength=som_size)
-    augmentation_mean = numpy.divide(numpy.bincount(augmentation_label, weights=augmentation_dataset['photometry']['redshift'], minlength=som_size), augmentation_count, out=numpy.ones(som_size) * numpy.nan, where=augmentation_count != 0)
+    cell_size = model['n_rows'] * model['n_columns']
+    augmentation_cell_count = numpy.bincount(augmentation_cell_id, minlength=cell_size)
+    augmentation_cell_mean = numpy.divide(numpy.bincount(augmentation_cell_id, weights=augmentation_dataset['photometry']['redshift'], minlength=cell_size), augmentation_cell_count, out=numpy.ones(cell_size) * numpy.nan, where=augmentation_cell_count != 0)
     
     # Save
     with h5py.File(os.path.join(dataset_folder, '{}/AUGMENTATION/DATA{}.hdf5'.format(tag, index)), 'w') as file:
@@ -113,20 +112,23 @@ def main(tag, index, folder):
         file['meta'].create_dataset('redshift', data=redshift, dtype=numpy.float32)
         file['meta'].create_dataset('magnitude', data=magnitude, dtype=numpy.float32)
         
-        file['meta'].create_dataset('mean', data=augmentation_mean, dtype=numpy.float32)
-        file['meta'].create_dataset('count', data=augmentation_count, dtype=numpy.int32)
+        file['meta'].create_dataset('cell_size1', data=model['n_rows'], dtype=numpy.int32)
+        file['meta'].create_dataset('cell_size2', data=model['n_columns'], dtype=numpy.int32)
         
-        file['meta'].create_dataset('label', data=augmentation_label, dtype=numpy.int32)
-        file['meta'].create_dataset('coordinate1', data=augmentation_coordinate1, dtype=numpy.int32)
-        file['meta'].create_dataset('coordinate2', data=augmentation_coordinate2, dtype=numpy.int32)
+        file['meta'].create_dataset('cell_id', data=augmentation_cell_id, dtype=numpy.int32)
+        file['meta'].create_dataset('cell_coordinate1', data=augmentation_cell_coordinate1, dtype=numpy.int32)
+        file['meta'].create_dataset('cell_coordinate2', data=augmentation_cell_coordinate2, dtype=numpy.int32)
+        
+        file['meta'].create_dataset('cell_mean', data=augmentation_cell_mean, dtype=numpy.float32)
+        file['meta'].create_dataset('cell_count', data=augmentation_cell_count, dtype=numpy.int32)
         
         file.create_group('morphology')
         for key in selection_dataset['morphology'].keys():
-            file['morphology'].create_dataset(key, data=augmentation_dataset['morphology'][key], dtype=numpy.float32)
+            file['morphology'].create_dataset(key, data=augmentation_dataset['morphology'][key], dtype=augmentation_dataset['morphology'][key].dtype)
         
         file.create_group('photometry')
         for key in selection_dataset['photometry'].keys():
-            file['photometry'].create_dataset(key, data=augmentation_dataset['photometry'][key], dtype=numpy.float32)
+            file['photometry'].create_dataset(key, data=augmentation_dataset['photometry'][key], dtype=augmentation_dataset['photometry'][key].dtype)
     
     # Duration
     end = time.time()

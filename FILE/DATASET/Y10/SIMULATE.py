@@ -69,7 +69,7 @@ def main(tag, folder):
         
         # Load
         with h5py.File(os.path.join(dataset_folder, 'CATALOG/SIMULATION_{}.hdf5'.format(value)), 'r') as file:
-            catalog = {key: file[key][:].astype(numpy.float32) for key in file.keys()}
+            catalog = {key: file[key][...] for key in file.keys()}
         
         major_disk = catalog['major_disk'] * numpy.sqrt(catalog['magnification'])
         major_bulge = catalog['major_bulge'] * numpy.sqrt(catalog['magnification'])
@@ -140,7 +140,7 @@ def main(tag, folder):
     # Save
     with h5py.File(os.path.join(dataset_folder, '{}/SIMULATION/SIMULATION.hdf5'.format(tag)), 'w') as file:
         for key in simulation.keys():
-            file.create_dataset(key, data=simulation[key], dtype=numpy.float32)
+            file.create_dataset(key, data=simulation[key], dtype=simulation[key].dtype)
     
     print('Number: {:.0f}'.format(len(simulation['redshift'])))
     print('Effective number: {:.0f}'.format(numpy.square(sigma0) * numpy.sum(1 / (numpy.square(sigma0) + numpy.square(simulation['sigma'])))))

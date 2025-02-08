@@ -34,19 +34,18 @@ def main(tag, index, folder):
     
     # Load
     with h5py.File(os.path.join(dataset_folder, '{}/SIMULATION/SIMULATION.hdf5'.format(tag)), 'r') as file:
-        simulation_dataset = {key: file[key][:].astype(numpy.float32) for key in file.keys()}
+        simulation_dataset = {key: file[key][...] for key in file.keys()}
     simulation_size = len(simulation_dataset['redshift'])
     
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        application_size = len(file['photometry']['redshift'])
-        application_count = file['meta']['count'][:].astype(numpy.int32)
+        application_cell_count = file['meta']['cell_count'][...]
+        application_size = len(file['photometry']['redshift'][...])
     
     # SOM
     data_store = core.stage.RailStage.data_store
     data_store.__class__.allow_overwrite = True
     
     model_name = os.path.join(som_folder, '{}/INFORM/INFORM.pkl'.format(tag))
-    column_list = ['mag_u_lsst', 'mag_g_lsst', 'mag_r_lsst', 'mag_i_lsst', 'mag_z_lsst', 'mag_y_lsst']
     model = data_store.read_file(key='model', path=model_name, handle_class=core.data.ModelHandle)()
     
     # Error
@@ -72,48 +71,50 @@ def main(tag, index, folder):
     simulation_dataset = dict(error_model(pandas.DataFrame(simulation_dataset), random_state=index))
     
     chunk = 100000
-    simulation_size = len(simulation_dataset['redshift'])
-    simulation_coordinate = numpy.zeros((simulation_size, 2), dtype=numpy.int32)
+    simulation_cell_coordinate = numpy.zeros((simulation_size, 2), dtype=numpy.int32)
     
     for m in range(simulation_size // chunk + 1):
         begin = m * chunk
         stop = min((m + 1) * chunk, simulation_size)
-        simulation = {key: simulation_dataset[key][begin: stop].astype(numpy.float32) for key in column_list}
+        simulation = {key: simulation_dataset[key][begin: stop].astype(numpy.float32) for key in model['usecols']}
         
-        simulation_column = somoclu_som._computemagcolordata(data=simulation, mag_column_name='mag_i_lsst', column_names=column_list, colusage='colors')
-        simulation_coordinate[begin: stop, :] = somoclu_som.get_bmus(model['som'], simulation_column)
+        simulation_column = somoclu_som._computemagcolordata(data=simulation, mag_column_name=model['ref_column'], column_names=model['usecols'], colusage='colors')
+        simulation_cell_coordinate[begin: stop, :] = somoclu_som.get_bmus(model['som'], simulation_column)
     
-    simulation_coordinate1 = simulation_coordinate[:, 0]
-    simulation_coordinate2 = simulation_coordinate[:, 1]
-    simulation_label = simulation_coordinate1 * model['n_columns'] + simulation_coordinate2
+    simulation_cell_coordinate1 = simulation_cell_coordinate[:, 0]
+    simulation_cell_coordinate2 = simulation_cell_coordinate[:, 1]
+    simulation_cell_id = numpy.ravel_multi_index(numpy.transpose(simulation_cell_coordinate), (model['n_rows'], model['n_columns']))
     
-    som_size = model['n_rows'] * model['n_columns']
-    simulation_count = numpy.bincount(simulation_label, minlength=som_size)
+    cell_size = model['n_rows'] * model['n_columns']
+    simulation_cell_count = numpy.bincount(simulation_cell_id, minlength=cell_size)
     
-    simulation_weight = numpy.divide(application_count, simulation_count, out=numpy.zeros(som_size), where=simulation_count != 0)
-    simulation_probability = simulation_weight[simulation_label] / numpy.sum(simulation_weight[simulation_label])
+    simulation_weight = numpy.divide(application_cell_count, simulation_cell_count, out=numpy.zeros(cell_size), where=simulation_cell_count != 0)
+    simulation_probability = simulation_weight[simulation_cell_id] / numpy.sum(simulation_weight[simulation_cell_id])
     
     # Selection
     indices = numpy.random.choice(simulation_size, size=application_size, replace=False, p=simulation_probability)
     selection_dataset = {key: simulation_dataset[key][indices].astype(numpy.float32) for key in simulation_dataset.keys()}
     
-    selection_coordinate1 = simulation_coordinate1[indices]
-    selection_coordinate2 = simulation_coordinate2[indices]
-    selection_label = selection_coordinate1 * model['n_columns'] + selection_coordinate2
+    selection_cell_coordinate1 = simulation_cell_coordinate1[indices]
+    selection_cell_coordinate2 = simulation_cell_coordinate2[indices]
+    selection_cell_id = simulation_cell_id[indices]
     
-    selection_count = numpy.bincount(selection_label, minlength=som_size)
-    selection_mean = numpy.divide(numpy.bincount(selection_label, weights=selection_dataset['redshift'], minlength=som_size), selection_count, out=numpy.ones(som_size) * numpy.nan, where=selection_count != 0)
+    selection_cell_count = numpy.bincount(selection_cell_id, minlength=cell_size)
+    selection_cell_mean = numpy.divide(numpy.bincount(selection_cell_id, weights=selection_dataset['redshift'], minlength=cell_size), selection_cell_count, out=numpy.ones(cell_size) * numpy.nan, where=selection_cell_count != 0)
     
     # Save
     with h5py.File(os.path.join(dataset_folder, '{}/SELECTION/DATA{}.hdf5'.format(tag, index)), 'w') as file:
         file.create_group('meta')
         
-        file['meta'].create_dataset('mean', data=selection_mean, dtype=numpy.float32)
-        file['meta'].create_dataset('count', data=selection_count, dtype=numpy.int32)
+        file['meta'].create_dataset('cell_size1', data=model['n_rows'], dtype=numpy.int32)
+        file['meta'].create_dataset('cell_size2', data=model['n_columns'], dtype=numpy.int32)
         
-        file['meta'].create_dataset('label', data=selection_label, dtype=numpy.int32)
-        file['meta'].create_dataset('coordinate1', data=selection_coordinate1, dtype=numpy.int32)
-        file['meta'].create_dataset('coordinate2', data=selection_coordinate2, dtype=numpy.int32)
+        file['meta'].create_dataset('cell_id', data=selection_cell_id, dtype=numpy.int32)
+        file['meta'].create_dataset('cell_coordinate1', data=selection_cell_coordinate1, dtype=numpy.int32)
+        file['meta'].create_dataset('cell_coordinate2', data=selection_cell_coordinate2, dtype=numpy.int32)
+        
+        file['meta'].create_dataset('cell_mean', data=selection_cell_mean, dtype=numpy.float32)
+        file['meta'].create_dataset('cell_count', data=selection_cell_count, dtype=numpy.int32)
         
         file.create_group('photometry')
         file['photometry'].create_dataset('redshift', data=selection_dataset['redshift'], dtype=numpy.float32)
@@ -134,8 +135,11 @@ def main(tag, index, folder):
         file['photometry'].create_dataset('mag_y_lsst_err', data=selection_dataset['mag_y_lsst_err'], dtype=numpy.float32)
         
         file.create_group('morphology')
-        file['morphology'].create_dataset('value', data=selection_dataset['value'], dtype=numpy.float32)
-        file['morphology'].create_dataset('galaxy_id', data=selection_dataset['galaxy_id'], dtype=numpy.float32)
+        file['morphology'].create_dataset('ra', data=selection_dataset['ra'], dtype=numpy.float32)
+        file['morphology'].create_dataset('dec', data=selection_dataset['dec'], dtype=numpy.float32)
+        
+        file['morphology'].create_dataset('id', data=selection_dataset['id'], dtype=numpy.int32)
+        file['morphology'].create_dataset('value', data=selection_dataset['value'], dtype=numpy.int32)
         
         file['morphology'].create_dataset('mu', data=selection_dataset['mu'], dtype=numpy.float32)
         file['morphology'].create_dataset('eta', data=selection_dataset['eta'], dtype=numpy.float32)

@@ -34,7 +34,7 @@ def main(tag, index, folder):
     
     # Load
     with h5py.File(os.path.join(dataset_folder, '{}/OBSERVATION/OBSERVATION.hdf5'.format(tag)), 'r') as file:
-        observation_dataset = {key: file[key][:].astype(numpy.float32) for key in file.keys()}
+        observation_dataset = {key: file[key][...] for key in file.keys()}
     
     # Error
     error_model = LsstErrorModel(
@@ -64,38 +64,40 @@ def main(tag, index, folder):
     data_store.__class__.allow_overwrite = True
     
     model_name = os.path.join(som_folder, '{}/INFORM/INFORM.pkl'.format(tag))
-    column_list = ['mag_u_lsst', 'mag_g_lsst', 'mag_r_lsst', 'mag_i_lsst', 'mag_z_lsst', 'mag_y_lsst']
     model = data_store.read_file(key='model', path=model_name, handle_class=core.data.ModelHandle)()
     
     chunk = 100000
     application_size = len(application_dataset['redshift'])
-    application_coordinate = numpy.zeros((application_size, 2), dtype=numpy.int32)
+    application_cell_coordinate = numpy.zeros((application_size, 2), dtype=numpy.int32)
     
     for m in range(application_size // chunk + 1):
         begin = m * chunk
         stop = min((m + 1) * chunk, application_size)
-        application = {key: application_dataset[key][begin: stop].astype(numpy.float32) for key in column_list}
+        application = {key: application_dataset[key][begin: stop].astype(numpy.float32) for key in model['usecols']}
         
-        application_column = somoclu_som._computemagcolordata(data=application, mag_column_name='mag_i_lsst', column_names=column_list, colusage='colors')
-        application_coordinate[begin: stop, :] = somoclu_som.get_bmus(model['som'], application_column)
+        application_column = somoclu_som._computemagcolordata(data=application, mag_column_name=model['ref_column'], column_names=model['usecols'], colusage=model['column_usage'])
+        application_cell_coordinate[begin: stop, :] = somoclu_som.get_bmus(model['som'], application_column)
     
-    application_coordinate1 = application_coordinate[:, 0]
-    application_coordinate2 = application_coordinate[:, 1]
-    application_label = application_coordinate1 * model['n_columns'] + application_coordinate2
+    application_cell_coordinate1 = application_cell_coordinate[:, 0]
+    application_cell_coordinate2 = application_cell_coordinate[:, 1]
+    application_cell_id = numpy.ravel_multi_index(numpy.transpose(application_cell_coordinate), (model['n_rows'], model['n_columns']))
     
-    som_size = model['n_columns'] * model['n_rows']
-    application_count = numpy.bincount(application_label, minlength=som_size)
-    application_mean = numpy.divide(numpy.bincount(application_label, weights=application_dataset['redshift'], minlength=som_size), application_count, out=numpy.ones(som_size) * numpy.nan, where=application_count != 0)
+    cell_size = model['n_rows'] * model['n_columns']
+    application_cell_count = numpy.bincount(application_cell_id, minlength=cell_size)
+    application_cell_mean = numpy.divide(numpy.bincount(application_cell_id, weights=application_dataset['redshift'], minlength=cell_size), application_cell_count, out=numpy.ones(cell_size) * numpy.nan, where=application_cell_count != 0)
     
     # Save
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'w') as file:
         file.create_group('meta')
-        file['meta'].create_dataset('mean', data=application_mean, dtype=numpy.float32)
-        file['meta'].create_dataset('count', data=application_count, dtype=numpy.int32)
+        file['meta'].create_dataset('cell_size1', data=model['n_rows'], dtype=numpy.int32)
+        file['meta'].create_dataset('cell_size2', data=model['n_columns'], dtype=numpy.int32)
         
-        file['meta'].create_dataset('label', data=application_label, dtype=numpy.int32)
-        file['meta'].create_dataset('coordinate1', data=application_coordinate1, dtype=numpy.int32)
-        file['meta'].create_dataset('coordinate2', data=application_coordinate2, dtype=numpy.int32)
+        file['meta'].create_dataset('cell_id', data=application_cell_id, dtype=numpy.int32)
+        file['meta'].create_dataset('cell_coordinate1', data=application_cell_coordinate1, dtype=numpy.int32)
+        file['meta'].create_dataset('cell_coordinate2', data=application_cell_coordinate2, dtype=numpy.int32)
+        
+        file['meta'].create_dataset('cell_mean', data=application_cell_mean, dtype=numpy.float32)
+        file['meta'].create_dataset('cell_count', data=application_cell_count, dtype=numpy.int32)
         
         file.create_group('photometry')
         file['photometry'].create_dataset('redshift', data=application_dataset['redshift'], dtype=numpy.float32)
@@ -116,8 +118,11 @@ def main(tag, index, folder):
         file['photometry'].create_dataset('mag_y_lsst_err', data=application_dataset['mag_y_lsst_err'], dtype=numpy.float32)
         
         file.create_group('morphology')
-        file['morphology'].create_dataset('value', data=application_dataset['value'], dtype=numpy.float32)
-        file['morphology'].create_dataset('galaxy_id', data=application_dataset['galaxy_id'], dtype=numpy.float32)
+        file['morphology'].create_dataset('ra', data=application_dataset['ra'], dtype=numpy.float32)
+        file['morphology'].create_dataset('dec', data=application_dataset['dec'], dtype=numpy.float32)
+        
+        file['morphology'].create_dataset('id', data=application_dataset['id'], dtype=numpy.int32)
+        file['morphology'].create_dataset('value', data=application_dataset['value'], dtype=numpy.int32)
         
         file['morphology'].create_dataset('mu', data=application_dataset['mu'], dtype=numpy.float32)
         file['morphology'].create_dataset('eta', data=application_dataset['eta'], dtype=numpy.float32)
