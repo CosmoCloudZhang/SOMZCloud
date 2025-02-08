@@ -50,7 +50,7 @@ def main(tag, folder):
     
     # Observation
     with h5py.File(os.path.join(dataset_folder, '{}/OBSERVATION/OBSERVATION.hdf5'.format(tag)), 'r') as file:
-        observation_dataset = {key: file[key][:].astype(numpy.float32) for key in file.keys()}
+        observation_dataset = {key: file[key][...] for key in file.keys()}
     
     # Inform
     inform_dataset = dict(error_model(pandas.DataFrame(observation_dataset), random_state=0))
@@ -76,8 +76,11 @@ def main(tag, folder):
         file['photometry'].create_dataset('mag_y_lsst_err', data=inform_dataset['mag_y_lsst_err'], dtype=numpy.float32)
         
         file.create_group('morphology')
-        file['morphology'].create_dataset('value', data=inform_dataset['value'], dtype=numpy.float32)
-        file['morphology'].create_dataset('galaxy_id', data=inform_dataset['galaxy_id'], dtype=numpy.float32)
+        file['morphology'].create_dataset('id', data=inform_dataset['id'], dtype=numpy.int32)
+        file['morphology'].create_dataset('value', data=inform_dataset['value'], dtype=numpy.int32)
+        
+        file['morphology'].create_dataset('ra', data=inform_dataset['ra'], dtype=numpy.float32)
+        file['morphology'].create_dataset('dec', data=inform_dataset['dec'], dtype=numpy.float32)
         
         file['morphology'].create_dataset('mu', data=inform_dataset['mu'], dtype=numpy.float32)
         file['morphology'].create_dataset('eta', data=inform_dataset['eta'], dtype=numpy.float32)
@@ -101,8 +104,8 @@ def main(tag, folder):
                 'input': 'input_data', 
                 'model': 'input_model',
             }, 
-            'n_rows': 50, 
-            'n_columns': 50, 
+            'n_rows': 100, 
+            'n_columns': 100, 
             'std_coeff': 0.5, 
             'maptype': 'toroid', 
             'nondetect_val': 99.0, 
