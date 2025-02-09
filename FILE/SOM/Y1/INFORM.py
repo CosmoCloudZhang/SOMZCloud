@@ -106,7 +106,7 @@ def main(tag, folder):
             }, 
             'n_rows': 100, 
             'n_columns': 100, 
-            'std_coeff': 5.0, 
+            'std_coeff': 1.0, 
             'maptype': 'toroid', 
             'nondetect_val': 99.0, 
             'grid_type': 'hexagonal', 
