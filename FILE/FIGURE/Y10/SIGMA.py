@@ -26,22 +26,22 @@ def main(tag, folder):
     
     # Load 
     with h5py.File(os.path.join(dataset_folder, '{}/OBSERVATION/OBSERVATION.hdf5'.format(tag)), 'r') as file:
-        mu = file['mu'][:].astype(numpy.float32)
-        eta = file['eta'][:].astype(numpy.float32)
-        sigma = file['sigma'][:].astype(numpy.float32)
-    size = 100
+        mu = file['mu'][...]
+        eta = file['eta'][...]
+        sigma = file['sigma'][...]
+    bin_size = 100
     
     mu1 = 0
     mu2 = 40
-    mu_edge = numpy.linspace(mu1, mu2, size + 1)
+    mu_edge = numpy.linspace(mu1, mu2, bin_size + 1)
     
     eta1 = 0
     eta2 = 4
-    eta_edge = numpy.linspace(eta1, eta2, size + 1)
+    eta_edge = numpy.linspace(eta1, eta2, bin_size + 1)
     
-    map = numpy.zeros((size, size))
-    for m in range(size):
-        for n in range(size):
+    map = numpy.zeros((bin_size, bin_size))
+    for m in range(bin_size):
+        for n in range(bin_size):
             select = (mu_edge[m] <= mu) & (mu < mu_edge[m + 1]) 
             select = select & (eta_edge[n] <= eta) & (eta < eta_edge[n + 1])
             
@@ -59,11 +59,11 @@ def main(tag, folder):
     
     figure, plot = pyplot.subplots(nrows=1, ncols=1, figsize=(10, 8))
     
-    mesh = plot.imshow(map, origin='lower', cmap='viridis', extent=[mu1, mu2, eta1, eta2], aspect='auto')
+    image = plot.imshow(map, origin='lower', cmap='viridis', extent=[mu1, mu2, eta1, eta2], aspect='auto')
     
-    plot.plot(mu_edge, numpy.ones(size + 1) * 0.1, color='black', linestyle='--', linewidth=2.5)
+    plot.plot(mu_edge, numpy.ones(bin_size + 1) * 0.1, color='black', linestyle='--', linewidth=2.5)
     
-    plot.plot(numpy.ones(size + 1) * 10, eta_edge, color='black', linestyle='--', linewidth=2.5)
+    plot.plot(numpy.ones(bin_size + 1) * 10, eta_edge, color='black', linestyle='--', linewidth=2.5)
     
     plot.set_xlim(mu1, mu2)
     plot.set_ylim(eta1, eta2)
@@ -71,7 +71,7 @@ def main(tag, folder):
     plot.set_xlabel(r'$\mu = \frac{S}{N}$')
     plot.set_ylabel(r'$\eta = \frac{R^2}{R^2_\mathrm{PSF}}$')
     
-    color_bar = figure.colorbar(mesh, cax=figure.add_axes([0.85, 0.15, 0.05, 0.70]),  orientation='vertical')
+    color_bar = figure.colorbar(image, cax=figure.add_axes([0.85, 0.15, 0.05, 0.70]),  orientation='vertical')
     color_bar.set_label(r'$\sigma_\gamma$')
     
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)

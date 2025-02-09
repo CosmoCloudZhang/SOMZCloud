@@ -1,9 +1,7 @@
 import os
 import h5py
 import time
-import numpy
 import argparse
-from rail import core
 from matplotlib import colors, pyplot
 
 def main(tag, index, folder):
@@ -23,16 +21,8 @@ def main(tag, index, folder):
     print('Index: {}'.format(index))
     
     # Path
-    som_folder = os.path.join(folder, 'SOM/')
     figure_folder = os.path.join(folder, 'FIGURE/')
     dataset_folder = os.path.join(folder, 'DATASET/')
-    
-    # SOM
-    data_store = core.stage.RailStage.data_store
-    data_store.__class__.allow_overwrite = True
-    
-    model_name = os.path.join(som_folder, '{}/INFORM/INFORM.pkl'.format(tag))
-    model = data_store.read_file(key='model', path=model_name, handle_class=core.data.ModelHandle)()
     
     # Plot
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
@@ -43,23 +33,31 @@ def main(tag, index, folder):
     
     # Application
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        application_mean = file['meta']['mean'][:].astype(numpy.float32)
-    application_map = application_mean.reshape(model['n_rows'], model['n_columns'])
+        application_cell_mean = file['meta']['cell_mean'][...]
+        application_cell_size1 = file['meta']['cell_size1'][...]
+        application_cell_size2 = file['meta']['cell_size2'][...]
+    application_map = application_cell_mean.reshape((application_cell_size1, application_cell_size2))
     
     # Degradation
     with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        degradation_mean = file['meta']['mean'][:].astype(numpy.float32)
-    degradation_map = degradation_mean.reshape(model['n_rows'], model['n_columns'])
+        degradation_cell_mean = file['meta']['cell_mean'][...]
+        degradation_cell_size1 = file['meta']['cell_size1'][...]
+        degradation_cell_size2 = file['meta']['cell_size2'][...]
+    degradation_map = degradation_cell_mean.reshape((degradation_cell_size1, degradation_cell_size2))
     
     # Augmentation
     with h5py.File(os.path.join(dataset_folder, '{}/AUGMENTATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        augmentation_mean = file['meta']['mean'][:].astype(numpy.float32)
-    augmentation_map = augmentation_mean.reshape(model['n_rows'], model['n_columns'])
+        augmentation_cell_mean = file['meta']['cell_mean'][...]
+        augmentation_cell_size1 = file['meta']['cell_size1'][...]
+        augmentation_cell_size2 = file['meta']['cell_size2'][...]
+    augmentation_map = augmentation_cell_mean.reshape((augmentation_cell_size1, augmentation_cell_size2))
     
     # Combination
     with h5py.File(os.path.join(dataset_folder, '{}/COMBINATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        combination_mean = file['meta']['mean'][:].astype(numpy.float32)
-    combination_map = combination_mean.reshape(model['n_rows'], model['n_columns'])
+        combination_cell_mean = file['meta']['cell_mean'][...]
+        combination_cell_size1 = file['meta']['cell_size1'][...]
+        combination_cell_size2 = file['meta']['cell_size2'][...]
+    combination_map = combination_cell_mean.reshape((combination_cell_size1, combination_cell_size2))
     
     # Plot
     normalize = colors.Normalize(vmin=0.0, vmax=2.0)
@@ -83,7 +81,7 @@ def main(tag, index, folder):
     
     color_bar = figure.colorbar(mesh, cax=figure.add_axes([0.15, 0.05, 0.70, 0.05]), orientation='horizontal')
     figure.subplots_adjust(bottom=0.12, hspace=0.10, wspace=0.05)
-    color_bar.set_label(r'$\mathrm{Mean \, Redshift}$')
+    color_bar.set_label(r'$\langle z_\mathrm{true} \rangle$')
     
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)
     os.makedirs(os.path.join(figure_folder, '{}/MAP/'.format(tag)), exist_ok=True)

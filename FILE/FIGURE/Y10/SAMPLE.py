@@ -28,7 +28,6 @@ def main(tag, index, folder):
     dataset_folder = os.path.join(folder, 'DATASET/')
     
     # Redshift
-    # Redshift
     z1_lens = 0.2
     z2_lens = 1.2
     
@@ -37,21 +36,26 @@ def main(tag, index, folder):
     
     z1 = 0.0
     z2 = 3.0
-    grid_size = 100
-    z_grid = numpy.linspace(z1, z2, grid_size + 1)
+    
+    bin_size = 100
+    z_bin = numpy.linspace(z1, z2, bin_size + 1)
     
     # Magnitude
     magnitude1 = 16.0
-    magnitude2 = 27.0
-    magnitude_grid = numpy.linspace(magnitude1, magnitude2, grid_size + 1)
+    magnitude2 = 26.5
+    magnitude_grid = numpy.linspace(magnitude1, magnitude2, bin_size + 1)
+    
+    # Values
+    slope = 4.0
+    intersection = 18.0
     
     # Application
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        application_magnitude = file['photometry']['mag_i_lsst'][:].astype(numpy.float32)
+        application_magnitude = file['photometry']['mag_i_lsst'][...]
     
     # Estimator
     with h5py.File(os.path.join(fzb_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        z_phot = file['z_phot'][:].astype(numpy.float32)
+        z_phot = file['z_phot'][...]
     
     # Configuration
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
@@ -60,25 +64,20 @@ def main(tag, index, folder):
     pyplot.rcParams['text.usetex'] = True
     pyplot.rcParams['font.size'] = 25
     
-    # Set variables
-    slope = 4.0
-    intersection = 18.0
-    
-    # Plot
     normalize = colors.LogNorm(vmin=1, vmax=10000)
     figure, plot = pyplot.subplots(nrows=1, ncols=1, figsize=(12, 8))
     
-    z_mesh =plot.hist2d(x=z_phot, y=application_magnitude, bins=[z_grid, magnitude_grid], norm=normalize, cmap='plasma')[-1]
+    image = plot.hist2d(x=z_phot, y=application_magnitude, bins=[z_bin, magnitude_grid], norm=normalize, cmap='plasma')[-1]
     
-    plot.plot(numpy.ones(grid_size) * z1_source, numpy.linspace(magnitude1, magnitude2, grid_size), color='black', linestyle='--', linewidth=2.5)
+    plot.plot(numpy.ones(bin_size) * z1_source, numpy.linspace(magnitude1, magnitude2, bin_size), color='black', linestyle='--', linewidth=2.5)
     
-    plot.plot(numpy.ones(grid_size) * z2_source, numpy.linspace(magnitude1, magnitude2, grid_size), color='black', linestyle='--', linewidth=2.5)
+    plot.plot(numpy.ones(bin_size) * z2_source, numpy.linspace(magnitude1, magnitude2, bin_size), color='black', linestyle='--', linewidth=2.5)
     
-    plot.plot(numpy.ones(grid_size) * z1_lens, numpy.linspace(magnitude1, slope * z1_lens + intersection, grid_size), color='black', linestyle='-.', linewidth=2.5)
+    plot.plot(numpy.ones(bin_size) * z1_lens, numpy.linspace(magnitude1, slope * z1_lens + intersection, bin_size), color='black', linestyle='-.', linewidth=2.5)
     
-    plot.plot(numpy.ones(grid_size) * z2_lens, numpy.linspace(magnitude1, slope * z2_lens + intersection, grid_size), color='black', linestyle='-.', linewidth=2.5)
+    plot.plot(numpy.ones(bin_size) * z2_lens, numpy.linspace(magnitude1, slope * z2_lens + intersection, bin_size), color='black', linestyle='-.', linewidth=2.5)
     
-    plot.plot(numpy.linspace(z1_lens, z2_lens, grid_size + 1), slope * numpy.linspace(z1_lens, z2_lens, grid_size + 1) + intersection, color='black', linestyle='-.', linewidth=2.5)
+    plot.plot(numpy.linspace(z1_lens, z2_lens, bin_size + 1), slope * numpy.linspace(z1_lens, z2_lens, bin_size + 1) + intersection, color='black', linestyle='-.', linewidth=2.5)
     
     plot.set_xlim(z1, z2)
     plot.set_ylim(magnitude1, magnitude2)
@@ -87,7 +86,7 @@ def main(tag, index, folder):
     plot.set_xlabel(r'$z_\mathrm{phot}$')
     
     # Color bar
-    color_bar = figure.colorbar(z_mesh, cax=figure.add_axes([0.15, 0.05, 0.70, 0.05]), orientation='horizontal')
+    color_bar = figure.colorbar(image, cax=figure.add_axes([0.15, 0.05, 0.70, 0.05]), orientation='horizontal')
     figure.subplots_adjust(bottom=0.20, wspace=0.00, hspace=0.00)
     color_bar.set_label(r'$\mathrm{Counts}$')
     

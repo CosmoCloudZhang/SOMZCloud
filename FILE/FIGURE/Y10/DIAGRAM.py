@@ -36,44 +36,44 @@ def main(tag, index, folder):
     
     # Application
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        magnitude_application = file['photometry']['mag_i_lsst'][:].astype(numpy.float32)
-        color_application = file['photometry']['mag_g_lsst'][:].astype(numpy.float32) - file['photometry']['mag_z_lsst'][:].astype(numpy.float32)
+        application_magnitude = file['photometry']['mag_i_lsst'][...]
+        application_color = file['photometry']['mag_g_lsst'][...] - file['photometry']['mag_z_lsst'][...]
     
     # Degradation
     with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        magnitude_degradation = file['photometry']['mag_i_lsst'][:].astype(numpy.float32)
-        color_degradation = file['photometry']['mag_g_lsst'][:].astype(numpy.float32) - file['photometry']['mag_z_lsst'][:].astype(numpy.float32)
+        degradation_magnitude = file['photometry']['mag_i_lsst'][...]
+        degradation_color = file['photometry']['mag_g_lsst'][...] - file['photometry']['mag_z_lsst'][...]
     
     # Augmentation
     with h5py.File(os.path.join(dataset_folder, '{}/AUGMENTATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        magnitude_augmentation = file['photometry']['mag_i_lsst'][:].astype(numpy.float32)
-        color_augmentation = file['photometry']['mag_g_lsst'][:].astype(numpy.float32) - file['photometry']['mag_z_lsst'][:].astype(numpy.float32)
+        augmentation_magnitude = file['photometry']['mag_i_lsst'][...]
+        augmentation_color = file['photometry']['mag_g_lsst'][...] - file['photometry']['mag_z_lsst'][...]
     
     # Combination
     with h5py.File(os.path.join(dataset_folder, '{}/COMBINATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        magnitude_combination = file['photometry']['mag_i_lsst'][:].astype(numpy.float32)
-        color_combination = file['photometry']['mag_g_lsst'][:].astype(numpy.float32) - file['photometry']['mag_z_lsst'][:].astype(numpy.float32)
+        combination_magnitude = file['photometry']['mag_i_lsst'][...]
+        combination_color = file['photometry']['mag_g_lsst'][...] - file['photometry']['mag_z_lsst'][...]
     
     # Bin
     magnitude1 = 16.0
-    magnitude2 = 27.0
-    magnitude_size = 60
+    magnitude2 = 26.5
+    magnitude_size = 100
     magnitude_bin = numpy.linspace(magnitude1, magnitude2, magnitude_size + 1)
     
-    color1 = -1.5
-    color2 = +5.5
-    color_size = 60
+    color1 = -2.0
+    color2 = +6.0
+    color_size = 100
     color_bin = numpy.linspace(color1, color2, color_size + 1)
     
     figure = pyplot.figure(figsize = (12, 16))
-    normalize = colors.LogNorm(vmin=1, vmax=20000)
+    normalize = colors.LogNorm(vmin=1, vmax=10000)
     gridspec = GridSpec(nrows=2, ncols=2, figure=figure, top=0.70, bottom=0.15, hspace=0.0, wspace=0.0)
     
     plot = figure.add_subplot(gridspec[0, 0])
     
     plot.text(3.0, 17.0, r'$\mathrm{application}$')
     
-    mesh = plot.hist2d(color_application, magnitude_application, bins=[color_bin, magnitude_bin], norm=normalize, cmap='magma')[-1]
+    image = plot.hist2d(application_color, application_magnitude, bins=[color_bin, magnitude_bin], norm=normalize, cmap='magma')[-1]
     
     plot.set_ylabel(r'$i$')
     plot.set_xticklabels([])
@@ -88,7 +88,7 @@ def main(tag, index, folder):
     
     plot.text(3.0, 17.0, r'$\mathrm{degradation}$')
     
-    mesh = plot.hist2d(color_degradation, magnitude_degradation, bins=[color_bin, magnitude_bin], norm=normalize, cmap='magma')[-1]
+    image = plot.hist2d(degradation_color, degradation_magnitude, bins=[color_bin, magnitude_bin], norm=normalize, cmap='magma')[-1]
     
     plot.set_yticklabels([])
     plot.set_xticklabels([])
@@ -103,7 +103,7 @@ def main(tag, index, folder):
     
     plot.text(3.0, 17.0, r'$\mathrm{augmentation}$')
     
-    mesh = plot.hist2d(color_augmentation, magnitude_augmentation, bins=[color_bin, magnitude_bin], norm=normalize, cmap='magma')[-1]
+    image = plot.hist2d(augmentation_color, augmentation_magnitude, bins=[color_bin, magnitude_bin], norm=normalize, cmap='magma')[-1]
     
     plot.set_xlim(color_bin.min(), color_bin.max())
     plot.set_ylim(magnitude_bin.min(), magnitude_bin.max())
@@ -118,7 +118,7 @@ def main(tag, index, folder):
     
     plot.text(3.0, 17.0, r'$\mathrm{combination}$')
     
-    mesh = plot.hist2d(color_combination, magnitude_combination, bins=[color_bin, magnitude_bin], norm=normalize, cmap='magma')[-1]
+    image = plot.hist2d(combination_color, combination_magnitude, bins=[color_bin, magnitude_bin], norm=normalize, cmap='magma')[-1]
     
     plot.set_xlim(color_bin.min(), color_bin.max())
     plot.set_ylim(magnitude_bin.min(), magnitude_bin.max())
@@ -129,7 +129,7 @@ def main(tag, index, folder):
     plot.set_yticklabels([])
     plot.set_xlabel(r'$g - z$')
     
-    color_bar = figure.colorbar(mesh, cax=figure.add_axes([0.15, 0.05, 0.70, 0.05]), orientation='horizontal')
+    color_bar = figure.colorbar(image, cax=figure.add_axes([0.15, 0.05, 0.70, 0.05]), orientation='horizontal')
     color_bar.set_label(r'$\mathrm{Counts}$')
     figure.subplots_adjust(bottom=0.15)
     

@@ -35,40 +35,40 @@ def main(tag, index, folder):
     
     # Application
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        z_application = file['photometry']['redshift'][:].astype(numpy.float32)
+        application_redshift_true = file['photometry']['redshift_true'][...]
     
     # Degradation
     with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        z_degradation = file['photometry']['redshift'][:].astype(numpy.float32)
+        degradation_redshift_true = file['photometry']['redshift_true'][...]
     
     # Augmentation
     with h5py.File(os.path.join(dataset_folder, '{}/AUGMENTATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        z_augmentation = file['photometry']['redshift'][:].astype(numpy.float32)
+        augmentation_redshift_true = file['photometry']['redshift_true'][...]
     
     # Combination
     with h5py.File(os.path.join(dataset_folder, '{}/COMBINATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        z_combination = file['photometry']['redshift'][:].astype(numpy.float32)
+        combination_redshift_true = file['photometry']['redshift_true'][...]
     
     # Bin
     z1 = 0.0
     z2 = 3.0
-    z_size = 60
+    z_size = 100
     z_bin = numpy.linspace(z1, z2, z_size + 1)
     
     figure, plot = pyplot.subplots(nrows=1, ncols=1, figsize=(12, 6))
     
-    plot.hist(z_application, bins=z_bin, linewidth=4.0, density=True, histtype='step', color='black', label=r'$\mathrm{application}$')
+    plot.hist(application_redshift_true, bins=z_bin, linewidth=4.0, density=True, histtype='step', color='black', label=r'$\mathrm{application}$')
     
-    plot.hist(z_degradation, bins=z_bin, linewidth=4.0, density=True, histtype='step', color='darkred', label=r'$\mathrm{degradation}$')
+    plot.hist(degradation_redshift_true, bins=z_bin, linewidth=4.0, density=True, histtype='step', color='darkred', label=r'$\mathrm{degradation}$')
     
-    plot.hist(z_augmentation, bins=z_bin, linewidth=4.0, density=True, histtype='step', color='darkorange', label=r'$\mathrm{augmentation}$')
+    plot.hist(augmentation_redshift_true, bins=z_bin, linewidth=4.0, density=True, histtype='step', color='darkorange', label=r'$\mathrm{augmentation}$')
     
-    plot.hist(z_combination, bins=z_bin, linewidth=4.0, density=True, histtype='step', color='darkblue', label=r'$\mathrm{combination}$')
+    plot.hist(combination_redshift_true, bins=z_bin, linewidth=4.0, density=True, histtype='step', color='darkblue', label=r'$\mathrm{combination}$')
     
     plot.legend()
     plot.set_xlim(z_bin.min(), z_bin.max())
     
-    plot.set_xlabel(r'$z$')
+    plot.set_xlabel(r'$z_\mathrm{true}$')
     plot.set_ylabel(r'$\mathcal{P}(z)$')
     
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)
