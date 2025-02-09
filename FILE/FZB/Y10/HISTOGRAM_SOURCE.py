@@ -37,12 +37,14 @@ def main(tag, index, folder):
     # Application
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         application_label = file['meta']['label'][:].astype(numpy.int32)
+        application_id = file['morphology']['galaxy_id'][:].astype(numpy.int32)
         application_sigma = file['morphology']['sigma'][:].astype(numpy.float32)
         application_redshift_true = file['photometry']['redshift_true'][:].astype(numpy.float32)
     
     # Combination
     with h5py.File(os.path.join(dataset_folder, '{}/COMBINATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         combination_count = file['meta']['count'][:].astype(numpy.int32)
+        combination_id = file['morphology']['galaxy_id'][:].astype(numpy.int32)
     som_size = len(combination_count)
     
     # Bin
@@ -66,6 +68,9 @@ def main(tag, index, folder):
         application_label_select = application_label[select]
         application_sigma_select = application_sigma[select]
         application_count_select = numpy.bincount(application_label_select, minlength=som_size, weights=1 / numpy.square(application_sigma_select))
+        
+        
+        
         application_weight_select = numpy.divide(application_count_select, combination_count, out=numpy.zeros(som_size), where=combination_count != 0)[application_label_select]
         
         # Single

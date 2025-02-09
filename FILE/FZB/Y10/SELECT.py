@@ -49,20 +49,15 @@ def main(tag, index, folder):
     grid_size = 300
     z_grid = numpy.linspace(z1, z2, grid_size + 1)
     
-    factor = 10
-    z_delta = (z2 - z1) / grid_size / factor
-    z_mesh = numpy.linspace(z1, z2, grid_size * factor + 1)
-    
-    # Combination
-    with h5py.File(os.path.join(dataset_folder, '{}/COMBINATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        combination_label = file['meta']['label'][:].astype(numpy.int32)
+    mesh_size = 3000
+    z_delta = (z2 - z1) / mesh_size
+    z_mesh = numpy.linspace(z1, z2, mesh_size + 1)
     
     # Application
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        application_label = file['meta']['label'][:].astype(numpy.int32)
-        application_redshift = file['photometry']['redshift'][:].astype(numpy.float32)
-        application_magnitude = file['photometry']['mag_i_lsst'][:].astype(numpy.float32)
-        application_redshift_true = file['photometry']['redshift_true'][:].astype(numpy.float32)
+        application_redshift = file['photometry']['redshift'][...]
+        application_magnitude = file['photometry']['mag_i_lsst'][...]
+        application_redshift_true = file['photometry']['redshift_true'][...]
     application_size = len(application_magnitude)
     
     # Estimate
@@ -86,10 +81,8 @@ def main(tag, index, folder):
     # Select
     slope = 4.0
     intercept = 18.0
-    select = numpy.isin(application_label, numpy.unique(combination_label))
-    
-    select_source = select & (z1_source <= z_phot) & (z_phot < z2_source)
-    select_lens = select & (z1_lens <= z_phot) & (z_phot < z2_lens) & (application_magnitude < slope * z_phot + intercept)
+    select_source = (z1_source <= z_phot) & (z_phot < z2_source)
+    select_lens = (z1_lens <= z_phot) & (z_phot < z2_lens) & (application_magnitude < slope * z_phot + intercept)
     
     # Save
     with h5py.File(os.path.join(fzb_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'w') as file:

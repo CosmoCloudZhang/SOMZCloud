@@ -2,80 +2,78 @@ import os
 import time
 import h5py
 import numpy
-import scipy
 import argparse
+from rail import core
 
 
-def main(tag, index, folder):
+def main(index, folder):
     '''
-    Histogram of the spec redshifts of the lens samples
+    Summarize the redshift distribution of the lens samples.
     
     Arguments:
-        tag (str): The tag of the configuration
-        index (int): The index of all the datasets
-        folder (str): The base folder of all the datasets
+        index (int): The index of the dataset.
+        folder (str): The base folder of the dataset.
     
     Returns:
         duration (float): The duration of the process.
     '''
     # Data store
     start = time.time()
-    print('Index: {}'.format(index))
+    print('Index:{}'.format(index))
     
     # Path
     fzb_folder = os.path.join(folder, 'FZB/')
-    dataset_folder = os.path.join(folder, 'DATASET/')
+    
+    # Load
+    data_store = core.stage.RailStage.data_store
+    data_store.__class__.allow_overwrite = True
+    
+    with h5py.File(os.path.join(fzb_folder, 'LENS/LENS{}/BIN.hdf5'.format(index)), 'r') as file:
+        bin_lens = file['bin'][:].astype(numpy.float32)
     
     # Redshift
     z1 = 0.0
     z2 = 3.0
     grid_size = 300
-    z_delta = (z2 - z1) / grid_size
     z_grid = numpy.linspace(z1, z2, grid_size + 1)
-    z_bin = numpy.linspace(z1 - z_delta / 2, z2 + z_delta / 2, z_grid.size + 1)
-    
-    # Application
-    with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        application_label = file['meta']['label'][:].astype(numpy.int32)
-    
-    # Combination
-    with h5py.File(os.path.join(dataset_folder, '{}/COMBINATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        combination_count = file['meta']['count'][:].astype(numpy.int32)
-    som_size = len(combination_count)
-    
-    # Select
-    with h5py.File(os.path.join(fzb_folder, '{}/LENS/LENS{}/SELECT.hdf5'.format(tag, index)), 'r') as file:
-        lens_bin = file['bin'][:].astype(numpy.float32)
-        lens_select = file['select'][:].astype(bool)
-    lens_bin_size = len(lens_bin) - 1
-    sample_size = 1000
     
     # Summarize
-    summarize_single = numpy.zeros((lens_bin_size, grid_size + 1))
-    summarize_sample = numpy.zeros((lens_bin_size, sample_size, grid_size + 1))
-    
-    for m in range(lens_bin_size):
-        select = lens_select[m, :]
-        select_size = numpy.sum(select)
+    width = 1000
+    for m in range(1, len(bin_lens)):
+        # Sample
+        sample_name = os.path.join(fzb_folder, 'LENS/LENS{}/SAMPLE{}.hdf5'.format(index, m))
+        sample_data = data_store.read_file(key='sample', path=sample_name, handle_class=core.data.QPHandle)()
         
-        with h5py.File(os.path.join(fzb_folder, '{}/ESTIMATE/ESTIMATE{}.hdf5'.format(tag, index)), 'r') as file:
-            z_pdf = ['data']['yvals'][select].astype(numpy.float32)
+        z_pdf = sample_data.pdf(z_grid)
+        del sample_data
         
-        application_label_select = application_label[select]
-        application_count_select = numpy.bincount(application_label_select, minlength=som_size)
-        application_weight_select = numpy.divide(application_count_select, combination_count, out=numpy.zeros(som_size), where=combination_count != 0)[application_label_select]
+        sample_size, pdf_size = z_pdf.shape
+        summarize_data = numpy.zeros((width, pdf_size), dtype=numpy.float32)
         
-        summarize_single[m, :] = numpy.average(z_pdf, weights=application_weight_select, axis=0, returned=False, keepdims=False)
-        
-        for n in range(sample_size):
+        for n in range(width):
             z_sample = numpy.random.randint(0, sample_size, size=sample_size)
             summarize_data[n, :] = numpy.mean(z_pdf[z_sample, :], axis=0)
         summarize_single = numpy.mean(z_pdf, axis=0)
-    
-    # Save
-    with h5py.File(os.path.join(fzb_folder, '{}/LENS/LENS{}/SUMMARIZE.hdf5'.format(tag, index)), 'w') as file:
-        file.create_dataset('single', data=lens_single, dtype=numpy.float32)
-        file.create_dataset('sample', data=lens_sample, dtype=numpy.float32)
+        
+        # Save the single
+        with h5py.File(os.path.join(fzb_folder, 'LENS/LENS{}/SINGLE{}.hdf5'.format(index, m)), 'w') as file:
+            file.create_group('meta')
+            file.create_group('data')
+            
+            file['meta'].create_dataset(name='pdf_name', data=['hist'])
+            file['meta'].create_dataset(name='pdf_version', data=[0.0])
+            file['meta'].create_dataset(name='bins', data=z_grid, dtype=numpy.float32)
+            file['data'].create_dataset(name='pdfs', data=summarize_single, dtype=numpy.float32)
+        
+        # Save the data
+        with h5py.File(os.path.join(fzb_folder, 'LENS/LENS{}/SUMMARIZE{}.hdf5'.format(index, m)), 'w') as file:
+            file.create_group('meta')
+            file.create_group('data')
+            
+            file['meta'].create_dataset(name='pdf_name', data=['hist'])
+            file['meta'].create_dataset(name='pdf_version', data=[0.0])
+            file['meta'].create_dataset(name='bins', data=z_grid, dtype=numpy.float32)
+            file['data'].create_dataset(name='pdfs', data=summarize_data, dtype=numpy.float32)
     
     # Return
     end = time.time()

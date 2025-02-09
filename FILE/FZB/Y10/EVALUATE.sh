@@ -2,13 +2,13 @@
 #SBATCH -A m1727
 #SBATCH --nodes=4
 #SBATCH -q regular
-#SBATCH --time=08:00:00
+#SBATCH --time=04:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH --cpus-per-task=16
-#SBATCH --ntasks-per-node=16
-#SBATCH -J FZB_Y10_HISTOGRAM_SOURCE
+#SBATCH --cpus-per-task=4
+#SBATCH -J FZB_Y10_EVALUATE
+#SBATCH --ntasks-per-node=64
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -30,13 +30,20 @@ export OMP_PLACES=threads
 
 # Initialize the process
 TAG="Y10"
-NUMBER=16
+NUMBER=500
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 
-# Run applications
 for INDEX in $(seq 1 $NUMBER); do
-    srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}FILE/FZB/${TAG}/HISTOGRAM_SOURCE.py" --tag=$TAG --index=$INDEX --folder=$BASE_FOLDER & 
+    # Set variables
+    NAME="EVALUATE${INDEX}"
+    MODEL_PATH="${BASE_FOLDER}FZB/${TAG}/INFORM/INFORM${INDEX}.pkl"
+    CONFIG_PATH="${BASE_FOLDER}FZB/${TAG}/EVALUATE/EVALUATE${INDEX}.yaml"
+    OUTPUT_PATH="${BASE_FOLDER}FZB/${TAG}/EVALUATE/EVALUATE${INDEX}.hdf5"
+    INPUT_PATH="${BASE_FOLDER}DATASET/${TAG}/COMBINATION/DATA${INDEX}.hdf5"
+    # Run applications
+    python -u "${BASE_PATH}FILE/FZB/${TAG}/EVALUATE.py" --tag=$TAG --index=$INDEX --folder=$BASE_FOLDER &
+    srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -m ceci rail.estimation.algos.flexzboost.FlexZBoostEstimator --mpi --name=$NAME --input=$INPUT_PATH --model=$MODEL_PATH --config=$CONFIG_PATH --output=$OUTPUT_PATH &
     # Control parallel execution
     if (( $INDEX % $SLURM_NTASKS == 0 )); then
         wait
