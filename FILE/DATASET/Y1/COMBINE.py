@@ -39,6 +39,7 @@ def main(tag, number, folder):
             degradation_dataset['meta']['redshift'] = file['meta']['redshift'][...]
             degradation_dataset['meta']['magnitude'] = file['meta']['magnitude'][...]
             
+            degradation_dataset['meta']['cell_size'] = file['meta']['cell_size'][...]
             degradation_dataset['meta']['cell_size1'] = file['meta']['cell_size1'][...]
             degradation_dataset['meta']['cell_size2'] = file['meta']['cell_size2'][...]
             
@@ -65,6 +66,7 @@ def main(tag, number, folder):
             augmentation_dataset['meta']['redshift'] = file['meta']['redshift'][...]
             augmentation_dataset['meta']['magnitude'] = file['meta']['magnitude'][...]
             
+            augmentation_dataset['meta']['cell_size'] = file['meta']['cell_size'][...]
             augmentation_dataset['meta']['cell_size1'] = file['meta']['cell_size1'][...]
             augmentation_dataset['meta']['cell_size2'] = file['meta']['cell_size2'][...]
             
@@ -79,6 +81,7 @@ def main(tag, number, folder):
             augmentation_dataset['photometry'] = {key: file['photometry'][key][...] for key in file['photometry'].keys()}
         
         # Combine
+        cell_size = numpy.average([degradation_dataset['meta']['cell_size'], augmentation_dataset['meta']['cell_size']], axis=0)
         cell_size1 = numpy.average([degradation_dataset['meta']['cell_size1'], augmentation_dataset['meta']['cell_size1']], axis=0)
         cell_size2 = numpy.average([degradation_dataset['meta']['cell_size2'], augmentation_dataset['meta']['cell_size2']], axis=0)
         
@@ -109,6 +112,7 @@ def main(tag, number, folder):
             file['meta'].create_dataset('augmentation_redshift', data=augmentation_dataset['meta']['redshift'], dtype=numpy.float32)
             file['meta'].create_dataset('augmentation_magnitude', data=augmentation_dataset['meta']['magnitude'], dtype=numpy.float32)
             
+            file['meta'].create_dataset('cell_size', data=cell_size, dtype=numpy.int32)
             file['meta'].create_dataset('cell_size1', data=cell_size1, dtype=numpy.int32)
             file['meta'].create_dataset('cell_size2', data=cell_size2, dtype=numpy.int32)
             

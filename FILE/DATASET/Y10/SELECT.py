@@ -106,6 +106,7 @@ def main(tag, index, folder):
     with h5py.File(os.path.join(dataset_folder, '{}/SELECTION/DATA{}.hdf5'.format(tag, index)), 'w') as file:
         file.create_group('meta')
         
+        file['meta'].create_dataset('cell_size', data=cell_size, dtype=numpy.int32)
         file['meta'].create_dataset('cell_size1', data=model['n_rows'], dtype=numpy.int32)
         file['meta'].create_dataset('cell_size2', data=model['n_columns'], dtype=numpy.int32)
         

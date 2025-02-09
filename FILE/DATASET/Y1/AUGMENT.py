@@ -112,6 +112,7 @@ def main(tag, index, folder):
         file['meta'].create_dataset('redshift', data=redshift, dtype=numpy.float32)
         file['meta'].create_dataset('magnitude', data=magnitude, dtype=numpy.float32)
         
+        file['meta'].create_dataset('cell_size', data=cell_size, dtype=numpy.int32)
         file['meta'].create_dataset('cell_size1', data=model['n_rows'], dtype=numpy.int32)
         file['meta'].create_dataset('cell_size2', data=model['n_columns'], dtype=numpy.int32)
         
