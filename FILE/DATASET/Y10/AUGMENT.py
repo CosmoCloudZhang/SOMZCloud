@@ -33,7 +33,7 @@ def main(tag, index, folder):
     
     # Degradation
     with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        degradation_count = file['meta']['count'][...]
+        degradation_cell_count = file['meta']['cell_count'][...]
         degradation_redshift = file['photometry']['redshift'][...]
         degradation_magnitude = file['photometry']['mag_i_lsst'][...]
     degradation_size = len(degradation_redshift)
@@ -53,8 +53,8 @@ def main(tag, index, folder):
     selection_cell_id = selection_dataset['meta']['cell_id']
     selection_size = len(selection_dataset['photometry']['redshift'])
     
-    fraction = numpy.sum(degradation_count == 0) / len(degradation_count)
-    filter = numpy.isin(selection_cell_id, numpy.arange(len(degradation_count))[degradation_count == 0])
+    fraction = numpy.sum(degradation_cell_count == 0) / len(degradation_cell_count)
+    filter = numpy.isin(selection_cell_id, numpy.arange(len(degradation_cell_count))[degradation_cell_count == 0])
     
     # Magnitude
     magnitude = numpy.max(degradation_magnitude)
