@@ -25,6 +25,7 @@ def main(tag, index, folder):
     # Path
     fzb_folder = os.path.join(folder, 'FZB/')
     figure_folder = os.path.join(folder, 'FIGURE/')
+    dataset_folder = os.path.join(folder, 'DATASET/')
     
     # Redshift
     z1 = 0.0
@@ -38,16 +39,25 @@ def main(tag, index, folder):
     sigma2 = 1e+0
     sigma_bin = numpy.geomspace(sigma1, sigma2, bin_size + 1)
     
+    # Application
+    with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+        application_redshift_true = file['photometry']['redshift_true'][...]
+    
+    # Select
+    with h5py.File(os.path.join(fzb_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+        z_phot = file['z_phot'][...]
+        select_lens = file['select_lens'][...]
+        select_source = file['select_source'][...]
+    
     # Lens
-    with h5py.File(os.path.join(fzb_folder, '{}/LENS/LENS{}/SELECT.hdf5'.format(tag, index)), 'r') as file:
-        z_phot_lens = file['z_phot'][...]
-        z_true_lens = file['z_true'][...]
+    z_phot_lens = z_phot[select_lens]
+    z_true_lens = application_redshift_true[select_lens]
     
     # Source
-    with h5py.File(os.path.join(fzb_folder, '{}/SOURCE/SOURCE{}/SELECT.hdf5'.format(tag, index)), 'r') as file:
-        z_phot_source = file['z_phot'][...]
-        z_true_source = file['z_true'][...]
+    z_phot_source = z_phot[select_source]
+    z_true_source = application_redshift_true[select_source]
     
+    # Sigma
     sigma_lens = numpy.abs(z_phot_lens - z_true_lens) / (1 + z_true_lens)
     sigma_source = numpy.abs(z_phot_source - z_true_source) / (1 + z_true_source)
     

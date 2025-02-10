@@ -25,6 +25,7 @@ def main(tag, index, folder):
     # Path
     fzb_folder = os.path.join(folder, 'FZB/')
     figure_folder = os.path.join(folder, 'FIGURE/')
+    dataset_folder = os.path.join(folder, 'DATASET/')
     
     # Redshift
     z1 = 0.0
@@ -38,16 +39,25 @@ def main(tag, index, folder):
     sigma2 = 1e+0
     sigma_bin = numpy.geomspace(sigma1, sigma2, bin_size + 1)
     
+    # Application
+    with h5py.File(os.path.join(dataset_folder, '{}/COMBINATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+        application_redshift_true = file['photometry']['redshift_true'][...]
+    
+    # Reference
+    with h5py.File(os.path.join(fzb_folder, '{}/REFERENCE/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+        z_phot = file['z_phot'][...]
+        reference_lens = file['reference_lens'][...]
+        reference_source = file['reference_source'][...]
+    
     # Lens
-    with h5py.File(os.path.join(fzb_folder, '{}/LENS/LENS{}/REFERENCE.hdf5'.format(tag, index)), 'r') as file:
-        z_phot_lens = file['z_phot'][...]
-        z_true_lens = file['z_true'][...]
+    z_phot_lens = z_phot[reference_lens]
+    z_true_lens = application_redshift_true[reference_lens]
     
     # Source
-    with h5py.File(os.path.join(fzb_folder, '{}/SOURCE/SOURCE{}/REFERENCE.hdf5'.format(tag, index)), 'r') as file:
-        z_phot_source = file['z_phot'][...]
-        z_true_source = file['z_true'][...]
+    z_phot_source = z_phot[reference_source]
+    z_true_source = application_redshift_true[reference_source]
     
+    # Sigma
     sigma_lens = numpy.abs(z_phot_lens - z_true_lens) / (1 + z_true_lens)
     sigma_source = numpy.abs(z_phot_source - z_true_source) / (1 + z_true_source)
     
@@ -55,13 +65,13 @@ def main(tag, index, folder):
     sigma_mean_source = numpy.zeros(bin_size)
     
     for m in range(bin_size):
-        select_lens = (z_bin[m] <= z_phot_lens) & (z_phot_lens < z_bin[m + 1])
-        if numpy.sum(select_lens) > 0:
-            sigma_mean_lens[m] = numpy.mean(sigma_lens[select_lens])
+        reference_lens = (z_bin[m] <= z_phot_lens) & (z_phot_lens < z_bin[m + 1])
+        if numpy.sum(reference_lens) > 0:
+            sigma_mean_lens[m] = numpy.mean(sigma_lens[reference_lens])
         
-        select_source = (z_bin[m] <= z_phot_source) & (z_phot_source < z_bin[m + 1])
-        if numpy.sum(select_source) > 0:
-            sigma_mean_source[m] = numpy.mean(sigma_source[select_source])
+        reference_source = (z_bin[m] <= z_phot_source) & (z_phot_source < z_bin[m + 1])
+        if numpy.sum(reference_source) > 0:
+            sigma_mean_source[m] = numpy.mean(sigma_source[reference_source])
     
     # Plot
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
