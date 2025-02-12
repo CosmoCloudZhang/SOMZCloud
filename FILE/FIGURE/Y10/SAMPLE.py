@@ -42,12 +42,13 @@ def main(tag, index, folder):
     
     # Magnitude
     magnitude1 = 16.0
-    magnitude2 = 26.5
+    magnitude2 = 26.0
     magnitude_grid = numpy.linspace(magnitude1, magnitude2, bin_size + 1)
     
     # Values
-    slope = 4.0
-    intersection = 18.0
+    slope = 4
+    intercept = 18
+    magnitude = 25.5
     
     # Application
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
@@ -69,15 +70,17 @@ def main(tag, index, folder):
     
     image = plot.hist2d(x=z_phot, y=application_magnitude, bins=[z_bin, magnitude_grid], norm=normalize, cmap='plasma')[-1]
     
-    plot.plot(numpy.ones(bin_size) * z1_source, numpy.linspace(magnitude1, magnitude2, bin_size), color='black', linestyle='--', linewidth=2.5)
+    plot.plot(numpy.ones(bin_size) * z1_source, numpy.linspace(magnitude1, magnitude, bin_size), color='black', linestyle='--', linewidth=2.5)
     
-    plot.plot(numpy.ones(bin_size) * z2_source, numpy.linspace(magnitude1, magnitude2, bin_size), color='black', linestyle='--', linewidth=2.5)
+    plot.plot(numpy.ones(bin_size) * z2_source, numpy.linspace(magnitude1, magnitude, bin_size), color='black', linestyle='--', linewidth=2.5)
     
-    plot.plot(numpy.ones(bin_size) * z1_lens, numpy.linspace(magnitude1, slope * z1_lens + intersection, bin_size), color='black', linestyle='-.', linewidth=2.5)
+    plot.plot(numpy.linspace(z1_source, z2_source, bin_size + 1), numpy.ones(bin_size + 1) * magnitude, color='black', linestyle='--', linewidth=2.5)
     
-    plot.plot(numpy.ones(bin_size) * z2_lens, numpy.linspace(magnitude1, slope * z2_lens + intersection, bin_size), color='black', linestyle='-.', linewidth=2.5)
+    plot.plot(numpy.ones(bin_size) * z1_lens, numpy.linspace(magnitude1, slope * z1_lens + intercept, bin_size), color='black', linestyle='-.', linewidth=2.5)
     
-    plot.plot(numpy.linspace(z1_lens, z2_lens, bin_size + 1), slope * numpy.linspace(z1_lens, z2_lens, bin_size + 1) + intersection, color='black', linestyle='-.', linewidth=2.5)
+    plot.plot(numpy.ones(bin_size) * z2_lens, numpy.linspace(magnitude1, slope * z2_lens + intercept, bin_size), color='black', linestyle='-.', linewidth=2.5)
+    
+    plot.plot(numpy.linspace(z1_lens, z2_lens, bin_size + 1), slope * numpy.linspace(z1_lens, z2_lens, bin_size + 1) + intercept, color='black', linestyle='-.', linewidth=2.5)
     
     plot.set_xlim(z1, z2)
     plot.set_ylim(magnitude1, magnitude2)

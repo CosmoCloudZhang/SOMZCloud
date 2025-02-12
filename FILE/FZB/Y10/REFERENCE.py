@@ -11,7 +11,7 @@ import scipy.interpolate
 
 def main(tag, index, folder):
     '''
-    Define the lens and source reference
+    Define the reference lens and source selection
     
     Arguments:
         tag (str): The tag of the configuration
@@ -55,7 +55,6 @@ def main(tag, index, folder):
     
     # Application
     with h5py.File(os.path.join(dataset_folder, '{}/COMBINATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        combination_redshift = file['photometry']['redshift'][...]
         combination_magnitude = file['photometry']['mag_i_lsst'][...]
         combination_redshift_true = file['photometry']['redshift_true'][...]
     combination_size = len(combination_magnitude)
@@ -78,17 +77,11 @@ def main(tag, index, folder):
         z_mean[begin: stop] = numpy.average(numpy.vstack([z_mesh] * (stop - begin)), weights=z_pdf, axis=1)
     z_phot = numpy.sqrt(z_mode * z_mean, where=z_mode * z_mean > 0, out=numpy.zeros(combination_size, dtype=numpy.float32))
     
-    # reference
+    # Select
     slope = 4.0
     intercept = 18.0
     reference_source = (z1_source <= z_phot) & (z_phot < z2_source)
     reference_lens = (z1_lens <= z_phot) & (z_phot < z2_lens) & (combination_magnitude < slope * z_phot + intercept)
-    
-    # Save
-    with h5py.File(os.path.join(fzb_folder, '{}/REFERENCE/DATA{}.hdf5'.format(tag, index)), 'w') as file:
-        file.create_dataset('z_phot', data=z_phot)
-        file.create_dataset('z_mode', data=z_mode)
-        file.create_dataset('z_mean', data=z_mean)
     
     # Bin
     lens_size = 10
@@ -101,13 +94,20 @@ def main(tag, index, folder):
     bin_source[-1] = z2_source
     bin_source[0] = z1_source
     
-    # Lens
-    reference_lens_bin = numpy.ones((lens_size, combination_size), dtype=bool)
-    for m in range(len(bin_lens) - 1):
-        reference_lens_bin[m, :] = reference_lens & (bin_lens[m] <= z_phot) & (z_phot < bin_lens[m + 1])
+    # Save
+    with h5py.File(os.path.join(fzb_folder, '{}/REFERENCE/DATA{}.hdf5'.format(tag, index)), 'w') as file:
+        file.create_dataset('z_phot', data=z_phot)
+        file.create_dataset('z_mode', data=z_mode)
+        file.create_dataset('z_mean', data=z_mean)
+        
+        file.create_dataset('bin_lens', data=bin_lens)
+        file.create_dataset('reference_lens', data=reference_lens)
+        
+        file.create_dataset('bin_source', data=bin_source)
+        file.create_dataset('reference_source', data=reference_source)
     
+    # Lens
     z_phot_lens = z_phot[reference_lens]
-    z_spec_lens = combination_redshift[reference_lens]
     z_true_lens = combination_redshift_true[reference_lens]
     
     sigma_lens = numpy.abs(z_phot_lens - z_true_lens) / (1 + z_true_lens)
@@ -116,25 +116,19 @@ def main(tag, index, folder):
     fraction_lens = len(sigma_lens[sigma_lens > 0.15]) / len(sigma_lens) * 100
     percentile_lens = len(sigma_lens[numpy.abs(z_phot_lens - z_true_lens) > 1.0]) / len(sigma_lens) * 100
     
+    reference_lens_bin = numpy.ones((lens_size, combination_size), dtype=bool)
+    for m in range(len(bin_lens) - 1):
+        reference_lens_bin[m, :] = reference_lens & (bin_lens[m] <= z_phot) & (z_phot < bin_lens[m + 1])
+    
     with h5py.File(os.path.join(fzb_folder, '{}/LENS/LENS{}/REFERENCE.hdf5'.format(tag, index)), 'w') as file:    
-        file.create_dataset('bin', data=bin_lens)
         file.create_dataset('reference', data=reference_lens_bin)
-        
-        file.create_dataset('z_phot', data=z_phot_lens)
-        file.create_dataset('z_spec', data=z_spec_lens)
-        file.create_dataset('z_true', data=z_true_lens)
         
         file.create_dataset('metric', data=metric_lens)
         file.create_dataset('fraction', data=fraction_lens)
         file.create_dataset('percentile', data=percentile_lens)
     
     # Source
-    reference_source_bin = numpy.ones((source_size, combination_size), dtype=bool)
-    for m in range(len(bin_source) - 1):
-        reference_source_bin[m, :] = reference_source & (bin_source[m] <= z_phot) & (z_phot < bin_source[m + 1])
-    
     z_phot_source = z_phot[reference_source]
-    z_spec_source = combination_redshift[reference_source]
     z_true_source = combination_redshift_true[reference_source]
     
     sigma_source = numpy.abs(z_phot_source - z_true_source) / (1 + z_true_source)
@@ -143,13 +137,12 @@ def main(tag, index, folder):
     fraction_source = len(sigma_source[sigma_source > 0.15]) / len(sigma_source) * 100
     percentile_source = len(sigma_source[numpy.abs(z_phot_source - z_true_source) > 1.0]) / len(sigma_source) * 100
     
+    reference_source_bin = numpy.ones((source_size, combination_size), dtype=bool)
+    for m in range(len(bin_source) - 1):
+        reference_source_bin[m, :] = reference_source & (bin_source[m] <= z_phot) & (z_phot < bin_source[m + 1])
+    
     with h5py.File(os.path.join(fzb_folder, '{}/SOURCE/SOURCE{}/REFERENCE.hdf5'.format(tag, index)), 'w') as file:
-        file.create_dataset('bin', data=bin_source)
         file.create_dataset('reference', data=reference_source_bin)
-        
-        file.create_dataset('z_phot', data=z_phot_source)
-        file.create_dataset('z_spec', data=z_spec_source)
-        file.create_dataset('z_true', data=z_true_source)
         
         file.create_dataset('metric', data=metric_source)
         file.create_dataset('fraction', data=fraction_source)
@@ -166,7 +159,7 @@ def main(tag, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Reference')
+    PARSE = argparse.ArgumentParser(description='Selection')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
     PARSE.add_argument('--index', type=int, required=True, help='The index of all the datasets')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of all the datasets')

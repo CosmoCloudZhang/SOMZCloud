@@ -55,7 +55,6 @@ def main(tag, index, folder):
     
     # Application
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        application_redshift = file['photometry']['redshift'][...]
         application_magnitude = file['photometry']['mag_i_lsst'][...]
         application_redshift_true = file['photometry']['redshift_true'][...]
     application_size = len(application_magnitude)
@@ -84,12 +83,6 @@ def main(tag, index, folder):
     select_source = (z1_source <= z_phot) & (z_phot < z2_source)
     select_lens = (z1_lens <= z_phot) & (z_phot < z2_lens) & (application_magnitude < slope * z_phot + intercept)
     
-    # Save
-    with h5py.File(os.path.join(fzb_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'w') as file:
-        file.create_dataset('z_phot', data=z_phot)
-        file.create_dataset('z_mode', data=z_mode)
-        file.create_dataset('z_mean', data=z_mean)
-    
     # Bin
     lens_size = 10
     bin_lens = numpy.linspace(z1_lens, z2_lens, lens_size + 1)
@@ -101,13 +94,20 @@ def main(tag, index, folder):
     bin_source[-1] = z2_source
     bin_source[0] = z1_source
     
-    # Lens
-    select_lens_bin = numpy.ones((lens_size, application_size), dtype=bool)
-    for m in range(len(bin_lens) - 1):
-        select_lens_bin[m, :] = select_lens & (bin_lens[m] <= z_phot) & (z_phot < bin_lens[m + 1])
+    # Save
+    with h5py.File(os.path.join(fzb_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'w') as file:
+        file.create_dataset('z_phot', data=z_phot)
+        file.create_dataset('z_mode', data=z_mode)
+        file.create_dataset('z_mean', data=z_mean)
+        
+        file.create_dataset('bin_lens', data=bin_lens)
+        file.create_dataset('select_lens', data=select_lens)
+        
+        file.create_dataset('bin_source', data=bin_source)
+        file.create_dataset('select_source', data=select_source)
     
+    # Lens
     z_phot_lens = z_phot[select_lens]
-    z_spec_lens = application_redshift[select_lens]
     z_true_lens = application_redshift_true[select_lens]
     
     sigma_lens = numpy.abs(z_phot_lens - z_true_lens) / (1 + z_true_lens)
@@ -116,25 +116,19 @@ def main(tag, index, folder):
     fraction_lens = len(sigma_lens[sigma_lens > 0.15]) / len(sigma_lens) * 100
     percentile_lens = len(sigma_lens[numpy.abs(z_phot_lens - z_true_lens) > 1.0]) / len(sigma_lens) * 100
     
+    select_lens_bin = numpy.ones((lens_size, application_size), dtype=bool)
+    for m in range(len(bin_lens) - 1):
+        select_lens_bin[m, :] = select_lens & (bin_lens[m] <= z_phot) & (z_phot < bin_lens[m + 1])
+    
     with h5py.File(os.path.join(fzb_folder, '{}/LENS/LENS{}/SELECT.hdf5'.format(tag, index)), 'w') as file:    
-        file.create_dataset('bin', data=bin_lens)
         file.create_dataset('select', data=select_lens_bin)
-        
-        file.create_dataset('z_phot', data=z_phot_lens)
-        file.create_dataset('z_spec', data=z_spec_lens)
-        file.create_dataset('z_true', data=z_true_lens)
         
         file.create_dataset('metric', data=metric_lens)
         file.create_dataset('fraction', data=fraction_lens)
         file.create_dataset('percentile', data=percentile_lens)
     
     # Source
-    select_source_bin = numpy.ones((source_size, application_size), dtype=bool)
-    for m in range(len(bin_source) - 1):
-        select_source_bin[m, :] = select_source & (bin_source[m] <= z_phot) & (z_phot < bin_source[m + 1])
-    
     z_phot_source = z_phot[select_source]
-    z_spec_source = application_redshift[select_source]
     z_true_source = application_redshift_true[select_source]
     
     sigma_source = numpy.abs(z_phot_source - z_true_source) / (1 + z_true_source)
@@ -143,13 +137,12 @@ def main(tag, index, folder):
     fraction_source = len(sigma_source[sigma_source > 0.15]) / len(sigma_source) * 100
     percentile_source = len(sigma_source[numpy.abs(z_phot_source - z_true_source) > 1.0]) / len(sigma_source) * 100
     
+    select_source_bin = numpy.ones((source_size, application_size), dtype=bool)
+    for m in range(len(bin_source) - 1):
+        select_source_bin[m, :] = select_source & (bin_source[m] <= z_phot) & (z_phot < bin_source[m + 1])
+    
     with h5py.File(os.path.join(fzb_folder, '{}/SOURCE/SOURCE{}/SELECT.hdf5'.format(tag, index)), 'w') as file:
-        file.create_dataset('bin', data=bin_source)
         file.create_dataset('select', data=select_source_bin)
-        
-        file.create_dataset('z_phot', data=z_phot_source)
-        file.create_dataset('z_spec', data=z_spec_source)
-        file.create_dataset('z_true', data=z_true_source)
         
         file.create_dataset('metric', data=metric_source)
         file.create_dataset('fraction', data=fraction_source)
