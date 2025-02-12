@@ -2,34 +2,28 @@ import os
 import time
 import h5py
 import numpy
+import scipy
 import argparse
-from rail import core
 
-
-def main(index, folder):
+def main(tag, index, folder):
     '''
-    Summarize the redshift distribution of the source samples.
+    Histogram of the spectroscopic redshifts of the source samples
     
     Arguments:
-        index (int): The index of the dataset.
-        folder (str): The base folder of the dataset.
+        tag (str): The tag of the configuration
+        index (int): The index of all the datasets
+        folder (str): The base folder of all the datasets
     
     Returns:
         duration (float): The duration of the process.
     '''
     # Data store
     start = time.time()
-    print('Index:{}'.format(index))
+    print('Index: {}'.format(index))
     
     # Path
     fzb_folder = os.path.join(folder, 'FZB/')
-    
-    # Load
-    data_store = core.stage.RailStage.data_store
-    data_store.__class__.allow_overwrite = True
-    
-    with h5py.File(os.path.join(fzb_folder, 'SOURCE/SOURCE{}/BIN.hdf5'.format(index)), 'r') as file:
-        bin_source = file['bin'][:].astype(numpy.float32)
+    dataset_folder = os.path.join(folder, 'DATASET/')
     
     # Redshift
     z1 = 0.0
@@ -37,43 +31,63 @@ def main(index, folder):
     grid_size = 300
     z_grid = numpy.linspace(z1, z2, grid_size + 1)
     
-    # Summarize
-    width = 1000
-    for m in range(1, len(bin_source)):
-        # Sample
-        sample_name = os.path.join(fzb_folder, 'SOURCE/SOURCE{}/SAMPLE{}.hdf5'.format(index, m))
-        sample_data = data_store.read_file(key='sample', path=sample_name, handle_class=core.data.QPHandle)()
+    # Application
+    with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+        application_size = len(file['photometry']['redshift'][...])
+    
+    # Select
+    with h5py.File(os.path.join(fzb_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+        bin_source = file['bin_source'][...]
+    
+    with h5py.File(os.path.join(fzb_folder, '{}/SOURCE/SOURCE{}/SELECT.hdf5'.format(tag, index)), 'r') as file:
+        select_source = file['select'][...]
+    
+    # Size
+    sample_size = 100
+    bin_source_size = len(bin_source) - 1
+    
+    # Source
+    single_source = numpy.zeros((bin_source_size, grid_size + 1))
+    sample_source = numpy.zeros((bin_source_size, sample_size, grid_size + 1))
+    
+    # Chunk
+    chunk_size = 10000
+    estimator = h5py.File(os.path.join(fzb_folder, '{}/ESTIMATE/ESTIMATE{}.hdf5'.format(tag, index)), 'r')
+    
+    # Loop
+    for m in range(bin_source_size):
+        # Select
+        select = select_source[m, :] 
+        select_size = numpy.sum(select)
+        select_indices = numpy.arange(application_size)[select]
         
-        z_pdf = sample_data.pdf(z_grid)
-        del sample_data
+        histogram_single = numpy.zeros((grid_size + 1))
+        histogram_sample = numpy.zeros((sample_size, grid_size + 1))
         
-        sample_size, pdf_size = z_pdf.shape
-        summarize_data = numpy.zeros((width, pdf_size), dtype=numpy.float32)
+        sample_weight = numpy.ones((sample_size, select_size))
+        for k in range(sample_size):
+            sample_indices = numpy.random.choice(numpy.arange(select_size), size=select_size, replace=True)
+            sample_weight[k, :] = numpy.bincount(sample_indices, minlength=select_size)
         
-        for n in range(width):
-            z_index = numpy.random.randint(0, sample_size, size=sample_size)
-            summarize_data[n, :] = numpy.mean(z_pdf[z_index, :], axis=0)
-        summarize_single = numpy.mean(z_pdf, axis=0)
-        
-        # Save the single
-        with h5py.File(os.path.join(fzb_folder, 'SOURCE/SOURCE{}/SINGLE{}.hdf5'.format(index, m)), 'w') as file:
-            file.create_group('meta')
-            file.create_group('data')
+        # Loop
+        for n in range(select_size // chunk_size + 1):
+            # PDF
+            begin = n * chunk_size
+            end = min((n + 1) * chunk_size, application_size)
+            z_pdf = estimator['data']['yvals'][select_indices[begin: end]].astype(numpy.float32)
             
-            file['meta'].create_dataset(name='pdf_name', data=['hist'])
-            file['meta'].create_dataset(name='pdf_version', data=[0.0])
-            file['meta'].create_dataset(name='bins', data=z_grid, dtype=numpy.float32)
-            file['data'].create_dataset(name='pdfs', data=summarize_single, dtype=numpy.float32)
+            # Histogram
+            histogram_single = histogram_single + numpy.sum(z_pdf, axis=0)
+            histogram_sample = histogram_sample + numpy.sum(z_pdf[numpy.newaxis, :, :] * sample_weight[:, begin: end][:, :, numpy.newaxis], axis=1)
         
-        # Save the data
-        with h5py.File(os.path.join(fzb_folder, 'SOURCE/SOURCE{}/SUMMARIZE{}.hdf5'.format(index, m)), 'w') as file:
-            file.create_group('meta')
-            file.create_group('data')
-            
-            file['meta'].create_dataset(name='pdf_name', data=['hist'])
-            file['meta'].create_dataset(name='pdf_version', data=[0.0])
-            file['meta'].create_dataset(name='bins', data=z_grid, dtype=numpy.float32)
-            file['data'].create_dataset(name='pdfs', data=summarize_data, dtype=numpy.float32)
+        # Normalize
+        single_source[m, :] = histogram_single / scipy.integrate.trapezoid(x=z_grid, y=histogram_single, axis=0)
+        sample_source[m, :, :] = histogram_sample / scipy.integrate.trapezoid(x=z_grid, y=histogram_sample, axis=1)[:, numpy.newaxis]
+    
+    # Save
+    with h5py.File(os.path.join(fzb_folder, '{}/SOURCE/SOURCE{}/SUMMARIZE.hdf5'.format(tag, index)), 'w') as file:
+        file.create_dataset('single', data=single_source, dtype=numpy.float32)
+        file.create_dataset('sample', data=sample_source, dtype=numpy.float32)
     
     # Return
     end = time.time()
@@ -86,12 +100,14 @@ def main(index, folder):
 if __name__ == '__main__':
     # Input
     PARSE = argparse.ArgumentParser(description='FZB Summarize')
-    PARSE.add_argument('--index', type=int, required=True, help='The index of the dataset')
-    PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the dataset')
+    PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
+    PARSE.add_argument('--index', type=int, required=True, help='The index of all the datasets')
+    PARSE.add_argument('--folder', type=str, required=True, help='The base folder of all the datasets')
     
     # Parse
+    TAG = PARSE.parse_args().tag
     INDEX = PARSE.parse_args().index
     FOLDER = PARSE.parse_args().folder
     
     # Output
-    OUTPUT = main(INDEX, FOLDER)
+    OUTPUT = main(TAG, INDEX, FOLDER)

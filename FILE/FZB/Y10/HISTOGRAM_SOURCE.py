@@ -8,7 +8,7 @@ import argparse
 
 def main(tag, index, folder):
     '''
-    Histogram of the spec redshifts of the SOURCE samples
+    Histogram of the spectroscopic redshifts of the source samples
     
     Arguments:
         tag (str): The tag of the configuration
@@ -36,65 +36,58 @@ def main(tag, index, folder):
     
     # Application
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        application_label = file['meta']['label'][:].astype(numpy.int32)
-        application_id = file['morphology']['galaxy_id'][:].astype(numpy.int32)
-        application_sigma = file['morphology']['sigma'][:].astype(numpy.float32)
-        application_redshift_true = file['photometry']['redshift_true'][:].astype(numpy.float32)
+        application_sigma = file['morphology']['sigma'][...]
+        application_redshift_true = file['photometry']['redshift_true'][...]
     
-    # Combination
-    with h5py.File(os.path.join(dataset_folder, '{}/COMBINATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        combination_count = file['meta']['count'][:].astype(numpy.int32)
-        combination_id = file['morphology']['galaxy_id'][:].astype(numpy.int32)
-    som_size = len(combination_count)
+    # Select
+    with h5py.File(os.path.join(fzb_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+        bin_source = file['bin_source'][...]
     
-    # Bin
     with h5py.File(os.path.join(fzb_folder, '{}/SOURCE/SOURCE{}/SELECT.hdf5'.format(tag, index)), 'r') as file:
-        source_bin = file['bin'][:].astype(numpy.float32)
-        source_select = file['select'][:].astype(bool)
-    source_bin_size = len(source_bin) - 1
-    sample_size = 1000
+        select_source = file['select'][...]
+    
+    # Size
+    sample_size = 100
+    bin_source_size = len(bin_source) - 1
     
     # Source
-    source_single = numpy.zeros((source_bin_size, grid_size + 1))
-    source_sample = numpy.zeros((source_bin_size, sample_size, grid_size + 1))
+    single_source = numpy.zeros((bin_source_size, grid_size + 1))
+    sample_source = numpy.zeros((bin_source_size, sample_size, grid_size + 1))
     
-    for m in range(source_bin_size):
+    for m in range(bin_source_size):
         # Select
-        select = source_select[m, :]
+        select = select_source[m, :]
         select_size = numpy.sum(select)
-        z_select = application_redshift_true[source_select[m, :]]
+        
+        # Application
+        application_redshift_true_select = application_redshift_true[select]
+        application_sigma_select = application_sigma[select]
         
         # Weight
-        application_label_select = application_label[select]
-        application_sigma_select = application_sigma[select]
-        application_count_select = numpy.bincount(application_label_select, minlength=som_size, weights=1 / numpy.square(application_sigma_select))
-        
-        
-        
-        application_weight_select = numpy.divide(application_count_select, combination_count, out=numpy.zeros(som_size), where=combination_count != 0)[application_label_select]
+        weight = 1 / numpy.square(application_sigma_select)
         
         # Single
-        histogram = numpy.histogram(z_select, bins=z_bin, range=(z1, z2), density=True, weights=application_weight_select)[0]
-        source_single[m, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
+        histogram = numpy.histogram(application_redshift_true_select, bins=z_bin, range=(z1, z2), weights=weight, density=True)[0]
+        single_source[m, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
         
         # Sample
         for n in range(sample_size):
-            indices = numpy.random.choice(numpy.arange(select_size), select_size, replace=True)
-            z_sample = z_select[indices]
+            
+            # Application
+            application_indices = numpy.random.choice(numpy.arange(select_size), select_size, replace=True)
+            application_redshift_true_sample = application_redshift_true_select[application_indices]
+            application_sigma_sample = application_sigma_select[application_indices]
             
             # Weight
-            application_label_sample = application_label_select[indices]
-            application_sigma_sample = application_sigma_select[indices]
-            application_count_sample = numpy.bincount(application_label_sample, minlength=som_size, weights=1 / numpy.square(application_sigma_sample))
-            application_weight_sample = numpy.divide(application_count_sample, combination_count, out=numpy.zeros(som_size), where=combination_count != 0)[application_label_sample]
+            weight_sample = 1 / numpy.square(application_sigma_sample)
             
-            histogram = numpy.histogram(z_sample, bins=z_bin, range=(z1, z2), density=True, weights=application_weight_sample)[0]
-            source_sample[m, n, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
+            histogram = numpy.histogram(application_redshift_true_sample, bins=z_bin, range=(z1, z2), weights=weight_sample, density=True)[0]
+            sample_source[m, n, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
     
     # Save
     with h5py.File(os.path.join(fzb_folder, '{}/SOURCE/SOURCE{}/HISTOGRAM.hdf5'.format(tag, index)), 'w') as file:
-        file.create_dataset('single', data=source_single, dtype=numpy.float32)
-        file.create_dataset('sample', data=source_sample, dtype=numpy.float32)
+        file.create_dataset('single', data=single_source, dtype=numpy.float32)
+        file.create_dataset('sample', data=sample_source, dtype=numpy.float32)
     
     # Duration
     end = time.time()

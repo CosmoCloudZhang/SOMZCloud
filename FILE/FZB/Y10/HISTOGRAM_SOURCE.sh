@@ -2,12 +2,12 @@
 #SBATCH -A m1727
 #SBATCH --nodes=4
 #SBATCH -q regular
-#SBATCH --time=08:00:00
+#SBATCH --time=04:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH --cpus-per-task=16
-#SBATCH --ntasks-per-node=16
+#SBATCH --cpus-per-task=8
+#SBATCH --ntasks-per-node=32
 #SBATCH -J FZB_Y10_HISTOGRAM_SOURCE
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
@@ -30,7 +30,7 @@ export OMP_PLACES=threads
 
 # Initialize the process
 TAG="Y10"
-NUMBER=16
+NUMBER=500
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 
