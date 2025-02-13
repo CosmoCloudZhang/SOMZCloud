@@ -25,6 +25,9 @@ def main(tag, index, folder):
     fzb_folder = os.path.join(folder, 'FZB/')
     dataset_folder = os.path.join(folder, 'DATASET/')
     
+    os.makedirs(os.path.join(fzb_folder, '{}/LENS/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(fzb_folder, '{}/LENS/LENS{}'.format(tag, index)), exist_ok=True)
+    
     # Redshift
     z1 = 0.0
     z2 = 3.0

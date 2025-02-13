@@ -34,6 +34,9 @@ def main(tag, index, folder):
     z_grid = numpy.linspace(z1, z2, grid_size + 1)
     z_bin = numpy.linspace(z1 - z_delta / 2, z2 + z_delta / 2, z_grid.size + 1)
     
+    os.makedirs(os.path.join(fzb_folder, '{}/SOURCE/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(fzb_folder, '{}/SOURCE/SOURCE{}'.format(tag, index)), exist_ok=True)
+    
     # Application
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         application_sigma = file['morphology']['sigma'][...]
