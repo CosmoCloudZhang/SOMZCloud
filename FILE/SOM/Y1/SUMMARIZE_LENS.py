@@ -56,7 +56,6 @@ def main(tag, index, folder):
     
     with h5py.File(os.path.join(fzb_folder, '{}/LENS/LENS{}/SELECT.hdf5'.format(tag, index)), 'r') as file:
         select_lens = file['select'][...]
-    select_lens = select_lens & (numpy.isin(application_cell_id, combination_cell_id))[numpy.newaxis, :]
     
     # Size
     sample_size = 100
@@ -77,11 +76,11 @@ def main(tag, index, folder):
         application_cell_count_select = numpy.bincount(application_cell_id_select, minlength=application_cell_size)
         
         # Combination
-        combination_cell_weight_select = numpy.divide(application_cell_count_select, combination_cell_count, out=numpy.zeros(combination_cell_size), where=combination_cell_count != 0)
-        combination_weight_select = combination_cell_weight_select[combination_cell_id]
+        combination_cell_weight_reference = numpy.divide(application_cell_count_select, combination_cell_count, out=numpy.zeros(combination_cell_size), where=combination_cell_count != 0)
+        combination_weight_reference = combination_cell_weight_reference[combination_cell_id]
         
         # Single
-        histogram = numpy.histogram(combination_redshift, bins=z_bin, weights=combination_weight_select)[0]
+        histogram = numpy.histogram(combination_redshift, bins=z_bin, weights=combination_weight_reference)[0]
         single_lens[m, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
         
         # Bootstrap
