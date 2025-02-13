@@ -6,9 +6,9 @@
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
+#SBATCH -J FIGURE_Y1_MEAN
 #SBATCH --cpus-per-task=256
 #SBATCH --ntasks-per-node=1
-#SBATCH -J FZB_ENSEMBLE_FIGURE
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -29,8 +29,9 @@ export OMP_PROC_BIND=spread
 export OMP_PLACES=threads
 
 # Initialize the process
+TAG="Y1"
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/CosmoCloud/ZCloud/"
+BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 
-# Run applications
-python -u "${BASE_PATH}FILE/FZB/ENSEMBLE_FIGURE.py" --folder=$BASE_FOLDER
+# Run the application
+srun -N 1 -n 1 -c $SLURM_CPUS_PER_TASK --cpu_bind=cores python -u "${BASE_PATH}FILE/FIGURE/${TAG}/MEAN.py" --tag=$TAG --folder=$BASE_FOLDER
