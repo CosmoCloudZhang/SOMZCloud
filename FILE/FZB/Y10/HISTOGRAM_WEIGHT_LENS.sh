@@ -1,14 +1,14 @@
 #!/bin/bash
 #SBATCH -A m1727
-#SBATCH --nodes=1
+#SBATCH --nodes=4
 #SBATCH -q regular
-#SBATCH --time=48:00:00
+#SBATCH --time=04:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH --cpus-per-task=256
-#SBATCH --ntasks-per-node=1
-#SBATCH -J FZB_ENSEMBLE_SOURCE
+#SBATCH --cpus-per-task=8
+#SBATCH --ntasks-per-node=32
+#SBATCH -J FZB_Y10_HISTOGRAM_WEIGHT_LENS
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -29,8 +29,17 @@ export OMP_PROC_BIND=spread
 export OMP_PLACES=threads
 
 # Initialize the process
+TAG="Y10"
+NUMBER=500
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-BASE_FOLDER="/global/cfs/cdirs/lsst/groups/PZ/users/CosmoCloud/ZCloud/"
+BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 
 # Run applications
-python -u "${BASE_PATH}/FILE/FZB/ENSEMBLE_SOURCE.py" --folder=$BASE_FOLDER
+for INDEX in $(seq 1 $NUMBER); do
+    srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}FILE/FZB/${TAG}/HISTOGRAM_WEIGHT_LENS.py" --tag=$TAG --index=$INDEX --folder=$BASE_FOLDER & 
+    # Control parallel execution
+    if (( $INDEX % $SLURM_NTASKS == 0 )); then
+        wait
+    fi
+done
+wait
