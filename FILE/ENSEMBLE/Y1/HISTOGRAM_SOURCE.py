@@ -60,10 +60,10 @@ def main(tag, number, folder):
     
     # Ensemble Data
     count = 16
-    ensemble_size = 10000
+    ensemble_size = 500000
     with multiprocessing.Pool(processes=count) as pool:
         ensemble_data = numpy.stack(pool.starmap(ensemble, [(data, z_grid, number, sample_size) for _ in range(ensemble_size)]), axis=0)
-    print(ensemble_data.shape)
+    
     ensemble_average = numpy.mean(ensemble_data, axis=0)
     ensemble_average = ensemble_average / scipy.integrate.trapezoid(y=ensemble_average, x=z_grid, axis=1)[:, numpy.newaxis]
     

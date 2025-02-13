@@ -60,7 +60,7 @@ def main(tag, number, folder):
     
     # Ensemble Data
     count = 16
-    ensemble_size = 10000
+    ensemble_size = 500000
     with multiprocessing.Pool(processes=count) as pool:
         ensemble_data = numpy.stack(pool.starmap(ensemble, [(data, z_grid, number, sample_size) for _ in range(ensemble_size)]), axis=0)
     
