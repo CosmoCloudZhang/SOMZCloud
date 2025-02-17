@@ -8,7 +8,7 @@
 #SBATCH -o LOG/%x_%j.out
 #SBATCH --cpus-per-task=8
 #SBATCH --ntasks-per-node=32
-#SBATCH -J SOM_Y10_SUMMARIZE_LENS
+#SBATCH -J SUMMARIZE_Y10_SOM_LENS
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -36,7 +36,7 @@ BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 
 # Run applications
 for INDEX in $(seq 1 $NUMBER); do
-    srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}FILE/SOM/${TAG}/SUMMARIZE_LENS.py" --tag=$TAG --index=$INDEX --folder=$BASE_FOLDER & 
+    srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}FILE/SUMMARIZE/${TAG}/SOM_LENS.py" --tag=$TAG --index=$INDEX --folder=$BASE_FOLDER & 
     # Control parallel execution
     if (( $INDEX % $SLURM_NTASKS == 0 )); then
         wait

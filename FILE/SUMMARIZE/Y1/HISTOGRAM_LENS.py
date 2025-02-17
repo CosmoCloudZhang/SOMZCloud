@@ -23,11 +23,12 @@ def main(tag, index, folder):
     print('Index: {}'.format(index))
     
     # Path
-    fzb_folder = os.path.join(folder, 'FZB/')
+    model_folder = os.path.join(folder, 'MODEL/')
     dataset_folder = os.path.join(folder, 'DATASET/')
+    summarize_folder = os.path.join(folder, 'SUMMARIZE/')
     
-    os.makedirs(os.path.join(fzb_folder, '{}/LENS/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(fzb_folder, '{}/LENS/LENS{}'.format(tag, index)), exist_ok=True)
+    os.makedirs(os.path.join(summarize_folder, '{}/LENS/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(summarize_folder, '{}/LENS/LENS{}'.format(tag, index)), exist_ok=True)
     
     # Redshift
     z1 = 0.0
@@ -42,19 +43,18 @@ def main(tag, index, folder):
         application_redshift_true = file['photometry']['redshift_true'][...]
     
     # Select
-    with h5py.File(os.path.join(fzb_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+    with h5py.File(os.path.join(model_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         bin_lens = file['bin_lens'][...]
     
-    with h5py.File(os.path.join(fzb_folder, '{}/LENS/LENS{}/SELECT.hdf5'.format(tag, index)), 'r') as file:
+    with h5py.File(os.path.join(model_folder, '{}/LENS/LENS{}/SELECT.hdf5'.format(tag, index)), 'r') as file:
         select_lens = file['select'][...]
     
     # Size
-    sample_size = 100
+    data_size = 1000
     bin_lens_size = len(bin_lens) - 1
     
     # Lens
-    single_lens = numpy.zeros((bin_lens_size, grid_size + 1))
-    sample_lens = numpy.zeros((bin_lens_size, sample_size, grid_size + 1))
+    data_lens = numpy.zeros((bin_lens_size, data_size, grid_size + 1))
     
     # Loop
     for m in range(bin_lens_size):
@@ -65,25 +65,20 @@ def main(tag, index, folder):
         # Application
         application_redshift_true_select = application_redshift_true[select]
         
-        # Single
-        histogram = numpy.histogram(application_redshift_true_select, bins=z_bin, range=(z1, z2), density=True)[0]
-        single_lens[m, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
-        
         # Bootstrap
-        for n in range(sample_size):
+        for n in range(data_size):
             
             # Application
             application_indices = numpy.random.choice(numpy.arange(select_size), select_size, replace=True)
-            application_redshift_true_sample = application_redshift_true_select[application_indices]
+            application_redshift_true_data = application_redshift_true_select[application_indices]
             
-            # Sample
-            histogram = numpy.histogram(application_redshift_true_sample, bins=z_bin, range=(z1, z2), density=True)[0]
-            sample_lens[m, n, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
+            # data
+            histogram = numpy.histogram(application_redshift_true_data, bins=z_bin, range=(z1, z2), density=True)[0]
+            data_lens[m, n, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
     
     # Save
-    with h5py.File(os.path.join(fzb_folder, '{}/LENS/LENS{}/HISTOGRAM.hdf5'.format(tag, index)), 'w') as file:
-        file.create_dataset('single', data=single_lens, dtype=numpy.float32)
-        file.create_dataset('sample', data=sample_lens, dtype=numpy.float32)
+    with h5py.File(os.path.join(summarize_folder, '{}/LENS/LENS{}/HISTOGRAM.hdf5'.format(tag, index)), 'w') as file:
+        file.create_dataset('data', data=data_lens, dtype=numpy.float32)
     
     # Duration
     end = time.time()
@@ -96,7 +91,7 @@ def main(tag, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='FZB Histogram')
+    PARSE = argparse.ArgumentParser(description='Summarize Histogram')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
     PARSE.add_argument('--index', type=int, required=True, help='The index of all the datasets')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of all the datasets')

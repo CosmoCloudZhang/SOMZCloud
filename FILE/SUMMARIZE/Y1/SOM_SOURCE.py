@@ -7,7 +7,7 @@ import argparse
 
 def main(tag, index, folder):
     '''
-    Histogram of the spectroscopic redshifts of the source samples
+    SOM summarization of the lens samples
     
     Arguments:
         tag (str): The tag of the configuration
@@ -22,12 +22,12 @@ def main(tag, index, folder):
     print('Index: {}'.format(index))
     
     # Path
-    som_folder = os.path.join(folder, 'SOM/')
-    fzb_folder = os.path.join(folder, 'FZB/')
+    model_folder = os.path.join(folder, 'MODEL/')
     dataset_folder = os.path.join(folder, 'DATASET/')
+    summarize_folder = os.path.join(folder, 'SUMMARIZE/')
     
-    os.makedirs(os.path.join(som_folder, '{}/SOURCE/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(som_folder, '{}/SOURCE/SOURCE{}'.format(tag, index)), exist_ok=True)
+    os.makedirs(os.path.join(summarize_folder, '{}/SOURCE/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(summarize_folder, '{}/SOURCE/SOURCE{}'.format(tag, index)), exist_ok=True)
     
     # Redshift
     z1 = 0.0
@@ -47,24 +47,22 @@ def main(tag, index, folder):
     with h5py.File(os.path.join(dataset_folder, '{}/COMBINATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         combination_cell_id = file['meta']['cell_id'][...]
         combination_cell_size = file['meta']['cell_size'][...]
-        combination_cell_count = file['meta']['cell_count'][...]
         combination_redshift = file['photometry']['redshift'][...]
     combination_size = len(combination_cell_id)
     
     # Select
-    with h5py.File(os.path.join(fzb_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+    with h5py.File(os.path.join(model_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         bin_source = file['bin_source'][...]
     
-    with h5py.File(os.path.join(fzb_folder, '{}/SOURCE/SOURCE{}/SELECT.hdf5'.format(tag, index)), 'r') as file:
+    with h5py.File(os.path.join(model_folder, '{}/SOURCE/SOURCE{}/SELECT.hdf5'.format(tag, index)), 'r') as file:
         select_source = file['select'][...]
     
     # Size
-    sample_size = 100
+    data_size = 1000
     bin_source_size = len(bin_source) - 1
     
     # Source
-    single_source = numpy.zeros((bin_source_size, grid_size + 1))
-    sample_source = numpy.zeros((bin_source_size, sample_size, grid_size + 1))
+    data_source = numpy.zeros((bin_source_size, data_size, grid_size + 1))
     
     # Loop
     for m in range(bin_source_size):
@@ -75,18 +73,9 @@ def main(tag, index, folder):
         # Application
         application_sigma_select = application_sigma[select]
         application_cell_id_select = application_cell_id[select]
-        application_cell_count_select = numpy.bincount(application_cell_id_select, minlength=application_cell_size, weights=1 / numpy.square(application_sigma_select))
-        
-        # Combination
-        combination_cell_weight_reference = numpy.divide(application_cell_count_select, combination_cell_count, out=numpy.zeros(combination_cell_size), where=combination_cell_count != 0)
-        combination_weight_reference = combination_cell_weight_reference[combination_cell_id]
-        
-        # Single
-        histogram = numpy.histogram(combination_redshift, bins=z_bin, weights=combination_weight_reference)[0]
-        single_source[m, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
         
         # Bootstrap
-        for n in range(sample_size):
+        for n in range(data_size):
             # Application
             application_indices = numpy.random.choice(numpy.arange(select_size), size=select_size, replace=True)
             
@@ -105,12 +94,11 @@ def main(tag, index, folder):
             
             # Sample
             histogram = numpy.histogram(combination_redshift[combination_indices], bins=z_bin, weights=combination_weight_sample)[0]
-            sample_source[m, n, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
+            data_source[m, n, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
     
     # Save
-    with h5py.File(os.path.join(som_folder, '{}/SOURCE/SOURCE{}/SUMMARIZE.hdf5'.format(tag, index)), 'w') as file:
-        file.create_dataset('single', data=single_source, dtype=numpy.float32)
-        file.create_dataset('sample', data=sample_source, dtype=numpy.float32)
+    with h5py.File(os.path.join(summarize_folder, '{}/SOURCE/SOURCE{}/SOM.hdf5'.format(tag, index)), 'w') as file:
+        file.create_dataset('data', data=data_source, dtype=numpy.float32)
     
     # Return
     end = time.time()
@@ -122,7 +110,7 @@ def main(tag, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='FZB Summarize')
+    PARSE = argparse.ArgumentParser(description='Summarize SOM')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
     PARSE.add_argument('--index', type=int, required=True, help='The index of all the datasets')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of all the datasets')

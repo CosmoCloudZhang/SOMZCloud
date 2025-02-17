@@ -23,8 +23,12 @@ def main(tag, index, folder):
     print('Index: {}'.format(index))
     
     # Path
-    fzb_folder = os.path.join(folder, 'FZB/')
+    model_folder = os.path.join(folder, 'MODEL/')
     dataset_folder = os.path.join(folder, 'DATASET/')
+    summarize_folder = os.path.join(folder, 'SUMMARIZE/')
+    
+    os.makedirs(os.path.join(summarize_folder, '{}/SOURCE/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(summarize_folder, '{}/SOURCE/SOURCE{}'.format(tag, index)), exist_ok=True)
     
     # Redshift
     z1 = 0.0
@@ -34,28 +38,24 @@ def main(tag, index, folder):
     z_grid = numpy.linspace(z1, z2, grid_size + 1)
     z_bin = numpy.linspace(z1 - z_delta / 2, z2 + z_delta / 2, z_grid.size + 1)
     
-    os.makedirs(os.path.join(fzb_folder, '{}/SOURCE/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(fzb_folder, '{}/SOURCE/SOURCE{}'.format(tag, index)), exist_ok=True)
-    
     # Application
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         application_sigma = file['morphology']['sigma'][...]
         application_redshift_true = file['photometry']['redshift_true'][...]
     
     # Select
-    with h5py.File(os.path.join(fzb_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+    with h5py.File(os.path.join(model_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         bin_source = file['bin_source'][...]
     
-    with h5py.File(os.path.join(fzb_folder, '{}/SOURCE/SOURCE{}/SELECT.hdf5'.format(tag, index)), 'r') as file:
+    with h5py.File(os.path.join(model_folder, '{}/SOURCE/SOURCE{}/SELECT.hdf5'.format(tag, index)), 'r') as file:
         select_source = file['select'][...]
     
     # Size
-    sample_size = 100
+    data_size = 1000
     bin_source_size = len(bin_source) - 1
     
     # Source
-    single_source = numpy.zeros((bin_source_size, grid_size + 1))
-    sample_source = numpy.zeros((bin_source_size, sample_size, grid_size + 1))
+    data_source = numpy.zeros((bin_source_size, data_size, grid_size + 1))
     
     for m in range(bin_source_size):
         # Select
@@ -66,15 +66,8 @@ def main(tag, index, folder):
         application_redshift_true_select = application_redshift_true[select]
         application_sigma_select = application_sigma[select]
         
-        # Weight
-        weight = 1 / numpy.square(application_sigma_select)
-        
-        # Single
-        histogram = numpy.histogram(application_redshift_true_select, bins=z_bin, range=(z1, z2), weights=weight, density=True)[0]
-        single_source[m, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
-        
         # Sample
-        for n in range(sample_size):
+        for n in range(data_size):
             
             # Application
             application_indices = numpy.random.choice(numpy.arange(select_size), select_size, replace=True)
@@ -85,12 +78,11 @@ def main(tag, index, folder):
             weight_sample = 1 / numpy.square(application_sigma_sample)
             
             histogram = numpy.histogram(application_redshift_true_sample, bins=z_bin, range=(z1, z2), weights=weight_sample, density=True)[0]
-            sample_source[m, n, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
+            data_source[m, n, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
     
     # Save
-    with h5py.File(os.path.join(fzb_folder, '{}/SOURCE/SOURCE{}/HISTOGRAM.hdf5'.format(tag, index)), 'w') as file:
-        file.create_dataset('single', data=single_source, dtype=numpy.float32)
-        file.create_dataset('sample', data=sample_source, dtype=numpy.float32)
+    with h5py.File(os.path.join(summarize_folder, '{}/SOURCE/SOURCE{}/HISTOGRAM.hdf5'.format(tag, index)), 'w') as file:
+        file.create_dataset('data', data=data_source, dtype=numpy.float32)
     
     # Duration
     end = time.time()
@@ -103,7 +95,7 @@ def main(tag, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='FZB Histogram')
+    PARSE = argparse.ArgumentParser(description='Summarize Histogram')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
     PARSE.add_argument('--index', type=int, required=True, help='The index of all the datasets')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of all the datasets')

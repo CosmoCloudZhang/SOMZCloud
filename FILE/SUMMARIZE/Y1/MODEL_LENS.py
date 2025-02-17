@@ -5,9 +5,10 @@ import numpy
 import scipy
 import argparse
 
+
 def main(tag, index, folder):
     '''
-    SOM summarization of the lens samples
+    Histogram of the spectroscopic redshifts of the lens samples
     
     Arguments:
         tag (str): The tag of the configuration
@@ -37,17 +38,12 @@ def main(tag, index, folder):
     z_grid = numpy.linspace(z1, z2, grid_size + 1)
     z_bin = numpy.linspace(z1 - z_delta / 2, z2 + z_delta / 2, z_grid.size + 1)
     
+    mesh_size = 3000
+    z_mesh = numpy.linspace(z1, z2, mesh_size + 1)
+    
     # Application
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        application_cell_id = file['meta']['cell_id'][...]
-        application_cell_size = file['meta']['cell_size'][...]
-    
-    # Combination
-    with h5py.File(os.path.join(dataset_folder, '{}/COMBINATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        combination_cell_id = file['meta']['cell_id'][...]
-        combination_cell_size = file['meta']['cell_size'][...]
-        combination_redshift = file['photometry']['redshift'][...]
-    combination_size = len(combination_cell_id)
+        application_size = len(file['photometry']['redshift'][...])
     
     # Select
     with h5py.File(os.path.join(model_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
@@ -63,38 +59,41 @@ def main(tag, index, folder):
     # Lens
     data_lens = numpy.zeros((bin_lens_size, data_size, grid_size + 1))
     
+    # Chunk
+    chunk_size = 10000
+    estimator = h5py.File(os.path.join(model_folder, '{}/ESTIMATE/ESTIMATE{}.hdf5'.format(tag, index)), 'r')
+    
     # Loop
     for m in range(bin_lens_size):
         # Select
         select = select_lens[m, :] 
         select_size = numpy.sum(select)
+        select_indices = numpy.arange(application_size)[select]
         
-        # Application
-        application_cell_id_select = application_cell_id[select]
+        histogram_sample = numpy.zeros((data_size, grid_size + 1))
         
-        # Bootstrap
-        for n in range(data_size):
-            # Application
-            application_indices = numpy.random.choice(numpy.arange(select_size), size=select_size, replace=True)
+        data_weight = numpy.ones((data_size, select_size))
+        for k in range(data_size):
+            data_indices = numpy.random.choice(numpy.arange(select_size), size=select_size, replace=True)
+            data_weight[k, :] = numpy.bincount(data_indices, minlength=select_size)
+        
+        # Loop
+        for n in range(select_size // chunk_size + 1):
+            # PDF
+            begin = n * chunk_size
+            end = min((n + 1) * chunk_size, application_size)
+            z_pdf = scipy.interpolate.CubicSpline(x=z_grid, y=estimator['data']['yvals'][select_indices[begin: end]].astype(numpy.float32), axis=1, bc_type='natural', extrapolate=False)(z_mesh)
             
-            application_cell_id_sample = application_cell_id_select[application_indices]
-            application_cell_count_sample = numpy.bincount(application_cell_id_sample, minlength=application_cell_size)
-            
-            # Combination
-            combination_indices = numpy.random.choice(numpy.arange(combination_size), size=combination_size, replace=True)
-            
-            combination_cell_id_sample = combination_cell_id[combination_indices]
-            combination_cell_count_sample = numpy.bincount(combination_cell_id_sample, minlength=combination_cell_size)
-            
-            combination_cell_weight_sample = numpy.divide(application_cell_count_sample, combination_cell_count_sample, out=numpy.zeros(combination_cell_size), where=combination_cell_count_sample != 0)
-            combination_weight_sample = combination_cell_weight_sample[combination_cell_id_sample]
-            
-            # Sample
-            histogram = numpy.histogram(combination_redshift[combination_indices], bins=z_bin, weights=combination_weight_sample)[0]
-            data_lens[m, n, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
+            # Histogram
+            for k in range(data_size):
+                z_sample = numpy.random.Generator.choice(z_mesh[numpy.newaxis, :], size=(end - begin), p=z_pdf / numpy.sum(z_pdf, axis=1, keepdims=True), axis=1, replace=True, shuffle=True)
+                histogram_sample[k, :] = histogram_sample[k, :] + numpy.histogram(z_sample, bins=z_bin, weights=data_weight[k, begin: end], density=False)[0]
+        
+        # Normalize
+        data_lens[m, :, :] = histogram_sample / scipy.integrate.trapezoid(x=z_grid, y=histogram_sample, axis=1)[:, numpy.newaxis]
     
     # Save
-    with h5py.File(os.path.join(summarize_folder, '{}/LENS/LENS{}/SOM.hdf5'.format(tag, index)), 'w') as file:
+    with h5py.File(os.path.join(summarize_folder, '{}/LENS/LENS{}/SUMMARIZE.hdf5'.format(tag, index)), 'w') as file:
         file.create_dataset('data', data=data_lens, dtype=numpy.float32)
     
     # Return
@@ -107,7 +106,7 @@ def main(tag, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Summarize SOM')
+    PARSE = argparse.ArgumentParser(description='Summarize Model')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
     PARSE.add_argument('--index', type=int, required=True, help='The index of all the datasets')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of all the datasets')
