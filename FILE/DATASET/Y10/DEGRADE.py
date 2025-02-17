@@ -25,9 +25,7 @@ def main(tag, index, folder):
     print('Index: {}'.format(index))
     
     # Path
-    som_folder = os.path.join(folder, 'SOM/')
     dataset_folder = os.path.join(folder, 'DATASET/')
-    
     os.makedirs(os.path.join(dataset_folder, '{}'.format(tag)), exist_ok=True)
     os.makedirs(os.path.join(dataset_folder, '{}/DEGRADATION/'.format(tag)), exist_ok=True)
     
@@ -44,14 +42,14 @@ def main(tag, index, folder):
         application_dataset['photometry'] = {key: file['photometry'][key][...] for key in file['photometry'].keys()}
     
     # Magnitude
-    magnitude1 = 21
-    magnitude2 = 25
+    magnitude1 = 20
+    magnitude2 = 24
     magnitude = numpy.random.uniform(low=magnitude1, high=magnitude2)
     select = (application_dataset['photometry']['mag_i_lsst'] < magnitude)
     
     # Redshift
-    redshift1 = 1.0
-    redshift2 = 2.5
+    redshift1 = 0.5
+    redshift2 = 2.0
     redshift = numpy.random.uniform(low=redshift1, high=redshift2)
     select = select & (application_dataset['photometry']['redshift'] < redshift)
     
@@ -68,8 +66,8 @@ def main(tag, index, folder):
     select = select & numpy.isin(application_cell_id, select_cell)
     
     # Size
-    size1 = 250000
-    size2 = 500000
+    size1 = 100000
+    size2 = 200000
     size = numpy.minimum(numpy.random.randint(low=size1, high=size2), numpy.sum(select))
     
     application_size = len(application_dataset['photometry']['redshift'])
@@ -85,7 +83,7 @@ def main(tag, index, folder):
     data_store = core.stage.RailStage.data_store
     data_store.__class__.allow_overwrite = True
     
-    model_name = os.path.join(som_folder, '{}/INFORM/INFORM.pkl'.format(tag))
+    model_name = os.path.join(dataset_folder, '{}/SOM/INFORM.pkl'.format(tag))
     model = data_store.read_file(key='model', path=model_name, handle_class=core.data.ModelHandle)()
     
     chunk = 100000

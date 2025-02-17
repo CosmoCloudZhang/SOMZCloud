@@ -25,9 +25,7 @@ def main(tag, index, folder):
     print('Index: {}'.format(index))
     
     # Path
-    som_folder = os.path.join(folder, 'SOM/')
     dataset_folder = os.path.join(folder, 'DATASET/')
-    
     os.makedirs(os.path.join(dataset_folder, '{}'.format(tag)), exist_ok=True)
     os.makedirs(os.path.join(dataset_folder, '{}/DEGRADATION/'.format(tag)), exist_ok=True)
     
@@ -85,7 +83,7 @@ def main(tag, index, folder):
     data_store = core.stage.RailStage.data_store
     data_store.__class__.allow_overwrite = True
     
-    model_name = os.path.join(som_folder, '{}/INFORM/INFORM.pkl'.format(tag))
+    model_name = os.path.join(dataset_folder, '{}/SOM/INFORM.pkl'.format(tag))
     model = data_store.read_file(key='model', path=model_name, handle_class=core.data.ModelHandle)()
     
     chunk = 100000
