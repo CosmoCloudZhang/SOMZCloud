@@ -6,7 +6,7 @@ import argparse
 
 def main(tag, index, folder):
     '''
-    Main function to create the FZB informer configuration file
+    Main function to create the model informer configuration file
     
     Arguments:
         tag (str): The tag of the configuration
@@ -21,7 +21,7 @@ def main(tag, index, folder):
     print('Index: {}'.format(index))
     
     # Path
-    fzb_folder = os.path.join(folder, 'FZB/')
+    model_folder = os.path.join(folder, 'MODEL/')
     
     # Config
     config = {
@@ -67,10 +67,10 @@ def main(tag, index, folder):
         }
     }
     
-    os.makedirs(os.path.join(fzb_folder, '{}/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(fzb_folder, '{}/INFORM/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(model_folder, '{}/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(model_folder, '{}/INFORM/'.format(tag)), exist_ok=True)
     
-    config_name = os.path.join(fzb_folder, '{}/INFORM/INFORM{}.yaml'.format(tag, index))
+    config_name = os.path.join(model_folder, '{}/INFORM/INFORM{}.yaml'.format(tag, index))
     with open(config_name, 'w') as config_file:
         yaml.dump(config, config_file, default_flow_style=False)
     
@@ -85,7 +85,7 @@ def main(tag, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='FZB Informer')
+    PARSE = argparse.ArgumentParser(description='Model Informer')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
     PARSE.add_argument('--index', type=int, required=True, help='The index of all the datasets')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of all the datasets')
