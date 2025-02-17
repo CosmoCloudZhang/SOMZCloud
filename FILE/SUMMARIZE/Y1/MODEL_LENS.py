@@ -8,7 +8,7 @@ import argparse
 
 def main(tag, index, folder):
     '''
-    Histogram of the spectroscopic redshifts of the lens samples
+    Model summarization of the lens samples
     
     Arguments:
         tag (str): The tag of the configuration
@@ -25,15 +25,16 @@ def main(tag, index, folder):
     # Path
     model_folder = os.path.join(folder, 'MODEL/')
     dataset_folder = os.path.join(folder, 'DATASET/')
-    summarize_folder = os.path.join(folder, 'SUMMARIZE/')
+    summarization_folder = os.path.join(folder, 'SUMMARIZE/')
     
-    os.makedirs(os.path.join(summarize_folder, '{}/LENS/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(summarize_folder, '{}/LENS/LENS{}'.format(tag, index)), exist_ok=True)
+    os.makedirs(os.path.join(summarization_folder, '{}/LENS/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(summarization_folder, '{}/LENS/LENS{}'.format(tag, index)), exist_ok=True)
     
     # Redshift
     z1 = 0.0
     z2 = 3.0
     grid_size = 300
+    
     z_delta = (z2 - z1) / grid_size
     z_grid = numpy.linspace(z1, z2, grid_size + 1)
     z_bin = numpy.linspace(z1 - z_delta / 2, z2 + z_delta / 2, z_grid.size + 1)
@@ -53,10 +54,10 @@ def main(tag, index, folder):
         select_lens = file['select'][...]
     
     # Size
-    data_size = 1000
+    data_size = 100
     bin_lens_size = len(bin_lens) - 1
     
-    # Lens
+    # lens
     data_lens = numpy.zeros((bin_lens_size, data_size, grid_size + 1))
     
     # Chunk
@@ -70,8 +71,7 @@ def main(tag, index, folder):
         select_size = numpy.sum(select)
         select_indices = numpy.arange(application_size)[select]
         
-        histogram_sample = numpy.zeros((data_size, grid_size + 1))
-        
+        pdf = numpy.zeros((data_size, grid_size + 1))
         data_weight = numpy.ones((data_size, select_size))
         for k in range(data_size):
             data_indices = numpy.random.choice(numpy.arange(select_size), size=select_size, replace=True)
@@ -82,18 +82,22 @@ def main(tag, index, folder):
             # PDF
             begin = n * chunk_size
             end = min((n + 1) * chunk_size, application_size)
-            z_pdf = scipy.interpolate.CubicSpline(x=z_grid, y=estimator['data']['yvals'][select_indices[begin: end]].astype(numpy.float32), axis=1, bc_type='natural', extrapolate=False)(z_mesh)
+            z_pdf = estimator['data']['yvals'][select_indices[begin: end]].astype(numpy.float32)
             
             # Histogram
-            for k in range(data_size):
-                z_sample = numpy.random.Generator.choice(z_mesh[numpy.newaxis, :], size=(end - begin), p=z_pdf / numpy.sum(z_pdf, axis=1, keepdims=True), axis=1, replace=True, shuffle=True)
-                histogram_sample[k, :] = histogram_sample[k, :] + numpy.histogram(z_sample, bins=z_bin, weights=data_weight[k, begin: end], density=False)[0]
+            pdf = pdf + numpy.sum(z_pdf[numpy.newaxis, :, :] * data_weight[:, begin: end][:, :, numpy.newaxis], axis=1)
         
-        # Normalize
-        data_lens[m, :, :] = histogram_sample / scipy.integrate.trapezoid(x=z_grid, y=histogram_sample, axis=1)[:, numpy.newaxis]
+        # Random
+        for n in range(data_size):
+            
+            pdf_data = numpy.maximum(scipy.interpolate.CubicSpline(x=z_grid, y=pdf[n, :], bc_type='natural', extrapolate=False)(z_mesh), 0)
+            z_data = numpy.random.choice(z_mesh, size=select_size, replace=True, p=pdf_data / numpy.sum(pdf_data))
+            
+            histogram = numpy.histogram(z_data, bins=z_bin, range=(z1, z2), density=True)[0]
+            data_lens[m, n, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
     
     # Save
-    with h5py.File(os.path.join(summarize_folder, '{}/LENS/LENS{}/SUMMARIZE.hdf5'.format(tag, index)), 'w') as file:
+    with h5py.File(os.path.join(summarization_folder, '{}/LENS/LENS{}/MODEL.hdf5'.format(tag, index)), 'w') as file:
         file.create_dataset('data', data=data_lens, dtype=numpy.float32)
     
     # Return

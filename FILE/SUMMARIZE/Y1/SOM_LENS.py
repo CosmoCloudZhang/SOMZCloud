@@ -57,7 +57,7 @@ def main(tag, index, folder):
         select_lens = file['select'][...]
     
     # Size
-    data_size = 1000
+    data_size = 100
     bin_lens_size = len(bin_lens) - 1
     
     # Lens

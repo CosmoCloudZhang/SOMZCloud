@@ -51,7 +51,7 @@ def main(tag, index, folder):
         select_source = file['select'][...]
     
     # Size
-    data_size = 1000
+    data_size = 100
     bin_source_size = len(bin_source) - 1
     
     # Source
