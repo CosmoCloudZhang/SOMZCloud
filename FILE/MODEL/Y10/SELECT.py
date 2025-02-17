@@ -5,10 +5,6 @@ import numpy
 import scipy
 import argparse
 
-import scipy.integrate
-import scipy.interpolate
-
-
 def main(tag, index, folder):
     '''
     Define the lens and source selection
@@ -26,15 +22,15 @@ def main(tag, index, folder):
     print('Index:{}'.format(index))
     
     # Path
-    fzb_folder = os.path.join(folder, 'FZB/')
+    model_folder = os.path.join(folder, 'MODEL/')
     dataset_folder = os.path.join(folder, 'DATASET/')
-    os.makedirs(os.path.join(fzb_folder, '{}/SELECT/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(model_folder, '{}/SELECT/'.format(tag)), exist_ok=True)
     
-    os.makedirs(os.path.join(fzb_folder, '{}/LENS/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(fzb_folder, '{}/LENS/LENS{}/'.format(tag, index)), exist_ok=True)
+    os.makedirs(os.path.join(model_folder, '{}/LENS/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(model_folder, '{}/LENS/LENS{}/'.format(tag, index)), exist_ok=True)
     
-    os.makedirs(os.path.join(fzb_folder, '{}/SOURCE/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(fzb_folder, '{}/SOURCE/SOURCE{}/'.format(tag, index)), exist_ok=True)
+    os.makedirs(os.path.join(model_folder, '{}/SOURCE/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(model_folder, '{}/SOURCE/SOURCE{}/'.format(tag, index)), exist_ok=True)
     
     # Redshift
     z1_lens = 0.2
@@ -64,7 +60,7 @@ def main(tag, index, folder):
     z_mean = numpy.zeros(application_size, dtype=numpy.float32)
     
     chunk_size = 100000
-    estimator = h5py.File(os.path.join(fzb_folder, '{}/ESTIMATE/ESTIMATE{}.hdf5'.format(tag, index)), 'r')
+    estimator = h5py.File(os.path.join(model_folder, '{}/ESTIMATE/ESTIMATE{}.hdf5'.format(tag, index)), 'r')
     
     for m in range(application_size // chunk_size + 1):
         begin = m * chunk_size
@@ -116,7 +112,7 @@ def main(tag, index, folder):
     percentile_source = len(sigma_source[numpy.abs(z_phot_source - z_true_source) > 1.0]) / len(sigma_source) * 100
     
     # Save
-    with h5py.File(os.path.join(fzb_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'w') as file:
+    with h5py.File(os.path.join(model_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'w') as file:
         file.create_dataset('z_phot', data=z_phot)
         file.create_dataset('z_mode', data=z_mode)
         file.create_dataset('z_mean', data=z_mean)
@@ -153,7 +149,7 @@ def main(tag, index, folder):
         fraction_lens_bin[m] = len(sigma_lens_bin[sigma_lens_bin > 0.15]) / len(sigma_lens_bin) * 100
         percentile_lens_bin[m] = len(sigma_lens_bin[numpy.abs(z_phot_lens_bin - z_true_lens_bin) > 1.0]) / len(sigma_lens_bin) * 100
     
-    with h5py.File(os.path.join(fzb_folder, '{}/LENS/LENS{}/SELECT.hdf5'.format(tag, index)), 'w') as file:    
+    with h5py.File(os.path.join(model_folder, '{}/LENS/LENS{}/SELECT.hdf5'.format(tag, index)), 'w') as file:    
         file.create_dataset('select', data=select_lens_bin)
         
         file.create_dataset('nmad', data=nmad_lens_bin)
@@ -178,7 +174,7 @@ def main(tag, index, folder):
         fraction_source_bin[m] = len(sigma_source_bin[sigma_source_bin > 0.15]) / len(sigma_source_bin) * 100
         percentile_source_bin[m] = len(sigma_source_bin[numpy.abs(z_phot_source_bin - z_true_source_bin) > 1.0]) / len(sigma_source_bin) * 100
     
-    with h5py.File(os.path.join(fzb_folder, '{}/SOURCE/SOURCE{}/SELECT.hdf5'.format(tag, index)), 'w') as file:
+    with h5py.File(os.path.join(model_folder, '{}/SOURCE/SOURCE{}/SELECT.hdf5'.format(tag, index)), 'w') as file:
         file.create_dataset('select', data=select_source_bin)
         
         file.create_dataset('nmad', data=nmad_source_bin)
@@ -196,7 +192,7 @@ def main(tag, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Selection')
+    PARSE = argparse.ArgumentParser(description='Model Select')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
     PARSE.add_argument('--index', type=int, required=True, help='The index of all the datasets')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of all the datasets')

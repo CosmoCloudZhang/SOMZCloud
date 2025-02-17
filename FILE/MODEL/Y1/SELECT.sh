@@ -6,8 +6,8 @@
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH -J FZB_Y1_SELECT
 #SBATCH --cpus-per-task=16
+#SBATCH -J MODEL_Y1_SELECT
 #SBATCH --ntasks-per-node=16
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
@@ -36,7 +36,7 @@ BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 
 # Run applications
 for INDEX in $(seq 1 $NUMBER); do
-    srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}FILE/FZB/${TAG}/SELECT.py" --tag=$TAG --index=$INDEX --folder=$BASE_FOLDER & 
+    srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}FILE/MODEL/${TAG}/SELECT.py" --tag=$TAG --index=$INDEX --folder=$BASE_FOLDER & 
     # Control parallel execution
     if (( $INDEX % $SLURM_NTASKS == 0 )); then
         wait
