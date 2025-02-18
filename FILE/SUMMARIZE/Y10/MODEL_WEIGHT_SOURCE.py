@@ -100,7 +100,7 @@ def main(tag, index, folder):
         select_indices = numpy.arange(application_size)[select]
         
         # Application
-        application_sigma = application_sigma[select]
+        application_sigma_select = application_sigma[select]
         application_z_phot_select = application_z_phot[select]
         application_cell_id_select = application_cell_id[select]
         
@@ -114,14 +114,14 @@ def main(tag, index, folder):
             data_weight[k, :] = numpy.bincount(application_indices, minlength=select_size)
             
             # Application
-            application_sigma_data = application_sigma[application_indices]
+            application_sigma_data = application_sigma_select[application_indices]
             application_z_phot_data = application_z_phot_select[application_indices]
             application_cell_id_data = application_cell_id_select[application_indices]
             
             application_cluster_id_data = cluster_id[application_cell_id_data]
             application_cluster_count_data = numpy.bincount(application_cluster_id_data, weights=1 / numpy.square(application_sigma_data), minlength=cluster_size)
             
-            application_cluster_z_phot_data = numpy.bincount(application_cluster_id_data, weights=application_z_phot_data / numpy.square(application_sigma_data, minlength=cluster_size))
+            application_cluster_z_phot_data = numpy.bincount(application_cluster_id_data, weights=application_z_phot_data / numpy.square(application_sigma_data), minlength=cluster_size)
             application_cluster_z_phot_data = numpy.divide(application_cluster_z_phot_data, application_cluster_count_data, out=numpy.zeros(cluster_size, dtype=numpy.float32), where=application_cluster_count_data > 0)
             
             # Combination
