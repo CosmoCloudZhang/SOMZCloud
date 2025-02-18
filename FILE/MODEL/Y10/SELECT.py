@@ -36,8 +36,8 @@ def main(tag, index, folder):
     z1_lens = 0.2
     z2_lens = 1.2
     
-    z1_source = 0.1
-    z2_source = 2.9
+    z1_source = 0.05
+    z2_source = 2.95
     
     z1 = 0.0
     z2 = 3.0
@@ -76,7 +76,7 @@ def main(tag, index, folder):
     # Select
     slope = 4.0
     intercept = 18.0
-    magnitude = 25.5
+    magnitude = 25.3
     
     select_source = (z1_source <= z_phot) & (z_phot < z2_source) & (application_magnitude < magnitude)
     select_lens = (z1_lens <= z_phot) & (z_phot < z2_lens) & (application_magnitude < slope * z_phot + intercept)
