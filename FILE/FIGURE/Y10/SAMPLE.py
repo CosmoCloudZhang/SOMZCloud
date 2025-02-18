@@ -23,7 +23,7 @@ def main(tag, index, folder):
     print('Index:{}'.format(index))
     
     # Path
-    fzb_folder = os.path.join(folder, 'FZB/')
+    model_folder = os.path.join(folder, 'MODEL/')
     figure_folder = os.path.join(folder, 'FIGURE/')
     dataset_folder = os.path.join(folder, 'DATASET/')
     
@@ -31,8 +31,8 @@ def main(tag, index, folder):
     z1_lens = 0.2
     z2_lens = 1.2
     
-    z1_source = 0.1
-    z2_source = 2.9
+    z1_source = 0.05
+    z2_source = 2.95
     
     z1 = 0.0
     z2 = 3.0
@@ -48,14 +48,14 @@ def main(tag, index, folder):
     # Values
     slope = 4
     intercept = 18
-    magnitude = 25.5
+    magnitude = 25.3
     
     # Application
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         application_magnitude = file['photometry']['mag_i_lsst'][...]
     
     # Estimator
-    with h5py.File(os.path.join(fzb_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+    with h5py.File(os.path.join(model_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         z_phot = file['z_phot'][...]
     
     # Configuration
