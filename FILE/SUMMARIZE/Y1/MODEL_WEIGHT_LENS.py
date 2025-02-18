@@ -166,7 +166,7 @@ def main(tag, index, folder):
             data_lens[m, n, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
     
     # Save
-    with h5py.File(os.path.join(summarization_folder, '{}/LENS/LENS{}/MODEL.hdf5'.format(tag, index)), 'w') as file:
+    with h5py.File(os.path.join(summarization_folder, '{}/LENS/LENS{}/MODEL_WEIGHT.hdf5'.format(tag, index)), 'w') as file:
         file.create_dataset('data', data=data_lens, dtype=numpy.float32)
     
     # Return
