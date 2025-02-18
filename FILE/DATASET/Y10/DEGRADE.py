@@ -42,14 +42,14 @@ def main(tag, index, folder):
         application_dataset['photometry'] = {key: file['photometry'][key][...] for key in file['photometry'].keys()}
     
     # Magnitude
-    magnitude1 = 20
-    magnitude2 = 24
+    magnitude1 = 21
+    magnitude2 = 25
     magnitude = numpy.random.uniform(low=magnitude1, high=magnitude2)
     select = (application_dataset['photometry']['mag_i_lsst'] < magnitude)
     
     # Redshift
-    redshift1 = 0.5
-    redshift2 = 2.0
+    redshift1 = 1.0
+    redshift2 = 2.5
     redshift = numpy.random.uniform(low=redshift1, high=redshift2)
     select = select & (application_dataset['photometry']['redshift'] < redshift)
     
@@ -66,8 +66,8 @@ def main(tag, index, folder):
     select = select & numpy.isin(application_cell_id, select_cell)
     
     # Size
-    size1 = 100000
-    size2 = 200000
+    size1 = 250000
+    size2 = 500000
     size = numpy.minimum(numpy.random.randint(low=size1, high=size2), numpy.sum(select))
     
     application_size = len(application_dataset['photometry']['redshift'])
