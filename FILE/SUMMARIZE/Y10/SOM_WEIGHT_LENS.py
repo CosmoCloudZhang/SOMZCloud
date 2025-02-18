@@ -9,7 +9,7 @@ from sklearn import cluster
 
 def main(tag, index, folder):
     '''
-    Histogram of the spectroscopic redshifts of the lens samples
+    SOM weighted summarization of the lens samples
     
     Arguments:
         tag (str): The tag of the configuration
@@ -24,18 +24,18 @@ def main(tag, index, folder):
     print('Index: {}'.format(index))
     
     # Path
-    som_folder = os.path.join(folder, 'SOM/')
-    fzb_folder = os.path.join(folder, 'FZB/')
+    model_folder = os.path.join(folder, 'MODEL/')
     dataset_folder = os.path.join(folder, 'DATASET/')
+    summarize_folder = os.path.join(folder, 'SUMMARIZE/')
     
-    os.makedirs(os.path.join(som_folder, '{}/LENS/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(som_folder, '{}/LENS/LENS{}'.format(tag, index)), exist_ok=True)
+    os.makedirs(os.path.join(summarize_folder, '{}/LENS/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(summarize_folder, '{}/LENS/LENS{}'.format(tag, index)), exist_ok=True)
     
     # SOM
     data_store = core.stage.RailStage.data_store
     data_store.__class__.allow_overwrite = True
     
-    model_name = os.path.join(som_folder, '{}/INFORM/INFORM.pkl'.format(tag))
+    model_name = os.path.join(dataset_folder, '{}/SOM/INFORM.pkl'.format(tag))
     model = data_store.read_file(key='model', path=model_name, handle_class=core.data.ModelHandle)()
     
     # Redshift
@@ -51,37 +51,32 @@ def main(tag, index, folder):
         application_cell_id = file['meta']['cell_id'][...]
     
     # Select
-    with h5py.File(os.path.join(fzb_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+    with h5py.File(os.path.join(model_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         bin_lens = file['bin_lens'][...]
         application_z_phot = file['z_phot'][...]
     
-    with h5py.File(os.path.join(fzb_folder, '{}/LENS/LENS{}/SELECT.hdf5'.format(tag, index)), 'r') as file:
+    with h5py.File(os.path.join(model_folder, '{}/LENS/LENS{}/SELECT.hdf5'.format(tag, index)), 'r') as file:
         select_lens = file['select'][...]
     
     # Combination
     with h5py.File(os.path.join(dataset_folder, '{}/COMBINATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         combination_cell_id = file['meta']['cell_id'][...]
         combination_redshift = file['photometry']['redshift'][...]
+    combination_size = len(combination_redshift)
     
     # Reference
-    with h5py.File(os.path.join(fzb_folder, '{}/REFERENCE/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+    with h5py.File(os.path.join(model_folder, '{}/REFERENCE/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         bin_lens = file['bin_lens'][...]
         combination_z_phot = file['z_phot'][...]
     
-    with h5py.File(os.path.join(fzb_folder, '{}/LENS/LENS{}/REFERENCE.hdf5'.format(tag, index)), 'r') as file:
-        reference_lens = file['reference'][...]
-    
     # Size
-    sample_size = 100
+    data_size = 100
     bin_lens_size = len(bin_lens) - 1
-    
-    # Lens
-    single_lens = numpy.zeros((bin_lens_size, grid_size + 1))
-    sample_lens = numpy.zeros((bin_lens_size, sample_size, grid_size + 1))
+    data_lens = numpy.zeros((bin_lens_size, data_size, grid_size + 1))
     
     # Cluster
     som_model = model['som']
-    cluster_size = model['n_rows'] * model['n_columns'] // 4
+    cluster_size = model['n_rows'] * model['n_columns']
     
     som_model.cluster(cluster.AgglomerativeClustering(n_clusters=cluster_size, linkage='complete'))
     cluster_id = som_model.clusters.flatten()
@@ -92,88 +87,58 @@ def main(tag, index, folder):
         select = select_lens[m, :] 
         select_size = numpy.sum(select)
         
-        # Reference
-        reference = reference_lens[m, :]
-        reference_size = numpy.sum(reference)
-        
         # Application
         application_z_phot_select = application_z_phot[select]
         application_cell_id_select = application_cell_id[select]
         
-        application_cluster_id_select = cluster_id[application_cell_id_select]
-        application_cluster_count_select = numpy.bincount(application_cluster_id_select, minlength=cluster_size)
-        
-        application_cluster_z_phot_select = numpy.divide(numpy.bincount(application_cluster_id_select, weights=application_z_phot_select, minlength=cluster_size), application_cluster_count_select, out=numpy.zeros(cluster_size, dtype=numpy.float32), where=application_cluster_count_select > 0)
-        
-        # Combination
-        combination_z_phot_reference = combination_z_phot[reference]
-        combination_z_spec_reference = combination_redshift[reference]
-        
-        combination_cell_id_reference = combination_cell_id[reference]
-        combination_cluster_id_reference = cluster_id[combination_cell_id_reference]
-        combination_cluster_count_reference = numpy.bincount(combination_cluster_id_reference, minlength=cluster_size)
-        
-        combination_cluster_z_phot_reference = numpy.divide(numpy.bincount(combination_cluster_id_reference, weights=combination_z_phot_reference, minlength=cluster_size), combination_cluster_count_reference, out=numpy.zeros(cluster_size, dtype=numpy.float32), where=combination_cluster_count_reference > 0)
-        combination_cluster_z_spec_reference = numpy.divide(numpy.bincount(combination_cluster_id_reference, weights=combination_z_spec_reference, minlength=cluster_size), combination_cluster_count_reference, out=numpy.zeros(cluster_size, dtype=numpy.float32), where=combination_cluster_count_reference > 0)
-        
-        # Filter
-        filter = combination_cluster_count_reference > 0
-        cluster_mean_delta = application_cluster_z_phot_select - combination_cluster_z_spec_reference
-        sigma = 1.4826 * numpy.median(numpy.abs(cluster_mean_delta[filter] - numpy.median(cluster_mean_delta[filter])))
-        filter = filter & (numpy.abs(cluster_mean_delta) - 5 * sigma < 0.00) & (numpy.abs(combination_cluster_z_phot_reference - combination_cluster_z_spec_reference) < 0.02)
-        
-        # Weight
-        cluster_weight = numpy.divide(application_cluster_count_select, combination_cluster_count_reference, out=numpy.zeros(cluster_size, dtype=numpy.float32), where=filter)
-        weight = cluster_weight[combination_cluster_id_reference]
-        
-        # Single
-        histogram = numpy.histogram(combination_z_spec_reference, bins=z_bin, weights=weight, range=(z1, z2), density=True)[0]
-        single_lens[m, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
-        
         # Bootstrap
-        for n in range(sample_size):
+        for n in range(data_size):
             # Application
             application_indices = numpy.random.choice(numpy.arange(select_size), size=select_size, replace=True)
             
-            application_z_phot_sample = application_z_phot_select[application_indices]
-            application_cell_id_sample = application_cell_id_select[application_indices]
+            application_z_phot_data = application_z_phot_select[application_indices]
+            application_cell_id_data = application_cell_id_select[application_indices]
             
-            application_cluster_id_sample = cluster_id[application_cell_id_sample]
-            application_cluster_count_sample = numpy.bincount(application_cluster_id_sample, minlength=cluster_size)
+            application_cluster_id_data = cluster_id[application_cell_id_data]
+            application_cluster_count_data = numpy.bincount(application_cluster_id_data, minlength=cluster_size)
             
-            application_cluster_z_phot_sample = numpy.divide(numpy.bincount(application_cluster_id_sample, weights=application_z_phot_sample, minlength=cluster_size), application_cluster_count_sample, out=numpy.zeros(cluster_size, dtype=numpy.float32), where=application_cluster_count_sample > 0)
+            application_cluster_z_phot_data = numpy.bincount(application_cluster_id_data, weights=application_z_phot_data, minlength=cluster_size)
+            application_cluster_z_phot_data = numpy.divide(application_cluster_z_phot_data, application_cluster_count_data, out=numpy.zeros(cluster_size, dtype=numpy.float32), where=application_cluster_count_data > 0)
             
             # Combination
-            combination_indices = numpy.random.choice(numpy.arange(reference_size), size=reference_size, replace=True)
+            combination_indices = numpy.random.choice(numpy.arange(combination_size), size=combination_size, replace=True)
             
-            combination_z_phot_sample = combination_z_phot_reference[combination_indices]
-            combination_z_spec_sample = combination_z_spec_reference[combination_indices]
+            combination_z_phot_data = combination_z_phot[combination_indices]
+            combination_z_spec_data = combination_redshift[combination_indices]
+            combination_cell_id_data = combination_cell_id[combination_indices]
             
-            combination_cell_id_sample = combination_cell_id_reference[combination_indices]
-            combination_cluster_id_sample = cluster_id[combination_cell_id_sample]
-            combination_cluster_count_sample = numpy.bincount(combination_cluster_id_sample, minlength=cluster_size)
+            combination_cluster_id_data = cluster_id[combination_cell_id_data]
+            combination_cluster_count_data = numpy.bincount(combination_cluster_id_data, minlength=cluster_size)
             
-            combination_cluster_z_phot_sample = numpy.divide(numpy.bincount(combination_cluster_id_sample, weights=combination_z_phot_sample, minlength=cluster_size), combination_cluster_count_sample, out=numpy.zeros(cluster_size, dtype=numpy.float32), where=combination_cluster_count_sample > 0)
-            combination_cluster_z_spec_sample = numpy.divide(numpy.bincount(combination_cluster_id_sample, weights=combination_z_spec_sample, minlength=cluster_size), combination_cluster_count_sample, out=numpy.zeros(cluster_size, dtype=numpy.float32), where=combination_cluster_count_sample > 0)
+            
+            combination_cluster_z_phot_data = numpy.bincount(combination_cluster_id_data, weights=combination_z_phot_data, minlength=cluster_size)
+            combination_cluster_z_phot_data = numpy.divide(combination_cluster_z_phot_data, combination_cluster_count_data, out=numpy.zeros(cluster_size, dtype=numpy.float32), where=combination_cluster_count_data > 0)
+            
+            combination_cluster_z_spec_data = numpy.bincount(combination_cluster_id_data, weights=combination_z_spec_data, minlength=cluster_size)
+            combination_cluster_z_spec_data = numpy.divide(combination_cluster_z_spec_data, combination_cluster_count_data, out=numpy.zeros(cluster_size, dtype=numpy.float32), where=combination_cluster_count_data > 0)
             
             # Filter
-            filter_sample = combination_cluster_count_sample > 0
-            cluster_mean_delta_sample = application_cluster_z_phot_sample - combination_cluster_z_spec_sample
-            sigma_sample = 1.4826 * numpy.median(numpy.abs(cluster_mean_delta_sample[filter_sample] - numpy.median(cluster_mean_delta_sample[filter_sample])))
-            filter_sample = filter_sample & (numpy.abs(cluster_mean_delta_sample) - 5 * sigma_sample < 0.00) & (numpy.abs(combination_cluster_z_phot_sample - combination_cluster_z_spec_sample) < 0.02)
+            filter_data = (application_cluster_count_data > 0) & (combination_cluster_count_data > 0)
+            cluster_mean_delta_data = application_cluster_z_phot_data - combination_cluster_z_spec_data
+            sigma_data = 1.4826 * numpy.median(numpy.abs(cluster_mean_delta_data[filter_data] - numpy.median(cluster_mean_delta_data[filter_data])))
+            filter_data = filter_data & (numpy.abs(cluster_mean_delta_data) - 5 * sigma_data < 0) & (numpy.abs(combination_cluster_z_phot_data - combination_cluster_z_spec_data) < 0.02)
             
             # Weight
-            cluster_weight_sample = numpy.divide(application_cluster_count_sample, combination_cluster_count_sample, out=numpy.zeros(cluster_size, dtype=numpy.float32), where=filter_sample)
-            weight_sample = cluster_weight_sample[combination_cluster_id_sample]
+            cluster_weight_data = numpy.divide(application_cluster_count_data, combination_cluster_count_data, out=numpy.zeros(cluster_size, dtype=numpy.float32), where=filter_data)
+            combination_weight_data = cluster_weight_data[combination_cluster_id_data]
             
             # Sample
-            histogram = numpy.histogram(combination_z_spec_sample, bins=z_bin, weights=weight_sample, range=(z1, z2), density=True)[0]
-            sample_lens[m, n, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
+            histogram = numpy.histogram(combination_z_spec_data, bins=z_bin, weights=combination_weight_data, range=(z1, z2), density=True)[0]
+            data_lens[m, n, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
     
     # Save
-    with h5py.File(os.path.join(som_folder, '{}/LENS/LENS{}/SUMMARIZE_WEIGHT.hdf5'.format(tag, index)), 'w') as file:
-        file.create_dataset('single', data=single_lens, dtype=numpy.float32)
-        file.create_dataset('sample', data=sample_lens, dtype=numpy.float32)
+    with h5py.File(os.path.join(summarize_folder, '{}/LENS/LENS{}/SOM_WEIGHT.hdf5'.format(tag, index)), 'w') as file:
+        file.create_dataset('data', data=data_lens, dtype=numpy.float32)
     
     # Return
     end = time.time()
@@ -185,7 +150,7 @@ def main(tag, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='FZB Summarize Weight')
+    PARSE = argparse.ArgumentParser(description='Summarize SOM Weight')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
     PARSE.add_argument('--index', type=int, required=True, help='The index of all the datasets')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of all the datasets')

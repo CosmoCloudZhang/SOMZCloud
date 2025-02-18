@@ -60,8 +60,6 @@ def main(tag, index, folder):
     # Size
     data_size = 100
     bin_source_size = len(bin_source) - 1
-    
-    # Source
     data_source = numpy.zeros((bin_source_size, data_size, grid_size + 1))
     
     # Loop

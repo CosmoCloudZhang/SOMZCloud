@@ -56,8 +56,6 @@ def main(tag, index, folder):
     # Size
     data_size = 100
     bin_lens_size = len(bin_lens) - 1
-    
-    # lens
     data_lens = numpy.zeros((bin_lens_size, data_size, grid_size + 1))
     
     # Chunk
