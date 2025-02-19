@@ -23,7 +23,7 @@ def main(tag, index, folder):
     print('Index:{}'.format(index))
     
     # Path
-    fzb_folder = os.path.join(folder, 'FZB/')
+    model_folder = os.path.join(folder, 'MODEL/')
     figure_folder = os.path.join(folder, 'FIGURE/')
     dataset_folder = os.path.join(folder, 'DATASET/')
     
@@ -44,7 +44,7 @@ def main(tag, index, folder):
         application_redshift_true = file['photometry']['redshift_true'][...]
     
     # Reference
-    with h5py.File(os.path.join(fzb_folder, '{}/REFERENCE/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+    with h5py.File(os.path.join(model_folder, '{}/REFERENCE/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         z_phot = file['z_phot'][...]
         reference_lens = file['reference_lens'][...]
         reference_source = file['reference_source'][...]
