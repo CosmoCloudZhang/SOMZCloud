@@ -71,7 +71,7 @@ def main(tag, index, folder):
             application_redshift_true_data = application_redshift_true_select[application_indices]
             
             # data
-            histogram = numpy.histogram(application_redshift_true_data, bins=z_bin, range=(z1, z2), density=True)[0]
+            histogram = numpy.histogram(application_redshift_true_data, bins=z_bin, range=(z1, z2), density=False)[0]
             data_lens[m, n, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
     
     # Save

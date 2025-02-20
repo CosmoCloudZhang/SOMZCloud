@@ -75,7 +75,7 @@ def main(tag, index, folder):
             # Weight
             weight_sample = 1 / numpy.square(application_sigma_sample)
             
-            histogram = numpy.histogram(application_redshift_true_sample, bins=z_bin, range=(z1, z2), weights=weight_sample, density=True)[0]
+            histogram = numpy.histogram(application_redshift_true_sample, bins=z_bin, range=(z1, z2), weights=weight_sample, density=False)[0]
             data_source[m, n, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
     
     # Save

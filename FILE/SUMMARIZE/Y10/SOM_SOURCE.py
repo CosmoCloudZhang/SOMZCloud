@@ -77,21 +77,21 @@ def main(tag, index, folder):
             # Application
             application_indices = numpy.random.choice(numpy.arange(select_size), size=select_size, replace=True)
             
-            application_sigma_sample = application_sigma_select[application_indices]
-            application_cell_id_sample = application_cell_id_select[application_indices]
-            application_cell_count_sample = numpy.bincount(application_cell_id_sample, minlength=application_cell_size, weights=1 / numpy.square(application_sigma_sample))
+            application_sigma_data = application_sigma_select[application_indices]
+            application_cell_id_data = application_cell_id_select[application_indices]
+            application_cell_count_data = numpy.bincount(application_cell_id_data, minlength=application_cell_size, weights=1 / numpy.square(application_sigma_data))
             
             # Combination
             combination_indices = numpy.random.choice(numpy.arange(combination_size), size=combination_size, replace=True)
             
-            combination_cell_id_sample = combination_cell_id[combination_indices]
-            combination_cell_count_sample = numpy.bincount(combination_cell_id_sample, minlength=combination_cell_size)
+            combination_cell_id_data = combination_cell_id[combination_indices]
+            combination_cell_count_data = numpy.bincount(combination_cell_id_data, minlength=combination_cell_size)
             
-            combination_cell_weight_sample = numpy.divide(application_cell_count_sample, combination_cell_count_sample, out=numpy.zeros(combination_cell_size), where=combination_cell_count_sample != 0)
-            combination_weight_sample = combination_cell_weight_sample[combination_cell_id_sample]
+            combination_cell_weight_data = numpy.divide(application_cell_count_data, combination_cell_count_data, out=numpy.zeros(combination_cell_size), where=combination_cell_count_data != 0)
+            combination_weight_data = combination_cell_weight_data[combination_cell_id_data]
             
             # Sample
-            histogram = numpy.histogram(combination_redshift[combination_indices], bins=z_bin, weights=combination_weight_sample)[0]
+            histogram = numpy.histogram(combination_redshift[combination_indices], bins=z_bin, weights=combination_weight_data)[0]
             data_source[m, n, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
     
     # Save
