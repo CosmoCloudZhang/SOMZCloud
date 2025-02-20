@@ -28,14 +28,14 @@ def main(tag, folder):
     
     # Error
     error_model = LsstErrorModel(
-        nYrObs=1, 
         sigLim=1.0,
         absFlux=True,
         ndMode='sigLim', 
         majorCol='major', 
         minorCol='minor', 
         decorrelate=True,
-        extendedType='auto',
+        extendedType='auto', 
+        nYrObs=int(tag[1:]), 
         renameDict={
             'u': 'mag_u_lsst',
             'g': 'mag_g_lsst',

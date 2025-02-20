@@ -22,8 +22,6 @@ source $HOME/.bashrc
 conda activate $RAILENV
 
 # Set environment
-export NUMEXPR_MAX_THREADS=$SLURM_CPUS_PER_TASK
-export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 export HDF5_USE_FILE_LOCKING=FALSE
 export OMP_PROC_BIND=spread
 export OMP_PLACES=threads
@@ -35,4 +33,4 @@ BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 
 # Run the application
-srun -N 1 -n 1 -c $SLURM_CPUS_PER_TASK --cpu_bind=cores python -u "${BASE_PATH}FILE/DATASET/${TAG}/COMBINE.py" --tag=$TAG --number=$NUMBER --folder=$BASE_FOLDER
+python -u "${BASE_PATH}FILE/DATASET/${TAG}/COMBINE.py" --tag=$TAG --number=$NUMBER --folder=$BASE_FOLDER

@@ -19,7 +19,7 @@ def main(tag, index, folder):
     Returns:
         duration (float): The duration of the process
     '''
-    # Path
+    # Start
     start = time.time()
     numpy.random.seed(index)
     print('Index: {}'.format(index))
@@ -31,6 +31,7 @@ def main(tag, index, folder):
     
     # Degradation
     with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+        degradation_cell_size = file['meta']['cell_size'][...]
         degradation_cell_count = file['meta']['cell_count'][...]
         degradation_redshift = file['photometry']['redshift'][...]
         degradation_magnitude = file['photometry']['mag_i_lsst'][...]
@@ -51,8 +52,8 @@ def main(tag, index, folder):
     selection_cell_id = selection_dataset['meta']['cell_id']
     selection_size = len(selection_dataset['photometry']['redshift'])
     
-    fraction = numpy.sum(degradation_cell_count == 0) / len(degradation_cell_count)
-    filter = numpy.isin(selection_cell_id, numpy.arange(len(degradation_cell_count))[degradation_cell_count == 0])
+    fraction = numpy.sum(degradation_cell_count == 0) / degradation_cell_size
+    filter = numpy.isin(selection_cell_id, numpy.arange(degradation_cell_size)[degradation_cell_count == 0])
     
     # Magnitude
     magnitude = numpy.max(degradation_magnitude)
@@ -99,7 +100,7 @@ def main(tag, index, folder):
     
     cell_size = model['n_rows'] * model['n_columns']
     augmentation_cell_count = numpy.bincount(augmentation_cell_id, minlength=cell_size)
-    augmentation_cell_mean = numpy.divide(numpy.bincount(augmentation_cell_id, weights=augmentation_dataset['photometry']['redshift'], minlength=cell_size), augmentation_cell_count, out=numpy.ones(cell_size) * numpy.nan, where=augmentation_cell_count != 0)
+    augmentation_cell_z_true = numpy.divide(numpy.bincount(augmentation_cell_id, weights=augmentation_dataset['photometry']['redshift_true'], minlength=cell_size), augmentation_cell_count, out=numpy.ones(cell_size) * numpy.nan, where=augmentation_cell_count != 0)
     
     # Save
     with h5py.File(os.path.join(dataset_folder, '{}/AUGMENTATION/DATA{}.hdf5'.format(tag, index)), 'w') as file:
@@ -118,8 +119,8 @@ def main(tag, index, folder):
         file['meta'].create_dataset('cell_coordinate1', data=augmentation_cell_coordinate1, dtype=numpy.int32)
         file['meta'].create_dataset('cell_coordinate2', data=augmentation_cell_coordinate2, dtype=numpy.int32)
         
-        file['meta'].create_dataset('cell_mean', data=augmentation_cell_mean, dtype=numpy.float32)
         file['meta'].create_dataset('cell_count', data=augmentation_cell_count, dtype=numpy.int32)
+        file['meta'].create_dataset('cell_z_true', data=augmentation_cell_z_true, dtype=numpy.float32)
         
         file.create_group('morphology')
         for key in selection_dataset['morphology'].keys():

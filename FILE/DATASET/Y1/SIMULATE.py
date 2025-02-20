@@ -29,7 +29,6 @@ def main(tag, folder):
     
     # Model
     error_model = LsstErrorModel(
-        nYrObs=1, 
         sigLim=1.0,
         absFlux=True,
         ndMode='sigLim', 
@@ -37,6 +36,7 @@ def main(tag, folder):
         minorCol='minor', 
         decorrelate=True,
         extendedType='auto',
+        nYrObs=int(tag[1:]), 
         renameDict={
             'u': 'mag_u_lsst',
             'g': 'mag_g_lsst',

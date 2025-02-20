@@ -19,7 +19,7 @@ def main(tag, index, folder):
     Returns:
         duration (float): The duration of the process
     '''
-    # Path
+    # Start
     start = time.time()
     numpy.random.seed(index)
     print('Index: {}'.format(index))
@@ -42,36 +42,45 @@ def main(tag, index, folder):
         application_dataset['photometry'] = {key: file['photometry'][key][...] for key in file['photometry'].keys()}
     
     # Magnitude
-    magnitude1 = 20
-    magnitude2 = 24
-    magnitude = numpy.random.uniform(low=magnitude1, high=magnitude2)
-    select = (application_dataset['photometry']['mag_i_lsst'] < magnitude)
+    magnitude1 = {'Y1': 20, 'Y10': 21}
+    magnitude2 = {'Y1': 24, 'Y10': 25}
+    magnitude = numpy.random.uniform(low=magnitude1[tag], high=magnitude2[tag])
+    
+    filter = (application_dataset['photometry']['mag_i_lsst'] < magnitude)
     
     # Redshift
-    redshift1 = 0.5
-    redshift2 = 2.0
-    redshift = numpy.random.uniform(low=redshift1, high=redshift2)
-    select = select & (application_dataset['photometry']['redshift'] < redshift)
+    redshift1 = {'Y1': 0.5, 'Y10': 1.0}
+    redshift2 = {'Y1': 2.5, 'Y10': 3.0}
+    redshift = numpy.random.uniform(low=redshift1[tag], high=redshift2[tag])
     
-    # Fraction
-    fraction1 = 0.5
-    fraction2 = 1.0
-    fraction = numpy.random.uniform(low=fraction1, high=fraction2)
+    filter = filter & (application_dataset['photometry']['redshift'] < redshift)
     
-    # Cell
-    application_cell_id = application_dataset['meta']['cell_id']
-    select_cell_size = int(fraction * len(numpy.unique(application_cell_id[select])))
+    # Color
+    color1 = {'Y1': 0.5, 'Y10': 0.0}
+    color2 = {'Y1': 1.5, 'Y10': 1.0}
+    color = numpy.random.uniform(low=color1[tag], high=color2[tag])
     
-    select_cell = numpy.random.choice(numpy.unique(application_cell_id[select]), size=select_cell_size, replace=False)
-    select = select & numpy.isin(application_cell_id, select_cell)
+    # Angle
+    angle1 = {'Y1': 0.0, 'Y10': 0.0}
+    angle2 = {'Y1': numpy.pi / 2, 'Y10': numpy.pi / 3}
+    angle = numpy.random.uniform(low=angle1[tag], high=angle2[tag])
+    
+    application_color = application_dataset['photometry']['mag_g_lsst'] - application_dataset['photometry']['mag_z_lsst']
+    filter = filter & (application_dataset['photometry']['mag_i_lsst'] - magnitude  - numpy.tan(angle) * (application_color - color) < 0)
+    
+    # Factor
+    factor1 = {'Y1': 0.5, 'Y10': 1.0}
+    factor2 = {'Y1': 1.5, 'Y10': 2.0}
+    factor = numpy.random.uniform(low=factor1[tag], high=factor2[tag])
+    rate = 1 / (1 + factor * numpy.exp(application_dataset['photometry']['mag_i_lsst'].max() - application_dataset['photometry']['mag_i_lsst']))
     
     # Size
-    size1 = 100000
-    size2 = 200000
-    size = numpy.minimum(numpy.random.randint(low=size1, high=size2), numpy.sum(select))
+    size1 = {'Y1': 100000, 'Y10': 250000}
+    size2 = {'Y1': 200000, 'Y10': 500000}
+    size = numpy.minimum(numpy.random.randint(low=size1[tag], high=size2[tag]), numpy.sum(filter))
     
     application_size = len(application_dataset['photometry']['redshift'])
-    indices = numpy.random.choice(numpy.arange(application_size)[select], size=size, replace=False)
+    indices = numpy.random.choice(numpy.arange(application_size)[filter], size=size, replace=False, p=rate[filter] / numpy.sum(rate[filter]))
     
     # Degradation
     degradation_dataset = {
@@ -104,14 +113,16 @@ def main(tag, index, folder):
     
     cell_size = model['n_rows'] * model['n_columns']
     degradation_cell_count = numpy.bincount(degradation_cell_id, minlength=cell_size)
-    degradation_cell_mean = numpy.divide(numpy.bincount(degradation_cell_id, weights=degradation_dataset['photometry']['redshift'], minlength=cell_size), degradation_cell_count, out=numpy.ones(cell_size) * numpy.nan, where=degradation_cell_count != 0)
+    degradation_cell_z_true = numpy.divide(numpy.bincount(degradation_cell_id, weights=degradation_dataset['photometry']['redshift_true'], minlength=cell_size), degradation_cell_count, out=numpy.ones(cell_size) * numpy.nan, where=degradation_cell_count != 0)
     
     # Save
     with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, index)), 'w') as file:
         file.create_group('meta')
         
         file['meta'].create_dataset('size', data=size, dtype=numpy.int32)
-        file['meta'].create_dataset('fraction', data=fraction, dtype=numpy.float32)
+        file['meta'].create_dataset('angle', data=angle, dtype=numpy.float32)
+        file['meta'].create_dataset('color', data=color, dtype=numpy.float32)
+        file['meta'].create_dataset('factor', data=factor, dtype=numpy.float32)
         file['meta'].create_dataset('redshift', data=redshift, dtype=numpy.float32)
         file['meta'].create_dataset('magnitude', data=magnitude, dtype=numpy.float32)
         
@@ -123,8 +134,8 @@ def main(tag, index, folder):
         file['meta'].create_dataset('cell_coordinate1', data=degradation_cell_coordinate1, dtype=numpy.int32)
         file['meta'].create_dataset('cell_coordinate2', data=degradation_cell_coordinate2, dtype=numpy.int32)
         
-        file['meta'].create_dataset('cell_mean', data=degradation_cell_mean, dtype=numpy.float32)
         file['meta'].create_dataset('cell_count', data=degradation_cell_count, dtype=numpy.int32)
+        file['meta'].create_dataset('cell_z_true', data=degradation_cell_z_true, dtype=numpy.float32)
         
         file.create_group('morphology')
         for key in degradation_dataset['morphology'].keys():
