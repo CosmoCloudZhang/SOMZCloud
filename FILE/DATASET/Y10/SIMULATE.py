@@ -53,9 +53,6 @@ def main(tag, folder):
     psf_fwhm = {'psf_{}'.format(band): fwhm for band, fwhm in zip(band_list, fwhm_list)}
     exposure = {key: value * error_model.params.nYrObs for key, value in error_model.params.nVisYr.items()}
     
-    print('Exposure counts: {}'.format(exposure))
-    print('Limiting magnitudes: {}'.format(error_model.getLimitingMags(nSigma=10.0)))
-    
     # Simulation
     with open(os.path.join(dataset_folder, 'CATALOG/SIMULATE.yaml'), 'r') as file:
         simulation_list = yaml.safe_load(file)['healpix_pixels']
@@ -117,17 +114,17 @@ def main(tag, folder):
         catalog['sigma'] = 1 / numpy.sqrt(exposure['mag_r_lsst'] / numpy.square(sigma1) + exposure['mag_i_lsst'] / numpy.square(sigma2))
         
         # Select
-        factor = 1.00
         sigma0 = 0.26
-        select = catalog['sigma']  < factor * sigma0
+        select = (0 < catalog['sigma']) & (catalog['sigma'] < sigma0)
         select = select & (catalog['mu'] > 10) & (catalog['eta'] > 0.1)
         
         z1 = 0.0
         z2 = 3.0
         select = select & (z1 < catalog['redshift_true']) & (catalog['redshift_true'] < z2)
         
+        snr = 15
         magnitude1 = 16
-        magnitude2 = 30
+        magnitude2 = error_model.getLimitingMags(nSigma=snr)['mag_i_lsst']
         select = select & (magnitude1 < catalog['mag_i_lsst']) & (catalog['mag_i_lsst'] < magnitude2)
         
         # Append
@@ -141,9 +138,6 @@ def main(tag, folder):
     with h5py.File(os.path.join(dataset_folder, '{}/SIMULATION/SIMULATION.hdf5'.format(tag)), 'w') as file:
         for key in simulation.keys():
             file.create_dataset(key, data=simulation[key], dtype=simulation[key].dtype)
-    
-    print('Number: {:.0f}'.format(len(simulation['redshift'])))
-    print('Effective number: {:.0f}'.format(numpy.square(sigma0) * numpy.sum(1 / (numpy.square(sigma0) + numpy.square(simulation['sigma'])))))
     
     # Duration
     end = time.time()

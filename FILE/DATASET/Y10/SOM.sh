@@ -2,7 +2,7 @@
 #SBATCH -A m1727
 #SBATCH --nodes=1
 #SBATCH -q regular
-#SBATCH --time=24:00:00
+#SBATCH --time=48:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
@@ -14,7 +14,7 @@
 # Load modules
 module load python
 module load PrgEnv-gnu
-module load cray-mpich/8.1.28
+module load cray-mpich/8.1.30
 module load cray-hdf5-parallel
 
 # Activate the conda environment
