@@ -21,7 +21,7 @@ def main(tag, index, folder):
     Returns:
         duration (float): The duration of the process
     '''
-    # Path
+    # Start
     start = time.time()
     print('Index: {}'.format(index))
     
@@ -82,7 +82,7 @@ def main(tag, index, folder):
     
     cell_size = model['n_rows'] * model['n_columns']
     application_cell_count = numpy.bincount(application_cell_id, minlength=cell_size)
-    application_cell_mean = numpy.divide(numpy.bincount(application_cell_id, weights=application_dataset['redshift'], minlength=cell_size), application_cell_count, out=numpy.ones(cell_size) * numpy.nan, where=application_cell_count != 0)
+    application_cell_z_true = numpy.divide(numpy.bincount(application_cell_id, weights=application_dataset['redshift_true'], minlength=cell_size), application_cell_count, out=numpy.ones(cell_size) * numpy.nan, where=application_cell_count != 0)
     
     # Save
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'w') as file:
@@ -95,8 +95,8 @@ def main(tag, index, folder):
         file['meta'].create_dataset('cell_coordinate1', data=application_cell_coordinate1, dtype=numpy.int32)
         file['meta'].create_dataset('cell_coordinate2', data=application_cell_coordinate2, dtype=numpy.int32)
         
-        file['meta'].create_dataset('cell_mean', data=application_cell_mean, dtype=numpy.float32)
         file['meta'].create_dataset('cell_count', data=application_cell_count, dtype=numpy.int32)
+        file['meta'].create_dataset('cell_z_true', data=application_cell_z_true, dtype=numpy.float32)
         
         file.create_group('photometry')
         file['photometry'].create_dataset('redshift', data=application_dataset['redshift'], dtype=numpy.float32)
