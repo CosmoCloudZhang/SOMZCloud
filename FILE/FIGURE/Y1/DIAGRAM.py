@@ -56,7 +56,7 @@ def main(tag, index, folder):
     
     # Bin
     magnitude1 = 16.0
-    magnitude2 = 26.5
+    magnitude2 = 26.0
     magnitude_size = 100
     magnitude_bin = numpy.linspace(magnitude1, magnitude2, magnitude_size + 1)
     

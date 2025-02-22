@@ -33,31 +33,31 @@ def main(tag, index, folder):
     
     # Application
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        application_cell_mean = file['meta']['cell_mean'][...]
-        application_cell_size1 = file['meta']['cell_size1'][...]
-        application_cell_size2 = file['meta']['cell_size2'][...]
-    application_map = application_cell_mean.reshape((application_cell_size1, application_cell_size2))
+        cell_size1 = file['meta']['cell_size1'][...]
+        cell_size2 = file['meta']['cell_size2'][...]
+        application_cell_z_true = file['meta']['cell_z_true'][...]
+    application_map = application_cell_z_true.reshape((cell_size1, cell_size2))
     
     # Degradation
     with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        degradation_cell_mean = file['meta']['cell_mean'][...]
-        degradation_cell_size1 = file['meta']['cell_size1'][...]
-        degradation_cell_size2 = file['meta']['cell_size2'][...]
-    degradation_map = degradation_cell_mean.reshape((degradation_cell_size1, degradation_cell_size2))
+        cell_size1 = file['meta']['cell_size1'][...]
+        cell_size2 = file['meta']['cell_size2'][...]
+        degradation_cell_z_true = file['meta']['cell_z_true'][...]
+    degradation_map = degradation_cell_z_true.reshape((cell_size1, cell_size2))
     
     # Augmentation
     with h5py.File(os.path.join(dataset_folder, '{}/AUGMENTATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        augmentation_cell_mean = file['meta']['cell_mean'][...]
-        augmentation_cell_size1 = file['meta']['cell_size1'][...]
-        augmentation_cell_size2 = file['meta']['cell_size2'][...]
-    augmentation_map = augmentation_cell_mean.reshape((augmentation_cell_size1, augmentation_cell_size2))
+        cell_size1 = file['meta']['cell_size1'][...]
+        cell_size2 = file['meta']['cell_size2'][...]
+        augmentation_cell_z_true = file['meta']['cell_z_true'][...]
+    augmentation_map = augmentation_cell_z_true.reshape((cell_size1, cell_size2))
     
     # Combination
     with h5py.File(os.path.join(dataset_folder, '{}/COMBINATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        combination_cell_mean = file['meta']['cell_mean'][...]
-        combination_cell_size1 = file['meta']['cell_size1'][...]
-        combination_cell_size2 = file['meta']['cell_size2'][...]
-    combination_map = combination_cell_mean.reshape((combination_cell_size1, combination_cell_size2))
+        cell_size1 = file['meta']['cell_size1'][...]
+        cell_size2 = file['meta']['cell_size2'][...]
+        combination_cell_z_true = file['meta']['cell_z_true'][...]
+    combination_map = combination_cell_z_true.reshape((cell_size1, cell_size2))
     
     # Plot
     normalize = colors.Normalize(vmin=0.0, vmax=2.0)
