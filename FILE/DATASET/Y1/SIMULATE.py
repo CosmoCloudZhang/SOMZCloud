@@ -113,26 +113,25 @@ def main(tag, folder):
         sigma2 = a / mu2 * (1 + numpy.power(b / eta2, c))
         catalog['sigma'] = 1 / numpy.sqrt(exposure['mag_r_lsst'] / numpy.square(sigma1) + exposure['mag_i_lsst'] / numpy.square(sigma2))
         
-        # Select
+        # Filter
         sigma0 = 0.26
-        select = (0 < catalog['sigma']) & (catalog['sigma'] < sigma0)
-        select = select & (catalog['mu'] > 10) & (catalog['eta'] > 0.1)
+        filter = (0 < catalog['sigma']) & (catalog['sigma'] < sigma0)
+        filter = filter & (catalog['mu'] > 10) & (catalog['eta'] > 0.1)
         
         z1 = 0.0
         z2 = 3.0
-        select = select & (z1 < catalog['redshift_true']) & (catalog['redshift_true'] < z2)
+        filter = filter & (z1 < catalog['redshift_true']) & (catalog['redshift_true'] < z2)
         
-        snr = 15
         magnitude1 = 16
-        magnitude2 = error_model.getLimitingMags(nSigma=snr)['mag_i_lsst']
-        select = select & (magnitude1 < catalog['mag_i_lsst']) & (catalog['mag_i_lsst'] < magnitude2)
+        magnitude2 = 26
+        filter = filter & (magnitude1 < catalog['mag_i_lsst']) & (catalog['mag_i_lsst'] < magnitude2)
         
         # Append
         for key in catalog.keys():
             if key in simulation.keys():
-                simulation[key] = numpy.concatenate([simulation[key], catalog[key][select]])
+                simulation[key] = numpy.concatenate([simulation[key], catalog[key][filter]])
             else:
-                simulation[key] = catalog[key][select]
+                simulation[key] = catalog[key][filter]
     
     # Save
     with h5py.File(os.path.join(dataset_folder, '{}/SIMULATION/SIMULATION.hdf5'.format(tag)), 'w') as file:

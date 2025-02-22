@@ -53,6 +53,15 @@ def main(tag, folder):
     # Inform
     inform_dataset = dict(error_model(pandas.DataFrame(observation_dataset), random_state=0))
     
+    # Filter
+    snr = 15    
+    magnitude1 = 16
+    magnitude2 = error_model.getLimitingMags(nSigma=snr, coadded=True, aperture=0)
+    filter = (magnitude1 < inform_dataset['mag_i_lsst']) & (inform_dataset['mag_i_lsst'] < magnitude2)
+    
+    for key in inform_dataset.keys():
+        inform_dataset[key] = inform_dataset[key][filter]
+    
     # Write
     with h5py.File(os.path.join(dataset_folder, '{}/SOM/INFORM.hdf5'.format(tag)), 'w') as file:
         file.create_group('photometry')

@@ -57,6 +57,15 @@ def main(tag, index, folder):
     # Application
     application_dataset = dict(error_model(pandas.DataFrame(observation_dataset), random_state=index))
     
+    # Filter
+    snr = 15    
+    magnitude1 = 16
+    magnitude2 = error_model.getLimitingMags(nSigma=snr, coadded=True, aperture=0)
+    filter = (magnitude1 < application_dataset['mag_i_lsst']) & (application_dataset['mag_i_lsst'] < magnitude2)
+    
+    for key in application_dataset.keys():
+        application_dataset[key] = application_dataset[key][filter]
+    
     # SOM
     data_store = core.stage.RailStage.data_store
     data_store.__class__.allow_overwrite = True

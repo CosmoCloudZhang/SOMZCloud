@@ -68,6 +68,15 @@ def main(tag, index, folder):
     
     simulation_dataset = dict(error_model(pandas.DataFrame(simulation_dataset), random_state=index))
     
+    # Filter
+    snr = 15    
+    magnitude1 = 16
+    magnitude2 = error_model.getLimitingMags(nSigma=snr, coadded=True, aperture=0)
+    filter = (magnitude1 < simulation_dataset['mag_i_lsst']) & (simulation_dataset['mag_i_lsst'] < magnitude2)
+    
+    for key in simulation_dataset.keys():
+        simulation_dataset[key] = simulation_dataset[key][filter]
+    
     chunk = 100000
     simulation_cell_coordinate = numpy.zeros((simulation_size, 2), dtype=numpy.int32)
     
