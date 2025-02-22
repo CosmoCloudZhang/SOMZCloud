@@ -76,7 +76,7 @@ def main(tag, index, folder):
         stop = min((m + 1) * chunk, simulation_size)
         simulation = {key: simulation_dataset[key][begin: stop].astype(numpy.float32) for key in model['usecols']}
         
-        simulation_column = somoclu_som._computemagcolordata(data=simulation, mag_column_name=model['ref_column'], column_names=model['usecols'], colusage='colors')
+        simulation_column = somoclu_som._computemagcolordata(data=simulation, mag_column_name=model['ref_column'], column_names=model['usecols'], colusage=model['column_usage'])
         simulation_cell_coordinate[begin: stop, :] = somoclu_som.get_bmus(model['som'], simulation_column)
     
     simulation_cell_coordinate1 = simulation_cell_coordinate[:, 0]
