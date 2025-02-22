@@ -71,7 +71,7 @@ def main(tag, index, folder):
     # Filter
     snr = 15    
     magnitude1 = 16
-    magnitude2 = error_model.getLimitingMags(nSigma=snr, coadded=True, aperture=0)
+    magnitude2 = error_model.getLimitingMags(nSigma=snr, coadded=True, aperture=0)['mag_i_lsst']
     filter = (magnitude1 < simulation_dataset['mag_i_lsst']) & (simulation_dataset['mag_i_lsst'] < magnitude2)
     
     for key in simulation_dataset.keys():
