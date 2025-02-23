@@ -33,7 +33,6 @@ def main(tag, index, folder):
     # Load
     with h5py.File(os.path.join(dataset_folder, '{}/SIMULATION/SIMULATION.hdf5'.format(tag)), 'r') as file:
         simulation_dataset = {key: file[key][...] for key in file.keys()}
-    simulation_size = len(simulation_dataset['redshift'])
     
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         application_cell_count = file['meta']['cell_count'][...]
@@ -66,24 +65,24 @@ def main(tag, index, folder):
         }
     )
     
-    simulation_dataset = dict(error_model(pandas.DataFrame(simulation_dataset), random_state=index))
+    simulation_dataset = error_model(pandas.DataFrame(simulation_dataset), random_state=index)
     
     # Filter
     snr = 15    
     magnitude1 = 16
     magnitude2 = error_model.getLimitingMags(nSigma=snr, coadded=True, aperture=0)['mag_i_lsst']
-    filter = (magnitude1 < simulation_dataset['mag_i_lsst']) & (simulation_dataset['mag_i_lsst'] < magnitude2)
+    filter = (magnitude1 < simulation_dataset['mag_i_lsst'].values) & (simulation_dataset['mag_i_lsst'].values < magnitude2)
     
-    for key in simulation_dataset.keys():
-        simulation_dataset[key] = simulation_dataset[key][filter]
+    simulation_dataset = {key: simulation_dataset[key].values[filter] for key in simulation_dataset.keys()}
     
     chunk = 100000
+    simulation_size = len(simulation_dataset['redshift'])
     simulation_cell_coordinate = numpy.zeros((simulation_size, 2), dtype=numpy.int32)
     
     for m in range(simulation_size // chunk + 1):
         begin = m * chunk
         stop = min((m + 1) * chunk, simulation_size)
-        simulation = {key: simulation_dataset[key][begin: stop].astype(numpy.float32) for key in model['usecols']}
+        simulation = {key: simulation_dataset[key][begin: stop] for key in model['usecols']}
         
         simulation_column = somoclu_som._computemagcolordata(data=simulation, mag_column_name=model['ref_column'], column_names=model['usecols'], colusage=model['column_usage'])
         simulation_cell_coordinate[begin: stop, :] = somoclu_som.get_bmus(model['som'], simulation_column)
@@ -99,8 +98,8 @@ def main(tag, index, folder):
     simulation_probability = simulation_weight[simulation_cell_id] / numpy.sum(simulation_weight[simulation_cell_id])
     
     # Selection
-    indices = numpy.random.choice(simulation_size, size=application_size, replace=False, p=simulation_probability)
-    selection_dataset = {key: simulation_dataset[key][indices].astype(numpy.float32) for key in simulation_dataset.keys()}
+    indices = numpy.random.choice(simulation_size, size=application_size, replace=True, p=simulation_probability)
+    selection_dataset = {key: simulation_dataset[key][indices] for key in simulation_dataset.keys()}
     
     selection_cell_coordinate1 = simulation_cell_coordinate1[indices]
     selection_cell_coordinate2 = simulation_cell_coordinate2[indices]

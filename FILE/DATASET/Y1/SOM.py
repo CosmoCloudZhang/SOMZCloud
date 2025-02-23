@@ -51,16 +51,15 @@ def main(tag, folder):
         observation_dataset = {key: file[key][...] for key in file.keys()}
     
     # Inform
-    inform_dataset = dict(error_model(pandas.DataFrame(observation_dataset), random_state=0))
+    observation_dataset = error_model(pandas.DataFrame(observation_dataset), random_state=0)
     
     # Filter
     snr = 15    
     magnitude1 = 16
     magnitude2 = error_model.getLimitingMags(nSigma=snr, coadded=True, aperture=0)['mag_i_lsst']
-    filter = (magnitude1 < inform_dataset['mag_i_lsst']) & (inform_dataset['mag_i_lsst'] < magnitude2)
+    filter = (magnitude1 < observation_dataset['mag_i_lsst'].values) & (observation_dataset['mag_i_lsst'].values < magnitude2)
     
-    for key in inform_dataset.keys():
-        inform_dataset[key] = inform_dataset[key][filter]
+    inform_dataset = {key: observation_dataset[key].values[filter] for key in observation_dataset.keys()}
     
     # Write
     with h5py.File(os.path.join(dataset_folder, '{}/SOM/INFORM.hdf5'.format(tag)), 'w') as file:

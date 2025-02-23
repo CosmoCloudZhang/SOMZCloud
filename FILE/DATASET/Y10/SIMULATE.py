@@ -78,14 +78,14 @@ def main(tag, folder):
         catalog['major'] = fraction * major_bulge + (1 - fraction) * major_disk
         catalog['minor'] = fraction * minor_bulge + (1 - fraction) * minor_disk
         
-        simulation_catalog = dict(error_model(pandas.DataFrame(catalog), random_state=seed))
+        simulation_catalog = error_model(pandas.DataFrame(catalog), random_state=seed)
         
         flux0 = 3631e6
         flux1 = flux0 * numpy.power(10, -0.4 * catalog['mag_r_lsst'])
         flux2 = flux0 * numpy.power(10, -0.4 * catalog['mag_i_lsst'])
         
-        error1 = 2.5 / numpy.log(10) * simulation_catalog['mag_r_lsst_err'] * flux1 * numpy.sqrt(exposure['mag_r_lsst'])
-        error2 = 2.5 / numpy.log(10) * simulation_catalog['mag_i_lsst_err'] * flux2 * numpy.sqrt(exposure['mag_i_lsst'])
+        error1 = 2.5 / numpy.log(10) * simulation_catalog['mag_r_lsst_err'].values * flux1 * numpy.sqrt(exposure['mag_r_lsst'])
+        error2 = 2.5 / numpy.log(10) * simulation_catalog['mag_i_lsst_err'].values * flux2 * numpy.sqrt(exposure['mag_i_lsst'])
         
         mu1 = flux1 / error1
         mu2 = flux2 / error2

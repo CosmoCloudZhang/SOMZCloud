@@ -89,7 +89,7 @@ def main(tag, index, folder):
     for m in range(augmentation_size // chunk + 1):
         begin = m * chunk
         stop = min((m + 1) * chunk, augmentation_size)
-        augmentation = {key: augmentation_dataset['photometry'][key][begin: stop].astype(numpy.float32) for key in model['usecols']}
+        augmentation = {key: augmentation_dataset['photometry'][key][begin: stop] for key in model['usecols']}
         
         augmentation_column = somoclu_som._computemagcolordata(data=augmentation, mag_column_name=model['ref_column'], column_names=model['usecols'], colusage=model['column_usage'])
         augmentation_cell_coordinate[begin: stop, :] = somoclu_som.get_bmus(model['som'], augmentation_column)

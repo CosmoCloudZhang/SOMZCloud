@@ -32,7 +32,7 @@ def main(tag, index, folder):
     
     # Load
     with h5py.File(os.path.join(dataset_folder, '{}/OBSERVATION/OBSERVATION.hdf5'.format(tag)), 'r') as file:
-        observation_dataset = {key: file[key][...] for key in file.keys()}
+        application_dataset = {key: file[key][...] for key in file.keys()}
     
     # Error
     error_model = LsstErrorModel(
@@ -55,16 +55,15 @@ def main(tag, index, folder):
     )
     
     # Application
-    application_dataset = dict(error_model(pandas.DataFrame(observation_dataset), random_state=index))
+    application_dataset = error_model(pandas.DataFrame(application_dataset), random_state=index)
     
     # Filter
     snr = 15    
     magnitude1 = 16
     magnitude2 = error_model.getLimitingMags(nSigma=snr, coadded=True, aperture=0)['mag_i_lsst']
-    filter = (magnitude1 < application_dataset['mag_i_lsst']) & (application_dataset['mag_i_lsst'] < magnitude2)
+    filter = (magnitude1 < application_dataset['mag_i_lsst'].values) & (application_dataset['mag_i_lsst'].values < magnitude2)
     
-    for key in application_dataset.keys():
-        application_dataset[key] = application_dataset[key][filter]
+    application_dataset = {key: application_dataset[key].values[filter] for key in application_dataset.keys()}
     
     # SOM
     data_store = core.stage.RailStage.data_store
@@ -80,7 +79,7 @@ def main(tag, index, folder):
     for m in range(application_size // chunk + 1):
         begin = m * chunk
         stop = min((m + 1) * chunk, application_size)
-        application = {key: application_dataset[key][begin: stop].astype(numpy.float32) for key in model['usecols']}
+        application = {key: application_dataset[key][begin: stop] for key in model['usecols']}
         
         application_column = somoclu_som._computemagcolordata(data=application, mag_column_name=model['ref_column'], column_names=model['usecols'], colusage=model['column_usage'])
         application_cell_coordinate[begin: stop, :] = somoclu_som.get_bmus(model['som'], application_column)

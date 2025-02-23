@@ -72,7 +72,7 @@ def main(tag, index, folder):
     factor1 = {'Y1': 0.5, 'Y10': 1.0}
     factor2 = {'Y1': 1.5, 'Y10': 2.0}
     factor = numpy.random.uniform(low=factor1[tag], high=factor2[tag])
-    rate = 1 / (1 + factor * numpy.exp(application_dataset['photometry']['mag_i_lsst'].max() - application_dataset['photometry']['mag_i_lsst']))
+    rate = 1 / (1 + factor * numpy.exp(application_dataset['photometry']['mag_i_lsst'] - application_dataset['photometry']['mag_i_lsst'].max()))
     
     # Size
     size1 = {'Y1': 100000, 'Y10': 250000}
@@ -102,7 +102,7 @@ def main(tag, index, folder):
     for m in range(degradation_size // chunk + 1):
         begin = m * chunk
         stop = min((m + 1) * chunk, degradation_size)
-        degradation = {key: degradation_dataset['photometry'][key][begin: stop].astype(numpy.float32) for key in model['usecols']}
+        degradation = {key: degradation_dataset['photometry'][key][begin: stop] for key in model['usecols']}
         
         degradation_column = somoclu_som._computemagcolordata(data=degradation, mag_column_name=model['ref_column'], column_names=model['usecols'], colusage=model['column_usage'])
         degradation_cell_coordinate[begin: stop, :] = somoclu_som.get_bmus(model['som'], degradation_column)
