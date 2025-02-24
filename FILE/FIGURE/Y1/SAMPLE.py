@@ -48,7 +48,6 @@ def main(tag, index, folder):
     # Values
     slope = 4
     intercept = 18
-    magnitude = 24.0
     
     # Application
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
@@ -70,11 +69,11 @@ def main(tag, index, folder):
     
     image = plot.hist2d(x=z_phot, y=application_magnitude, bins=[z_bin, magnitude_grid], norm=normalize, cmap='plasma')[-1]
     
-    plot.plot(numpy.ones(bin_size) * z1_source, numpy.linspace(magnitude1, magnitude, bin_size), color='black', linestyle='--', linewidth=2.5)
+    plot.plot(numpy.ones(bin_size) * z1_source, numpy.linspace(magnitude1, magnitude2, bin_size), color='black', linestyle='--', linewidth=2.5)
     
-    plot.plot(numpy.ones(bin_size) * z2_source, numpy.linspace(magnitude1, magnitude, bin_size), color='black', linestyle='--', linewidth=2.5)
+    plot.plot(numpy.ones(bin_size) * z2_source, numpy.linspace(magnitude1, magnitude2, bin_size), color='black', linestyle='--', linewidth=2.5)
     
-    plot.plot(numpy.linspace(z1_source, z2_source, bin_size + 1), numpy.ones(bin_size + 1) * magnitude, color='black', linestyle='--', linewidth=2.5)
+    plot.plot(numpy.linspace(z1_source, z2_source, bin_size + 1), numpy.ones(bin_size + 1) * magnitude2, color='black', linestyle='--', linewidth=2.5)
     
     plot.plot(numpy.ones(bin_size) * z1_lens, numpy.linspace(magnitude1, slope * z1_lens + intercept, bin_size), color='black', linestyle='-.', linewidth=2.5)
     
