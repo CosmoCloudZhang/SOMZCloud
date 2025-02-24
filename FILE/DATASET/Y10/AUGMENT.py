@@ -67,7 +67,7 @@ def main(tag, index, folder):
     size1 = int(0.1 * degradation_size)
     size2 = int(1.0 * degradation_size)
     size = numpy.random.randint(low=size1, high=size2)
-    indices = numpy.random.choice(numpy.arange(selection_size)[filter], size=size, replace=False)
+    indices = numpy.random.choice(numpy.arange(selection_size)[filter], size=size, replace=True)
     
     # Augmentation
     augmentation_dataset = {

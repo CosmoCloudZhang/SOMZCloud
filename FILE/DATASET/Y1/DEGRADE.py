@@ -77,10 +77,10 @@ def main(tag, index, folder):
     # Size
     size1 = {'Y1': 100000, 'Y10': 250000}
     size2 = {'Y1': 200000, 'Y10': 500000}
-    size = numpy.minimum(numpy.random.randint(low=size1[tag], high=size2[tag]), numpy.sum(filter))
+    size = numpy.random.randint(low=size1[tag], high=size2[tag])
     
     application_size = len(application_dataset['photometry']['redshift'])
-    indices = numpy.random.choice(numpy.arange(application_size)[filter], size=size, replace=False, p=rate[filter] / numpy.sum(rate[filter]))
+    indices = numpy.random.choice(numpy.arange(application_size)[filter], size=size, replace=True, p=rate[filter] / numpy.sum(rate[filter]))
     
     # Degradation
     degradation_dataset = {
