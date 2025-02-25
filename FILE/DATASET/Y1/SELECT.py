@@ -73,6 +73,10 @@ def main(tag, index, folder):
     magnitude2 = error_model.getLimitingMags(nSigma=snr, coadded=True, aperture=0)['mag_i_lsst']
     filter = (magnitude1 < simulation_dataset['mag_i_lsst'].values) & (simulation_dataset['mag_i_lsst'].values < magnitude2)
     
+    numpy.random.seed(index)
+    value_list = numpy.unique(simulation_dataset['value'].values)
+    filter = filter & (numpy.isin(simulation_dataset['value'].values, numpy.random.choice(value_list, len(value_list) // 2, replace=False)))
+    
     simulation_dataset = {key: simulation_dataset[key].values[filter] for key in simulation_dataset.keys()}
     
     chunk = 100000

@@ -49,8 +49,6 @@ def main(tag, folder):
     # Observation
     with h5py.File(os.path.join(dataset_folder, '{}/OBSERVATION/OBSERVATION.hdf5'.format(tag)), 'r') as file:
         observation_dataset = {key: file[key][...] for key in file.keys()}
-    
-    # Inform
     observation_dataset = error_model(pandas.DataFrame(observation_dataset), random_state=0)
     
     # Filter
@@ -59,6 +57,11 @@ def main(tag, folder):
     magnitude2 = error_model.getLimitingMags(nSigma=snr, coadded=True, aperture=0)['mag_i_lsst']
     filter = (magnitude1 < observation_dataset['mag_i_lsst'].values) & (observation_dataset['mag_i_lsst'].values < magnitude2)
     
+    numpy.random.seed(0)
+    value_list = numpy.unique(observation_dataset['value'].values)
+    filter = filter & (numpy.isin(observation_dataset['value'].values, numpy.random.choice(value_list, len(value_list) // 2, replace=False)))
+    
+    # Inform
     inform_dataset = {key: observation_dataset[key].values[filter] for key in observation_dataset.keys()}
     
     # Write
@@ -110,8 +113,8 @@ def main(tag, folder):
                 'input': 'input_data', 
                 'model': 'input_model',
             }, 
-            'n_rows': 150, 
-            'n_columns': 150, 
+            'n_rows': 140, 
+            'n_columns': 140, 
             'std_coeff': 0.5, 
             'maptype': 'toroid', 
             'nondetect_val': 99.0, 

@@ -63,6 +63,11 @@ def main(tag, index, folder):
     magnitude2 = error_model.getLimitingMags(nSigma=snr, coadded=True, aperture=0)['mag_i_lsst']
     filter = (magnitude1 < application_dataset['mag_i_lsst'].values) & (application_dataset['mag_i_lsst'].values < magnitude2)
     
+    numpy.random.seed(index)
+    value_list = numpy.unique(application_dataset['value'].values)
+    filter = filter & (numpy.isin(application_dataset['value'].values, numpy.random.choice(value_list, len(value_list) // 2, replace=False)))
+    
+    # Inform
     application_dataset = {key: application_dataset[key].values[filter] for key in application_dataset.keys()}
     
     # SOM
