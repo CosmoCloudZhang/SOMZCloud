@@ -6,15 +6,15 @@
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH --cpus-per-task=8
-#SBATCH --ntasks-per-node=32
+#SBATCH --cpus-per-task=4
+#SBATCH --ntasks-per-node=64
 #SBATCH -J SUMMARIZE_Y1_SOM_SOURCE
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
 module load python
 module load PrgEnv-gnu
-module load cray-mpich/8.1.28
+module load cray-mpich/8.1.30
 module load cray-hdf5-parallel
 
 # Activate the conda environment
