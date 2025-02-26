@@ -6,7 +6,7 @@ import argparse
 
 def main(tag, index, folder):
     '''
-    Main function to create the model estimator configuration file.
+    Main function to create the comparison estimator configuration file.
     
     Arguments:
         tag (str): The tag of the configuration
@@ -21,7 +21,7 @@ def main(tag, index, folder):
     print('Index: {}'.format(index))
     
     # Path
-    model_folder = os.path.join(folder, 'MODEL/')
+    comparison_folder = os.path.join(folder, 'COMPARISON/')
     
     # Config
     config = {
@@ -32,7 +32,7 @@ def main(tag, index, folder):
                 'model': 'input_model',
                 'output': 'output_data'
             }, 
-            'chunk_size': 500000, 
+            'chunk_size': 100000, 
             'nondetect_val': 99.0, 
             'ref_band': 'mag_i_lsst', 
             'output_mode': 'default',
@@ -58,10 +58,10 @@ def main(tag, index, folder):
         }
     }
     
-    os.makedirs(os.path.join(model_folder, '{}/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(model_folder, '{}/ESTIMATE/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(comparison_folder, '{}/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(comparison_folder, '{}/ESTIMATE/'.format(tag)), exist_ok=True)
     
-    config_name = os.path.join(model_folder, '{}/ESTIMATE/ESTIMATE{}.yaml'.format(tag, index))
+    config_name = os.path.join(comparison_folder, '{}/ESTIMATE/ESTIMATE{}.yaml'.format(tag, index))
     with open(config_name, 'w') as config_file:
         yaml.dump(config, config_file, default_flow_style=False)
     
@@ -76,7 +76,7 @@ def main(tag, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Model Estimator')
+    PARSE = argparse.ArgumentParser(description='Comparison Estimator')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
     PARSE.add_argument('--index', type=int, required=True, help='The index of all the datasets')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of all the datasets')
