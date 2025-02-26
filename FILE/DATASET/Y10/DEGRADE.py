@@ -42,15 +42,15 @@ def main(tag, index, folder):
         application_dataset['photometry'] = {key: file['photometry'][key][...] for key in file['photometry'].keys()}
     
     # Magnitude
-    magnitude1 = {'Y1': 20, 'Y10': 21}
+    magnitude1 = {'Y1': 21, 'Y10': 22}
     magnitude2 = {'Y1': 24, 'Y10': 25}
     magnitude = numpy.random.uniform(low=magnitude1[tag], high=magnitude2[tag])
     
     filter = (application_dataset['photometry']['mag_i_lsst'] < magnitude)
     
     # Redshift
-    redshift1 = {'Y1': 0.5, 'Y10': 1.0}
-    redshift2 = {'Y1': 2.5, 'Y10': 3.0}
+    redshift1 = {'Y1': 0.6, 'Y10': 1.2}
+    redshift2 = {'Y1': 2.4, 'Y10': 3.0}
     redshift = numpy.random.uniform(low=redshift1[tag], high=redshift2[tag])
     
     filter = filter & (application_dataset['photometry']['redshift'] < redshift)

@@ -23,6 +23,10 @@ def main(tag, index, folder):
     # Path
     dataset_folder = os.path.join(folder, 'DATASET/')
     
+    # Application
+    with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+        application_cell_count = file['meta']['cell_count'][...]
+    
     # Degradation
     degradation_dataset = {
         'meta': {},
@@ -32,16 +36,16 @@ def main(tag, index, folder):
     
     with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         
+        cell_size = file['meta']['cell_size'][...]
+        cell_size1 = file['meta']['cell_size1'][...]
+        cell_size2 = file['meta']['cell_size2'][...]
+        
         degradation_dataset['meta']['size'] = file['meta']['size'][...]
         degradation_dataset['meta']['angle'] = file['meta']['angle'][...]
         degradation_dataset['meta']['color'] = file['meta']['color'][...]
         degradation_dataset['meta']['factor'] = file['meta']['factor'][...]
         degradation_dataset['meta']['redshift'] = file['meta']['redshift'][...]
         degradation_dataset['meta']['magnitude'] = file['meta']['magnitude'][...]
-        
-        degradation_dataset['meta']['cell_size'] = file['meta']['cell_size'][...]
-        degradation_dataset['meta']['cell_size1'] = file['meta']['cell_size1'][...]
-        degradation_dataset['meta']['cell_size2'] = file['meta']['cell_size2'][...]
         
         degradation_dataset['meta']['cell_id'] = file['meta']['cell_id'][...]
         degradation_dataset['meta']['cell_coordinate1'] = file['meta']['cell_coordinate1'][...]
@@ -61,14 +65,15 @@ def main(tag, index, folder):
     }
     
     with h5py.File(os.path.join(dataset_folder, '{}/AUGMENTATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+        
+        cell_size = file['meta']['cell_size'][...]
+        cell_size1 = file['meta']['cell_size1'][...]
+        cell_size2 = file['meta']['cell_size2'][...]
+        
         augmentation_dataset['meta']['size'] = file['meta']['size'][...]
         augmentation_dataset['meta']['fraction'] = file['meta']['fraction'][...]
         augmentation_dataset['meta']['redshift'] = file['meta']['redshift'][...]
         augmentation_dataset['meta']['magnitude'] = file['meta']['magnitude'][...]
-        
-        augmentation_dataset['meta']['cell_size'] = file['meta']['cell_size'][...]
-        augmentation_dataset['meta']['cell_size1'] = file['meta']['cell_size1'][...]
-        augmentation_dataset['meta']['cell_size2'] = file['meta']['cell_size2'][...]
         
         augmentation_dataset['meta']['cell_id'] = file['meta']['cell_id'][...]
         augmentation_dataset['meta']['cell_coordinate1'] = file['meta']['cell_coordinate1'][...]
@@ -81,10 +86,6 @@ def main(tag, index, folder):
         augmentation_dataset['photometry'] = {key: file['photometry'][key][...] for key in file['photometry'].keys()}
     
     # Combine
-    cell_size = numpy.average([degradation_dataset['meta']['cell_size'], augmentation_dataset['meta']['cell_size']], axis=0)
-    cell_size1 = numpy.average([degradation_dataset['meta']['cell_size1'], augmentation_dataset['meta']['cell_size1']], axis=0)
-    cell_size2 = numpy.average([degradation_dataset['meta']['cell_size2'], augmentation_dataset['meta']['cell_size2']], axis=0)
-    
     cell_id = numpy.append(degradation_dataset['meta']['cell_id'], augmentation_dataset['meta']['cell_id'], axis=0)
     cell_coordinate1 = numpy.append(degradation_dataset['meta']['cell_coordinate1'], augmentation_dataset['meta']['cell_coordinate1'], axis=0)
     cell_coordinate2 = numpy.append(degradation_dataset['meta']['cell_coordinate2'], augmentation_dataset['meta']['cell_coordinate2'], axis=0)
@@ -92,8 +93,12 @@ def main(tag, index, folder):
     degradation_summation = degradation_dataset['meta']['cell_z_true'] * degradation_dataset['meta']['cell_count']
     augmentation_summation = augmentation_dataset['meta']['cell_z_true'] * augmentation_dataset['meta']['cell_count']
     
+    size = degradation_dataset['meta']['size'] + augmentation_dataset['meta']['size']
     cell_count = degradation_dataset['meta']['cell_count'] + augmentation_dataset['meta']['cell_count']
     cell_z_true = numpy.divide(degradation_summation + augmentation_summation, cell_count, out=numpy.ones_like(cell_count) * numpy.nan, where=cell_count != 0)
+    
+    cell_ratio = numpy.divide(cell_count / size, application_cell_count / numpy.sum(application_cell_count), out=numpy.zeros(cell_size, dtype=numpy.float32), where=application_cell_count != 0)
+    metric = numpy.sqrt(numpy.mean(numpy.square(1 - cell_ratio)))
     
     # Save
     os.makedirs(os.path.join(dataset_folder, '{}/'.format(tag)), exist_ok=True)
@@ -113,6 +118,10 @@ def main(tag, index, folder):
         file['meta'].create_dataset('augmentation_fraction', data=augmentation_dataset['meta']['fraction'], dtype=numpy.float32)
         file['meta'].create_dataset('augmentation_redshift', data=augmentation_dataset['meta']['redshift'], dtype=numpy.float32)
         file['meta'].create_dataset('augmentation_magnitude', data=augmentation_dataset['meta']['magnitude'], dtype=numpy.float32)
+        
+        file['meta'].create_dataset('size', data=size, dtype=numpy.int32)
+        file['meta'].create_dataset('metric', data=metric, dtype=numpy.float32)
+        file['meta'].create_dataset('cell_ratio', data=cell_ratio, dtype=numpy.float32)
         
         file['meta'].create_dataset('cell_size', data=cell_size, dtype=numpy.int32)
         file['meta'].create_dataset('cell_size1', data=cell_size1, dtype=numpy.int32)

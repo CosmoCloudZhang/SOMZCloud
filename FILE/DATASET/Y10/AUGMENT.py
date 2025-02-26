@@ -29,9 +29,15 @@ def main(tag, index, folder):
     os.makedirs(os.path.join(dataset_folder, '{}'.format(tag)), exist_ok=True)
     os.makedirs(os.path.join(dataset_folder, '{}/AUGMENTATION/'.format(tag)), exist_ok=True)
     
+    # Application
+    with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+        cell_size = file['meta']['cell_size'][...]
+        application_cell_count = file['meta']['cell_count'][...]
+    application_size = numpy.sum(application_cell_count)
+    
     # Degradation
     with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        degradation_cell_size = file['meta']['cell_size'][...]
+        cell_size = file['meta']['cell_size'][...]
         degradation_cell_count = file['meta']['cell_count'][...]
         degradation_redshift = file['photometry']['redshift'][...]
         degradation_magnitude = file['photometry']['mag_i_lsst'][...]
@@ -51,9 +57,7 @@ def main(tag, index, folder):
     
     selection_cell_id = selection_dataset['meta']['cell_id']
     selection_size = len(selection_dataset['photometry']['redshift'])
-    
-    fraction = numpy.sum(degradation_cell_count == 0) / degradation_cell_size
-    filter = numpy.isin(selection_cell_id, numpy.arange(degradation_cell_size)[degradation_cell_count == 0])
+    filter = numpy.isin(selection_cell_id, numpy.arange(cell_size)[degradation_cell_count == 0])
     
     # Magnitude
     magnitude = numpy.max(degradation_magnitude)
@@ -64,9 +68,10 @@ def main(tag, index, folder):
     filter = filter | (selection_dataset['photometry']['redshift'] > redshift)
     
     # Fraction
-    size1 = int(0.1 * degradation_size)
-    size2 = int(1.0 * degradation_size)
-    size = numpy.random.randint(low=size1, high=size2)
+    fraction = numpy.sum(application_cell_count[degradation_cell_count == 0]) / application_size
+    
+    # Size
+    size = int(degradation_size * fraction)
     indices = numpy.random.choice(numpy.arange(selection_size)[filter], size=size, replace=True)
     
     # Augmentation
