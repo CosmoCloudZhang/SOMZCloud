@@ -2,13 +2,13 @@
 #SBATCH -A m1727
 #SBATCH --nodes=4
 #SBATCH -q regular
-#SBATCH --time=12:00:00
+#SBATCH --time=08:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
 #SBATCH --cpus-per-task=4
-#SBATCH --ntasks-per-node=64
 #SBATCH -J MODEL_Y10_ESTIMATE
+#SBATCH --ntasks-per-node=64
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -34,7 +34,7 @@ NUMBER=500
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 
-for INDEX in $(seq 1 $NUMBER); do
+for INDEX in $(seq 0 $NUMBER); do
     # Set variables
     NAME="ESTIMATE${INDEX}"
     MODEL_PATH="${BASE_FOLDER}MODEL/${TAG}/INFORM/INFORM${INDEX}.pkl"

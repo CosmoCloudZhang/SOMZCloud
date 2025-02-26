@@ -2,7 +2,7 @@
 #SBATCH -A m1727
 #SBATCH --nodes=4
 #SBATCH -q regular
-#SBATCH --time=12:00:00
+#SBATCH --time=18:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
@@ -34,14 +34,14 @@ NUMBER=500
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 
-for INDEX in $(seq 1 $NUMBER); do
+for INDEX in $(seq 0 $NUMBER); do
     # Set variables
     NAME="INFORM${INDEX}"
     MODEL_PATH="${BASE_FOLDER}MODEL/${TAG}/INFORM/INFORM${INDEX}.pkl"
     CONFIG_PATH="${BASE_FOLDER}MODEL/${TAG}/INFORM/INFORM${INDEX}.yaml"
     INPUT_PATH="${BASE_FOLDER}DATASET/${TAG}/COMBINATION/DATA${INDEX}.hdf5"
     # Run applications
-    python -u "${BASE_PATH}FILE/MODEL/${TAG}/INFORM.py" --tag=$TAG --index=$INDEX --folder=$BASE_FOLDER &
+    python -u "${BASE_PATH}FILE/MODEL/${TAG}/INFORM.py" --tag=$TAG --index=$INDEX --folder=$BASE_FOLDER &&
     srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -m ceci rail.estimation.algos.flexzboost.FlexZBoostInformer --mpi --name=$NAME --input=$INPUT_PATH --model=$MODEL_PATH --config=$CONFIG_PATH &
     # Control parallel execution
     if (( $INDEX % $SLURM_NTASKS == 0 )); then

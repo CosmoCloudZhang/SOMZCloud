@@ -32,7 +32,7 @@ def main(tag, index, folder):
                 'model': 'input_model',
                 'output': 'output_data'
             }, 
-            'chunk_size': 500000, 
+            'chunk_size': 200000, 
             'nondetect_val': 99.0, 
             'ref_band': 'mag_i_lsst', 
             'output_mode': 'default',

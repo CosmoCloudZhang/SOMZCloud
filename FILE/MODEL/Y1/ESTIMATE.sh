@@ -6,9 +6,9 @@
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH --cpus-per-task=4
-#SBATCH --ntasks-per-node=64
+#SBATCH --cpus-per-task=2
 #SBATCH -J MODEL_Y1_ESTIMATE
+#SBATCH --ntasks-per-node=128
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -34,7 +34,7 @@ NUMBER=500
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 
-for INDEX in $(seq 1 $NUMBER); do
+for INDEX in $(seq 0 $NUMBER); do
     # Set variables
     NAME="ESTIMATE${INDEX}"
     MODEL_PATH="${BASE_FOLDER}MODEL/${TAG}/INFORM/INFORM${INDEX}.pkl"
@@ -42,7 +42,7 @@ for INDEX in $(seq 1 $NUMBER); do
     OUTPUT_PATH="${BASE_FOLDER}MODEL/${TAG}/ESTIMATE/ESTIMATE${INDEX}.hdf5"
     INPUT_PATH="${BASE_FOLDER}DATASET/${TAG}/APPLICATION/DATA${INDEX}.hdf5"
     # Run applications
-    python -u "${BASE_PATH}FILE/MODEL/${TAG}/ESTIMATE.py" --tag=$TAG --index=$INDEX --folder=$BASE_FOLDER &
+    python -u "${BASE_PATH}FILE/MODEL/${TAG}/ESTIMATE.py" --tag=$TAG --index=$INDEX --folder=$BASE_FOLDER &&
     srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -m ceci rail.estimation.algos.flexzboost.FlexZBoostEstimator --mpi --name=$NAME --input=$INPUT_PATH --model=$MODEL_PATH --config=$CONFIG_PATH --output=$OUTPUT_PATH &
     # Control parallel execution
     if (( $INDEX % $SLURM_NTASKS == 0 )); then
