@@ -1,13 +1,13 @@
 #!/bin/bash
 #SBATCH -A m1727
-#SBATCH --nodes=4
+#SBATCH --nodes=8
 #SBATCH -q regular
 #SBATCH --time=16:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH --cpus-per-task=16
-#SBATCH --ntasks-per-node=16
+#SBATCH --cpus-per-task=32
+#SBATCH --ntasks-per-node=8
 #SBATCH -J DATASET_Y10_SELECT
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 

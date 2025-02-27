@@ -84,10 +84,12 @@ def main(tag, index, folder):
     for m in range(application_size // chunk + 1):
         begin = m * chunk
         stop = min((m + 1) * chunk, application_size)
-        application = {key: application_dataset[key][begin: stop] for key in model['usecols']}
         
-        application_column = somoclu_som._computemagcolordata(data=application, mag_column_name=model['ref_column'], column_names=model['usecols'], colusage=model['column_usage'])
-        application_cell_coordinate[begin: stop, :] = somoclu_som.get_bmus(model['som'], application_column)
+        if begin < stop:
+            application = {key: application_dataset[key][begin: stop] for key in model['usecols']}
+            
+            application_column = somoclu_som._computemagcolordata(data=application, mag_column_name=model['ref_column'], column_names=model['usecols'], colusage=model['column_usage'])
+            application_cell_coordinate[begin: stop, :] = somoclu_som.get_bmus(model['som'], application_column)
     
     application_cell_coordinate1 = application_cell_coordinate[:, 0]
     application_cell_coordinate2 = application_cell_coordinate[:, 1]

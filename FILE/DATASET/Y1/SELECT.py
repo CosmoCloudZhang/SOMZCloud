@@ -86,10 +86,12 @@ def main(tag, index, folder):
     for m in range(simulation_size // chunk + 1):
         begin = m * chunk
         stop = min((m + 1) * chunk, simulation_size)
-        simulation = {key: simulation_dataset[key][begin: stop] for key in model['usecols']}
         
-        simulation_column = somoclu_som._computemagcolordata(data=simulation, mag_column_name=model['ref_column'], column_names=model['usecols'], colusage=model['column_usage'])
-        simulation_cell_coordinate[begin: stop, :] = somoclu_som.get_bmus(model['som'], simulation_column)
+        if begin < stop:
+            simulation = {key: simulation_dataset[key][begin: stop] for key in model['usecols']}
+            
+            simulation_column = somoclu_som._computemagcolordata(data=simulation, mag_column_name=model['ref_column'], column_names=model['usecols'], colusage=model['column_usage'])
+            simulation_cell_coordinate[begin: stop, :] = somoclu_som.get_bmus(model['som'], simulation_column)
     
     simulation_cell_coordinate1 = simulation_cell_coordinate[:, 0]
     simulation_cell_coordinate2 = simulation_cell_coordinate[:, 1]

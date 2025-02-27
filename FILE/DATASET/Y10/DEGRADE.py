@@ -102,10 +102,12 @@ def main(tag, index, folder):
     for m in range(degradation_size // chunk + 1):
         begin = m * chunk
         stop = min((m + 1) * chunk, degradation_size)
-        degradation = {key: degradation_dataset['photometry'][key][begin: stop] for key in model['usecols']}
         
-        degradation_column = somoclu_som._computemagcolordata(data=degradation, mag_column_name=model['ref_column'], column_names=model['usecols'], colusage=model['column_usage'])
-        degradation_cell_coordinate[begin: stop, :] = somoclu_som.get_bmus(model['som'], degradation_column)
+        if begin < stop:
+            degradation = {key: degradation_dataset['photometry'][key][begin: stop] for key in model['usecols']}
+            
+            degradation_column = somoclu_som._computemagcolordata(data=degradation, mag_column_name=model['ref_column'], column_names=model['usecols'], colusage=model['column_usage'])
+            degradation_cell_coordinate[begin: stop, :] = somoclu_som.get_bmus(model['som'], degradation_column)
     
     degradation_cell_coordinate1 = degradation_cell_coordinate[:, 0]
     degradation_cell_coordinate2 = degradation_cell_coordinate[:, 1]
