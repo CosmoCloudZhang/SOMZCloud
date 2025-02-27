@@ -27,4 +27,4 @@ BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 
 # Run the application
-python -u "${BASE_PATH}FILE/FIGURE/${TAG}/SIGMA.py" --tag=${TAG} --folder=$BASE_FOLDER
+python -u "${BASE_PATH}FILE/FIGURE/${TAG}/SIGMA.py" --tag=$TAG --folder=$BASE_FOLDER

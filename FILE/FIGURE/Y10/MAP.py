@@ -2,7 +2,8 @@ import os
 import h5py
 import time
 import argparse
-from matplotlib import colors, pyplot
+from matplotlib import colors
+from matplotlib import pyplot
 
 def main(tag, index, folder):
     '''

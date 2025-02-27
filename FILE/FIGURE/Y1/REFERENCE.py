@@ -34,14 +34,9 @@ def main(tag, index, folder):
     bin_size = 100
     z_bin = numpy.linspace(z1, z2, bin_size + 1)
     
-    # Sigma
-    sigma1 = 1e-4
-    sigma2 = 1e+0
-    sigma_bin = numpy.geomspace(sigma1, sigma2, bin_size + 1)
-    
     # Application
     with h5py.File(os.path.join(dataset_folder, '{}/COMBINATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        application_redshift_true = file['photometry']['redshift_true'][...]
+        combination_redshift_true = file['photometry']['redshift_true'][...]
     
     # Reference
     with h5py.File(os.path.join(model_folder, '{}/REFERENCE/DATA{}.hdf5'.format(tag, index)), 'r') as file:
@@ -51,27 +46,31 @@ def main(tag, index, folder):
     
     # Lens
     z_phot_lens = z_phot[reference_lens]
-    z_true_lens = application_redshift_true[reference_lens]
+    z_true_lens = combination_redshift_true[reference_lens]
     
     # Source
     z_phot_source = z_phot[reference_source]
-    z_true_source = application_redshift_true[reference_source]
+    z_true_source = combination_redshift_true[reference_source]
     
-    # Sigma
-    sigma_lens = numpy.abs(z_phot_lens - z_true_lens) / (1 + z_true_lens)
-    sigma_source = numpy.abs(z_phot_source - z_true_source) / (1 + z_true_source)
+    # Delta
+    delta1 = 1e-4
+    delta2 = 1e+0
+    delta_bin = numpy.geomspace(delta1, delta2, bin_size + 1)
     
-    sigma_mean_lens = numpy.zeros(bin_size)
-    sigma_mean_source = numpy.zeros(bin_size)
+    delta_lens = numpy.abs(z_phot_lens - z_true_lens) / (1 + z_true_lens)
+    delta_source = numpy.abs(z_phot_source - z_true_source) / (1 + z_true_source)
+    
+    delta_mean_lens = numpy.zeros(bin_size)
+    delta_mean_source = numpy.zeros(bin_size)
     
     for m in range(bin_size):
         reference_lens = (z_bin[m] <= z_phot_lens) & (z_phot_lens < z_bin[m + 1])
         if numpy.sum(reference_lens) > 0:
-            sigma_mean_lens[m] = numpy.mean(sigma_lens[reference_lens])
+            delta_mean_lens[m] = numpy.mean(delta_lens[reference_lens])
         
         reference_source = (z_bin[m] <= z_phot_source) & (z_phot_source < z_bin[m + 1])
         if numpy.sum(reference_source) > 0:
-            sigma_mean_source[m] = numpy.mean(sigma_source[reference_source])
+            delta_mean_source[m] = numpy.mean(delta_source[reference_source])
     
     # Plot
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
@@ -115,7 +114,6 @@ def main(tag, index, folder):
     
     plot2.set_xlim(z1, z2)
     plot2.set_ylim(z1, z2)
-    plot2.set_xlabel(r'$z_\mathrm{phot}$')
     
     plot2.set_xticklabels([])
     plot2.set_yticklabels([])
@@ -123,30 +121,30 @@ def main(tag, index, folder):
     # Plot 3
     plot3 = figure.add_subplot(plot[1, 0])
     
-    image = plot3.hist2d(x=z_phot_lens, y=sigma_lens, bins=[z_bin, sigma_bin], norm=normalize, cmap='plasma')[-1]
+    image = plot3.hist2d(x=z_phot_lens, y=delta_lens, bins=[z_bin, delta_bin], norm=normalize, cmap='plasma')[-1]
     
-    plot3.plot((z_bin[1:] + z_bin[:-1]) / 2, sigma_mean_lens, color='black', linestyle='--', linewidth=2.5)
+    plot3.plot((z_bin[1:] + z_bin[:-1]) / 2, delta_mean_lens, color='black', linestyle='--', linewidth=2.5)
     
     plot3.plot(z_bin, 0.03 * numpy.ones(bin_size + 1), color='black', linestyle=':', linewidth=2.5)
     
     plot3.set_xlim(z1, z2)
-    plot3.set_ylim(sigma1, sigma2)
+    plot3.set_ylim(delta1, delta2)
     
     plot3.set_yscale('log')
-    plot3.set_ylabel(r'$\sigma_z$')
+    plot3.set_ylabel(r'$\delta_z$')
     plot3.set_xlabel(r'$z_\mathrm{phot}$')
     
     # Plot 4
     plot4 = figure.add_subplot(plot[1, 1])
     
-    image = plot4.hist2d(x=z_phot_source, y=sigma_source, bins=[z_bin, sigma_bin], norm=normalize, cmap='plasma')[-1]
+    image = plot4.hist2d(x=z_phot_source, y=delta_source, bins=[z_bin, delta_bin], norm=normalize, cmap='plasma')[-1]
     
-    plot4.plot((z_bin[1:] + z_bin[:-1]) / 2, sigma_mean_source, color='black', linestyle='--', linewidth=2.5)
+    plot4.plot((z_bin[1:] + z_bin[:-1]) / 2, delta_mean_source, color='black', linestyle='--', linewidth=2.5)
     
     plot4.plot(z_bin, 0.05 * numpy.ones(bin_size + 1), color='black', linestyle=':', linewidth=2.5)
     
     plot4.set_xlim(z1, z2)
-    plot4.set_ylim(sigma1, sigma2)
+    plot4.set_ylim(delta1, delta2)
     plot4.set_xlabel(r'$z_\mathrm{phot}$')
     
     plot4.set_yscale('log')
@@ -174,7 +172,7 @@ def main(tag, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Figure Sample')
+    PARSE = argparse.ArgumentParser(description='Figure Reference')
     PARSE.add_argument('--tag', type=str, help='The tag of the configuration')
     PARSE.add_argument('--index', type=int, help='The index of all the datasets')
     PARSE.add_argument('--folder', type=str, help='The base folder of all the datasets')

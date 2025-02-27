@@ -6,7 +6,7 @@
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH -J FIGURE_Y10_SIGMA
+#SBATCH -J FIGURE_Y1_SIGMA
 #SBATCH --cpus-per-task=256
 #SBATCH --ntasks-per-node=1
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
@@ -22,9 +22,9 @@ source $HOME/.bashrc
 conda activate $RAILENV
 
 # Initialize the process
-TAG="Y10"
+TAG="Y1"
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 
 # Run the application
-python -u "${BASE_PATH}FILE/FIGURE/${TAG}/SIGMA.py" --tag=${TAG} --folder=$BASE_FOLDER
+python -u "${BASE_PATH}FILE/FIGURE/${TAG}/SIGMA.py" --tag=$TAG --folder=$BASE_FOLDER

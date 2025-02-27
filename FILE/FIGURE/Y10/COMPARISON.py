@@ -23,9 +23,9 @@ def main(tag, index, folder):
     print('Index:{}'.format(index))
     
     # Path
-    model_folder = os.path.join(folder, 'MODEL/')
     figure_folder = os.path.join(folder, 'FIGURE/')
     dataset_folder = os.path.join(folder, 'DATASET/')
+    comparison_folder = os.path.join(folder, 'COMPARISON/')
     
     # Redshift
     z1 = 0.0
@@ -39,7 +39,7 @@ def main(tag, index, folder):
         application_redshift_true = file['photometry']['redshift_true'][...]
     
     # Select
-    with h5py.File(os.path.join(model_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+    with h5py.File(os.path.join(comparison_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         z_phot = file['z_phot'][...]
         select_lens = file['select_lens'][...]
         select_source = file['select_source'][...]
@@ -172,7 +172,7 @@ def main(tag, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Figure Redshift')
+    PARSE = argparse.ArgumentParser(description='Figure Comparison')
     PARSE.add_argument('--tag', type=str, help='The tag of the configuration')
     PARSE.add_argument('--index', type=int, help='The index of all the datasets')
     PARSE.add_argument('--folder', type=str, help='The base folder of all the datasets')
