@@ -4,6 +4,8 @@ import h5py
 import numpy
 import scipy
 import argparse
+from rail import core
+from sklearn import cluster
 
 
 def main(tag, index, folder):
@@ -20,6 +22,7 @@ def main(tag, index, folder):
     '''
     # Data store
     start = time.time()
+    numpy.random.seed(index)
     print('Index: {}'.format(index))
     
     # Path
@@ -30,68 +33,127 @@ def main(tag, index, folder):
     os.makedirs(os.path.join(summarization_folder, '{}/LENS/'.format(tag)), exist_ok=True)
     os.makedirs(os.path.join(summarization_folder, '{}/LENS/LENS{}'.format(tag, index)), exist_ok=True)
     
+    # SOM
+    data_store = core.stage.RailStage.data_store
+    data_store.__class__.allow_overwrite = True
+    
+    model_name = os.path.join(dataset_folder, '{}/SOM/INFORM.pkl'.format(tag))
+    model = data_store.read_file(key='model', path=model_name, handle_class=core.data.ModelHandle)()
+    
     # Redshift
     z1 = 0.0
     z2 = 3.0
     grid_size = 300
-    
-    z_delta = (z2 - z1) / grid_size
     z_grid = numpy.linspace(z1, z2, grid_size + 1)
-    z_bin = numpy.linspace(z1 - z_delta / 2, z2 + z_delta / 2, z_grid.size + 1)
-    
-    mesh_size = 3000
-    z_mesh = numpy.linspace(z1, z2, mesh_size + 1)
     
     # Application
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        application_size = len(file['photometry']['redshift'][...])
+        cell_size = file['meta']['cell_size'][...]
+        application_cell_id = file['meta']['cell_id'][...]
     
     # Select
     with h5py.File(os.path.join(model_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         bin_lens = file['bin_lens'][...]
+        application_z_phot = file['z_phot'][...]
     
     with h5py.File(os.path.join(model_folder, '{}/LENS/LENS{}/SELECT.hdf5'.format(tag, index)), 'r') as file:
         select_lens = file['select'][...]
+    
+    # Combination
+    with h5py.File(os.path.join(dataset_folder, '{}/COMBINATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+        cell_size = file['meta']['cell_size'][...]
+        combination_cell_id = file['meta']['cell_id'][...]
+        combination_redshift = file['photometry']['redshift'][...]
+    
+    # Reference
+    with h5py.File(os.path.join(model_folder, '{}/REFERENCE/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+        bin_lens = file['bin_lens'][...]
+        combination_z_phot = file['z_phot'][...]
+    
+    with h5py.File(os.path.join(model_folder, '{}/LENS/LENS{}/REFERENCE.hdf5'.format(tag, index)), 'r') as file:
+        reference_lens = file['reference'][...]
     
     # Size
     data_size = 100
     bin_lens_size = len(bin_lens) - 1
     data_lens = numpy.zeros((bin_lens_size, data_size, grid_size + 1))
     
-    # Chunk
-    chunk_size = 10000
+    # Cluster
+    som_model = model['som']
+    cluster_size = cell_size // 4
+    
+    som_model.cluster(cluster.AgglomerativeClustering(n_clusters=cluster_size, linkage='complete'))
+    cluster_id = som_model.clusters.flatten()
+    
+    # Estimator
     estimator = h5py.File(os.path.join(model_folder, '{}/ESTIMATE/ESTIMATE{}.hdf5'.format(tag, index)), 'r')
     
     # Loop
     for m in range(bin_lens_size):
         # Select
-        select = select_lens[m, :] 
+        select = select_lens[m, :]
         select_size = numpy.sum(select)
-        select_indices = numpy.arange(application_size)[select]
+        z_pdf = estimator['data']['yvals'][select].astype(numpy.float32)
         
-        pdf = numpy.zeros((data_size, grid_size + 1))
-        data_weight = numpy.ones((data_size, select_size))
-        for k in range(data_size):
-            data_indices = numpy.random.choice(numpy.arange(select_size), size=select_size, replace=True)
-            data_weight[k, :] = numpy.bincount(data_indices, minlength=select_size)
+        # Application
+        application_z_phot_select = application_z_phot[select]
+        application_cell_id_select = application_cell_id[select]
         
-        # Loop
-        for n in range(select_size // chunk_size + 1):
-            # PDF
-            begin = n * chunk_size
-            end = min((n + 1) * chunk_size, application_size)
-            z_pdf = estimator['data']['yvals'][select_indices[begin: end]].astype(numpy.float32)
+        # Reference
+        reference = reference_lens[m, :]
+        reference_size = numpy.sum(reference)
+        
+        # Combination
+        combination_z_phot_reference = combination_z_phot[reference]
+        combination_z_spec_reference = combination_redshift[reference]
+        combination_cell_id_reference = combination_cell_id[reference]
+        
+        # Bootstrap
+        for n in range(data_size):
+            # Application
+            application_indices = numpy.random.choice(numpy.arange(select_size), size=select_size, replace=True)
+            
+            application_z_phot_data = application_z_phot_select[application_indices]
+            application_cell_id_data = application_cell_id_select[application_indices]
+            
+            application_cluster_id_data = cluster_id[application_cell_id_data]
+            application_cluster_count_data = numpy.bincount(application_cluster_id_data, minlength=cluster_size)
+            
+            application_cluster_z_phot_data = numpy.bincount(application_cluster_id_data, weights=application_z_phot_data, minlength=cluster_size)
+            application_cluster_z_phot_data = numpy.divide(application_cluster_z_phot_data, application_cluster_count_data, out=numpy.zeros(cluster_size, dtype=numpy.float32), where=application_cluster_count_data > 0)
+            
+            # Combination
+            combination_indices = numpy.random.choice(numpy.arange(reference_size), size=reference_size, replace=True)
+            
+            combination_z_phot_data = combination_z_phot_reference[combination_indices]
+            combination_z_spec_data = combination_z_spec_reference[combination_indices]
+            combination_cell_id_data = combination_cell_id_reference[combination_indices]
+            
+            combination_cluster_id_data = cluster_id[combination_cell_id_data]
+            combination_cluster_count_data = numpy.bincount(combination_cluster_id_data, minlength=cluster_size)
+            
+            combination_cluster_z_phot_data = numpy.bincount(combination_cluster_id_data, weights=combination_z_phot_data, minlength=cluster_size)
+            combination_cluster_z_phot_data = numpy.divide(combination_cluster_z_phot_data, combination_cluster_count_data, out=numpy.zeros(cluster_size, dtype=numpy.float32), where=combination_cluster_count_data > 0)
+            
+            combination_cluster_z_spec_data = numpy.bincount(combination_cluster_id_data, weights=combination_z_spec_data, minlength=cluster_size)
+            combination_cluster_z_spec_data = numpy.divide(combination_cluster_z_spec_data, combination_cluster_count_data, out=numpy.zeros(cluster_size, dtype=numpy.float32), where=combination_cluster_count_data > 0)
+            
+            # Filter
+            filter_data = (application_cluster_count_data > 0) & (combination_cluster_count_data > 0)
+            
+            # Application Mask
+            application_cluster_mask = filter_data[application_cluster_id_data]
+            application_weight_data = numpy.array(application_cluster_mask, dtype=numpy.float32)
+            
+            # Histogram Cluster
+            histogram_cluster = numpy.zeros((cluster_size, grid_size + 1))
+            numpy.add.at(histogram_cluster, application_cluster_id_data[application_cluster_mask], (z_pdf[application_indices[application_cluster_mask], :] * application_weight_data[application_cluster_mask, numpy.newaxis]))
+            
+            factor = scipy.integrate.trapezoid(x=z_grid, y=histogram_cluster, axis=1)
+            histogram_cluster = numpy.divide(histogram_cluster, factor[:, numpy.newaxis], out=numpy.zeros((cluster_size, grid_size + 1)), where=factor[:, numpy.newaxis] > 0)
             
             # Histogram
-            pdf = pdf + numpy.sum(z_pdf[numpy.newaxis, :, :] * data_weight[:, begin: end][:, :, numpy.newaxis], axis=1)
-        
-        # Random
-        for n in range(data_size):
-            
-            pdf_data = numpy.maximum(scipy.interpolate.CubicSpline(x=z_grid, y=pdf[n, :], bc_type='natural', extrapolate=False)(z_mesh), 0)
-            z_data = numpy.random.choice(z_mesh, size=select_size, replace=True, p=pdf_data / numpy.sum(pdf_data))
-            
-            histogram = numpy.histogram(z_data, bins=z_bin, range=(z1, z2), density=True)[0]
+            histogram = numpy.average(histogram_cluster, axis=0, weights=application_cluster_count_data)
             data_lens[m, n, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
     
     # Save

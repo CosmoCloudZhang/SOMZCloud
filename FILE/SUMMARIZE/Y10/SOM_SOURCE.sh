@@ -6,15 +6,15 @@
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH --cpus-per-task=8
-#SBATCH --ntasks-per-node=32
-#SBATCH -J SUMMARIZE_Y10_SOM_SOURCE
+#SBATCH --cpus-per-task=16
+#SBATCH --ntasks-per-node=16
+#SBATCH -J SUMMARIZE_Y1_SOM_SOURCE
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
 module load python
 module load PrgEnv-gnu
-module load cray-mpich/8.1.28
+module load cray-mpich/8.1.30
 module load cray-hdf5-parallel
 
 # Activate the conda environment
@@ -35,7 +35,7 @@ BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 
 # Run applications
-for INDEX in $(seq 1 $NUMBER); do
+for INDEX in $(seq 0 $NUMBER); do
     srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}FILE/SUMMARIZE/${TAG}/SOM_SOURCE.py" --tag=$TAG --index=$INDEX --folder=$BASE_FOLDER & 
     # Control parallel execution
     if (( $INDEX % $SLURM_NTASKS == 0 )); then
