@@ -7,6 +7,7 @@ import argparse
 from rail import core
 from sklearn import cluster
 
+
 def main(tag, index, folder):
     '''
     SOM weighted summarization of the lens samples
@@ -21,6 +22,7 @@ def main(tag, index, folder):
     '''
     # Data store
     start = time.time()
+    numpy.random.seed(index)
     print('Index: {}'.format(index))
     
     # Path
@@ -136,16 +138,21 @@ def main(tag, index, folder):
             
             # Filter
             filter_data = (application_cluster_count_data > 0) & (combination_cluster_count_data > 0)
-            cluster_mean_delta_data = application_cluster_z_phot_data - combination_cluster_z_spec_data
-            sigma_data = 1.4826 * numpy.median(numpy.abs(cluster_mean_delta_data[filter_data] - numpy.median(cluster_mean_delta_data[filter_data])))
-            filter_data = filter_data & (numpy.abs(cluster_mean_delta_data) - 5 * sigma_data < 0) & (numpy.abs(combination_cluster_z_phot_data - combination_cluster_z_spec_data) < 0.02)
             
-            # Weight
-            cluster_weight_data = numpy.divide(application_cluster_count_data, combination_cluster_count_data, out=numpy.zeros(cluster_size, dtype=numpy.float32), where=filter_data)
-            combination_weight_data = cluster_weight_data[combination_cluster_id_data]
+            # Combination Mask
+            combination_cluster_mask = filter_data[combination_cluster_id_data]
+            combination_weight_data = numpy.array(combination_cluster_mask, dtype=numpy.float32)
+            combination_histogram_indices = numpy.digitize(combination_z_spec_data, bins=z_bin, right=False) - 1
             
-            # Sample
-            histogram = numpy.histogram(combination_z_spec_data, bins=z_bin, weights=combination_weight_data, range=(z1, z2), density=False)[0]
+            # Histogram Cluster
+            histogram_cluster = numpy.zeros((cluster_size, grid_size + 1))
+            numpy.add.at(histogram_cluster, (combination_cluster_id_data[combination_cluster_mask], combination_histogram_indices[combination_cluster_mask]), combination_weight_data[combination_cluster_mask])
+            
+            factor = scipy.integrate.trapezoid(x=z_grid, y=histogram_cluster, axis=1)
+            histogram_cluster = numpy.divide(histogram_cluster, factor[:, numpy.newaxis], out=numpy.zeros((cluster_size, grid_size + 1)), where=factor[:, numpy.newaxis] > 0)
+            
+            # Histogram
+            histogram = numpy.average(histogram_cluster, axis=0, weights=application_cluster_count_data)
             data_lens[m, n, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
     
     # Save

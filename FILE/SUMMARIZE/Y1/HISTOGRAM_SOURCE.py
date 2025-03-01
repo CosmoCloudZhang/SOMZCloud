@@ -22,6 +22,7 @@ def main(tag, index, folder):
     '''
     # Data store
     start = time.time()
+    numpy.random.seed(index)
     print('Index: {}'.format(index))
     
     # Path
@@ -81,6 +82,7 @@ def main(tag, index, folder):
     bin_source_size = len(bin_source) - 1
     
     sigma_data_source = numpy.zeros((bin_source_size, data_size))
+    ratio_data_source = numpy.zeros((bin_source_size, data_size))
     data_source = numpy.zeros((bin_source_size, data_size, grid_size + 1))
     
     # Cluster
@@ -119,7 +121,7 @@ def main(tag, index, folder):
             application_sigma_data = application_sigma_select[application_indices]
             application_z_phot_data = application_z_phot_select[application_indices]
             application_cell_id_data = application_cell_id_select[application_indices]
-            application_redshift_true_data = application_redshift_true_select[application_indices]
+            application_z_true_data = application_redshift_true_select[application_indices]
             
             application_cluster_id_data = cluster_id[application_cell_id_data]
             application_cluster_count_data = numpy.bincount(application_cluster_id_data, weights=1 / numpy.square(application_sigma_data), minlength=cluster_size)
@@ -145,27 +147,33 @@ def main(tag, index, folder):
             
             # Filter
             filter_data = (application_cluster_count_data > 0) & (combination_cluster_count_data > 0)
-            cluster_mean_delta_data = application_cluster_z_phot_data - combination_cluster_z_spec_data
-            sigma_data = 1.4826 * numpy.median(numpy.abs(cluster_mean_delta_data[filter_data] - numpy.median(cluster_mean_delta_data[filter_data])))
             
-            #filter_data = filter_data & (numpy.abs(combination_cluster_z_phot_data - combination_cluster_z_spec_data) < 0.02)
-            #filter_data = filter_data & (numpy.abs(cluster_mean_delta_data) - 5 * sigma_data < 0)
-            sigma_data_source[m, n] = sigma_data#numpy.std(cluster_mean_delta_data[filter_data])
+            # Application Mask
+            application_cluster_mask = filter_data[application_cluster_id_data]
+            application_histogram_indices = numpy.digitize(application_z_true_data, bins=z_bin, right=False) - 1
+            application_weight_data = numpy.array(application_cluster_mask, dtype=numpy.float32) / numpy.square(application_sigma_data)
             
-            # Weight
-            cluster_weight_data = numpy.array(filter_data, dtype=numpy.float32)
-            application_weight_data = cluster_weight_data[application_cluster_id_data] / numpy.square(application_sigma_data)
-            if n == 0:
-                print('Bin: {}'.format(m + 1))
-                print(sigma_data_source[m, n])
-                print(numpy.sum(application_weight_data > 0) / select_size)
-            # Sample
-            histogram = numpy.histogram(application_redshift_true_data, bins=z_bin, weights=application_weight_data, density=False)[0]
+            # Histogram Cluster
+            histogram_cluster = numpy.zeros((cluster_size, grid_size + 1))
+            numpy.add.at(histogram_cluster, (application_cluster_id_data[application_cluster_mask], application_histogram_indices[application_cluster_mask]), application_weight_data[application_cluster_mask])
+            
+            factor = scipy.integrate.trapezoid(x=z_grid, y=histogram_cluster, axis=1)
+            histogram_cluster = numpy.divide(histogram_cluster, factor[:, numpy.newaxis], out=numpy.zeros((cluster_size, grid_size + 1)), where=factor[:, numpy.newaxis] > 0)
+            
+            # Histogram
+            histogram = numpy.average(histogram_cluster, axis=0, weights=application_cluster_count_data)
             data_source[m, n, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
+            
+            # Metrics
+            ratio_data_source[m, n] = numpy.sum(application_cluster_mask) / select_size
+            cluster_mean_delta_data = application_cluster_z_phot_data - combination_cluster_z_spec_data       
+            sigma_data_source[m, n] = 1.4826 * numpy.median(numpy.abs(cluster_mean_delta_data[filter_data] - numpy.median(cluster_mean_delta_data[filter_data])))
     
     # Save
     with h5py.File(os.path.join(summarize_folder, '{}/SOURCE/SOURCE{}/HISTOGRAM.hdf5'.format(tag, index)), 'w') as file:
         file.create_dataset('data', data=data_source, dtype=numpy.float32)
+        file.create_dataset('sigma', data=sigma_data_source, dtype=numpy.float32)
+        file.create_dataset('ratio', data=ratio_data_source, dtype=numpy.float32)
     
     # Duration
     end = time.time()

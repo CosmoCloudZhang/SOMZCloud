@@ -44,13 +44,15 @@ def main(tag, index, folder):
     z1 = 0.0
     z2 = 3.0
     grid_size = 300
+    z_delta = (z2 - z1) / grid_size
     z_grid = numpy.linspace(z1, z2, grid_size + 1)
+    z_bin = numpy.linspace(z1 - z_delta / 2, z2 + z_delta / 2, z_grid.size + 1)
     
     # Application
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         cell_size = file['meta']['cell_size'][...]
         application_cell_id = file['meta']['cell_id'][...]
-        application_sigma = file['morphology']['sigma'][...]
+        application_sigma = file['photometry']['sigma'][...]
     
     # Select
     with h5py.File(os.path.join(model_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
@@ -144,13 +146,25 @@ def main(tag, index, folder):
             # Filter
             filter_data = (application_cluster_count_data > 0) & (combination_cluster_count_data > 0)
             
+            # Combination Mask
+            combination_cluster_mask = filter_data[combination_cluster_id_data]
+            combination_weight_data = numpy.array(combination_cluster_mask, dtype=numpy.float32)
+            combination_histogram_indices = numpy.digitize(combination_z_spec_data, bins=z_bin, right=False) - 1
+            
+            # Histogram SOM
+            histogram_som = numpy.zeros((cluster_size, grid_size + 1))
+            numpy.add.at(histogram_som, (combination_cluster_id_data[combination_cluster_mask], combination_histogram_indices[combination_cluster_mask]), combination_weight_data[combination_cluster_mask])
+            
             # Application Mask
             application_cluster_mask = filter_data[application_cluster_id_data]
             application_weight_data = numpy.array(application_cluster_mask, dtype=numpy.float32) / numpy.square(application_sigma_data)
             
+            # Histogram Model
+            histogram_model = numpy.zeros((cluster_size, grid_size + 1))
+            numpy.add.at(histogram_model, application_cluster_id_data[application_cluster_mask], (z_pdf[application_indices[application_cluster_mask], :] * application_weight_data[application_cluster_mask, numpy.newaxis]))
+            
             # Histogram Cluster
-            histogram_cluster = numpy.zeros((cluster_size, grid_size + 1))
-            numpy.add.at(histogram_cluster, application_cluster_id_data[application_cluster_mask], (z_pdf[application_indices[application_cluster_mask], :] * application_weight_data[application_cluster_mask, numpy.newaxis]))
+            histogram_cluster = numpy.sqrt(histogram_som * histogram_model, out=numpy.zeros((cluster_size, grid_size + 1)), where=(histogram_som > 0) & (histogram_model > 0))
             
             factor = scipy.integrate.trapezoid(x=z_grid, y=histogram_cluster, axis=1)
             histogram_cluster = numpy.divide(histogram_cluster, factor[:, numpy.newaxis], out=numpy.zeros((cluster_size, grid_size + 1)), where=factor[:, numpy.newaxis] > 0)
@@ -160,7 +174,7 @@ def main(tag, index, folder):
             data_source[m, n, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
     
     # Save
-    with h5py.File(os.path.join(summarization_folder, '{}/SOURCE/SOURCE{}/MODEL.hdf5'.format(tag, index)), 'w') as file:
+    with h5py.File(os.path.join(summarization_folder, '{}/SOURCE/SOURCE{}/PRODUCT.hdf5'.format(tag, index)), 'w') as file:
         file.create_dataset('data', data=data_source, dtype=numpy.float32)
     
     # Return
@@ -173,7 +187,7 @@ def main(tag, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Summarize Model')
+    PARSE = argparse.ArgumentParser(description='Summarize Product')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
     PARSE.add_argument('--index', type=int, required=True, help='The index of all the datasets')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of all the datasets')

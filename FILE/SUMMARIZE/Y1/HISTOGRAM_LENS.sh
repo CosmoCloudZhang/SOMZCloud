@@ -6,8 +6,8 @@
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH --cpus-per-task=4
-#SBATCH --ntasks-per-node=64
+#SBATCH --cpus-per-task=8
+#SBATCH --ntasks-per-node=32
 #SBATCH -J SUMMARIZE_Y1_HISTOGRAM_LENS
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
@@ -30,12 +30,12 @@ export OMP_PLACES=threads
 
 # Initialize the process
 TAG="Y1"
-NUMBER=10
+NUMBER=500
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 
 # Run applications
-for INDEX in $(seq 1 $NUMBER); do
+for INDEX in $(seq 0 $NUMBER); do
     srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}FILE/SUMMARIZE/${TAG}/HISTOGRAM_LENS.py" --tag=$TAG --index=$INDEX --folder=$BASE_FOLDER & 
     # Control parallel execution
     if (( $INDEX % $SLURM_NTASKS == 0 )); then
