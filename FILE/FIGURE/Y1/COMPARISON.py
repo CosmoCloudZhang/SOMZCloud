@@ -157,9 +157,9 @@ def main(tag, index, folder):
     color_bar.set_label(r'$\mathrm{Counts}$')
     
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(figure_folder, '{}/REDSHIFT/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(figure_folder, '{}/COMPARISON/'.format(tag)), exist_ok=True)
     
-    figure.savefig(os.path.join(figure_folder, '{}/REDSHIFT/FIGURE{}.png'.format(tag, index)), format='png', bbox_inches='tight', dpi=512)
+    figure.savefig(os.path.join(figure_folder, '{}/COMPARISON/FIGURE{}.png'.format(tag, index)), format='png', bbox_inches='tight', dpi=512)
     pyplot.close(figure)
     
     # Return
