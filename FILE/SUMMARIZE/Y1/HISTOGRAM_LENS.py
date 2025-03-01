@@ -44,9 +44,7 @@ def main(tag, index, folder):
     z1 = 0.0
     z2 = 3.0
     grid_size = 300
-    z_delta = (z2 - z1) / grid_size
     z_grid = numpy.linspace(z1, z2, grid_size + 1)
-    z_bin = numpy.linspace(z1 - z_delta / 2, z2 + z_delta / 2, z_grid.size + 1)
     
     # Application
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
@@ -82,6 +80,7 @@ def main(tag, index, folder):
     
     sigma_data_lens = numpy.zeros((bin_lens_size, data_size))
     ratio_data_lens = numpy.zeros((bin_lens_size, data_size))
+    
     data_lens = numpy.zeros((bin_lens_size, data_size, grid_size + 1))
     
     # Cluster
@@ -148,7 +147,7 @@ def main(tag, index, folder):
             # Application Mask
             application_cluster_mask = filter_data[application_cluster_id_data]
             application_weight_data = numpy.array(application_cluster_mask, dtype=numpy.float32)
-            application_histogram_indices = numpy.digitize(application_z_true_data, bins=z_bin, right=False) - 1
+            application_histogram_indices = numpy.digitize(application_z_true_data, bins=z_grid, right=False) - 1
             
             # Histogram Cluster
             histogram_cluster = numpy.zeros((cluster_size, grid_size + 1))
@@ -166,9 +165,15 @@ def main(tag, index, folder):
             cluster_mean_delta_data = application_cluster_z_phot_data - combination_cluster_z_spec_data       
             sigma_data_lens[m, n] = 1.4826 * numpy.median(numpy.abs(cluster_mean_delta_data[filter_data] - numpy.median(cluster_mean_delta_data[filter_data])))
     
+    # Average
+    average_lens = numpy.mean(data_lens, axis=1)
+    average_lens = average_lens / scipy.integrate.trapezoid(x=z_grid, y=average_lens, axis=1)[:, numpy.newaxis]
+    
     # Save
     with h5py.File(os.path.join(summarize_folder, '{}/LENS/LENS{}/HISTOGRAM.hdf5'.format(tag, index)), 'w') as file:
         file.create_dataset('data', data=data_lens, dtype=numpy.float32)
+        file.create_dataset('average', data=average_lens, dtype=numpy.float32)
+        
         file.create_dataset('sigma', data=sigma_data_lens, dtype=numpy.float32)
         file.create_dataset('ratio', data=ratio_data_lens, dtype=numpy.float32)
     

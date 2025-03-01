@@ -44,9 +44,7 @@ def main(tag, index, folder):
     z1 = 0.0
     z2 = 3.0
     grid_size = 300
-    z_delta = (z2 - z1) / grid_size
     z_grid = numpy.linspace(z1, z2, grid_size + 1)
-    z_bin = numpy.linspace(z1 - z_delta / 2, z2 + z_delta / 2, z_grid.size + 1)
     
     # Application
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
@@ -150,7 +148,7 @@ def main(tag, index, folder):
             
             # Application Mask
             application_cluster_mask = filter_data[application_cluster_id_data]
-            application_histogram_indices = numpy.digitize(application_z_true_data, bins=z_bin, right=False) - 1
+            application_histogram_indices = numpy.digitize(application_z_true_data, bins=z_grid, right=False) - 1
             application_weight_data = numpy.array(application_cluster_mask, dtype=numpy.float32) / numpy.square(application_sigma_data)
             
             # Histogram Cluster
@@ -169,9 +167,15 @@ def main(tag, index, folder):
             cluster_mean_delta_data = application_cluster_z_phot_data - combination_cluster_z_spec_data       
             sigma_data_source[m, n] = 1.4826 * numpy.median(numpy.abs(cluster_mean_delta_data[filter_data] - numpy.median(cluster_mean_delta_data[filter_data])))
     
+    # Average
+    average_source = numpy.mean(data_source, axis=1)
+    average_source = average_source / scipy.integrate.trapezoid(x=z_grid, y=average_source, axis=1)[:, numpy.newaxis]
+    
     # Save
     with h5py.File(os.path.join(summarize_folder, '{}/SOURCE/SOURCE{}/HISTOGRAM.hdf5'.format(tag, index)), 'w') as file:
         file.create_dataset('data', data=data_source, dtype=numpy.float32)
+        file.create_dataset('average', data=average_source, dtype=numpy.float32)
+        
         file.create_dataset('sigma', data=sigma_data_source, dtype=numpy.float32)
         file.create_dataset('ratio', data=ratio_data_source, dtype=numpy.float32)
     

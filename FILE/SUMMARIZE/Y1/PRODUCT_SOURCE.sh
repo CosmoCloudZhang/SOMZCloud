@@ -6,8 +6,8 @@
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH --cpus-per-task=8
-#SBATCH --ntasks-per-node=32
+#SBATCH --cpus-per-task=4
+#SBATCH --ntasks-per-node=64
 #SBATCH -J SUMMARIZE_Y1_PRODUCT_SOURCE
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 

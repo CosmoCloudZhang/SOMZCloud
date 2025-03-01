@@ -94,7 +94,7 @@ def main(tag, index, folder):
         # Select
         select = select_source[m, :]
         select_size = numpy.sum(select)
-        z_pdf = estimator['data']['yvals'][select].astype(numpy.float32)
+        z_pdf = estimator['data']['yvals'][...][select, :]
         
         # Application
         application_sigma_select = application_sigma[select]
@@ -159,9 +159,14 @@ def main(tag, index, folder):
             histogram = numpy.average(histogram_cluster, axis=0, weights=application_cluster_count_data)
             data_source[m, n, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
     
+    # Average
+    average_source = numpy.mean(data_source, axis=1)
+    average_source = average_source / scipy.integrate.trapezoid(x=z_grid, y=average_source, axis=1)[:, numpy.newaxis]
+    
     # Save
     with h5py.File(os.path.join(summarization_folder, '{}/SOURCE/SOURCE{}/MODEL.hdf5'.format(tag, index)), 'w') as file:
         file.create_dataset('data', data=data_source, dtype=numpy.float32)
+        file.create_dataset('average', data=average_source, dtype=numpy.float32)
     
     # Return
     end = time.time()

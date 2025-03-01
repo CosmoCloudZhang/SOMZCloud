@@ -10,7 +10,7 @@ from sklearn import cluster
 
 def main(tag, index, folder):
     '''
-    SOM weighted summarization of the lens samples
+    Model summarization of the lens samples
     
     Arguments:
         tag (str): The tag of the configuration
@@ -28,10 +28,10 @@ def main(tag, index, folder):
     # Path
     model_folder = os.path.join(folder, 'MODEL/')
     dataset_folder = os.path.join(folder, 'DATASET/')
-    summarize_folder = os.path.join(folder, 'SUMMARIZE/')
+    summarization_folder = os.path.join(folder, 'SUMMARIZE/')
     
-    os.makedirs(os.path.join(summarize_folder, '{}/LENS/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(summarize_folder, '{}/LENS/LENS{}'.format(tag, index)), exist_ok=True)
+    os.makedirs(os.path.join(summarization_folder, '{}/LENS/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(summarization_folder, '{}/LENS/LENS{}'.format(tag, index)), exist_ok=True)
     
     # SOM
     data_store = core.stage.RailStage.data_store
@@ -50,15 +50,14 @@ def main(tag, index, folder):
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         cell_size = file['meta']['cell_size'][...]
         application_cell_id = file['meta']['cell_id'][...]
-        application_sigma = file['morphology']['sigma'][...]
     
     # Select
     with h5py.File(os.path.join(model_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        bin_source = file['bin_source'][...]
+        bin_lens = file['bin_lens'][...]
         application_z_phot = file['z_phot'][...]
     
-    with h5py.File(os.path.join(model_folder, '{}/SOURCE/SOURCE{}/SELECT.hdf5'.format(tag, index)), 'r') as file:
-        select_source = file['select'][...]
+    with h5py.File(os.path.join(model_folder, '{}/LENS/LENS{}/SELECT.hdf5'.format(tag, index)), 'r') as file:
+        select_lens = file['select'][...]
     
     # Combination
     with h5py.File(os.path.join(dataset_folder, '{}/COMBINATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
@@ -68,16 +67,16 @@ def main(tag, index, folder):
     
     # Reference
     with h5py.File(os.path.join(model_folder, '{}/REFERENCE/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        bin_source = file['bin_source'][...]
+        bin_lens = file['bin_lens'][...]
         combination_z_phot = file['z_phot'][...]
     
-    with h5py.File(os.path.join(model_folder, '{}/SOURCE/SOURCE{}/REFERENCE.hdf5'.format(tag, index)), 'r') as file:
-        reference_source = file['reference'][...]
+    with h5py.File(os.path.join(model_folder, '{}/LENS/LENS{}/REFERENCE.hdf5'.format(tag, index)), 'r') as file:
+        reference_lens = file['reference'][...]
     
     # Size
     data_size = 100
-    bin_source_size = len(bin_source) - 1
-    data_source = numpy.zeros((bin_source_size, data_size, grid_size + 1))
+    bin_lens_size = len(bin_lens) - 1
+    data_lens = numpy.zeros((bin_lens_size, data_size, grid_size + 1))
     
     # Cluster
     som_model = model['som']
@@ -86,39 +85,41 @@ def main(tag, index, folder):
     som_model.cluster(cluster.AgglomerativeClustering(n_clusters=cluster_size, linkage='complete'))
     cluster_id = som_model.clusters.flatten()
     
-    # Reference
-    reference = numpy.sum(reference_source, axis=0) > 0
-    reference_size = numpy.sum(reference)
-    
-    # Combination
-    combination_z_phot_reference = combination_z_phot[reference]
-    combination_z_spec_reference = combination_redshift[reference]
-    combination_cell_id_reference = combination_cell_id[reference]
+    # Estimator
+    estimator = h5py.File(os.path.join(model_folder, '{}/ESTIMATE/ESTIMATE{}.hdf5'.format(tag, index)), 'r')
     
     # Loop
-    for m in range(bin_source_size):
+    for m in range(bin_lens_size):
         # Select
-        select = select_source[m, :] 
+        select = select_lens[m, :]
         select_size = numpy.sum(select)
+        z_pdf = estimator['data']['yvals'][...][select, :]
         
         # Application
-        application_sigma_select = application_sigma[select]
         application_z_phot_select = application_z_phot[select]
         application_cell_id_select = application_cell_id[select]
+        
+        # Reference
+        reference = reference_lens[m, :]
+        reference_size = numpy.sum(reference)
+        
+        # Combination
+        combination_z_phot_reference = combination_z_phot[reference]
+        combination_z_spec_reference = combination_redshift[reference]
+        combination_cell_id_reference = combination_cell_id[reference]
         
         # Bootstrap
         for n in range(data_size):
             # Application
             application_indices = numpy.random.choice(numpy.arange(select_size), size=select_size, replace=True)
             
-            application_sigma_data = application_sigma_select[application_indices]
             application_z_phot_data = application_z_phot_select[application_indices]
             application_cell_id_data = application_cell_id_select[application_indices]
             
             application_cluster_id_data = cluster_id[application_cell_id_data]
-            application_cluster_count_data = numpy.bincount(application_cluster_id_data, weights=1 / numpy.square(application_sigma_data), minlength=cluster_size)
+            application_cluster_count_data = numpy.bincount(application_cluster_id_data, minlength=cluster_size)
             
-            application_cluster_z_phot_data = numpy.bincount(application_cluster_id_data, weights=application_z_phot_data / numpy.square(application_sigma_data), minlength=cluster_size)
+            application_cluster_z_phot_data = numpy.bincount(application_cluster_id_data, weights=application_z_phot_data, minlength=cluster_size)
             application_cluster_z_phot_data = numpy.divide(application_cluster_z_phot_data, application_cluster_count_data, out=numpy.zeros(cluster_size, dtype=numpy.float32), where=application_cluster_count_data > 0)
             
             # Combination
@@ -145,25 +146,36 @@ def main(tag, index, folder):
             combination_weight_data = numpy.array(combination_cluster_mask, dtype=numpy.float32)
             combination_histogram_indices = numpy.digitize(combination_z_spec_data, bins=z_grid, right=False) - 1
             
+            # Histogram SOM
+            histogram_som = numpy.zeros((cluster_size, grid_size + 1))
+            numpy.add.at(histogram_som, (combination_cluster_id_data[combination_cluster_mask], combination_histogram_indices[combination_cluster_mask]), combination_weight_data[combination_cluster_mask])
+            
+            # Application Mask
+            application_cluster_mask = filter_data[application_cluster_id_data]
+            application_weight_data = numpy.array(application_cluster_mask, dtype=numpy.float32)
+            
+            # Histogram Model
+            histogram_model = numpy.zeros((cluster_size, grid_size + 1))
+            numpy.add.at(histogram_model, application_cluster_id_data[application_cluster_mask], (z_pdf[application_indices[application_cluster_mask], :] * application_weight_data[application_cluster_mask, numpy.newaxis]))
+            
             # Histogram Cluster
-            histogram_cluster = numpy.zeros((cluster_size, grid_size + 1))
-            numpy.add.at(histogram_cluster, (combination_cluster_id_data[combination_cluster_mask], combination_histogram_indices[combination_cluster_mask]), combination_weight_data[combination_cluster_mask])
+            histogram_cluster = numpy.sqrt(numpy.maximum(histogram_som * histogram_model, 0.0))
             
             factor = scipy.integrate.trapezoid(x=z_grid, y=histogram_cluster, axis=1)
             histogram_cluster = numpy.divide(histogram_cluster, factor[:, numpy.newaxis], out=numpy.zeros((cluster_size, grid_size + 1)), where=factor[:, numpy.newaxis] > 0)
             
             # Histogram
             histogram = numpy.average(histogram_cluster, axis=0, weights=application_cluster_count_data)
-            data_source[m, n, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
+            data_lens[m, n, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
     
     # Average
-    average_source = numpy.mean(data_source, axis=1)
-    average_source = average_source / scipy.integrate.trapezoid(x=z_grid, y=average_source, axis=1)[:, numpy.newaxis]
+    average_lens = numpy.mean(data_lens, axis=1)
+    average_lens = average_lens / scipy.integrate.trapezoid(x=z_grid, y=average_lens, axis=1)[:, numpy.newaxis]
     
     # Save
-    with h5py.File(os.path.join(summarize_folder, '{}/SOURCE/SOURCE{}/SOM.hdf5'.format(tag, index)), 'w') as file:
-        file.create_dataset('data', data=data_source, dtype=numpy.float32)
-        file.create_dataset('average', data=average_source, dtype=numpy.float32)
+    with h5py.File(os.path.join(summarization_folder, '{}/LENS/LENS{}/WEIGHT.hdf5'.format(tag, index)), 'w') as file:
+        file.create_dataset('data', data=data_lens, dtype=numpy.float32)
+        file.create_dataset('average', data=average_lens, dtype=numpy.float32)
     
     # Return
     end = time.time()
@@ -175,7 +187,7 @@ def main(tag, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Summarize SOM')
+    PARSE = argparse.ArgumentParser(description='Summarize Weight')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
     PARSE.add_argument('--index', type=int, required=True, help='The index of all the datasets')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of all the datasets')

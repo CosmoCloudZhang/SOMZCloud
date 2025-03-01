@@ -93,7 +93,7 @@ def main(tag, index, folder):
         # Select
         select = select_lens[m, :]
         select_size = numpy.sum(select)
-        z_pdf = estimator['data']['yvals'][select].astype(numpy.float32)
+        z_pdf = estimator['data']['yvals'][...][select, :]
         
         # Application
         application_z_phot_select = application_z_phot[select]
@@ -156,9 +156,14 @@ def main(tag, index, folder):
             histogram = numpy.average(histogram_cluster, axis=0, weights=application_cluster_count_data)
             data_lens[m, n, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
     
+    # Average
+    average_lens = numpy.mean(data_lens, axis=1)
+    average_lens = average_lens / scipy.integrate.trapezoid(x=z_grid, y=average_lens, axis=1)[:, numpy.newaxis]
+    
     # Save
     with h5py.File(os.path.join(summarization_folder, '{}/LENS/LENS{}/MODEL.hdf5'.format(tag, index)), 'w') as file:
         file.create_dataset('data', data=data_lens, dtype=numpy.float32)
+        file.create_dataset('average', data=average_lens, dtype=numpy.float32)
     
     # Return
     end = time.time()

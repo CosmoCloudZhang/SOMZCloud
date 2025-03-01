@@ -8,7 +8,7 @@
 #SBATCH -o LOG/%x_%j.out
 #SBATCH --cpus-per-task=4
 #SBATCH --ntasks-per-node=64
-#SBATCH -J SUMMARIZE_Y1_HISTOGRAM_SOURCE
+#SBATCH -J SUMMARIZE_Y1_WEIGHT_LENS
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -36,7 +36,7 @@ BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 
 # Run applications
 for INDEX in $(seq 0 $NUMBER); do
-    srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}FILE/SUMMARIZE/${TAG}/HISTOGRAM_SOURCE.py" --tag=$TAG --index=$INDEX --folder=$BASE_FOLDER & 
+    srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}FILE/SUMMARIZE/${TAG}/WEIGHT_LENS.py" --tag=$TAG --index=$INDEX --folder=$BASE_FOLDER & 
     # Control parallel execution
     if (( $INDEX % $SLURM_NTASKS == 0 )); then
         wait
