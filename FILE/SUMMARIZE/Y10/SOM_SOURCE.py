@@ -10,7 +10,7 @@ from sklearn import cluster
 
 def main(tag, index, folder):
     '''
-    SOM weighted summarization of the lens samples
+    SOM weighted summarization of the source samples
     
     Arguments:
         tag (str): The tag of the configuration
@@ -30,8 +30,8 @@ def main(tag, index, folder):
     dataset_folder = os.path.join(folder, 'DATASET/')
     summarize_folder = os.path.join(folder, 'SUMMARIZE/')
     
-    os.makedirs(os.path.join(summarize_folder, '{}/LENS/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(summarize_folder, '{}/LENS/LENS{}'.format(tag, index)), exist_ok=True)
+    os.makedirs(os.path.join(summarize_folder, '{}/SOURCE/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(summarize_folder, '{}/SOURCE/SOURCE{}'.format(tag, index)), exist_ok=True)
     
     # SOM
     data_store = core.stage.RailStage.data_store
