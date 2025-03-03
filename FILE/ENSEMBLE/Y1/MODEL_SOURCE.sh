@@ -8,7 +8,7 @@
 #SBATCH -o LOG/%x_%j.out
 #SBATCH --cpus-per-task=256
 #SBATCH --ntasks-per-node=1
-#SBATCH -J ENSEMBLE_Y1_HISTOGRAM_LENS
+#SBATCH -J ENSEMBLE_Y1_MODEL_SOURCE
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -35,4 +35,4 @@ BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 
 # Run applications
-srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}FILE/ENSEMBLE/${TAG}/HISTOGRAM_LENS.py" --tag=$TAG --number=$NUMBER --folder=$BASE_FOLDER 
+srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}FILE/ENSEMBLE/${TAG}/MODEL_SOURCE.py" --tag=$TAG --number=$NUMBER --folder=$BASE_FOLDER 

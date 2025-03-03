@@ -7,13 +7,13 @@ import argparse
 import multiprocessing
 
 
-def ensemble(data, weight, z_grid, number, bin_lens_size, sample_size):
+def ensemble(data, weight, z_grid, number, bin_source_size, sample_size):
     
     n = numpy.arange(number, dtype=numpy.int32)
     m = numpy.random.choice(numpy.arange(sample_size, dtype=numpy.int32), size=number, replace=True)
     
     alpha = weight[n, :, m] / numpy.sum(weight[n, :, m], axis=0)
-    beta = numpy.stack([numpy.random.dirichlet(numpy.transpose(alpha[:, k]), size=1).flatten() for k in range(bin_lens_size)], axis=1)
+    beta = numpy.stack([numpy.random.dirichlet(numpy.transpose(alpha[:, k]), size=1).flatten() for k in range(bin_source_size)], axis=1)
     
     value = numpy.maximum(numpy.sum(beta[:, :, numpy.newaxis] * data[n, :, m, :], axis=0), 0.0)
     value = value / scipy.integrate.trapezoid(x=z_grid, y=value, axis=1)[:, numpy.newaxis]
@@ -22,7 +22,7 @@ def ensemble(data, weight, z_grid, number, bin_lens_size, sample_size):
 
 def main(tag, number, folder):
     '''
-    Histogram of the spectroscopic redshifts of the lens samples
+    Histogram of the spectroscopic redshifts of the source samples
     
     Arguments:
         tag (str): The tag of the configuration
@@ -42,7 +42,7 @@ def main(tag, number, folder):
     summarize_folder = os.path.join(folder, 'SUMMARIZE/')
     
     os.makedirs(ensemble_folder, exist_ok=True)
-    os.makedirs(os.path.join(ensemble_folder, '{}/LENS/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(ensemble_folder, '{}/SOURCE/'.format(tag)), exist_ok=True)
     
     # Redshift
     z1 = 0.0
@@ -52,37 +52,37 @@ def main(tag, number, folder):
     
     # Bin
     with h5py.File(os.path.join(model_folder, '{}/SELECT/DATA0.hdf5'.format(tag)), 'r') as file:
-        bin_lens_size = len(file['bin_lens'][...]) - 1
+        bin_source_size = len(file['bin_source'][...]) - 1
     
     # Data
     sample_size = 100
     metric = numpy.zeros((number))
-    sigma_lens = numpy.zeros((number, bin_lens_size, sample_size))
-    data_lens = numpy.zeros((number, bin_lens_size, sample_size, grid_size + 1))
+    sigma_source = numpy.zeros((number, bin_source_size, sample_size))
+    data_source = numpy.zeros((number, bin_source_size, sample_size, grid_size + 1))
     
     for n in range(number):
         
-        with h5py.File(os.path.join(summarize_folder, '{}/LENS/LENS{}/SOM.hdf5'.format(tag, n + 1)), 'r') as file:
-            data_lens[n, :, :, :] = file['data'][...]
+        with h5py.File(os.path.join(summarize_folder, '{}/SOURCE/SOURCE{}/PRODUCT.hdf5'.format(tag, n + 1)), 'r') as file:
+            data_source[n, :, :, :] = file['data'][...]
         
-        with h5py.File(os.path.join(summarize_folder, '{}/LENS/LENS{}/HISTOGRAM.hdf5'.format(tag, n + 1)), 'r') as file:
-            sigma_lens[n, :, :] = file['sigma'][...]
+        with h5py.File(os.path.join(summarize_folder, '{}/SOURCE/SOURCE{}/HISTOGRAM.hdf5'.format(tag, n + 1)), 'r') as file:
+            sigma_source[n, :, :] = file['sigma'][...]
         
         with h5py.File(os.path.join(dataset_folder, '{}/COMBINATION/DATA{}.hdf5'.format(tag, n + 1)), 'r') as file:
             metric[n] = file['meta']['metric'][...]
     
-    weight_lens = 1.0 / numpy.square(sigma_lens * metric[:, numpy.newaxis, numpy.newaxis])
+    weight_source = 1.0 / numpy.square(sigma_source * metric[:, numpy.newaxis, numpy.newaxis])
     
     # Ensemble Data
     count = 32
     ensemble_size = 500000
     with multiprocessing.Pool(processes=count) as pool:
-        ensemble_data = numpy.stack(pool.starmap(ensemble, [(data_lens, weight_lens, z_grid, number, bin_lens_size, sample_size) for _ in range(ensemble_size)]), axis=0)
+        ensemble_data = numpy.stack(pool.starmap(ensemble, [(data_source, weight_source, z_grid, number, bin_source_size, sample_size) for _ in range(ensemble_size)]), axis=0)
     
     ensemble_average = numpy.mean(ensemble_data, axis=0)
     ensemble_average = ensemble_average / scipy.integrate.trapezoid(x=z_grid, y=ensemble_average, axis=1)[:, numpy.newaxis]
     
-    with h5py.File(os.path.join(ensemble_folder, '{}/LENS/SOM.hdf5'.format(tag)), 'w') as file:
+    with h5py.File(os.path.join(ensemble_folder, '{}/SOURCE/PRODUCT.hdf5'.format(tag)), 'w') as file:
         file.create_dataset('data', data=ensemble_data, dtype=numpy.float32)
         file.create_dataset('average', data=ensemble_average, dtype=numpy.float32)
     

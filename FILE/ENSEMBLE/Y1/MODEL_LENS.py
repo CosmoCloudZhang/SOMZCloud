@@ -62,7 +62,7 @@ def main(tag, number, folder):
     
     for n in range(number):
         
-        with h5py.File(os.path.join(summarize_folder, '{}/LENS/LENS{}/SOM.hdf5'.format(tag, n + 1)), 'r') as file:
+        with h5py.File(os.path.join(summarize_folder, '{}/LENS/LENS{}/MODEL.hdf5'.format(tag, n + 1)), 'r') as file:
             data_lens[n, :, :, :] = file['data'][...]
         
         with h5py.File(os.path.join(summarize_folder, '{}/LENS/LENS{}/HISTOGRAM.hdf5'.format(tag, n + 1)), 'r') as file:
@@ -82,7 +82,7 @@ def main(tag, number, folder):
     ensemble_average = numpy.mean(ensemble_data, axis=0)
     ensemble_average = ensemble_average / scipy.integrate.trapezoid(x=z_grid, y=ensemble_average, axis=1)[:, numpy.newaxis]
     
-    with h5py.File(os.path.join(ensemble_folder, '{}/LENS/SOM.hdf5'.format(tag)), 'w') as file:
+    with h5py.File(os.path.join(ensemble_folder, '{}/LENS/MODEL.hdf5'.format(tag)), 'w') as file:
         file.create_dataset('data', data=ensemble_data, dtype=numpy.float32)
         file.create_dataset('average', data=ensemble_average, dtype=numpy.float32)
     
