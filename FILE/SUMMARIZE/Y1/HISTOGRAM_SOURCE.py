@@ -85,7 +85,7 @@ def main(tag, index, folder):
     
     # Cluster
     som_model = model['som']
-    cluster_size = cell_size // 4
+    cluster_size = cell_size // 2
     
     som_model.cluster(cluster.AgglomerativeClustering(n_clusters=cluster_size, linkage='complete'))
     cluster_id = som_model.clusters.flatten()
@@ -163,9 +163,9 @@ def main(tag, index, folder):
             data_source[m, n, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
             
             # Metrics
-            ratio_data_source[m, n] = numpy.sum(application_cluster_mask) / select_size
-            cluster_mean_delta_data = application_cluster_z_phot_data - combination_cluster_z_spec_data       
-            sigma_data_source[m, n] = 1.4826 * numpy.median(numpy.abs(cluster_mean_delta_data[filter_data] - numpy.median(cluster_mean_delta_data[filter_data])))
+            cluster_mean_delta_data = application_cluster_z_phot_data - combination_cluster_z_spec_data
+            ratio_data_source[m, n] = numpy.sum(application_cluster_mask) / select_size  
+            sigma_data_source[m, n] = numpy.std(cluster_mean_delta_data[filter_data])
     
     # Average
     average_source = numpy.mean(data_source, axis=1)
