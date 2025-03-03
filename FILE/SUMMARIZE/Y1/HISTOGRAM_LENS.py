@@ -79,7 +79,8 @@ def main(tag, index, folder):
     bin_lens_size = len(bin_lens) - 1
     
     sigma_data_lens = numpy.zeros((bin_lens_size, data_size))
-    ratio_data_lens = numpy.zeros((bin_lens_size, data_size))
+    metric_data_lens = numpy.zeros((bin_lens_size, data_size))
+    fraction_data_lens = numpy.zeros((bin_lens_size, data_size))
     data_lens = numpy.zeros((bin_lens_size, data_size, grid_size + 1))
     
     # Cluster
@@ -161,8 +162,12 @@ def main(tag, index, folder):
             
             # Metrics
             cluster_mean_delta_data = application_cluster_z_phot_data - combination_cluster_z_spec_data
-            ratio_data_lens[m, n] = numpy.sum(application_cluster_mask) / select_size  
             sigma_data_lens[m, n] = numpy.std(cluster_mean_delta_data[filter_data])
+            
+            fraction_data_lens[m, n] = numpy.sum(application_cluster_mask) / select_size  
+            
+            cluster_ratio_data = numpy.divide(combination_cluster_count_data / reference_size, application_cluster_count_data / select_size, out=numpy.zeros(cluster_size, dtype=numpy.float32), where=application_cluster_count_data > 0)
+            metric_data_lens[m, n] = numpy.sqrt(numpy.mean(numpy.square(1 - cluster_ratio_data[filter_data])))
     
     # Average
     average_lens = numpy.mean(data_lens, axis=1)
@@ -174,7 +179,8 @@ def main(tag, index, folder):
         file.create_dataset('average', data=average_lens, dtype=numpy.float32)
         
         file.create_dataset('sigma', data=sigma_data_lens, dtype=numpy.float32)
-        file.create_dataset('ratio', data=ratio_data_lens, dtype=numpy.float32)
+        file.create_dataset('metric', data=metric_data_lens, dtype=numpy.float32)
+        file.create_dataset('fraction', data=fraction_data_lens, dtype=numpy.float32)
     
     # Duration
     end = time.time()
