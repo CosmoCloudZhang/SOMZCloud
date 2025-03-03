@@ -2,12 +2,12 @@
 #SBATCH -A m1727
 #SBATCH --nodes=1
 #SBATCH -q regular
-#SBATCH --time=04:00:00
+#SBATCH --time=12:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH --cpus-per-task=256
-#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=16
+#SBATCH --ntasks-per-node=16
 #SBATCH -J FIGURE_Y10_AVERAGE
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
@@ -30,8 +30,16 @@ export OMP_PLACES=threads
 
 # Initialize the process
 TAG="Y10"
+NUMBER=500
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 
 # Run the application
-srun -N 1 -n 1 -c $SLURM_CPUS_PER_TASK --cpu_bind=cores python -u "${BASE_PATH}FILE/FIGURE/${TAG}/AVERAGE.py" --tag=$TAG --folder=$BASE_FOLDER
+for INDEX in $(seq 0 $NUMBER); do
+    srun -N 1 -n 1 -c $SLURM_CPUS_PER_TASK --cpu_bind=cores python -u "${BASE_PATH}FILE/FIGURE/${TAG}/AVERAGE.py" --tag=$TAG --index=$INDEX --folder=$BASE_FOLDER & 
+    # Control parallel execution
+    if (( $INDEX % $SLURM_NTASKS == 0 )); then
+        wait
+    fi
+done
+wait

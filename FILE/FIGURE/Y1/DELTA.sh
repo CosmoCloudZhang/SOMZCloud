@@ -6,7 +6,7 @@
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH -J FIGURE_Y10_MEAN
+#SBATCH -J FIGURE_Y1_DELTA
 #SBATCH --cpus-per-task=256
 #SBATCH --ntasks-per-node=1
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
@@ -29,9 +29,10 @@ export OMP_PROC_BIND=spread
 export OMP_PLACES=threads
 
 # Initialize the process
-TAG="Y10"
+TAG="Y1"
+NUMBER=500
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 
 # Run the application
-srun -N 1 -n 1 -c $SLURM_CPUS_PER_TASK --cpu_bind=cores python -u "${BASE_PATH}FILE/FIGURE/${TAG}/MEAN.py" --tag=$TAG --folder=$BASE_FOLDER
+python -u "${BASE_PATH}FILE/FIGURE/${TAG}/DELTA.py" --tag=$TAG --number=$NUMBER --folder=$BASE_FOLDER

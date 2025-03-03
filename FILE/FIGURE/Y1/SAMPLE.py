@@ -20,7 +20,7 @@ def main(tag, index, folder):
     '''
     # Start
     start = time.time()
-    print('Index:{}'.format(index))
+    print('Index: {}'.format(index))
     
     # Path
     model_folder = os.path.join(folder, 'MODEL/')
@@ -72,8 +72,6 @@ def main(tag, index, folder):
     plot.plot(numpy.ones(bin_size) * z1_source, numpy.linspace(magnitude1, magnitude2, bin_size), color='black', linestyle='--', linewidth=2.5)
     
     plot.plot(numpy.ones(bin_size) * z2_source, numpy.linspace(magnitude1, magnitude2, bin_size), color='black', linestyle='--', linewidth=2.5)
-    
-    plot.plot(numpy.linspace(z1_source, z2_source, bin_size + 1), numpy.ones(bin_size + 1) * magnitude2, color='black', linestyle='--', linewidth=2.5)
     
     plot.plot(numpy.ones(bin_size) * z1_lens, numpy.linspace(magnitude1, slope * z1_lens + intercept, bin_size), color='black', linestyle='-.', linewidth=2.5)
     
