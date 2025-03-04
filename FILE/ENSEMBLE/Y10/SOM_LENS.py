@@ -7,15 +7,15 @@ import argparse
 import multiprocessing
 
 
-def ensemble(data, weight, z_grid, number, bin_lens_size, sample_size):
+def ensemble(data, weight, z_grid, number, sample_size):
     
     n = numpy.arange(number, dtype=numpy.int32)
     m = numpy.random.choice(numpy.arange(sample_size, dtype=numpy.int32), size=number, replace=True)
     
-    alpha = weight[n, :, m] / numpy.sum(weight[n, :, m], axis=0)
-    beta = numpy.stack([numpy.random.dirichlet(numpy.transpose(alpha[:, k]), size=1).flatten() for k in range(bin_lens_size)], axis=1)
+    alpha = weight[n, m] / numpy.sum(weight[n, m])
+    beta = numpy.random.dirichlet(numpy.transpose(alpha), size=1).flatten()
     
-    value = numpy.maximum(numpy.sum(beta[:, :, numpy.newaxis] * data[n, :, m, :], axis=0), 0.0)
+    value = numpy.maximum(numpy.sum(beta[:, numpy.newaxis, numpy.newaxis] * data[n, :, m, :], axis=0), 0.0)
     value = value / scipy.integrate.trapezoid(x=z_grid, y=value, axis=1)[:, numpy.newaxis]
     return value
 
@@ -57,7 +57,7 @@ def main(tag, number, folder):
     # Data
     sample_size = 100
     metric = numpy.zeros((number))
-    sigma_lens = numpy.zeros((number, bin_lens_size, sample_size))
+    fraction_lens = numpy.zeros((number, bin_lens_size, sample_size))
     data_lens = numpy.zeros((number, bin_lens_size, sample_size, grid_size + 1))
     
     for n in range(number):
@@ -66,18 +66,18 @@ def main(tag, number, folder):
             data_lens[n, :, :, :] = file['data'][...]
         
         with h5py.File(os.path.join(summarize_folder, '{}/LENS/LENS{}/HISTOGRAM.hdf5'.format(tag, n + 1)), 'r') as file:
-            sigma_lens[n, :, :] = file['sigma'][...]
+            fraction_lens[n, :, :] = file['fraction'][...]
         
         with h5py.File(os.path.join(dataset_folder, '{}/COMBINATION/DATA{}.hdf5'.format(tag, n + 1)), 'r') as file:
             metric[n] = file['meta']['metric'][...]
     
-    weight_lens = 1.0 / numpy.square(sigma_lens * metric[:, numpy.newaxis, numpy.newaxis])
+    weight_lens = numpy.square(scipy.stats.mstats.gmean(fraction_lens, axis=1) / metric[:, numpy.newaxis])
     
     # Ensemble Data
     count = 32
     ensemble_size = 500000
     with multiprocessing.Pool(processes=count) as pool:
-        ensemble_data = numpy.stack(pool.starmap(ensemble, [(data_lens, weight_lens, z_grid, number, bin_lens_size, sample_size) for _ in range(ensemble_size)]), axis=0)
+        ensemble_data = numpy.stack(pool.starmap(ensemble, [(data_lens, weight_lens, z_grid, number, sample_size) for _ in range(ensemble_size)]), axis=0)
     
     ensemble_average = numpy.mean(ensemble_data, axis=0)
     ensemble_average = ensemble_average / scipy.integrate.trapezoid(x=z_grid, y=ensemble_average, axis=1)[:, numpy.newaxis]
@@ -96,7 +96,7 @@ def main(tag, number, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Ensemble Histogram')
+    PARSE = argparse.ArgumentParser(description='Ensemble SOM')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
     PARSE.add_argument('--number', type=int, required=True, help='The number of all the datasets')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of all the datasets')
