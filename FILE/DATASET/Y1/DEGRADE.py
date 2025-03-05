@@ -56,21 +56,21 @@ def main(tag, index, folder):
     filter = filter & (application_dataset['photometry']['redshift'] < redshift)
     
     # Color
-    color1 = {'Y1': 0.5, 'Y10': 0.0}
-    color2 = {'Y1': 1.5, 'Y10': 1.0}
+    color1 = {'Y1': 0.5, 'Y10': 0.5}
+    color2 = {'Y1': 2.0, 'Y10': 2.0}
     color = numpy.random.uniform(low=color1[tag], high=color2[tag])
     
     # Angle
     angle1 = {'Y1': 0.0, 'Y10': 0.0}
-    angle2 = {'Y1': numpy.pi / 2, 'Y10': numpy.pi / 3}
+    angle2 = {'Y1': numpy.pi / 2, 'Y10': numpy.pi / 2}
     angle = numpy.random.uniform(low=angle1[tag], high=angle2[tag])
     
     application_color = application_dataset['photometry']['mag_g_lsst'] - application_dataset['photometry']['mag_z_lsst']
     filter = filter & (application_dataset['photometry']['mag_i_lsst'] - magnitude  - numpy.tan(angle) * (application_color - color) < 0)
     
     # Factor
-    factor1 = {'Y1': 0.5, 'Y10': 1.0}
-    factor2 = {'Y1': 1.5, 'Y10': 2.0}
+    factor1 = {'Y1': 0.5, 'Y10': 1.5}
+    factor2 = {'Y1': 1.5, 'Y10': 3.0}
     factor = numpy.random.uniform(low=factor1[tag], high=factor2[tag])
     rate = 1 / (1 + factor * numpy.exp(application_dataset['photometry']['mag_i_lsst'] - application_dataset['photometry']['mag_i_lsst'].max()))
     

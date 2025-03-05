@@ -23,10 +23,6 @@ def main(tag, index, folder):
     # Path
     dataset_folder = os.path.join(folder, 'DATASET/')
     
-    # Application
-    with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        application_cell_count = file['meta']['cell_count'][...]
-    
     # Degradation
     degradation_dataset = {
         'meta': {},
@@ -97,9 +93,6 @@ def main(tag, index, folder):
     cell_count = degradation_dataset['meta']['cell_count'] + augmentation_dataset['meta']['cell_count']
     cell_z_true = numpy.divide(degradation_summation + augmentation_summation, cell_count, out=numpy.ones_like(cell_count) * numpy.nan, where=cell_count != 0)
     
-    cell_ratio = numpy.divide(cell_count / size, application_cell_count / numpy.sum(application_cell_count), out=numpy.zeros(cell_size, dtype=numpy.float32), where=application_cell_count != 0)
-    metric = numpy.sqrt(numpy.mean(numpy.square(1 - cell_ratio)))
-    
     # Save
     os.makedirs(os.path.join(dataset_folder, '{}/'.format(tag)), exist_ok=True)
     os.makedirs(os.path.join(dataset_folder, '{}/COMBINATION/'.format(tag)), exist_ok=True)
@@ -120,9 +113,6 @@ def main(tag, index, folder):
         file['meta'].create_dataset('augmentation_magnitude', data=augmentation_dataset['meta']['magnitude'], dtype=numpy.float32)
         
         file['meta'].create_dataset('size', data=size, dtype=numpy.int32)
-        file['meta'].create_dataset('metric', data=metric, dtype=numpy.float32)
-        file['meta'].create_dataset('cell_ratio', data=cell_ratio, dtype=numpy.float32)
-        
         file['meta'].create_dataset('cell_size', data=cell_size, dtype=numpy.int32)
         file['meta'].create_dataset('cell_size1', data=cell_size1, dtype=numpy.int32)
         file['meta'].create_dataset('cell_size2', data=cell_size2, dtype=numpy.int32)
