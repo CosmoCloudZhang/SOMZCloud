@@ -58,6 +58,14 @@ def main(tag, index, folder):
         combination_redshift_true = file['photometry']['redshift_true'][...]
     combination_size = len(combination_magnitude)
     
+    # Bin
+    with h5py.File(os.path.join(model_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+        bin_lens = file['bin_lens'][...]
+        bin_source = file['bin_source'][...]
+    
+    lens_size = len(bin_lens) - 1
+    source_size = len(bin_source) - 1
+    
     # Evaluate
     chunk_size = 100000
     z_phot = numpy.zeros(combination_size, dtype=numpy.float32)
@@ -77,17 +85,6 @@ def main(tag, index, folder):
     intercept = 18.0
     reference_source = (z1_source <= z_phot) & (z_phot < z2_source)
     reference_lens = (z1_lens <= z_phot) & (z_phot < z2_lens) & (combination_magnitude < slope * z_phot + intercept)
-    
-    # Bin
-    lens_size = 5
-    bin_lens = numpy.linspace(z1_lens, z2_lens, lens_size + 1)
-    
-    source_size = 5
-    quantiles = numpy.linspace(0, 1, source_size + 1)
-    
-    bin_source = numpy.quantile(z_phot[reference_source], quantiles)
-    bin_source[-1] = z2_source
-    bin_source[0] = z1_source
     
     # Metric
     z_phot_lens = z_phot[reference_lens]
