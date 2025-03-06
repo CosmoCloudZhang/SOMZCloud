@@ -165,7 +165,7 @@ def main(tag, index, folder):
             
             # Metrics
             cluster_mean_delta_data = application_cluster_z_phot_data - combination_cluster_z_spec_data
-            sigma_data_source[m, n] = numpy.std(cluster_mean_delta_data[filter_data])
+            sigma_data_source[m, n] = scipy.stats.median_abs_deviation(cluster_mean_delta_data[filter_data], scale='normal')
             
             fraction_data_source[m, n] = numpy.sum(application_cluster_mask) / select_size  
             
