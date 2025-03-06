@@ -85,7 +85,7 @@ def main(tag, index, folder):
     
     # Cluster
     som_model = model['som']
-    cluster_size = cell_size // 4
+    cluster_size = cell_size // 2
     
     som_model.cluster(cluster.AgglomerativeClustering(n_clusters=cluster_size, linkage='complete'))
     cluster_id = som_model.clusters.flatten()
