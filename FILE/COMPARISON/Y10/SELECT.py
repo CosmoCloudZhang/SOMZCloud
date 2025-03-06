@@ -72,7 +72,7 @@ def main(tag, index, folder):
     
     # Select
     slope = 4.0
-    intercept = 18.0
+    intercept = 18.6
     
     select_source = (z1_source <= z_phot) & (z_phot < z2_source)
     select_lens = (z1_lens <= z_phot) & (z_phot < z2_lens) & (application_magnitude < slope * z_phot + intercept)
