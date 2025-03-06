@@ -7,8 +7,8 @@
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
 #SBATCH -J FIGURE_Y1_SOM
-#SBATCH --cpus-per-task=8
-#SBATCH --ntasks-per-node=32
+#SBATCH --cpus-per-task=16
+#SBATCH --ntasks-per-node=16
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
