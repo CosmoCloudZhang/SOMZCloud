@@ -47,7 +47,7 @@ def main(tag, index, folder):
     
     # Values
     slope = 4
-    intercept = 18
+    intercept = 18.6
     
     # Application
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
