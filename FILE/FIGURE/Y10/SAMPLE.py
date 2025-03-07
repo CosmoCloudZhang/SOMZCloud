@@ -94,7 +94,7 @@ def main(tag, index, folder):
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)
     os.makedirs(os.path.join(figure_folder, '{}/SAMPLE/'.format(tag)), exist_ok=True)
     
-    figure.savefig(os.path.join(figure_folder, '{}/SAMPLE/FIGURE{}.png'.format(tag, index)), format='png', bbox_inches='tight', dpi=512)
+    figure.savefig(os.path.join(figure_folder, '{}/SAMPLE/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
     pyplot.close(figure)
     
     # Return

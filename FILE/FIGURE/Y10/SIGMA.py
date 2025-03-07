@@ -78,7 +78,7 @@ def main(tag, folder):
     os.makedirs(os.path.join(figure_folder, '{}/SIGMA/'.format(tag)), exist_ok=True)
     
     figure.subplots_adjust(right=0.80)
-    figure.savefig(os.path.join(figure_folder, '{}/SIGMA/FIGURE.png'.format(tag)), format='png', bbox_inches='tight', dpi=512)
+    figure.savefig(os.path.join(figure_folder, '{}/SIGMA/FIGURE.pdf'.format(tag)), format='pdf', bbox_inches='tight')
     pyplot.close(figure)
     
     # Duration

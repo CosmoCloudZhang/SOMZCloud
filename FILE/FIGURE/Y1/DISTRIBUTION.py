@@ -73,7 +73,7 @@ def main(tag, index, folder):
     
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)
     os.makedirs(os.path.join(figure_folder, '{}/DISTRIBUTION/'.format(tag)), exist_ok=True)
-    figure.savefig(os.path.join(figure_folder, '{}/DISTRIBUTION/FIGURE{}.png'.format(tag, index)), format='png', bbox_inches='tight', dpi=512)
+    figure.savefig(os.path.join(figure_folder, '{}/DISTRIBUTION/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
     
     # Duration
     end = time.time()

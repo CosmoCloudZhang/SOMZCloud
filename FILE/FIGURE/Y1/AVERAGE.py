@@ -123,7 +123,7 @@ def main(tag, index, folder):
     os.makedirs(os.path.join(figure_folder, '{}/AVERAGE/'.format(tag)), exist_ok=True)
     
     figure.subplots_adjust(wspace=0.0, hspace=0.0)
-    figure.savefig(os.path.join(figure_folder, '{}/AVERAGE/FIGURE{}.png'.format(tag, index)), bbox_inches='tight', format='png', dpi=512)
+    figure.savefig(os.path.join(figure_folder, '{}/AVERAGE/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
     
     # Return
     end = time.time()
