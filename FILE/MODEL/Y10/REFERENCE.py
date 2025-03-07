@@ -82,7 +82,7 @@ def main(tag, index, folder):
     
     # Reference
     slope = 4.0
-    intercept = 18.0
+    intercept = 18.6
     reference_source = (z1_source <= z_phot) & (z_phot < z2_source)
     reference_lens = (z1_lens <= z_phot) & (z_phot < z2_lens) & (combination_magnitude < slope * z_phot + intercept)
     
