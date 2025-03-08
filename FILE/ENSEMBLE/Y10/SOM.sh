@@ -6,9 +6,9 @@
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
+#SBATCH -J ENSEMBLE_Y10_SOM
 #SBATCH --cpus-per-task=256
 #SBATCH --ntasks-per-node=1
-#SBATCH -J ENSEMBLE_Y1_PRODUCT_LENS
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -29,10 +29,10 @@ export OMP_PROC_BIND=spread
 export OMP_PLACES=threads
 
 # Initialize the process
-TAG="Y1"
+TAG="Y10"
 NUMBER=500
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 
 # Run applications
-srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}FILE/ENSEMBLE/${TAG}/PRODUCT_LENS.py" --tag=$TAG --number=$NUMBER --folder=$BASE_FOLDER 
+srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}FILE/ENSEMBLE/${TAG}/SOM.py" --tag=$TAG --number=$NUMBER --folder=$BASE_FOLDER 
