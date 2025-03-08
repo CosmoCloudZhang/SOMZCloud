@@ -70,18 +70,18 @@ def main(tag, index, folder):
     figure, plot = pyplot.subplots(nrows=bin_size, ncols=2, figsize=(12, 3 * bin_size))
     
     for m in range(bin_size):
-        plot[m, 0].plot(z_grid, som_lens[m, :], color='darkblue', linewidth=1.5, linestyle='-', label=r'$\mathrm{SOM}$')
+        plot[m, 0].plot(z_grid, som_lens[m, :], color='darkblue', linewidth=1.5, linestyle='-')
         
-        plot[m, 0].plot(z_grid, model_lens[m, :], color='darkgreen', linewidth=1.5, linestyle='-', label=r'$\mathrm{Model}$')
+        plot[m, 0].plot(z_grid, model_lens[m, :], color='darkgreen', linewidth=1.5, linestyle='-')
         
-        plot[m, 0].plot(z_grid, product_lens[m, :], color='darkorange', linewidth=1.5, linestyle='-', label=r'$\mathrm{Product}$')
+        plot[m, 0].plot(z_grid, product_lens[m, :], color='darkorange', linewidth=1.5, linestyle='-')
         
-        plot[m, 0].plot(z_grid, histogram_lens[m, :], color='black', linewidth=1.5, linestyle='-', label=r'$\mathrm{Histogram}$')
+        plot[m, 0].plot(z_grid, histogram_lens[m, :], color='black', linewidth=1.5, linestyle='-')
         
         plot[m, 0].set_ylim(0, 8)
         plot[m, 0].set_xlim(0.0, 2.0)
         
-        plot[m, 0].set_ylabel(r'$\mathcal{P} \left( z \right)$')
+        plot[m, 0].set_ylabel(r'$\phi \left( z \right)$')
         plot[m, 0].text(x=1.5, y=6.0, s=r'$\mathrm{Bin} \, ' + r'{}$'.format(m + 1), fontsize=20)
         
         if m == 0:
@@ -95,13 +95,13 @@ def main(tag, index, folder):
             plot[m, 0].set_xticks([0.0, 0.5, 1.0, 1.5, 2.0])
     
     for m in range(bin_size):
-        plot[m, 1].plot(z_grid, som_source[m, :], color='darkblue', linewidth=1.5, linestyle='-', label=r'$\mathrm{SOM}$')
+        plot[m, 1].plot(z_grid, som_source[m, :], color='darkblue', linewidth=1.5, linestyle='-')
         
-        plot[m, 1].plot(z_grid, model_source[m, :], color='darkgreen', linewidth=1.5, linestyle='-', label=r'$\mathrm{Model}$')
+        plot[m, 1].plot(z_grid, model_source[m, :], color='darkgreen', linewidth=1.5, linestyle='-')
         
-        plot[m, 1].plot(z_grid, product_source[m, :], color='darkorange', linewidth=1.5, linestyle='-', label=r'$\mathrm{Product}$')
+        plot[m, 1].plot(z_grid, product_source[m, :], color='darkorange', linewidth=1.5, linestyle='-')
         
-        plot[m, 1].plot(z_grid, histogram_source[m, :], color='black', linewidth=1.5, linestyle='-', label=r'$\mathrm{Histogram}$')
+        plot[m, 1].plot(z_grid, histogram_source[m, :], color='black', linewidth=1.5, linestyle='-')
         
         plot[m, 1].set_ylim(0, 8)
         plot[m, 1].set_xlim(0.0, 2.0)
@@ -111,7 +111,6 @@ def main(tag, index, folder):
         
         if m == 0:
             plot[m, 1].set_title(r'$\mathrm{Source}$')
-            plot[m, 1].legend(loc='lower right', fontsize=15)
         
         if m < bin_size - 1:
             plot[m, 1].set_xticklabels([])
