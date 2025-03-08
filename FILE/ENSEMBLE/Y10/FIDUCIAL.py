@@ -44,8 +44,8 @@ def main(tag, number, folder):
         product_ensemble_lens = file['lens']['ensemble'][...]
         product_ensemble_source = file['source']['ensemble'][...]
         
-        product_average_lens = file['lens']['average']['average'][...]
-        product_average_source = file['source']['average']['average'][...]
+        product_average_lens = file['lens']['average'][...]
+        product_average_source = file['source']['average'][...]
     
     # Response
     epsilon = 1e-6
