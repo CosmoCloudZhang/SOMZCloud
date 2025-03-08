@@ -143,6 +143,7 @@ def main(tag, index, folder):
             
             # Filter
             filter_data = (application_cluster_count_data > 0) & (combination_cluster_count_data > 0)
+            cluster_mean_delta_data = application_cluster_z_phot_data - combination_cluster_z_spec_data
             
             # Application Mask
             application_cluster_mask = filter_data[application_cluster_id_data]
@@ -161,7 +162,6 @@ def main(tag, index, folder):
             data_lens[m, n, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
             
             # Metrics
-            cluster_mean_delta_data = application_cluster_z_phot_data - combination_cluster_z_spec_data
             sigma_data_lens[m, n] = scipy.stats.median_abs_deviation(cluster_mean_delta_data[filter_data], scale='normal')
             
             fraction_data_lens[m, n] = numpy.sum(application_cluster_mask) / select_size  

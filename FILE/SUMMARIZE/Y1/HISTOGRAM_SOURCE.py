@@ -146,6 +146,7 @@ def main(tag, index, folder):
             
             # Filter
             filter_data = (application_cluster_count_data > 0) & (combination_cluster_count_data > 0)
+            cluster_mean_delta_data = application_cluster_z_phot_data - combination_cluster_z_spec_data
             
             # Application Mask
             application_cluster_mask = filter_data[application_cluster_id_data]

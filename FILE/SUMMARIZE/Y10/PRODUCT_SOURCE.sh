@@ -8,7 +8,7 @@
 #SBATCH -o LOG/%x_%j.out
 #SBATCH --cpus-per-task=16
 #SBATCH --ntasks-per-node=16
-#SBATCH -J SUMMARIZE_Y1_PRODUCT_SOURCE
+#SBATCH -J SUMMARIZE_Y10_PRODUCT_SOURCE
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules

@@ -8,7 +8,7 @@
 #SBATCH -o LOG/%x_%j.out
 #SBATCH --cpus-per-task=16
 #SBATCH --ntasks-per-node=16
-#SBATCH -J SUMMARIZE_Y1_SOM_LENS
+#SBATCH -J SUMMARIZE_Y10_SOM_LENS
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
