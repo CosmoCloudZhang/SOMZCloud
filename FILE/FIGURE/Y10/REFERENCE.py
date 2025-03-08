@@ -30,7 +30,6 @@ def main(tag, index, folder):
     # Redshift
     z1 = 0.0
     z2 = 3.0
-    
     bin_size = 100
     z_bin = numpy.linspace(z1, z2, bin_size + 1)
     
@@ -60,15 +59,20 @@ def main(tag, index, folder):
     delta_lens = numpy.abs(z_phot_lens - z_true_lens) / (1 + z_true_lens)
     delta_source = numpy.abs(z_phot_source - z_true_source) / (1 + z_true_source)
     
-    delta_mean_lens = numpy.zeros(bin_size)
-    delta_mean_source = numpy.zeros(bin_size)
+    # Mean
+    width = 0.2
+    mean_size = int((z2 - z1) / width) + 1
+    z_mean = numpy.linspace(z1 - width / 2, z2 + width / 2, mean_size + 1)
     
-    for m in range(bin_size):
-        reference_lens = (z_bin[m] <= z_phot_lens) & (z_phot_lens < z_bin[m + 1])
+    delta_mean_lens = numpy.zeros(mean_size)
+    delta_mean_source = numpy.zeros(mean_size)
+    
+    for m in range(mean_size):
+        reference_lens = (z_mean[m] <= z_true_lens) & (z_true_lens < z_mean[m + 1])
         if numpy.sum(reference_lens) > 0:
             delta_mean_lens[m] = numpy.mean(delta_lens[reference_lens])
         
-        reference_source = (z_bin[m] <= z_phot_source) & (z_phot_source < z_bin[m + 1])
+        reference_source = (z_mean[m] <= z_true_source) & (z_true_source < z_mean[m + 1])
         if numpy.sum(reference_source) > 0:
             delta_mean_source[m] = numpy.mean(delta_source[reference_source])
     
@@ -86,7 +90,7 @@ def main(tag, index, folder):
     # Plot 1
     plot1 = figure.add_subplot(plot[0, 0])
     
-    image = plot1.hist2d(x=z_phot_lens, y=z_true_lens, bins=[z_bin, z_bin], norm=normalize, cmap='plasma')[-1]
+    image = plot1.hist2d(x=z_true_lens, y=z_phot_lens, bins=[z_bin, z_bin], norm=normalize, cmap='plasma')[-1]
     
     plot1.plot(z_bin, z_bin - 0.15 * (1 + z_bin), color='black', linestyle='-.', linewidth=2.5)
     
@@ -98,13 +102,13 @@ def main(tag, index, folder):
     plot1.set_ylim(z1, z2)
     
     plot1.set_xticklabels([])
-    plot1.set_ylabel(r'$z_\mathrm{true}$')
+    plot1.set_ylabel(r'$z_\mathrm{phot}$')
     plot1.get_yticklabels()[0].set_visible(False)
     
     # Plot 2
     plot2 = figure.add_subplot(plot[0, 1])
     
-    image = plot2.hist2d(x=z_phot_source, y=z_true_source, bins=[z_bin, z_bin], norm=normalize, cmap='plasma')[-1]
+    image = plot2.hist2d(x=z_true_source, y=z_phot_source, bins=[z_bin, z_bin], norm=normalize, cmap='plasma')[-1]
     
     plot2.plot(z_bin, z_bin - 0.15 * (1 + z_bin), color='black', linestyle='-.', linewidth=2.5)
     
@@ -121,31 +125,31 @@ def main(tag, index, folder):
     # Plot 3
     plot3 = figure.add_subplot(plot[1, 0])
     
-    image = plot3.hist2d(x=z_phot_lens, y=delta_lens, bins=[z_bin, delta_bin], norm=normalize, cmap='plasma')[-1]
-    
-    plot3.plot((z_bin[1:] + z_bin[:-1]) / 2, delta_mean_lens, color='black', linestyle='--', linewidth=2.5)
+    image = plot3.hist2d(x=z_true_lens, y=delta_lens, bins=[z_bin, delta_bin], norm=normalize, cmap='plasma')[-1]
     
     plot3.plot(z_bin, 0.03 * numpy.ones(bin_size + 1), color='black', linestyle=':', linewidth=2.5)
+    
+    plot3.plot((z_mean[1:] + z_mean[:-1]) / 2, delta_mean_lens, color='black', linestyle='--', linewidth=2.5)
     
     plot3.set_xlim(z1, z2)
     plot3.set_ylim(delta1, delta2)
     
     plot3.set_yscale('log')
     plot3.set_ylabel(r'$\delta_z$')
-    plot3.set_xlabel(r'$z_\mathrm{phot}$')
+    plot3.set_xlabel(r'$z_\mathrm{true}$')
     
     # Plot 4
     plot4 = figure.add_subplot(plot[1, 1])
     
-    image = plot4.hist2d(x=z_phot_source, y=delta_source, bins=[z_bin, delta_bin], norm=normalize, cmap='plasma')[-1]
-    
-    plot4.plot((z_bin[1:] + z_bin[:-1]) / 2, delta_mean_source, color='black', linestyle='--', linewidth=2.5)
+    image = plot4.hist2d(x=z_true_source, y=delta_source, bins=[z_bin, delta_bin], norm=normalize, cmap='plasma')[-1]
     
     plot4.plot(z_bin, 0.05 * numpy.ones(bin_size + 1), color='black', linestyle=':', linewidth=2.5)
     
+    plot4.plot((z_mean[1:] + z_mean[:-1]) / 2, delta_mean_source, color='black', linestyle='--', linewidth=2.5)
+    
     plot4.set_xlim(z1, z2)
     plot4.set_ylim(delta1, delta2)
-    plot4.set_xlabel(r'$z_\mathrm{phot}$')
+    plot4.set_xlabel(r'$z_\mathrm{true}$')
     
     plot4.set_yscale('log')
     plot4.set_yticklabels([])

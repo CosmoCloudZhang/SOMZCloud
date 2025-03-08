@@ -144,10 +144,10 @@ def main(tag, index, folder):
             plot[m, 2].set_xticks([0.5, 1.0, 1.5, 2.0, 2.5])
     
     os.makedirs(figure_folder, exist_ok=True)
-    os.makedirs(os.path.join(figure_folder, '{}/AVERAGE/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(figure_folder, '{}/CONDITION/'.format(tag)), exist_ok=True)
     
     figure.subplots_adjust(wspace=0.0, hspace=0.0)
-    figure.savefig(os.path.join(figure_folder, '{}/AVERAGE/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(figure_folder, '{}/CONDITION/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
     
     # Return
     end = time.time()
