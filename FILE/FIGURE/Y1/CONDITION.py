@@ -2,6 +2,7 @@ import os
 import time
 import h5py
 import numpy
+import scipy
 import argparse
 from matplotlib import pyplot
 
@@ -58,6 +59,9 @@ def main(tag, index, folder):
     grid_size = 300
     z_grid = numpy.linspace(z1, z2, grid_size + 1)
     
+    center_lens = scipy.integrate.trapezoid(x=z_grid, y=z_grid[numpy.newaxis, :] * histogram_lens, axis=1)
+    center_source = scipy.integrate.trapezoid(x=z_grid, y=z_grid[numpy.newaxis, :] * histogram_source, axis=1)
+    
     # Configuration
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
     pyplot.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
@@ -79,20 +83,14 @@ def main(tag, index, folder):
         plot[m, 0].plot(z_grid, histogram_lens[m, :], color='black', linewidth=1.5, linestyle='-')
         
         plot[m, 0].set_ylim(0, 8)
-        plot[m, 0].set_xlim(0.0, 2.0)
+        plot[m, 0].set_xlim(numpy.maximum(z1, center_lens[m] - 0.5), numpy.minimum(numpy.maximum(z1, center_lens[m] - 0.5) + 1.0, z2))
         
+        plot[m, 0].set_xlabel(r'$z$')
         plot[m, 0].set_ylabel(r'$\phi \left( z \right)$')
-        plot[m, 0].text(x=1.5, y=6.0, s=r'$\mathrm{Bin} \, ' + r'{}$'.format(m + 1), fontsize=20)
+        plot[m, 0].text(x=numpy.minimum(numpy.maximum(z1, center_lens[m] - 0.5) + 1.0, z2) - 0.2, y=6.0, s=r'$\mathrm{Bin} \, ' + r'{}$'.format(m + 1), fontsize=20)
         
         if m == 0:
             plot[m, 0].set_title(r'$\mathrm{Lens}$')
-        
-        if m < bin_size - 1:
-            plot[m, 0].set_xticklabels([])
-            plot[m, 0].set_yticks([2.0, 4.0, 6.0, 8.0])
-        else:
-            plot[m, 0].set_xlabel(r'$z$')
-            plot[m, 0].set_xticks([0.0, 0.5, 1.0, 1.5, 2.0])
     
     for m in range(bin_size):
         plot[m, 1].plot(z_grid, som_source[m, :], color='darkblue', linewidth=1.5, linestyle='-')
@@ -104,24 +102,19 @@ def main(tag, index, folder):
         plot[m, 1].plot(z_grid, histogram_source[m, :], color='black', linewidth=1.5, linestyle='-')
         
         plot[m, 1].set_ylim(0, 8)
-        plot[m, 1].set_xlim(0.0, 2.0)
+        plot[m, 1].set_xlim(numpy.maximum(z1, center_source[m] - 0.5), numpy.minimum(numpy.maximum(z1, center_source[m] - 0.5) + 1.0, z2))
         
-        plot[m, 1].set_yticklabels([])
-        plot[m, 1].text(x=1.5, y=6.0, s=r'$\mathrm{Bin} \, ' + r'{}$'.format(m + 1), fontsize=20)
+        plot[m, 1].set_xlabel(r'$z$')
+        plot[m, 1].set_ylabel(r'$\phi \left( z \right)$')
+        plot[m, 1].text(numpy.minimum(numpy.maximum(z1, center_source[m] - 0.5) + 1.0, z2) - 0.2, y=6.0, s=r'$\mathrm{Bin} \, ' + r'{}$'.format(m + 1), fontsize=20)
         
         if m == 0:
             plot[m, 1].set_title(r'$\mathrm{Source}$')
-        
-        if m < bin_size - 1:
-            plot[m, 1].set_xticklabels([])
-        else:
-            plot[m, 1].set_xlabel(r'$z$')
-            plot[m, 1].set_xticks([0.5, 1.0, 1.5, 2.0])
     
     os.makedirs(figure_folder, exist_ok=True)
     os.makedirs(os.path.join(figure_folder, '{}/CONDITION/'.format(tag)), exist_ok=True)
     
-    figure.subplots_adjust(wspace=0.0, hspace=0.0)
+    figure.subplots_adjust(wspace=0.2, hspace=0.2)
     figure.savefig(os.path.join(figure_folder, '{}/CONDITION/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
     
     # Return
@@ -134,7 +127,7 @@ def main(tag, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Figure Average')
+    PARSE = argparse.ArgumentParser(description='Figure Condition')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
     PARSE.add_argument('--index', type=int, required=True, help='The index of the configuration')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the figure')
