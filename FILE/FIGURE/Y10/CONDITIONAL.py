@@ -132,10 +132,10 @@ def main(tag, index, folder):
             plot[m, 2].set_title(r'$\mathrm{Source}$')
     
     os.makedirs(figure_folder, exist_ok=True)
-    os.makedirs(os.path.join(figure_folder, '{}/CONDITION/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(figure_folder, '{}/CONDITIONAL/'.format(tag)), exist_ok=True)
     
     figure.subplots_adjust(wspace=0.2, hspace=0.2)
-    figure.savefig(os.path.join(figure_folder, '{}/CONDITION/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(figure_folder, '{}/CONDITIONAL/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
     
     # Return
     end = time.time()
