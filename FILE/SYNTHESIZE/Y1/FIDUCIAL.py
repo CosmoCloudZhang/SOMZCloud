@@ -6,13 +6,12 @@ import scipy
 import argparse
 
 
-def main(tag, number, folder):
+def main(tag, folder):
     '''
     Histogram of the spectroscopic redshifts of the lens samples
     
     Arguments:
         tag (str): The tag of the configuration
-        number (int): The number of all the datasets
         folder (str): The base folder of all the datasets
     
     Returns:
@@ -59,8 +58,8 @@ def main(tag, number, folder):
     fiducial_data_lens = fiducial_data_lens / scipy.integrate.trapezoid(x=z_grid, y=fiducial_data_lens, axis=2)[:, :, numpy.newaxis]
     fiducial_data_source = fiducial_data_source / scipy.integrate.trapezoid(x=z_grid, y=fiducial_data_source, axis=2)[:, :, numpy.newaxis]
     
-    fiducial_average_lens = numpy.sum(fiducial_data_lens, axis=0) / number
-    fiducial_average_source = numpy.sum(fiducial_data_source, axis=0) / number
+    fiducial_average_lens = numpy.median(fiducial_data_lens, axis=0)
+    fiducial_average_source = numpy.median(fiducial_data_source, axis=0)
     
     fiducial_average_lens = fiducial_average_lens / scipy.integrate.trapezoid(x=z_grid, y=fiducial_average_lens, axis=1)[:, numpy.newaxis]
     fiducial_average_source = fiducial_average_source / scipy.integrate.trapezoid(x=z_grid, y=fiducial_average_source, axis=1)[:, numpy.newaxis]
@@ -86,13 +85,11 @@ if __name__ == '__main__':
     # Input
     PARSE = argparse.ArgumentParser(description='Synthesize Fiducial')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
-    PARSE.add_argument('--number', type=int, required=True, help='The number of all the datasets')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of all the datasets')
     
     # Parse
     TAG = PARSE.parse_args().tag
-    NUMBER = PARSE.parse_args().number
     FOLDER = PARSE.parse_args().folder
     
     # Output
-    OUTPUT = main(TAG, NUMBER, FOLDER)
+    OUTPUT = main(TAG, FOLDER)

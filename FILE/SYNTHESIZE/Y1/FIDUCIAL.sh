@@ -30,9 +30,8 @@ export OMP_PLACES=threads
 
 # Initialize the process
 TAG="Y1"
-NUMBER=500
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 
 # Run applications
-srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}FILE/SYNTHESIZE/${TAG}/FIDUCIAL.py" --tag=$TAG --number=$NUMBER --folder=$BASE_FOLDER 
+srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}FILE/SYNTHESIZE/${TAG}/FIDUCIAL.py" --tag=$TAG --folder=$BASE_FOLDER 

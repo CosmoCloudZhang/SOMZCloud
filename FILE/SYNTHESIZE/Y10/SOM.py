@@ -79,10 +79,7 @@ def main(tag, number, folder):
             metric_lens[n, :, :] = file['metric'][...]
             fraction_lens[n, :, :] = file['fraction'][...]
     
-    factor_sigma_lens = scipy.stats.mstats.gmean(sigma_lens, axis=1)
-    factor_metric_lens = scipy.stats.mstats.gmean(metric_lens, axis=1)
-    factor_fraction_lens = scipy.stats.mstats.gmean(fraction_lens, axis=1)
-    weight_lens = numpy.square(factor_fraction_lens / factor_sigma_lens / factor_metric_lens)
+    weight_lens = numpy.sum(numpy.square(fraction_lens / sigma_lens / metric_lens), axis=1)
     
     # Weight Source
     sigma_source = numpy.zeros((number, bin_source_size, sample_size))
@@ -99,10 +96,7 @@ def main(tag, number, folder):
             metric_source[n, :, :] = file['metric'][...]
             fraction_source[n, :, :] = file['fraction'][...]
     
-    factor_sigma_source = scipy.stats.mstats.gmean(sigma_source, axis=1)
-    factor_metric_source = scipy.stats.mstats.gmean(metric_source, axis=1)
-    factor_fraction_source = scipy.stats.mstats.gmean(fraction_source, axis=1)
-    weight_source = numpy.square(factor_fraction_source / factor_sigma_source / factor_metric_source)
+    weight_source = numpy.sum(numpy.square(fraction_source / sigma_source / metric_source), axis=1)
     
     # Weight
     weight = weight_lens * weight_source
@@ -111,14 +105,14 @@ def main(tag, number, folder):
     with multiprocessing.Pool(processes=size) as pool:
         data_lens = numpy.stack(pool.starmap(synthesize, [(summarize_lens, weight, z_grid, number, sample_size) for _ in range(synthesize_size)]), axis=0)
     
-    average_lens = numpy.average(data_lens, axis=0)
+    average_lens = numpy.median(data_lens, axis=0)
     average_lens = average_lens / scipy.integrate.trapezoid(x=z_grid, y=average_lens, axis=1)[:, numpy.newaxis]
     
     # Synthesize Source
     with multiprocessing.Pool(processes=size) as pool:
         data_source = numpy.stack(pool.starmap(synthesize, [(summarize_source, weight, z_grid, number, sample_size) for _ in range(synthesize_size)]), axis=0)
     
-    average_source = numpy.average(data_source, axis=0)
+    average_source = numpy.median(data_source, axis=0)
     average_source = average_source / scipy.integrate.trapezoid(x=z_grid, y=average_source, axis=1)[:, numpy.newaxis]
     
     with h5py.File(os.path.join(synthesize_folder, '{}/SOM.hdf5'.format(tag)), 'w') as file:
