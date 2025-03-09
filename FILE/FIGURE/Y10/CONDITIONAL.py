@@ -88,7 +88,7 @@ def main(tag, index, folder):
         
         plot[m, 0].set_xlabel(r'$z$')
         plot[m, 0].set_ylabel(r'$\phi \left( z \right)$')
-        plot[m, 0].text(x=numpy.minimum(numpy.maximum(z1, center_lens[m] - 0.5) + 1.0, z2) - 0.2, y=10.0, s=r'$\mathrm{Bin} \, ' + r'{}$'.format(m + 1), fontsize=20)
+        plot[m, 0].text(x=numpy.minimum(numpy.maximum(z1, center_lens[m] - 0.5) + 1.0, z2) - 0.2, y=9.0, s=r'$\mathrm{Bin} \, ' + r'{}$'.format(m + 1), fontsize=20)
         
         if m == 0:
             plot[m, 0].set_title(r'$\mathrm{Lens}$')
@@ -107,7 +107,7 @@ def main(tag, index, folder):
         
         plot[m, 1].set_xlabel(r'$z$')
         plot[m, 1].set_ylabel(r'$\phi \left( z \right)$')
-        plot[m, 1].text(x=numpy.minimum(numpy.maximum(z1, center_lens[m + bin_size] - 0.5) + 1.0, z2) - 0.2, y=10.0, s=r'$\mathrm{Bin} \, ' + r'{}$'.format(m + bin_size + 1), fontsize=20)
+        plot[m, 1].text(x=numpy.minimum(numpy.maximum(z1, center_lens[m + bin_size] - 0.5) + 1.0, z2) - 0.2, y=9.0, s=r'$\mathrm{Bin} \, ' + r'{}$'.format(m + bin_size + 1), fontsize=20)
         
         if m == 0:
             plot[m, 1].set_title(r'$\mathrm{Lens}$')
@@ -126,7 +126,7 @@ def main(tag, index, folder):
         
         plot[m, 2].set_xlabel(r'$z$')
         plot[m, 2].set_ylabel(r'$\phi \left( z \right)$')
-        plot[m, 2].text(x=numpy.minimum(numpy.maximum(z1, center_source[m] - 0.5) + 1.0, z2) - 0.2, y=4.0, s=r'$\mathrm{Bin} \, ' + r'{}$'.format(m + 1), fontsize=20)
+        plot[m, 2].text(x=numpy.minimum(numpy.maximum(z1, center_source[m] - 0.5) + 1.0, z2) - 0.2, y=4.5, s=r'$\mathrm{Bin} \, ' + r'{}$'.format(m + 1), fontsize=20)
         
         if m == 0:
             plot[m, 2].set_title(r'$\mathrm{Source}$')
