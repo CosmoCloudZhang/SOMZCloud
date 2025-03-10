@@ -27,7 +27,7 @@ def main(tag, folder):
     os.makedirs(synthesize_folder, exist_ok=True)
     os.makedirs(os.path.join(synthesize_folder, '{}/'.format(tag)), exist_ok=True)
     
-    label_list = ['ZERO', 'HALF', 'UNITY']
+    label_list = ['ZERO', 'HALF', 'UNITY', 'DOUBLE']
     for label in label_list:
         # Product
         with h5py.File(os.path.join(synthesize_folder, '{}/PRODUCT_{}.hdf5'.format(tag, label)), 'r') as file:

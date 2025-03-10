@@ -105,22 +105,23 @@ def main(tag, number, folder):
     factor_source = factor_fraction_source / factor_sigma_source / factor_metric_source
     
     # Weight
-    factor_list = [0.0, 0.5, 1.0]
-    label_list = ['ZERO', 'HALF', 'UNITY']
+    factor_list = [0.0, 0.5, 1.0, 2.0]
+    label_list = ['ZERO', 'HALF', 'UNITY', 'DOUBLE']
     for factor, label in zip(factor_list, label_list):
         print('Factor: {:.1f}, Label: {}'.format(factor, label))
-        weight = numpy.power(factor_lens * factor_source, factor)
+        weight_lens = numpy.power(factor_lens, factor)
+        weight_source = numpy.power(factor_source, factor)
         
         # Synthesize Lens
         with multiprocessing.Pool(processes=size) as pool:
-            data_lens = numpy.stack(pool.starmap(synthesize, [(summarize_lens, weight, z_grid, number, sample_size) for _ in range(synthesize_size)]), axis=0)
+            data_lens = numpy.stack(pool.starmap(synthesize, [(summarize_lens, weight_lens, z_grid, number, sample_size) for _ in range(synthesize_size)]), axis=0)
         
         average_lens = numpy.median(data_lens, axis=0)
         average_lens = average_lens / scipy.integrate.trapezoid(x=z_grid, y=average_lens, axis=1)[:, numpy.newaxis]
         
         # Synthesize Source
         with multiprocessing.Pool(processes=size) as pool:
-            data_source = numpy.stack(pool.starmap(synthesize, [(summarize_source, weight, z_grid, number, sample_size) for _ in range(synthesize_size)]), axis=0)
+            data_source = numpy.stack(pool.starmap(synthesize, [(summarize_source, weight_source, z_grid, number, sample_size) for _ in range(synthesize_size)]), axis=0)
         
         average_source = numpy.median(data_source, axis=0)
         average_source = average_source / scipy.integrate.trapezoid(x=z_grid, y=average_source, axis=1)[:, numpy.newaxis]
