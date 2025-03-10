@@ -26,7 +26,7 @@ def main(tag, folder):
     synthesize_folder = os.path.join(folder, 'SYNTHESIZE/')
     
     # Label
-    label_list = ['ZERO', 'HALF', 'UNITY', 'DOUBLE']
+    label_list = ['ZERO', 'HALF', 'UNITY']
     for label in label_list:
         # Summarize
         with h5py.File(os.path.join(synthesize_folder, '{}/SOM_{}.hdf5'.format(tag, label)), 'r') as file:

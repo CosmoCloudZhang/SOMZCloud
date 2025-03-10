@@ -24,7 +24,7 @@ def main(tag, folder):
     analyze_folder = os.path.join(folder, 'ANALYZE/')
     synthesize_folder = os.path.join(folder, 'SYNTHESIZE/')
     
-    label_list = ['ZERO', 'HALF', 'UNITY', 'DOUBLE']
+    label_list = ['ZERO', 'HALF', 'UNITY']
     for label in label_list:
         # Summarize
         with h5py.File(os.path.join(synthesize_folder, '{}/SOM_{}.hdf5'.format(tag, label)), 'r') as file:
@@ -123,8 +123,8 @@ def main(tag, folder):
         # Plot
         size = 100
         bin_size = 5
-        lens_range = 0.02 * (1 + histogram_center_lens)
-        source_range = 0.04 * (1 + histogram_center_source)
+        lens_range = 0.025 * (1 + histogram_center_lens)
+        source_range = 0.050 * (1 + histogram_center_source)
         figure, plot = pyplot.subplots(nrows=bin_size, ncols=3, figsize=(18, 3 * bin_size))
         
         for m in range(bin_size):
@@ -139,15 +139,15 @@ def main(tag, folder):
             
             plot[m, 0].hist(histogram_expectation_lens[:, m], bins=size, range=(histogram_center_lens[m] - lens_range[m], histogram_center_lens[m] + lens_range[m]), color='black', density=True, histtype='step', linewidth=2.0, linestyle='-')
             
-            plot[m, 0].text(x=histogram_center_lens[m] - lens_range[m] * 0.9, y=250, s=r'$\delta^\mathrm{SOM}_{\bar{\langle z \rangle}} = ' + r'{:.3f}$'.format(som_delta_lens[m]), fontsize=15, color='darkblue')
+            plot[m, 0].text(x=histogram_center_lens[m] - lens_range[m] * 0.75, y=250, s=r'$\delta^\mathrm{SOM}_{\bar{\langle z \rangle}} = ' + r'{:.3f}$'.format(som_delta_lens[m]), fontsize=15, color='darkblue')
             
-            plot[m, 0].text(x=histogram_center_lens[m] - lens_range[m] * 0.9, y=100, s=r'$\delta^\mathrm{Model}_{\bar{\langle z \rangle}} = ' + r'{:.3f}$'.format(model_delta_lens[m]), fontsize=15, color='darkgreen')
+            plot[m, 0].text(x=histogram_center_lens[m] - lens_range[m] * 0.75, y=100, s=r'$\delta^\mathrm{Model}_{\bar{\langle z \rangle}} = ' + r'{:.3f}$'.format(model_delta_lens[m]), fontsize=15, color='darkgreen')
             
-            plot[m, 0].text(x=histogram_center_lens[m] + lens_range[m] * 0.1, y=250, s=r'$\delta^\mathrm{Product}_{\bar{\langle z \rangle}} = ' + r'{:.3f}$'.format(product_delta_lens[m]), fontsize=15, color='darkorange')
+            plot[m, 0].text(x=histogram_center_lens[m] + lens_range[m] * 0.25, y=250, s=r'$\delta^\mathrm{Product}_{\bar{\langle z \rangle}} = ' + r'{:.3f}$'.format(product_delta_lens[m]), fontsize=15, color='darkorange')
             
-            plot[m, 0].text(x=histogram_center_lens[m] + lens_range[m] * 0.1, y=100, s=r'$\delta^\mathrm{Fiducial}_{\bar{\langle z \rangle}} = ' + r'{:.3f}$'.format(fiducial_delta_lens[m]), fontsize=15, color='darkred')
+            plot[m, 0].text(x=histogram_center_lens[m] + lens_range[m] * 0.25, y=100, s=r'$\delta^\mathrm{Fiducial}_{\bar{\langle z \rangle}} = ' + r'{:.3f}$'.format(fiducial_delta_lens[m]), fontsize=15, color='darkred')
             
-            plot[m, 0].set_ylim(10, 500)
+            plot[m, 0].set_ylim(10, 800)
             plot[m, 0].set_xlim(histogram_center_lens[m] - lens_range[m], histogram_center_lens[m] + lens_range[m])
             
             plot[m, 0].set_yscale('log')
@@ -158,32 +158,32 @@ def main(tag, folder):
         
         for m in range(bin_size):
             
-            plot[m, 0].hist(som_expectation_lens[:, m + bin_size], bins=size, range=(histogram_center_lens[m + bin_size] - lens_range[m], histogram_center_lens[m + bin_size] + lens_range[m]), color='darkblue', density=True, histtype='step', linewidth=2.0, linestyle='-')
+            plot[m, 1].hist(som_expectation_lens[:, m + bin_size], bins=size, range=(histogram_center_lens[m + bin_size] - lens_range[m], histogram_center_lens[m + bin_size] + lens_range[m]), color='darkblue', density=True, histtype='step', linewidth=2.0, linestyle='-')
             
-            plot[m, 0].hist(model_expectation_lens[:, m + bin_size], bins=size, range=(histogram_center_lens[m + bin_size] - lens_range[m], histogram_center_lens[m + bin_size] + lens_range[m]), color='darkgreen', density=True, histtype='step', linewidth=2.0, linestyle='-')
+            plot[m, 1].hist(model_expectation_lens[:, m + bin_size], bins=size, range=(histogram_center_lens[m + bin_size] - lens_range[m], histogram_center_lens[m + bin_size] + lens_range[m]), color='darkgreen', density=True, histtype='step', linewidth=2.0, linestyle='-')
             
-            plot[m, 0].hist(product_expectation_lens[:, m + bin_size], bins=size, range=(histogram_center_lens[m + bin_size] - lens_range[m], histogram_center_lens[m + bin_size] + lens_range[m]), color='darkorange', density=True, histtype='step', linewidth=2.0, linestyle='-')
+            plot[m, 1].hist(product_expectation_lens[:, m + bin_size], bins=size, range=(histogram_center_lens[m + bin_size] - lens_range[m], histogram_center_lens[m + bin_size] + lens_range[m]), color='darkorange', density=True, histtype='step', linewidth=2.0, linestyle='-')
             
-            plot[m, 0].hist(fiducial_expectation_lens[:, m + bin_size], bins=size, range=(histogram_center_lens[m + bin_size] - lens_range[m], histogram_center_lens[m + bin_size] + lens_range[m]), color='darkred', density=True, histtype='step', linewidth=2.0, linestyle='-')
+            plot[m, 1].hist(fiducial_expectation_lens[:, m + bin_size], bins=size, range=(histogram_center_lens[m + bin_size] - lens_range[m], histogram_center_lens[m + bin_size] + lens_range[m]), color='darkred', density=True, histtype='step', linewidth=2.0, linestyle='-')
             
-            plot[m, 0].hist(histogram_expectation_lens[:, m + bin_size], bins=size, range=(histogram_center_lens[m + bin_size] - lens_range[m], histogram_center_lens[m + bin_size] + lens_range[m]), color='black', density=True, histtype='step', linewidth=2.0, linestyle='-')
+            plot[m, 1].hist(histogram_expectation_lens[:, m + bin_size], bins=size, range=(histogram_center_lens[m + bin_size] - lens_range[m], histogram_center_lens[m + bin_size] + lens_range[m]), color='black', density=True, histtype='step', linewidth=2.0, linestyle='-')
             
-            plot[m, 0].text(x=histogram_center_lens[m + bin_size] - lens_range[m] * 0.9, y=250, s=r'$\delta^\mathrm{SOM}_{\bar{\langle z \rangle}} = ' + r'{:.3f}$'.format(som_delta_lens[m + bin_size]), fontsize=15, color='darkblue')
+            plot[m, 1].text(x=histogram_center_lens[m + bin_size] - lens_range[m] * 0.75, y=250, s=r'$\delta^\mathrm{SOM}_{\bar{\langle z \rangle}} = ' + r'{:.3f}$'.format(som_delta_lens[m + bin_size]), fontsize=15, color='darkblue')
             
-            plot[m, 0].text(x=histogram_center_lens[m + bin_size] - lens_range[m] * 0.9, y=100, s=r'$\delta^\mathrm{Model}_{\bar{\langle z \rangle}} = ' + r'{:.3f}$'.format(model_delta_lens[m + bin_size]), fontsize=15, color='darkgreen')
+            plot[m, 1].text(x=histogram_center_lens[m + bin_size] - lens_range[m] * 0.75, y=100, s=r'$\delta^\mathrm{Model}_{\bar{\langle z \rangle}} = ' + r'{:.3f}$'.format(model_delta_lens[m + bin_size]), fontsize=15, color='darkgreen')
             
-            plot[m, 0].text(x=histogram_center_lens[m + bin_size] + lens_range[m] * 0.1, y=250, s=r'$\delta^\mathrm{Product}_{\bar{\langle z \rangle}} = ' + r'{:.3f}$'.format(product_delta_lens[m + bin_size]), fontsize=15, color='darkorange')
+            plot[m, 1].text(x=histogram_center_lens[m + bin_size] + lens_range[m] * 0.25, y=250, s=r'$\delta^\mathrm{Product}_{\bar{\langle z \rangle}} = ' + r'{:.3f}$'.format(product_delta_lens[m + bin_size]), fontsize=15, color='darkorange')
             
-            plot[m, 0].text(x=histogram_center_lens[m + bin_size] + lens_range[m] * 0.1, y=100, s=r'$\delta^\mathrm{Fiducial}_{\bar{\langle z \rangle}} = ' + r'{:.3f}$'.format(fiducial_delta_lens[m + bin_size]), fontsize=15, color='darkred')
+            plot[m, 1].text(x=histogram_center_lens[m + bin_size] + lens_range[m] * 0.25, y=100, s=r'$\delta^\mathrm{Fiducial}_{\bar{\langle z \rangle}} = ' + r'{:.3f}$'.format(fiducial_delta_lens[m + bin_size]), fontsize=15, color='darkred')
             
-            plot[m, 0].set_ylim(10, 500)
-            plot[m, 0].set_xlim(histogram_center_lens[m + bin_size] - lens_range[m], histogram_center_lens[m + bin_size] + lens_range[m])
+            plot[m, 1].set_ylim(10, 800)
+            plot[m, 1].set_xlim(histogram_center_lens[m + bin_size] - lens_range[m], histogram_center_lens[m + bin_size] + lens_range[m])
             
-            plot[m, 0].set_yscale('log')
-            plot[m, 0].set_xlabel(r'$\langle z \rangle$')
+            plot[m, 1].set_yscale('log')
+            plot[m, 1].set_xlabel(r'$\langle z \rangle$')
             
             if m == 0:
-                plot[m, 0].set_title(r'$\mathrm{Lens}$')
+                plot[m, 1].set_title(r'$\mathrm{Lens}$')
         
         for m in range(bin_size):
             plot[m, 2].hist(som_expectation_source[:, m], bins=size, range=(histogram_center_source[m] - source_range[m], histogram_center_source[m] + source_range[m]), color='darkblue', density=True, histtype='step', linewidth=2.0, linestyle='-')
@@ -196,15 +196,15 @@ def main(tag, folder):
             
             plot[m, 2].hist(histogram_expectation_source[:, m], bins=size, range=(histogram_center_source[m] - source_range[m], histogram_center_source[m] + source_range[m]), color='black', density=True, histtype='step', linewidth=2.0, linestyle='-')
             
-            plot[m, 2].text(x=histogram_center_source[m] - source_range[m] * 0.9, y=250, s=r'$\delta^\mathrm{SOM}_{\bar{\langle z \rangle}} = ' + r'{:.3f}$'.format(som_delta_source[m]), fontsize=15, color='darkblue')
+            plot[m, 2].text(x=histogram_center_source[m] - source_range[m] * 0.75, y=250, s=r'$\delta^\mathrm{SOM}_{\bar{\langle z \rangle}} = ' + r'{:.3f}$'.format(som_delta_source[m]), fontsize=15, color='darkblue')
             
-            plot[m, 2].text(x=histogram_center_source[m] - source_range[m] * 0.9, y=100, s=r'$\delta^\mathrm{Model}_{\bar{\langle z \rangle}} = ' + r'{:.3f}$'.format(model_delta_source[m]), fontsize=15, color='darkgreen')
+            plot[m, 2].text(x=histogram_center_source[m] - source_range[m] * 0.75, y=100, s=r'$\delta^\mathrm{Model}_{\bar{\langle z \rangle}} = ' + r'{:.3f}$'.format(model_delta_source[m]), fontsize=15, color='darkgreen')
             
-            plot[m, 2].text(x=histogram_center_source[m] + source_range[m] * 0.1, y=250, s=r'$\delta^\mathrm{Product}_{\bar{\langle z \rangle}} = ' + r'{:.3f}$'.format(product_delta_source[m]), fontsize=15, color='darkorange')
+            plot[m, 2].text(x=histogram_center_source[m] + source_range[m] * 0.25, y=250, s=r'$\delta^\mathrm{Product}_{\bar{\langle z \rangle}} = ' + r'{:.3f}$'.format(product_delta_source[m]), fontsize=15, color='darkorange')
             
-            plot[m, 2].text(x=histogram_center_source[m] + source_range[m] * 0.1, y=100, s=r'$\delta^\mathrm{Fiducial}_{\bar{\langle z \rangle}} = ' + r'{:.3f}$'.format(fiducial_delta_source[m]), fontsize=15, color='darkred')
+            plot[m, 2].text(x=histogram_center_source[m] + source_range[m] * 0.25, y=100, s=r'$\delta^\mathrm{Fiducial}_{\bar{\langle z \rangle}} = ' + r'{:.3f}$'.format(fiducial_delta_source[m]), fontsize=15, color='darkred')
             
-            plot[m, 2].set_ylim(10, 500)
+            plot[m, 2].set_ylim(10, 800)
             plot[m, 2].set_xlim(histogram_center_source[m] - source_range[m], histogram_center_source[m] + source_range[m])
             
             plot[m, 2].set_yscale('log')
