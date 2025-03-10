@@ -9,7 +9,7 @@ from matplotlib import pyplot
 
 def main(tag, folder):
     '''
-    Plot the center of the lens and source redshift distributions
+    Plot the expectation of the lens and source redshift distributions
     
     Arguments:
         tag (str): The tag of the configuration
@@ -152,7 +152,6 @@ def main(tag, folder):
             
             plot[m, 0].set_yscale('log')
             plot[m, 0].set_xlabel(r'$\langle z \rangle$')
-            plot[m, 0].set_ylabel(r'$\phi \left( \langle z \rangle \right)$')
             
             if m == 0:
                 plot[m, 0].set_title(r'$\mathrm{Lens}$')
@@ -182,7 +181,6 @@ def main(tag, folder):
             
             plot[m, 0].set_yscale('log')
             plot[m, 0].set_xlabel(r'$\langle z \rangle$')
-            plot[m, 0].set_ylabel(r'$\phi \left( \langle z \rangle \right)$')
             
             if m == 0:
                 plot[m, 0].set_title(r'$\mathrm{Lens}$')
@@ -211,7 +209,6 @@ def main(tag, folder):
             
             plot[m, 2].set_yscale('log')
             plot[m, 2].set_xlabel(r'$\langle z \rangle$')
-            plot[m, 2].set_ylabel(r'$\phi \left( \langle z \rangle \right)$')
             
             if m == 0:
                 plot[m, 2].set_title(r'$\mathrm{Source}$')
