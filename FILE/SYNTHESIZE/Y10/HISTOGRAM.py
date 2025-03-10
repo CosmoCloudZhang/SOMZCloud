@@ -56,7 +56,7 @@ def main(tag, number, folder):
         bin_source_size = len(file['bin_source'][...]) - 1
     
     # Size
-    size = 32
+    size = 16
     sample_size = 100
     synthesize_size = 500000
     
@@ -64,7 +64,7 @@ def main(tag, number, folder):
     summarize_lens = numpy.zeros((number, bin_lens_size, sample_size, grid_size + 1))
     summarize_source = numpy.zeros((number, bin_source_size, sample_size, grid_size + 1))
     
-    # Weight Lens
+    # Factor Lens
     sigma_lens = numpy.zeros((number, bin_lens_size, sample_size))
     metric_lens = numpy.zeros((number, bin_lens_size, sample_size))
     fraction_lens = numpy.zeros((number, bin_lens_size, sample_size))
@@ -79,9 +79,12 @@ def main(tag, number, folder):
             metric_lens[n, :, :] = file['metric'][...]
             fraction_lens[n, :, :] = file['fraction'][...]
     
-    weight_lens = numpy.sum(numpy.square(fraction_lens / sigma_lens / metric_lens), axis=1)
+    factor_sigma_lens = numpy.sum(numpy.square(sigma_lens), axis=1)
+    factor_metric_lens = numpy.sum(numpy.square(metric_lens), axis=1)
+    factor_fraction_lens = numpy.square(numpy.sum(fraction_lens, axis=1))
+    factor_lens = factor_fraction_lens / factor_sigma_lens / factor_metric_lens
     
-    # Weight Source
+    # Factor Source
     sigma_source = numpy.zeros((number, bin_source_size, sample_size))
     metric_source = numpy.zeros((number, bin_source_size, sample_size))
     fraction_source = numpy.zeros((number, bin_source_size, sample_size))
@@ -96,33 +99,40 @@ def main(tag, number, folder):
             metric_source[n, :, :] = file['metric'][...]
             fraction_source[n, :, :] = file['fraction'][...]
     
-    weight_source = numpy.sum(numpy.square(fraction_source / sigma_source / metric_source), axis=1)
+    factor_sigma_source = numpy.sum(numpy.square(sigma_source), axis=1)
+    factor_metric_source = numpy.sum(numpy.square(metric_source), axis=1)
+    factor_fraction_source = numpy.square(numpy.sum(fraction_source, axis=1))
+    factor_source = factor_fraction_source / factor_sigma_source / factor_metric_source
     
     # Weight
-    weight = weight_lens * weight_source
-    
-    # Synthesize Lens
-    with multiprocessing.Pool(processes=size) as pool:
-        data_lens = numpy.stack(pool.starmap(synthesize, [(summarize_lens, weight, z_grid, number, sample_size) for _ in range(synthesize_size)]), axis=0)
-    
-    average_lens = numpy.median(data_lens, axis=0)
-    average_lens = average_lens / scipy.integrate.trapezoid(x=z_grid, y=average_lens, axis=1)[:, numpy.newaxis]
-    
-    # Synthesize Source
-    with multiprocessing.Pool(processes=size) as pool:
-        data_source = numpy.stack(pool.starmap(synthesize, [(summarize_source, weight, z_grid, number, sample_size) for _ in range(synthesize_size)]), axis=0)
-    
-    average_source = numpy.median(data_source, axis=0)
-    average_source = average_source / scipy.integrate.trapezoid(x=z_grid, y=average_source, axis=1)[:, numpy.newaxis]
-    
-    with h5py.File(os.path.join(synthesize_folder, '{}/HISTOGRAM.hdf5'.format(tag)), 'w') as file:
-        file.create_group('lens')
-        file['lens'].create_dataset('data', data=data_lens, dtype=numpy.float32)
-        file['lens'].create_dataset('average', data=average_lens, dtype=numpy.float32)
+    factor_list = [0.0, 0.5, 1.0]
+    label_list = ['ZERO', 'HALF', 'UNITY']
+    for factor, label in zip(factor_list, label_list):
+        print('Factor: {:.1f}, Label: {}'.format(factor, label))
+        weight = numpy.power(factor_lens * factor_source, factor)
         
-        file.create_group('source')
-        file['source'].create_dataset('data', data=data_source, dtype=numpy.float32)
-        file['source'].create_dataset('average', data=average_source, dtype=numpy.float32)
+        # Synthesize Lens
+        with multiprocessing.Pool(processes=size) as pool:
+            data_lens = numpy.stack(pool.starmap(synthesize, [(summarize_lens, weight, z_grid, number, sample_size) for _ in range(synthesize_size)]), axis=0)
+        
+        average_lens = numpy.median(data_lens, axis=0)
+        average_lens = average_lens / scipy.integrate.trapezoid(x=z_grid, y=average_lens, axis=1)[:, numpy.newaxis]
+        
+        # Synthesize Source
+        with multiprocessing.Pool(processes=size) as pool:
+            data_source = numpy.stack(pool.starmap(synthesize, [(summarize_source, weight, z_grid, number, sample_size) for _ in range(synthesize_size)]), axis=0)
+        
+        average_source = numpy.median(data_source, axis=0)
+        average_source = average_source / scipy.integrate.trapezoid(x=z_grid, y=average_source, axis=1)[:, numpy.newaxis]
+        
+        with h5py.File(os.path.join(synthesize_folder, '{}/HISTOGRAM_{}.hdf5'.format(tag, label)), 'w') as file:
+            file.create_group('lens')
+            file['lens'].create_dataset('data', data=data_lens, dtype=numpy.float32)
+            file['lens'].create_dataset('average', data=average_lens, dtype=numpy.float32)
+            
+            file.create_group('source')
+            file['source'].create_dataset('data', data=data_source, dtype=numpy.float32)
+            file['source'].create_dataset('average', data=average_source, dtype=numpy.float32)
     
     # Return
     end = time.time()

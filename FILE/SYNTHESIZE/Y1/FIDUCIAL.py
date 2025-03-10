@@ -27,51 +27,67 @@ def main(tag, folder):
     os.makedirs(synthesize_folder, exist_ok=True)
     os.makedirs(os.path.join(synthesize_folder, '{}/'.format(tag)), exist_ok=True)
     
-    # Redshift
-    z1 = 0.0
-    z2 = 3.0
-    grid_size = 300
-    z_grid = numpy.linspace(z1, z2, grid_size + 1)
-    
-    # Histogram
-    with h5py.File(os.path.join(synthesize_folder, '{}/HISTOGRAM.hdf5'.format(tag)), 'r') as file:
-        histogram_average_lens = file['lens']['average'][...]
-        histogram_average_source = file['source']['average'][...]
-    
-    # Product
-    with h5py.File(os.path.join(synthesize_folder, '{}/PRODUCT.hdf5'.format(tag)), 'r') as file:
-        product_data_lens = file['lens']['data'][...]
-        product_data_source = file['source']['data'][...]
+    label_list = ['ZERO', 'HALF', 'UNITY']
+    for label in label_list:
+        # Product
+        with h5py.File(os.path.join(synthesize_folder, '{}/PRODUCT_{}.hdf5'.format(tag, label)), 'r') as file:
+            product_data_lens = file['lens']['data'][...]
+            product_data_source = file['source']['data'][...]
+            
+            product_average_lens = file['lens']['average'][...]
+            product_average_source = file['source']['average'][...]
         
-        product_average_lens = file['lens']['average'][...]
-        product_average_source = file['source']['average'][...]
-    
-    # Response
-    epsilon = 1e-6
-    response_lens = numpy.maximum(histogram_average_lens, epsilon) / numpy.maximum(product_average_lens, epsilon)
-    response_source = numpy.maximum(histogram_average_source, epsilon) / numpy.maximum(product_average_source, epsilon)
-    
-    # Fiducial
-    fiducial_data_lens = response_lens[numpy.newaxis, :, :] * product_data_lens
-    fiducial_data_source = response_source[numpy.newaxis, :, :] * product_data_source
-    
-    fiducial_data_lens = fiducial_data_lens / scipy.integrate.trapezoid(x=z_grid, y=fiducial_data_lens, axis=2)[:, :, numpy.newaxis]
-    fiducial_data_source = fiducial_data_source / scipy.integrate.trapezoid(x=z_grid, y=fiducial_data_source, axis=2)[:, :, numpy.newaxis]
-    
-    fiducial_average_lens = numpy.median(fiducial_data_lens, axis=0)
-    fiducial_average_source = numpy.median(fiducial_data_source, axis=0)
-    
-    fiducial_average_lens = fiducial_average_lens / scipy.integrate.trapezoid(x=z_grid, y=fiducial_average_lens, axis=1)[:, numpy.newaxis]
-    fiducial_average_source = fiducial_average_source / scipy.integrate.trapezoid(x=z_grid, y=fiducial_average_source, axis=1)[:, numpy.newaxis]
-    
-    with h5py.File(os.path.join(synthesize_folder, '{}/FIDUCIAL.hdf5'.format(tag)), 'w') as file:
-        file.create_group('lens')
-        file['lens'].create_dataset('data', data=fiducial_data_lens, dtype=numpy.float32)
-        file['lens'].create_dataset('average', data=fiducial_average_lens, dtype=numpy.float32)
+        # Histogram
+        with h5py.File(os.path.join(synthesize_folder, '{}/HISTOGRAM_{}.hdf5'.format(tag, label)), 'r') as file:
+            histogram_average_lens = file['lens']['average'][...]
+            histogram_average_source = file['source']['average'][...]
         
-        file.create_group('source')
-        file['source'].create_dataset('data', data=fiducial_data_source, dtype=numpy.float32)
-        file['source'].create_dataset('average', data=fiducial_average_source, dtype=numpy.float32)
+        data_size, bin_lens_size, z_size = product_data_lens.shape
+        data_size, bin_source_size, z_size = product_data_source.shape
+        
+        # Redshift
+        z1 = 0.0
+        z2 = 3.0
+        grid_size = 300
+        z_grid = numpy.linspace(z1, z2, grid_size + 1)
+        
+        # Calibration
+        product_center_lens = scipy.integrate.trapezoid(x=z_grid, y=z_grid[numpy.newaxis, :] * product_average_lens, axis=1)
+        product_center_source = scipy.integrate.trapezoid(x=z_grid, y=z_grid[numpy.newaxis, :] * product_average_source, axis=1)
+        
+        histogram_center_lens = scipy.integrate.trapezoid(x=z_grid, y=z_grid[numpy.newaxis, :] * histogram_average_lens, axis=1)
+        histogram_center_source = scipy.integrate.trapezoid(x=z_grid, y=z_grid[numpy.newaxis, :] * histogram_average_source, axis=1)
+        
+        product_delta_lens = histogram_center_lens - product_center_lens
+        product_delta_source = histogram_center_source - product_center_source
+        
+        # Fiducial
+        fiducial_data_lens = numpy.zeros((data_size, bin_lens_size, z_size))
+        fiducial_data_source = numpy.zeros((data_size, bin_source_size, z_size))
+        
+        for m in range(bin_lens_size):
+            fiducial_data_lens[:, m, :] = scipy.interpolate.CubicSpline(x=z_grid, y=product_data_lens[:, m, :], axis=1, bc_type='natural', extrapolate=True)(z_grid - product_delta_lens[m])
+        
+        for m in range(bin_source_size):
+            fiducial_data_source[:, m, :] = scipy.interpolate.CubicSpline(x=z_grid, y=product_data_source[:, m, :], axis=1, bc_type='natural', extrapolate=True)(z_grid - product_delta_source[m])
+        
+        fiducial_data_lens = fiducial_data_lens / scipy.integrate.trapezoid(x=z_grid, y=fiducial_data_lens, axis=2)[:, :, numpy.newaxis]
+        fiducial_data_source = fiducial_data_source / scipy.integrate.trapezoid(x=z_grid, y=fiducial_data_source, axis=2)[:, :, numpy.newaxis]
+        
+        fiducial_average_lens = numpy.median(fiducial_data_lens, axis=0)
+        fiducial_average_source = numpy.median(fiducial_data_source, axis=0)
+        
+        fiducial_average_lens = fiducial_average_lens / scipy.integrate.trapezoid(x=z_grid, y=fiducial_average_lens, axis=1)[:, numpy.newaxis]
+        fiducial_average_source = fiducial_average_source / scipy.integrate.trapezoid(x=z_grid, y=fiducial_average_source, axis=1)[:, numpy.newaxis]
+        
+        with h5py.File(os.path.join(synthesize_folder, '{}/FIDUCIAL_{}.hdf5'.format(tag, label)), 'w') as file:
+            file.create_group('lens')
+            file['lens'].create_dataset('data', data=fiducial_data_lens, dtype=numpy.float32)
+            file['lens'].create_dataset('average', data=fiducial_average_lens, dtype=numpy.float32)
+            
+            file.create_group('source')
+            file['source'].create_dataset('data', data=fiducial_data_source, dtype=numpy.float32)
+            file['source'].create_dataset('average', data=fiducial_average_source, dtype=numpy.float32)
     
     # Return
     end = time.time()
