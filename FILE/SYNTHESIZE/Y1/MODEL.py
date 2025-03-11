@@ -99,16 +99,18 @@ def main(tag, number, folder):
             metric_source[n, :, :] = file['metric'][...]
             fraction_source[n, :, :] = file['fraction'][...]
     
-    factor_sigma_source = numpy.sum(numpy.square(sigma_source), axis=1)
-    factor_metric_source = numpy.sum(numpy.square(metric_source), axis=1)
-    factor_fraction_source = numpy.square(numpy.sum(fraction_source, axis=1))
+    factor_sigma_source = numpy.prod(sigma_source, axis=1)
+    factor_metric_source = numpy.prod(metric_source, axis=1)
+    factor_fraction_source = numpy.prod(fraction_source, axis=1)
     factor_source = factor_fraction_source / factor_sigma_source / factor_metric_source
     
-    # Weight
+    # Loop
     factor_list = [0.0, 0.5, 1.0, 2.0]
     label_list = ['ZERO', 'HALF', 'UNITY', 'DOUBLE']
     for factor, label in zip(factor_list, label_list):
         print('Factor: {:.1f}, Label: {}'.format(factor, label))
+        
+        # Weight
         weight_lens = numpy.power(factor_lens, factor)
         weight_source = numpy.power(factor_source, factor)
         
