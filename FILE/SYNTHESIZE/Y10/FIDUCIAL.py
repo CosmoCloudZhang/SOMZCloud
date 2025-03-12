@@ -50,7 +50,7 @@ def main(tag, folder):
         z_grid = numpy.linspace(z1, z2, grid_size + 1)
         
         # Fiducial
-        epsilon = 1e-2
+        epsilon = 1e-4
         product_response_lens = numpy.divide(histogram_average_lens + epsilon, product_average_lens + epsilon)
         product_response_source = numpy.divide(histogram_average_source + epsilon, product_average_source + epsilon)
         
