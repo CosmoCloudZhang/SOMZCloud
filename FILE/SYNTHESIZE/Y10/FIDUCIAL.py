@@ -8,7 +8,7 @@ import argparse
 
 def main(tag, folder):
     '''
-    Histogram of the spectroscopic redshifts of the lens samples
+    Fiducial photometric redshift distributions of the lens and source samples
     
     Arguments:
         tag (str): The tag of the configuration
@@ -23,8 +23,6 @@ def main(tag, folder):
     
     # Path
     synthesize_folder = os.path.join(folder, 'SYNTHESIZE/')
-    
-    os.makedirs(synthesize_folder, exist_ok=True)
     os.makedirs(os.path.join(synthesize_folder, '{}/'.format(tag)), exist_ok=True)
     
     label_list = ['ZERO', 'HALF', 'UNITY', 'DOUBLE']
@@ -51,25 +49,13 @@ def main(tag, folder):
         grid_size = 300
         z_grid = numpy.linspace(z1, z2, grid_size + 1)
         
-        # Calibration
-        product_center_lens = scipy.integrate.trapezoid(x=z_grid, y=z_grid[numpy.newaxis, :] * product_average_lens, axis=1)
-        product_center_source = scipy.integrate.trapezoid(x=z_grid, y=z_grid[numpy.newaxis, :] * product_average_source, axis=1)
-        
-        histogram_center_lens = scipy.integrate.trapezoid(x=z_grid, y=z_grid[numpy.newaxis, :] * histogram_average_lens, axis=1)
-        histogram_center_source = scipy.integrate.trapezoid(x=z_grid, y=z_grid[numpy.newaxis, :] * histogram_average_source, axis=1)
-        
-        product_delta_lens = histogram_center_lens - product_center_lens
-        product_delta_source = histogram_center_source - product_center_source
-        
         # Fiducial
-        fiducial_data_lens = numpy.zeros((data_size, bin_lens_size, z_size))
-        fiducial_data_source = numpy.zeros((data_size, bin_source_size, z_size))
+        epsilon = 1e-2
+        product_response_lens = numpy.divide(histogram_average_lens + epsilon, product_average_lens + epsilon)
+        product_response_source = numpy.divide(histogram_average_source + epsilon, product_average_source + epsilon)
         
-        for m in range(bin_lens_size):
-            fiducial_data_lens[:, m, :] = scipy.interpolate.CubicSpline(x=z_grid, y=product_data_lens[:, m, :], axis=1, bc_type='natural', extrapolate=True)(z_grid - product_delta_lens[m])
-        
-        for m in range(bin_source_size):
-            fiducial_data_source[:, m, :] = scipy.interpolate.CubicSpline(x=z_grid, y=product_data_source[:, m, :], axis=1, bc_type='natural', extrapolate=True)(z_grid - product_delta_source[m])
+        fiducial_data_lens = numpy.maximum(product_data_lens * product_response_lens[numpy.newaxis, :, :], 0.0)
+        fiducial_data_source = numpy.maximum(product_data_source * product_response_source[numpy.newaxis, :, :], 0.0)
         
         fiducial_data_lens = fiducial_data_lens / scipy.integrate.trapezoid(x=z_grid, y=fiducial_data_lens, axis=2)[:, :, numpy.newaxis]
         fiducial_data_source = fiducial_data_source / scipy.integrate.trapezoid(x=z_grid, y=fiducial_data_source, axis=2)[:, :, numpy.newaxis]

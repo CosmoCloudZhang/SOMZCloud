@@ -22,7 +22,7 @@ def synthesize(data, weight, z_grid, number, sample_size):
 
 def main(tag, number, folder):
     '''
-    Histogram of the spectroscopic redshifts of the lens samples
+    Histogram of the spectroscopic redshift distributions of the lens and source samples
     
     Arguments:
         tag (str): The tag of the configuration
@@ -40,8 +40,6 @@ def main(tag, number, folder):
     model_folder = os.path.join(folder, 'MODEL/')
     summarize_folder = os.path.join(folder, 'SUMMARIZE/')
     synthesize_folder = os.path.join(folder, 'SYNTHESIZE/')
-    
-    os.makedirs(synthesize_folder, exist_ok=True)
     os.makedirs(os.path.join(synthesize_folder, '{}/'.format(tag)), exist_ok=True)
     
     # Redshift
