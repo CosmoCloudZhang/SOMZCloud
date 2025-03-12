@@ -21,11 +21,17 @@ def main(tag, folder):
     start = time.time()
     
     # Path
+    model_folder = os.path.join(folder, 'MODEL/')
     analyze_folder = os.path.join(folder, 'ANALYZE/')
     synthesize_folder = os.path.join(folder, 'SYNTHESIZE/')
     
+    # Bin
+    with h5py.File(os.path.join(model_folder, '{}/SELECT/DATA0.hdf5'.format(tag)), 'r') as file:
+        bin_lens = file['bin_lens'][...]
+        bin_source = file['bin_source'][...]
+    
     # Label
-    label_list = ['ZERO', 'HALF', 'UNITY']
+    label_list = ['ZERO', 'HALF', 'UNITY', 'DOUBLE']
     for label in label_list:
         
         # Summarize
@@ -63,9 +69,12 @@ def main(tag, folder):
         
         # Plot
         bin_size = 5
+        range_lens = 0.6
+        range_source = 1.8
         figure, plot = pyplot.subplots(nrows=bin_size, ncols=3, figsize=(18, 3 * bin_size))
         
         for m in range(bin_size):
+            
             plot[m, 0].plot(z_grid, som_average_lens[m, :], color='darkblue', linewidth=2.0, linestyle='-')
             
             plot[m, 0].plot(z_grid, model_average_lens[m, :], color='darkgreen', linewidth=2.0, linestyle='-')
@@ -74,17 +83,23 @@ def main(tag, folder):
             
             plot[m, 0].plot(z_grid, histogram_average_lens[m, :], color='black', linewidth=2.0, linestyle='-')
             
-            plot[m, 0].set_ylim(0, 12)
-            plot[m, 0].set_xlim(numpy.maximum(z1, center_lens[m] - 0.5), numpy.minimum(numpy.maximum(z1, center_lens[m] - 0.5) + 1.0, z2))
+            plot[m, 0].fill_betweenx(y=[0, 12], x1=bin_lens[m], x2=bin_lens[m + 1], color='gray', alpha=0.5)
             
-            plot[m, 0].set_xlabel(r'$z$')
+            plot[m, 0].set_ylim(0, 12)
+            plot[m, 0].set_xlim(numpy.maximum(z1, center_lens[m] - range_lens / 2), numpy.minimum(numpy.maximum(z1, center_lens[m] - range_lens / 2) + range_lens, z2))
+            
+            plot[m, 0].set_yticks([3, 6, 9, 12])
             plot[m, 0].set_ylabel(r'$\phi \left( z \right)$')
-            plot[m, 0].text(x=numpy.minimum(numpy.maximum(z1, center_lens[m] - 0.5) + 1.0, z2) - 0.2, y=9.0, s=r'$\mathrm{Bin} \, ' + r'{}$'.format(m + 1), fontsize=20)
+            plot[m, 0].text(x=numpy.minimum(numpy.maximum(z1, center_lens[m] - range_lens / 2) + range_lens, z2) - range_lens / 5, y=9.0, s=r'$\mathrm{Bin} \, ' + r'{}$'.format(m + 1), fontsize=20)
             
             if m == 0:
                 plot[m, 0].set_title(r'$\mathrm{Lens}$')
+            
+            if m == bin_size - 1:
+                plot[m, 0].set_xlabel(r'$z$')
         
         for m in range(bin_size):
+            
             plot[m, 1].plot(z_grid, som_average_lens[m + bin_size, :], color='darkblue', linewidth=2.0, linestyle='-')
             
             plot[m, 1].plot(z_grid, model_average_lens[m + bin_size, :], color='darkgreen', linewidth=2.0, linestyle='-')
@@ -93,17 +108,22 @@ def main(tag, folder):
             
             plot[m, 1].plot(z_grid, histogram_average_lens[m + bin_size, :], color='black', linewidth=2.0, linestyle='-')
             
-            plot[m, 1].set_ylim(0, 12)
-            plot[m, 1].set_xlim(numpy.maximum(z1, center_lens[m + bin_size] - 0.5), numpy.minimum(numpy.maximum(z1, center_lens[m + bin_size] - 0.5) + 1.0, z2))
+            plot[m, 1].fill_betweenx(y=[0, 12], x1=bin_lens[m + bin_size], x2=bin_lens[m + bin_size + 1], color='gray', alpha=0.5)
             
-            plot[m, 1].set_xlabel(r'$z$')
-            plot[m, 1].set_ylabel(r'$\phi \left( z \right)$')
-            plot[m, 1].text(x=numpy.minimum(numpy.maximum(z1, center_lens[m + bin_size] - 0.5) + 1.0, z2) - 0.2, y=9.0, s=r'$\mathrm{Bin} \, ' + r'{}$'.format(m + bin_size + 1), fontsize=20)
+            plot[m, 1].set_ylim(0, 12)
+            plot[m, 1].set_xlim(numpy.maximum(z1, center_lens[m + bin_size] - range_lens / 2), numpy.minimum(numpy.maximum(z1, center_lens[m + bin_size] - range_lens / 2) + range_lens, z2))
+            
+            plot[m, 1].set_yticks([3, 6, 9, 12])
+            plot[m, 1].text(x=numpy.minimum(numpy.maximum(z1, center_lens[m + bin_size] - range_lens / 2) + range_lens, z2) - range_lens / 5, y=9.0, s=r'$\mathrm{Bin} \, ' + r'{}$'.format(m + bin_size + 1), fontsize=20)
             
             if m == 0:
                 plot[m, 1].set_title(r'$\mathrm{Lens}$')
+            
+            if m == bin_size - 1:
+                plot[m, 1].set_xlabel(r'$z$')
         
         for m in range(bin_size):
+            
             plot[m, 2].plot(z_grid, som_average_source[m, :], color='darkblue', linewidth=2.0, linestyle='-')
             
             plot[m, 2].plot(z_grid, model_average_source[m, :], color='darkgreen', linewidth=2.0, linestyle='-')
@@ -112,20 +132,24 @@ def main(tag, folder):
             
             plot[m, 2].plot(z_grid, histogram_average_source[m, :], color='black', linewidth=2.0, linestyle='-')
             
-            plot[m, 2].set_ylim(0, 6)
-            plot[m, 2].set_xlim(numpy.maximum(z1, center_source[m] - 0.5), numpy.minimum(numpy.maximum(z1, center_source[m] - 0.5) + 1.0, z2))
+            plot[m, 2].fill_betweenx(y=[0, 6], x1=bin_source[m], x2=bin_source[m + 1], color='gray', alpha=0.5)
             
-            plot[m, 2].set_xlabel(r'$z$')
-            plot[m, 2].set_ylabel(r'$\phi \left( z \right)$')
-            plot[m, 2].text(x=numpy.minimum(numpy.maximum(z1, center_source[m] - 0.5) + 1.0, z2) - 0.2, y=4.5, s=r'$\mathrm{Bin} \, ' + r'{}$'.format(m + 1), fontsize=20)
+            plot[m, 2].set_ylim(0, 6)
+            plot[m, 2].set_xlim(numpy.maximum(z1, center_source[m] - range_source / 2), numpy.minimum(numpy.maximum(z1, center_source[m] - range_source / 2) + range_source, z2))
+            
+            plot[m, 2].set_yticks([2, 4, 6])
+            plot[m, 2].text(x=numpy.minimum(numpy.maximum(z1, center_source[m] - range_source / 2) + range_source, z2) - range_source / 5, y=4.5, s=r'$\mathrm{Bin} \, ' + r'{}$'.format(m + 1), fontsize=20)
             
             if m == 0:
                 plot[m, 2].set_title(r'$\mathrm{Source}$')
+            
+            if m == bin_size - 1:
+                plot[m, 2].set_xlabel(r'$z$')
         
         os.makedirs(analyze_folder, exist_ok=True)
         os.makedirs(os.path.join(analyze_folder, '{}/MARGINAL/'.format(tag)), exist_ok=True)
         
-        figure.subplots_adjust(wspace=0.2, hspace=0.2)
+        figure.subplots_adjust(wspace=0.12, hspace=0.24)
         figure.savefig(os.path.join(analyze_folder, '{}/MARGINAL/FIGURE_{}.pdf'.format(tag, label)), format='pdf', bbox_inches='tight')
         pyplot.close(figure)
     

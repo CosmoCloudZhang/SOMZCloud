@@ -16,6 +16,9 @@ def plot_ensemble(z_grid, select_lens, select_source, bin_lens_size, bin_source_
         select_source (numpy.ndarray): The source distributions
         bin_lens_size (int): The number of lens tomographic bins
         bin_source_size (int): The number of source tomographic bins
+    
+    Returns:
+        figure (matplotlib.figure.Figure): The figure
     '''
     # Figure
     figure, plot = pyplot.subplots(nrows = 2, ncols = 1, figsize = (12, 12))
@@ -36,7 +39,7 @@ def plot_ensemble(z_grid, select_lens, select_source, bin_lens_size, bin_source_
     plot[0].legend(loc='upper right', fontsize=20)
     
     plot[0].set_ylabel(r'$\phi \left( z \right)$')
-    plot[0].text(x=1.5, y=6.0, s=r'$\mathrm{Lens}$', fontsize=20)
+    plot[0].text(x=1.8, y=2.0, s=r'$\mathrm{Lens}$', fontsize=20)
     
     for m in range(bin_source_size):
         
@@ -46,11 +49,13 @@ def plot_ensemble(z_grid, select_lens, select_source, bin_lens_size, bin_source_
     
     plot[1].set_xlim(0.0, 2.0)
     plot[1].set_ylim(0.0, 8.0)
+    
     plot[1].set_yticks([0.0, 2.0, 4.0, 6.0, 8.0])
+    plot[1].legend(loc='upper right', fontsize=20)
     
     plot[1].set_xlabel(r'$z$')
     plot[1].set_ylabel(r'$\phi \left( z \right)$')
-    plot[1].text(x=1.5, y=6.0, s=r'$\mathrm{Source}$', fontsize=20)
+    plot[1].text(x=1.8, y=2.0, s=r'$\mathrm{Source}$', fontsize=20)
     
     figure.subplots_adjust(hspace=0.0)
     return figure
@@ -58,7 +63,7 @@ def plot_ensemble(z_grid, select_lens, select_source, bin_lens_size, bin_source_
 
 def main(tag, folder):
     '''
-    Plot the shear noise as function of the galaxy sizes and brightnesses
+    Plot the ensemble of the lens and source redshift distributions
     
     Arguments:
         tag (str): The tag of the configuration
@@ -70,88 +75,92 @@ def main(tag, folder):
     start = time.time()
     
     # Path
-    label = 'UNITY'
     analyze_folder = os.path.join(folder, 'ANALYZE/')
     synthesize_folder = os.path.join(folder, 'SYNTHESIZE/')
     
-    # Summarize
-    with h5py.File(os.path.join(synthesize_folder, '{}/SOM_{}.hdf5'.format(tag, label)), 'r') as file:
-        som_data_lens = file['lens']['data'][...]
-        som_data_source = file['source']['data'][...]
-    
-    with h5py.File(os.path.join(synthesize_folder, '{}/MODEL_{}.hdf5'.format(tag, label)), 'r') as file:
-        model_data_lens = file['lens']['data'][...]
-        model_data_source = file['source']['data'][...]
-    
-    with h5py.File(os.path.join(synthesize_folder, '{}/PRODUCT_{}.hdf5'.format(tag, label)), 'r') as file:
-        product_data_lens = file['lens']['data'][...]
-        product_data_source = file['source']['data'][...]
-    
-    with h5py.File(os.path.join(synthesize_folder, '{}/FIDUCIAL_{}.hdf5'.format(tag, label)), 'r') as file:
-        fiducial_data_lens = file['lens']['data'][...]
-        fiducial_data_source = file['source']['data'][...]
-    
-    with h5py.File(os.path.join(synthesize_folder, '{}/HISTOGRAM_{}.hdf5'.format(tag, label)), 'r') as file:
-        histogram_data_lens = file['lens']['data'][...]
-        histogram_data_source = file['source']['data'][...]
-    
-    # Size
-    plot_size = 10000
-    data_size, bin_lens_size, z_size = histogram_data_lens.shape
-    data_size, bin_source_size, z_size = histogram_data_source.shape
-    indices = numpy.sort(numpy.random.choice(data_size, plot_size, replace=False))
-    
-    # Select
-    som_select_lens = som_data_lens[indices, :, :]
-    som_select_source = som_data_source[indices, :, :]
-    
-    model_select_lens = model_data_lens[indices, :, :]
-    model_select_source = model_data_source[indices, :, :]
-    
-    product_select_lens = product_data_lens[indices, :, :]
-    product_select_source = product_data_source[indices, :, :]
-    
-    fiducial_select_lens = fiducial_data_lens[indices, :, :]
-    fiducial_select_source = fiducial_data_source[indices, :, :]
-    
-    histogram_select_lens = histogram_data_lens[indices, :, :]
-    histogram_select_source = histogram_data_source[indices, :, :]
-    
-    # Redshift
-    z1 = 0.0
-    z2 = 3.0
-    z_grid = numpy.linspace(z1, z2, z_size)
-    
-    # Configuration
-    os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
-    pyplot.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
-    pyplot.rcParams['pgf.texsystem'] = 'pdflatex'
-    pyplot.rcParams['text.usetex'] = True
-    pyplot.rcParams['font.size'] = 20
-    
-    os.makedirs(analyze_folder, exist_ok=True)
-    os.makedirs(os.path.join(analyze_folder, '{}/ENSEMBLE/'.format(tag)), exist_ok=True)
-    
-    # Plot
-    figure = plot_ensemble(z_grid, som_select_lens, som_select_source, bin_lens_size, bin_source_size)
-    figure.savefig(os.path.join(analyze_folder, '{}/ENSEMBLE/FIGURE_SOM.pdf'.format(tag)), format='pdf', bbox_inches='tight')
-    pyplot.close(figure)
-    
-    figure = plot_ensemble(z_grid, model_select_lens, model_select_source, bin_lens_size, bin_source_size)
-    figure.savefig(os.path.join(analyze_folder, '{}/ENSEMBLE/FIGURE_MODEL.pdf'.format(tag)), format='pdf', bbox_inches='tight')
-    pyplot.close(figure)
-    
-    figure = plot_ensemble(z_grid, product_select_lens, product_select_source, bin_lens_size, bin_source_size)
-    figure.savefig(os.path.join(analyze_folder, '{}/ENSEMBLE/FIGURE_PRODUCT.pdf'.format(tag)), format='pdf', bbox_inches='tight')
-    pyplot.close(figure)
-    
-    figure = plot_ensemble(z_grid, fiducial_select_lens, fiducial_select_source, bin_lens_size, bin_source_size)
-    figure.savefig(os.path.join(analyze_folder, '{}/ENSEMBLE/FIGURE_FIDUCIAL.pdf'.format(tag)), format='pdf', bbox_inches='tight')
-    pyplot.close(figure)
-    
-    figure = plot_ensemble(z_grid, histogram_select_lens, histogram_select_source, bin_lens_size, bin_source_size)
-    figure.savefig(os.path.join(analyze_folder, '{}/ENSEMBLE/FIGURE_HISTOGRAM.pdf'.format(tag)), format='pdf', bbox_inches='tight')
-    pyplot.close(figure)
+    label_list = ['ZERO', 'HALF', 'UNITY', 'DOUBLE']
+    for label in label_list:
+        os.makedirs(os.path.join(analyze_folder, '{}/ENSEMBLE/'.format(tag)), exist_ok=True)
+        os.makedirs(os.path.join(analyze_folder, '{}/ENSEMBLE/{}/'.format(tag, label)), exist_ok=True)
+        
+        # Summarize
+        with h5py.File(os.path.join(synthesize_folder, '{}/SOM_{}.hdf5'.format(tag, label)), 'r') as file:
+            som_data_lens = file['lens']['data'][...]
+            som_data_source = file['source']['data'][...]
+        
+        with h5py.File(os.path.join(synthesize_folder, '{}/MODEL_{}.hdf5'.format(tag, label)), 'r') as file:
+            model_data_lens = file['lens']['data'][...]
+            model_data_source = file['source']['data'][...]
+        
+        with h5py.File(os.path.join(synthesize_folder, '{}/PRODUCT_{}.hdf5'.format(tag, label)), 'r') as file:
+            product_data_lens = file['lens']['data'][...]
+            product_data_source = file['source']['data'][...]
+        
+        with h5py.File(os.path.join(synthesize_folder, '{}/FIDUCIAL_{}.hdf5'.format(tag, label)), 'r') as file:
+            fiducial_data_lens = file['lens']['data'][...]
+            fiducial_data_source = file['source']['data'][...]
+        
+        with h5py.File(os.path.join(synthesize_folder, '{}/HISTOGRAM_{}.hdf5'.format(tag, label)), 'r') as file:
+            histogram_data_lens = file['lens']['data'][...]
+            histogram_data_source = file['source']['data'][...]
+        
+        # Size
+        select_size = 5000
+        data_size, bin_lens_size, z_size = histogram_data_lens.shape
+        data_size, bin_source_size, z_size = histogram_data_source.shape
+        indices = numpy.sort(numpy.random.choice(data_size, select_size, replace=False))
+        
+        # Select
+        som_select_lens = som_data_lens[indices, :, :]
+        som_select_source = som_data_source[indices, :, :]
+        
+        model_select_lens = model_data_lens[indices, :, :]
+        model_select_source = model_data_source[indices, :, :]
+        
+        product_select_lens = product_data_lens[indices, :, :]
+        product_select_source = product_data_source[indices, :, :]
+        
+        fiducial_select_lens = fiducial_data_lens[indices, :, :]
+        fiducial_select_source = fiducial_data_source[indices, :, :]
+        
+        histogram_select_lens = histogram_data_lens[indices, :, :]
+        histogram_select_source = histogram_data_source[indices, :, :]
+        
+        # Redshift
+        z1 = 0.0
+        z2 = 3.0
+        z_grid = numpy.linspace(z1, z2, z_size)
+        
+        # Configuration
+        os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
+        pyplot.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
+        pyplot.rcParams['pgf.texsystem'] = 'pdflatex'
+        pyplot.rcParams['text.usetex'] = True
+        pyplot.rcParams['font.size'] = 20
+        
+        os.makedirs(analyze_folder, exist_ok=True)
+        os.makedirs(os.path.join(analyze_folder, '{}/ENSEMBLE/'.format(tag)), exist_ok=True)
+        
+        # Plot
+        figure = plot_ensemble(z_grid, som_select_lens, som_select_source, bin_lens_size, bin_source_size)
+        figure.savefig(os.path.join(analyze_folder, '{}/ENSEMBLE/{}/FIGURE_SOM.pdf'.format(tag, label)), format='pdf', bbox_inches='tight')
+        pyplot.close(figure)
+        
+        figure = plot_ensemble(z_grid, model_select_lens, model_select_source, bin_lens_size, bin_source_size)
+        figure.savefig(os.path.join(analyze_folder, '{}/ENSEMBLE/{}/FIGURE_MODEL.pdf'.format(tag, label)), format='pdf', bbox_inches='tight')
+        pyplot.close(figure)
+        
+        figure = plot_ensemble(z_grid, product_select_lens, product_select_source, bin_lens_size, bin_source_size)
+        figure.savefig(os.path.join(analyze_folder, '{}/ENSEMBLE/{}/FIGURE_PRODUCT.pdf'.format(tag, label)), format='pdf', bbox_inches='tight')
+        pyplot.close(figure)
+        
+        figure = plot_ensemble(z_grid, fiducial_select_lens, fiducial_select_source, bin_lens_size, bin_source_size)
+        figure.savefig(os.path.join(analyze_folder, '{}/ENSEMBLE/{}/FIGURE_FIDUCIAL.pdf'.format(tag, label)), format='pdf', bbox_inches='tight')
+        pyplot.close(figure)
+        
+        figure = plot_ensemble(z_grid, histogram_select_lens, histogram_select_source, bin_lens_size, bin_source_size)
+        figure.savefig(os.path.join(analyze_folder, '{}/ENSEMBLE/{}/FIGURE_HISTOGRAM.pdf'.format(tag, label)), format='pdf', bbox_inches='tight')
+        pyplot.close(figure)
     
     # Duration
     end = time.time()
