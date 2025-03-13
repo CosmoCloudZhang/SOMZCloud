@@ -8,11 +8,11 @@ import argparse
 
 def main(tag, folder):
     '''
-    Shift the average redshift distribution
+    This function is used to analyze the information of the dataset
     
     Arguments:
         tag (str): The tag of the configuration
-        folder (str): The base folder of the figure
+        folder (str): The base folder of the dataset
     
     Returns:
         duration (float): The duration of the process
@@ -66,7 +66,7 @@ def main(tag, folder):
         data_size, bin_lens_size, z_size = histogram_data_lens.shape
         data_size, bin_source_size, z_size = histogram_data_source.shape
         
-        # Redshift
+        # Reddelta
         z1 = 0.0
         z2 = 3.0
         z_grid = numpy.linspace(z1, z2, z_size)
@@ -183,63 +183,64 @@ def main(tag, folder):
         histogram_correlation_lens = numpy.corrcoef(histogram_expectation_lens, rowvar=False)
         histogram_correlation_source = numpy.corrcoef(histogram_expectation_source, rowvar=False)
         
+        # Delta
+        som_delta_lens = numpy.random.multivariate_normal(mean=numpy.zeros(bin_lens_size), cov=numpy.cov(som_expectation_lens, rowvar=False), size=data_size)
+        som_delta_source = numpy.random.multivariate_normal(mean=numpy.zeros(bin_source_size), cov=numpy.cov(som_expectation_source, rowvar=False), size=data_size)
+        
+        model_delta_lens = numpy.random.multivariate_normal(mean=numpy.zeros(bin_lens_size), cov=numpy.cov(model_expectation_lens, rowvar=False), size=data_size)
+        model_delta_source = numpy.random.multivariate_normal(mean=numpy.zeros(bin_source_size), cov=numpy.cov(model_expectation_source, rowvar=False), size=data_size)
+        
+        product_delta_lens = numpy.random.multivariate_normal(mean=numpy.zeros(bin_lens_size), cov=numpy.cov(product_expectation_lens, rowvar=False), size=data_size)
+        product_delta_source = numpy.random.multivariate_normal(mean=numpy.zeros(bin_source_size), cov=numpy.cov(product_expectation_source, rowvar=False), size=data_size)
+        
+        fiducial_delta_lens = numpy.random.multivariate_normal(mean=numpy.zeros(bin_lens_size), cov=numpy.cov(fiducial_expectation_lens, rowvar=False), size=data_size)
+        fiducial_delta_source = numpy.random.multivariate_normal(mean=numpy.zeros(bin_source_size), cov=numpy.cov(fiducial_expectation_source, rowvar=False), size=data_size)
+        
+        histogram_delta_lens = numpy.random.multivariate_normal(mean=numpy.zeros(bin_lens_size), cov=numpy.cov(histogram_expectation_lens, rowvar=False), size=data_size)
+        histogram_delta_source = numpy.random.multivariate_normal(mean=numpy.zeros(bin_source_size), cov=numpy.cov(histogram_expectation_source, rowvar=False), size=data_size)
+        
         # Shift
-        som_shift_lens = numpy.random.multivariate_normal(mean=numpy.zeros(bin_lens_size), cov=numpy.cov(som_expectation_lens, rowvar=False), size=data_size)
-        som_shift_source = numpy.random.multivariate_normal(mean=numpy.zeros(bin_source_size), cov=numpy.cov(som_expectation_source, rowvar=False), size=data_size)
+        som_shift_lens = numpy.zeros((data_size, bin_lens_size, z_size))
+        som_shift_source = numpy.zeros((data_size, bin_source_size, z_size))
         
-        model_shift_lens = numpy.random.multivariate_normal(mean=numpy.zeros(bin_lens_size), cov=numpy.cov(model_expectation_lens, rowvar=False), size=data_size)
-        model_shift_source = numpy.random.multivariate_normal(mean=numpy.zeros(bin_source_size), cov=numpy.cov(model_expectation_source, rowvar=False), size=data_size)
+        model_shift_lens = numpy.zeros((data_size, bin_lens_size, z_size))
+        model_shift_source = numpy.zeros((data_size, bin_source_size, z_size))
         
-        product_shift_lens = numpy.random.multivariate_normal(mean=numpy.zeros(bin_lens_size), cov=numpy.cov(product_expectation_lens, rowvar=False), size=data_size)
-        product_shift_source = numpy.random.multivariate_normal(mean=numpy.zeros(bin_source_size), cov=numpy.cov(product_expectation_source, rowvar=False), size=data_size)
+        product_shift_lens = numpy.zeros((data_size, bin_lens_size, z_size))
+        product_shift_source = numpy.zeros((data_size, bin_source_size, z_size))
         
-        fiducial_shift_lens = numpy.random.multivariate_normal(mean=numpy.zeros(bin_lens_size), cov=numpy.cov(fiducial_expectation_lens, rowvar=False), size=data_size)
-        fiducial_shift_source = numpy.random.multivariate_normal(mean=numpy.zeros(bin_source_size), cov=numpy.cov(fiducial_expectation_source, rowvar=False), size=data_size)
+        fiducial_shift_lens = numpy.zeros((data_size, bin_lens_size, z_size))
+        fiducial_shift_source = numpy.zeros((data_size, bin_source_size, z_size))
         
-        histogram_shift_lens = numpy.random.multivariate_normal(mean=numpy.zeros(bin_lens_size), cov=numpy.cov(histogram_expectation_lens, rowvar=False), size=data_size)
-        histogram_shift_source = numpy.random.multivariate_normal(mean=numpy.zeros(bin_source_size), cov=numpy.cov(histogram_expectation_source, rowvar=False), size=data_size)
-        
-        # Realization
-        som_realization_lens = numpy.zeros((data_size, bin_lens_size, z_size))
-        som_realization_source = numpy.zeros((data_size, bin_source_size, z_size))
-        
-        model_realization_lens = numpy.zeros((data_size, bin_lens_size, z_size))
-        model_realization_source = numpy.zeros((data_size, bin_source_size, z_size))
-        
-        product_realization_lens = numpy.zeros((data_size, bin_lens_size, z_size))
-        product_realization_source = numpy.zeros((data_size, bin_source_size, z_size))
-        
-        fiducial_realization_lens = numpy.zeros((data_size, bin_lens_size, z_size))
-        fiducial_realization_source = numpy.zeros((data_size, bin_source_size, z_size))
-        
-        histogram_realization_lens = numpy.zeros((data_size, bin_lens_size, z_size))
-        histogram_realization_source = numpy.zeros((data_size, bin_source_size, z_size))
+        histogram_shift_lens = numpy.zeros((data_size, bin_lens_size, z_size))
+        histogram_shift_source = numpy.zeros((data_size, bin_source_size, z_size))
         
         for m in range(bin_lens_size):
-            som_realization_lens[:, m, :] = scipy.interpolate.CubicSpline(z_grid, som_average_lens[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - som_shift_lens[:, m, numpy.newaxis])
+            som_shift_lens[:, m, :] = scipy.interpolate.CubicSpline(z_grid, som_average_lens[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - som_delta_lens[:, m, numpy.newaxis])
             
-            model_realization_lens[:, m, :] = scipy.interpolate.CubicSpline(z_grid, model_average_lens[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - model_shift_lens[:, m, numpy.newaxis])
+            model_shift_lens[:, m, :] = scipy.interpolate.CubicSpline(z_grid, model_average_lens[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - model_delta_lens[:, m, numpy.newaxis])
             
-            product_realization_lens[:, m, :] = scipy.interpolate.CubicSpline(z_grid, product_average_lens[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - product_shift_lens[:, m, numpy.newaxis])
+            product_shift_lens[:, m, :] = scipy.interpolate.CubicSpline(z_grid, product_average_lens[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - product_delta_lens[:, m, numpy.newaxis])
             
-            fiducial_realization_lens[:, m, :] = scipy.interpolate.CubicSpline(z_grid, fiducial_average_lens[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - fiducial_shift_lens[:, m, numpy.newaxis])
+            fiducial_shift_lens[:, m, :] = scipy.interpolate.CubicSpline(z_grid, fiducial_average_lens[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - fiducial_delta_lens[:, m, numpy.newaxis])
             
-            histogram_realization_lens[:, m, :] = scipy.interpolate.CubicSpline(z_grid, histogram_average_lens[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - histogram_shift_lens[:, m, numpy.newaxis])
+            histogram_shift_lens[:, m, :] = scipy.interpolate.CubicSpline(z_grid, histogram_average_lens[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - histogram_delta_lens[:, m, numpy.newaxis])
         
         for m in range(bin_source_size):
-            som_realization_source[:, m, :] = scipy.interpolate.CubicSpline(z_grid, som_average_source[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - som_shift_source[:, m, numpy.newaxis])
+            som_shift_source[:, m, :] = scipy.interpolate.CubicSpline(z_grid, som_average_source[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - som_delta_source[:, m, numpy.newaxis])
             
-            model_realization_source[:, m, :] = scipy.interpolate.CubicSpline(z_grid, model_average_source[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - model_shift_source[:, m, numpy.newaxis])
+            model_shift_source[:, m, :] = scipy.interpolate.CubicSpline(z_grid, model_average_source[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - model_delta_source[:, m, numpy.newaxis])
             
-            product_realization_source[:, m, :] = scipy.interpolate.CubicSpline(z_grid, product_average_source[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - product_shift_source[:, m, numpy.newaxis])
+            product_shift_source[:, m, :] = scipy.interpolate.CubicSpline(z_grid, product_average_source[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - product_delta_source[:, m, numpy.newaxis])
             
-            fiducial_realization_source[:, m, :] = scipy.interpolate.CubicSpline(z_grid, fiducial_average_source[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - fiducial_shift_source[:, m, numpy.newaxis])
+            fiducial_shift_source[:, m, :] = scipy.interpolate.CubicSpline(z_grid, fiducial_average_source[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - fiducial_delta_source[:, m, numpy.newaxis])
             
-            histogram_realization_source[:, m, :] = scipy.interpolate.CubicSpline(z_grid, histogram_average_source[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - histogram_shift_source[:, m, numpy.newaxis])
+            histogram_shift_source[:, m, :] = scipy.interpolate.CubicSpline(z_grid, histogram_average_source[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - histogram_delta_source[:, m, numpy.newaxis])
         
         # Save
         with h5py.File(os.path.join(analyze_folder, '{}/INFO/SOM_{}.hdf5'.format(tag, label)), 'w') as file:
             file.create_group('lens')
+            file['lens'].create_dataset('delta', data=som_delta_lens)
             file['lens'].create_dataset('scale', data=som_scale_lens)
             file['lens'].create_dataset('shift', data=som_shift_lens)
             file['lens'].create_dataset('middle', data=som_middle_lens)
@@ -248,9 +249,9 @@ def main(tag, folder):
             file['lens'].create_dataset('variation', data=som_variation_lens)
             file['lens'].create_dataset('expectation', data=som_expectation_lens)
             file['lens'].create_dataset('correlation', data=som_correlation_lens)
-            file['lens'].create_dataset('realization', data=som_realization_lens)
             
             file.create_group('source')
+            file['source'].create_dataset('delta', data=som_delta_source)
             file['source'].create_dataset('scale', data=som_scale_source)
             file['source'].create_dataset('shift', data=som_shift_source)
             file['source'].create_dataset('middle', data=som_middle_source)
@@ -259,10 +260,10 @@ def main(tag, folder):
             file['source'].create_dataset('variation', data=som_variation_source)
             file['source'].create_dataset('expectation', data=som_expectation_source)
             file['source'].create_dataset('correlation', data=som_correlation_source)
-            file['source'].create_dataset('realization', data=som_realization_source)
         
         with h5py.File(os.path.join(analyze_folder, '{}/INFO/MODEL_{}.hdf5'.format(tag, label)), 'w') as file:
             file.create_group('lens')
+            file['lens'].create_dataset('delta', data=model_delta_lens)
             file['lens'].create_dataset('scale', data=model_scale_lens)
             file['lens'].create_dataset('shift', data=model_shift_lens)
             file['lens'].create_dataset('middle', data=model_middle_lens)
@@ -271,9 +272,9 @@ def main(tag, folder):
             file['lens'].create_dataset('variation', data=model_variation_lens)
             file['lens'].create_dataset('expectation', data=model_expectation_lens)
             file['lens'].create_dataset('correlation', data=model_correlation_lens)
-            file['lens'].create_dataset('realization', data=model_realization_lens)
             
             file.create_group('source')
+            file['source'].create_dataset('delta', data=model_delta_source)
             file['source'].create_dataset('scale', data=model_scale_source)
             file['source'].create_dataset('shift', data=model_shift_source)
             file['source'].create_dataset('middle', data=model_middle_source)
@@ -282,10 +283,10 @@ def main(tag, folder):
             file['source'].create_dataset('variation', data=model_variation_source)
             file['source'].create_dataset('expectation', data=model_expectation_source)
             file['source'].create_dataset('correlation', data=model_correlation_source)
-            file['source'].create_dataset('realization', data=model_realization_source)
         
         with h5py.File(os.path.join(analyze_folder, '{}/INFO/PRODUCT_{}.hdf5'.format(tag, label)), 'w') as file:
             file.create_group('lens')
+            file['lens'].create_dataset('delta', data=product_delta_lens)
             file['lens'].create_dataset('scale', data=product_scale_lens)
             file['lens'].create_dataset('shift', data=product_shift_lens)
             file['lens'].create_dataset('middle', data=product_middle_lens)
@@ -294,9 +295,9 @@ def main(tag, folder):
             file['lens'].create_dataset('variation', data=product_variation_lens)
             file['lens'].create_dataset('expectation', data=product_expectation_lens)
             file['lens'].create_dataset('correlation', data=product_correlation_lens)
-            file['lens'].create_dataset('realization', data=product_realization_lens)
             
             file.create_group('source')
+            file['source'].create_dataset('delta', data=product_delta_source)
             file['source'].create_dataset('scale', data=product_scale_source)
             file['source'].create_dataset('shift', data=product_shift_source)
             file['source'].create_dataset('middle', data=product_middle_source)
@@ -305,10 +306,10 @@ def main(tag, folder):
             file['source'].create_dataset('variation', data=product_variation_source)
             file['source'].create_dataset('expectation', data=product_expectation_source)
             file['source'].create_dataset('correlation', data=product_correlation_source)
-            file['source'].create_dataset('realization', data=product_realization_source)
         
         with h5py.File(os.path.join(analyze_folder, '{}/INFO/FIDUCIAL_{}.hdf5'.format(tag, label)), 'w') as file:
             file.create_group('lens')
+            file['lens'].create_dataset('delta', data=fiducial_delta_lens)
             file['lens'].create_dataset('scale', data=fiducial_scale_lens)
             file['lens'].create_dataset('shift', data=fiducial_shift_lens)
             file['lens'].create_dataset('middle', data=fiducial_middle_lens)
@@ -317,9 +318,9 @@ def main(tag, folder):
             file['lens'].create_dataset('variation', data=fiducial_variation_lens)
             file['lens'].create_dataset('expectation', data=fiducial_expectation_lens)
             file['lens'].create_dataset('correlation', data=fiducial_correlation_lens)
-            file['lens'].create_dataset('realization', data=fiducial_realization_lens)
             
             file.create_group('source')
+            file['source'].create_dataset('delta', data=fiducial_delta_source)
             file['source'].create_dataset('scale', data=fiducial_scale_source)
             file['source'].create_dataset('shift', data=fiducial_shift_source)
             file['source'].create_dataset('middle', data=fiducial_middle_source)
@@ -328,10 +329,10 @@ def main(tag, folder):
             file['source'].create_dataset('variation', data=fiducial_variation_source)
             file['source'].create_dataset('expectation', data=fiducial_expectation_source)
             file['source'].create_dataset('correlation', data=fiducial_correlation_source)
-            file['source'].create_dataset('realization', data=fiducial_realization_source)
         
         with h5py.File(os.path.join(analyze_folder, '{}/INFO/HISTOGRAM_{}.hdf5'.format(tag, label)), 'w') as file:
             file.create_group('lens')
+            file['lens'].create_dataset('delta', data=histogram_delta_lens)
             file['lens'].create_dataset('scale', data=histogram_scale_lens)
             file['lens'].create_dataset('shift', data=histogram_shift_lens)
             file['lens'].create_dataset('middle', data=histogram_middle_lens)
@@ -340,9 +341,9 @@ def main(tag, folder):
             file['lens'].create_dataset('variation', data=histogram_variation_lens)
             file['lens'].create_dataset('expectation', data=histogram_expectation_lens)
             file['lens'].create_dataset('correlation', data=histogram_correlation_lens)
-            file['lens'].create_dataset('realization', data=histogram_realization_lens)
             
             file.create_group('source')
+            file['source'].create_dataset('delta', data=histogram_delta_source)
             file['source'].create_dataset('scale', data=histogram_scale_source)
             file['source'].create_dataset('shift', data=histogram_shift_source)
             file['source'].create_dataset('middle', data=histogram_middle_source)
@@ -351,7 +352,6 @@ def main(tag, folder):
             file['source'].create_dataset('variation', data=histogram_variation_source)
             file['source'].create_dataset('expectation', data=histogram_expectation_source)
             file['source'].create_dataset('correlation', data=histogram_correlation_source)
-            file['source'].create_dataset('realization', data=histogram_realization_source)
     
     # Duration
     end = time.time()
@@ -364,9 +364,9 @@ def main(tag, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Analysis Shift')
+    PARSE = argparse.ArgumentParser(description='Analysis Info')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
-    PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the figure')
+    PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the dataset')
     
     # Parse
     TAG = PARSE.parse_args().tag

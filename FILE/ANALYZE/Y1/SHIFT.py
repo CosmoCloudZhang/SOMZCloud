@@ -83,27 +83,27 @@ def main(tag, folder):
         
         # Info
         with h5py.File(os.path.join(analyze_folder, '{}/INFO/SOM_{}.hdf5'.format(tag, label)), 'r') as file:
-            som_realization_lens = file['lens']['realization'][...]
-            som_realization_source = file['source']['realization'][...]
+            som_shift_lens = file['lens']['shift'][...]
+            som_shift_source = file['source']['shift'][...]
         
         with h5py.File(os.path.join(analyze_folder, '{}/INFO/MODEL_{}.hdf5'.format(tag, label)), 'r') as file:
-            model_realization_lens = file['lens']['realization'][...]
-            model_realization_source = file['source']['realization'][...]
+            model_shift_lens = file['lens']['shift'][...]
+            model_shift_source = file['source']['shift'][...]
         
         with h5py.File(os.path.join(analyze_folder, '{}/INFO/PRODUCT_{}.hdf5'.format(tag, label)), 'r') as file:
-            product_realization_lens = file['lens']['realization'][...]
-            product_realization_source = file['source']['realization'][...]
+            product_shift_lens = file['lens']['shift'][...]
+            product_shift_source = file['source']['shift'][...]
         
         with h5py.File(os.path.join(analyze_folder, '{}/INFO/FIDUCIAL_{}.hdf5'.format(tag, label)), 'r') as file:
-            fiducial_realization_lens = file['lens']['realization'][...]
-            fiducial_realization_source = file['source']['realization'][...]
+            fiducial_shift_lens = file['lens']['shift'][...]
+            fiducial_shift_source = file['source']['shift'][...]
         
         with h5py.File(os.path.join(analyze_folder, '{}/INFO/HISTOGRAM_{}.hdf5'.format(tag, label)), 'r') as file:
-            histogram_realization_lens = file['lens']['realization'][...]
-            histogram_realization_source = file['source']['realization'][...]
+            histogram_shift_lens = file['lens']['shift'][...]
+            histogram_shift_source = file['source']['shift'][...]
         
-        data_size, bin_lens_size, z_size = histogram_realization_lens.shape
-        data_size, bin_source_size, z_size = histogram_realization_source.shape
+        data_size, bin_lens_size, z_size = histogram_shift_lens.shape
+        data_size, bin_source_size, z_size = histogram_shift_source.shape
         
         # Select
         som_select_lens = numpy.zeros((data_size, bin_lens_size, map_lens_size))
@@ -122,18 +122,18 @@ def main(tag, folder):
         histogram_select_source = numpy.zeros((data_size, bin_source_size, map_source_size))
         
         for m in range(bin_lens_size):
-            som_select_lens[:, m, :numpy.minimum(map_lens_size, z_size - index_lower_lens[m])] = som_realization_lens[:, m, index_lower_lens[m]: numpy.minimum(z_size, index_upper_lens[m])]
-            model_select_lens[:, m, :numpy.minimum(map_lens_size, z_size - index_lower_lens[m])] = model_realization_lens[:, m, index_lower_lens[m]: numpy.minimum(z_size, index_upper_lens[m])]
-            product_select_lens[:, m, :numpy.minimum(map_lens_size, z_size - index_lower_lens[m])] = product_realization_lens[:, m, index_lower_lens[m]: numpy.minimum(z_size, index_upper_lens[m])]
-            fiducial_select_lens[:, m, :numpy.minimum(map_lens_size, z_size - index_lower_lens[m])] = fiducial_realization_lens[:, m, index_lower_lens[m]: numpy.minimum(z_size, index_upper_lens[m])]
-            histogram_select_lens[:, m, :numpy.minimum(map_lens_size, z_size - index_lower_lens[m])] = histogram_realization_lens[:, m, index_lower_lens[m]: numpy.minimum(z_size, index_upper_lens[m])]
+            som_select_lens[:, m, :numpy.minimum(map_lens_size, z_size - index_lower_lens[m])] = som_shift_lens[:, m, index_lower_lens[m]: numpy.minimum(z_size, index_upper_lens[m])]
+            model_select_lens[:, m, :numpy.minimum(map_lens_size, z_size - index_lower_lens[m])] = model_shift_lens[:, m, index_lower_lens[m]: numpy.minimum(z_size, index_upper_lens[m])]
+            product_select_lens[:, m, :numpy.minimum(map_lens_size, z_size - index_lower_lens[m])] = product_shift_lens[:, m, index_lower_lens[m]: numpy.minimum(z_size, index_upper_lens[m])]
+            fiducial_select_lens[:, m, :numpy.minimum(map_lens_size, z_size - index_lower_lens[m])] = fiducial_shift_lens[:, m, index_lower_lens[m]: numpy.minimum(z_size, index_upper_lens[m])]
+            histogram_select_lens[:, m, :numpy.minimum(map_lens_size, z_size - index_lower_lens[m])] = histogram_shift_lens[:, m, index_lower_lens[m]: numpy.minimum(z_size, index_upper_lens[m])]
         
         for m in range(bin_source_size):
-            som_select_source[:, m, :numpy.minimum(map_source_size, z_size - index_lower_source[m])] = som_realization_source[:, m, index_lower_source[m]: numpy.minimum(z_size, index_upper_source[m])]
-            model_select_source[:, m, :numpy.minimum(map_source_size, z_size - index_lower_source[m])] = model_realization_source[:, m, index_lower_source[m]: numpy.minimum(z_size, index_upper_source[m])]
-            product_select_source[:, m, :numpy.minimum(map_source_size, z_size - index_lower_source[m])] = product_realization_source[:, m, index_lower_source[m]: numpy.minimum(z_size, index_upper_source[m])]
-            fiducial_select_source[:, m, :numpy.minimum(map_source_size, z_size - index_lower_source[m])] = fiducial_realization_source[:, m, index_lower_source[m]: numpy.minimum(z_size, index_upper_source[m])]
-            histogram_select_source[:, m, :numpy.minimum(map_source_size, z_size - index_lower_source[m])] = histogram_realization_source[:, m, index_lower_source[m]: numpy.minimum(z_size, index_upper_source[m])]
+            som_select_source[:, m, :numpy.minimum(map_source_size, z_size - index_lower_source[m])] = som_shift_source[:, m, index_lower_source[m]: numpy.minimum(z_size, index_upper_source[m])]
+            model_select_source[:, m, :numpy.minimum(map_source_size, z_size - index_lower_source[m])] = model_shift_source[:, m, index_lower_source[m]: numpy.minimum(z_size, index_upper_source[m])]
+            product_select_source[:, m, :numpy.minimum(map_source_size, z_size - index_lower_source[m])] = product_shift_source[:, m, index_lower_source[m]: numpy.minimum(z_size, index_upper_source[m])]
+            fiducial_select_source[:, m, :numpy.minimum(map_source_size, z_size - index_lower_source[m])] = fiducial_shift_source[:, m, index_lower_source[m]: numpy.minimum(z_size, index_upper_source[m])]
+            histogram_select_source[:, m, :numpy.minimum(map_source_size, z_size - index_lower_source[m])] = histogram_shift_source[:, m, index_lower_source[m]: numpy.minimum(z_size, index_upper_source[m])]
         
         som_covariance_lens = numpy.cov(numpy.reshape(som_select_lens, (data_size, bin_lens_size * map_lens_size)), rowvar=False)
         som_covariance_source = numpy.cov(numpy.reshape(som_select_source, (data_size, bin_source_size * map_source_size)), rowvar=False)

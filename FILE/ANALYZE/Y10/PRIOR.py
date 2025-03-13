@@ -28,7 +28,7 @@ def plot_prior(scale, correlation):
     
     plot.axis('off')
     cax = figure.add_axes([0.15, 0.05, 0.72, 0.05])
-    figure.colorbar(cax = cax, mappable = image, orientation = 'horizontal', label = r'$\mathcal{R} \: [\Delta_{\mu}^{i}, \Delta_{\mu}^{j}]$')
+    figure.colorbar(cax = cax, mappable = image, orientation = 'horizontal', label = r'$\mathcal{R} \: [\delta_{\mu}^{i}, \delta_{\mu}^{j}]$')
     
     figure.subplots_adjust(wspace = 0.02, hspace = 0.02)
     return figure
