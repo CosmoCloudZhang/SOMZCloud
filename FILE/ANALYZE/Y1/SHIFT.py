@@ -66,7 +66,7 @@ def main(tag, folder):
     
     # Index
     map_lens_size = 40
-    map_source_size = 120
+    map_source_size = 100
     
     index_lower_lens = numpy.maximum(0, numpy.array(numpy.round(bin_lens[:-1] / z_delta, decimals=0), dtype='int32') - map_lens_size // 4)
     index_upper_lens = index_lower_lens + map_lens_size

@@ -66,12 +66,12 @@ def main(tag, folder):
     
     # Index
     map_lens_size = 20
-    map_source_size = 180
+    map_source_size = 120
     
-    index_lower_lens = numpy.maximum(0, int(numpy.round(bin_lens[:-1] / z_delta, decimals=0)) - map_lens_size // 4)
+    index_lower_lens = numpy.maximum(0, numpy.array(numpy.round(bin_lens[:-1] / z_delta, decimals=0), dtype='int32') - map_lens_size // 4)
     index_upper_lens = index_lower_lens + map_lens_size
     
-    index_lower_source = numpy.maximum(0, int(numpy.round(bin_source[:-1] / z_delta, decimals=0)) - map_source_size // 4)
+    index_lower_source = numpy.maximum(0, numpy.array(numpy.round(bin_source[:-1] / z_delta, decimals=0), dtype='int32') - map_source_size // 4)
     index_upper_source = index_lower_source + map_source_size
     
     # Loop

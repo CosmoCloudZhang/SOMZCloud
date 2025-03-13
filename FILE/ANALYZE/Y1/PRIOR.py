@@ -22,13 +22,13 @@ def plot_prior(scale, correlation):
     
     for (i, j), value in numpy.ndenumerate(correlation):
         if i == j:
-            plot.text(j, i, r'$\sigma_{\langle z \rangle}^{' + r'{:.0f}'.format(i + 1) + r'} = ' + r'{:.3f}$'.format(scale[i]), va='center', ha='center', color='black', fontsize = 20)
+            plot.text(j, i, r'$\sigma_{\mu}^{' + r'{:.0f}'.format(i + 1) + r'} = ' + r'{:.3f}$'.format(scale[i]), va='center', ha='center', color='black', fontsize = 20)
         else:
             plot.text(j, i, r'${:.3f}$'.format(value), va='center', ha='center', color='black', fontsize = 20)
     
     plot.axis('off')
     cax = figure.add_axes([0.15, 0.05, 0.72, 0.05])
-    figure.colorbar(cax = cax, mappable = image, orientation = 'horizontal', label = r'$\mathcal{R} \: [\Delta_{\langle z \rangle}^{i}, \Delta_{\langle z \rangle}^{j}]$')
+    figure.colorbar(cax = cax, mappable = image, orientation = 'horizontal', label = r'$\mathcal{R} \: [\Delta_{\mu}^{i}, \Delta_{\mu}^{j}]$')
     
     figure.subplots_adjust(wspace = 0.02, hspace = 0.02)
     return figure

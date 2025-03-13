@@ -136,36 +136,36 @@ def main(tag, folder):
         histogram_scatter_source = numpy.sqrt(scipy.integrate.trapezoid(x=z_grid, y=numpy.square(z_grid[numpy.newaxis, :] - histogram_middle_source[:, numpy.newaxis]) * histogram_average_source, axis=1))
         
         # Scale
-        som_scale_lens = numpy.std(som_expectation_lens, axis=0)
-        som_scale_source = numpy.std(som_expectation_source, axis=0)
+        som_scale_lens = numpy.std(som_expectation_lens, axis=0) / (1 + som_middle_lens)
+        som_scale_source = numpy.std(som_expectation_source, axis=0) / (1 + som_middle_source)
         
-        model_scale_lens = numpy.std(model_expectation_lens, axis=0)
-        model_scale_source = numpy.std(model_expectation_source, axis=0)
+        model_scale_lens = numpy.std(model_expectation_lens, axis=0) / (1 + model_middle_lens)
+        model_scale_source = numpy.std(model_expectation_source, axis=0) / (1 + model_middle_source)
         
-        product_scale_lens = numpy.std(product_expectation_lens, axis=0)
-        product_scale_source = numpy.std(product_expectation_source, axis=0)
+        product_scale_lens = numpy.std(product_expectation_lens, axis=0) / (1 + product_middle_lens)
+        product_scale_source = numpy.std(product_expectation_source, axis=0) / (1 + product_middle_source)
         
-        fiducial_scale_lens = numpy.std(fiducial_expectation_lens, axis=0)
-        fiducial_scale_source = numpy.std(fiducial_expectation_source, axis=0)
+        fiducial_scale_lens = numpy.std(fiducial_expectation_lens, axis=0) / (1 + fiducial_middle_lens)
+        fiducial_scale_source = numpy.std(fiducial_expectation_source, axis=0) / (1 + fiducial_middle_source)
         
-        histogram_scale_lens = numpy.std(histogram_expectation_lens, axis=0)
-        histogram_scale_source = numpy.std(histogram_expectation_source, axis=0)
+        histogram_scale_lens = numpy.std(histogram_expectation_lens, axis=0) / (1 + histogram_middle_lens)
+        histogram_scale_source = numpy.std(histogram_expectation_source, axis=0) / (1 + histogram_middle_source)
         
         # Variation
-        som_variation_lens = numpy.std(som_deviation_lens, axis=0)
-        som_variation_source = numpy.std(som_deviation_source, axis=0)
+        som_variation_lens = numpy.std(som_deviation_lens, axis=0) / (1 + som_middle_lens)
+        som_variation_source = numpy.std(som_deviation_source, axis=0) / (1 + som_middle_source)
         
-        model_variation_lens = numpy.std(model_deviation_lens, axis=0)
-        model_variation_source = numpy.std(model_deviation_source, axis=0)
+        model_variation_lens = numpy.std(model_deviation_lens, axis=0) / (1 + model_middle_lens)
+        model_variation_source = numpy.std(model_deviation_source, axis=0) / (1 + model_middle_source)
         
-        product_variation_lens = numpy.std(product_deviation_lens, axis=0)
-        product_variation_source = numpy.std(product_deviation_source, axis=0)
+        product_variation_lens = numpy.std(product_deviation_lens, axis=0) / (1 + product_middle_lens)
+        product_variation_source = numpy.std(product_deviation_source, axis=0) / (1 + product_middle_source)
         
-        fiducial_variation_lens = numpy.std(fiducial_deviation_lens, axis=0)
-        fiducial_variation_source = numpy.std(fiducial_deviation_source, axis=0)
+        fiducial_variation_lens = numpy.std(fiducial_deviation_lens, axis=0) / (1 + fiducial_middle_lens)
+        fiducial_variation_source = numpy.std(fiducial_deviation_source, axis=0) / (1 + fiducial_middle_source)
         
-        histogram_variation_lens = numpy.std(histogram_deviation_lens, axis=0)
-        histogram_variation_source = numpy.std(histogram_deviation_source, axis=0)
+        histogram_variation_lens = numpy.std(histogram_deviation_lens, axis=0) / (1 + histogram_middle_lens)
+        histogram_variation_source = numpy.std(histogram_deviation_source, axis=0) / (1 + histogram_middle_source)
         
         # Correlation
         som_correlation_lens = numpy.corrcoef(som_expectation_lens, rowvar=False)
