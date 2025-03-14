@@ -40,9 +40,6 @@ def main(tag, folder):
             histogram_average_lens = file['lens']['average'][...]
             histogram_average_source = file['source']['average'][...]
         
-        data_size, bin_lens_size, z_size = product_data_lens.shape
-        data_size, bin_source_size, z_size = product_data_source.shape
-        
         # Redshift
         z1 = 0.0
         z2 = 3.0
