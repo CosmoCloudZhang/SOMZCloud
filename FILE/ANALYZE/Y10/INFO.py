@@ -66,7 +66,7 @@ def main(tag, folder):
         data_size, bin_lens_size, z_size = histogram_data_lens.shape
         data_size, bin_source_size, z_size = histogram_data_source.shape
         
-        # Reddelta
+        # Redshift
         z1 = 0.0
         z2 = 3.0
         z_grid = numpy.linspace(z1, z2, z_size)
