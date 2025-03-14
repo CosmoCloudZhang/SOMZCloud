@@ -82,23 +82,23 @@ def main(tag, folder):
         os.makedirs(os.path.join(analyze_folder, '{}/SHIFT/{}'.format(tag, label)), exist_ok=True)
         
         # Info
-        with h5py.File(os.path.join(analyze_folder, '{}/INFO/SOM_{}.hdf5'.format(tag, label)), 'r') as file:
+        with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/SOM_{}.hdf5'.format(tag, label)), 'r') as file:
             som_shift_lens = file['lens']['shift'][...]
             som_shift_source = file['source']['shift'][...]
         
-        with h5py.File(os.path.join(analyze_folder, '{}/INFO/MODEL_{}.hdf5'.format(tag, label)), 'r') as file:
+        with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/MODEL_{}.hdf5'.format(tag, label)), 'r') as file:
             model_shift_lens = file['lens']['shift'][...]
             model_shift_source = file['source']['shift'][...]
         
-        with h5py.File(os.path.join(analyze_folder, '{}/INFO/PRODUCT_{}.hdf5'.format(tag, label)), 'r') as file:
+        with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/PRODUCT_{}.hdf5'.format(tag, label)), 'r') as file:
             product_shift_lens = file['lens']['shift'][...]
             product_shift_source = file['source']['shift'][...]
         
-        with h5py.File(os.path.join(analyze_folder, '{}/INFO/FIDUCIAL_{}.hdf5'.format(tag, label)), 'r') as file:
+        with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/FIDUCIAL_{}.hdf5'.format(tag, label)), 'r') as file:
             fiducial_shift_lens = file['lens']['shift'][...]
             fiducial_shift_source = file['source']['shift'][...]
         
-        with h5py.File(os.path.join(analyze_folder, '{}/INFO/HISTOGRAM_{}.hdf5'.format(tag, label)), 'r') as file:
+        with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/HISTOGRAM_{}.hdf5'.format(tag, label)), 'r') as file:
             histogram_shift_lens = file['lens']['shift'][...]
             histogram_shift_source = file['source']['shift'][...]
         

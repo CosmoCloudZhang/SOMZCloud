@@ -26,35 +26,35 @@ def main(tag, folder):
     label_list = ['ZERO', 'HALF', 'UNITY', 'DOUBLE']
     for label in label_list:
         # Info
-        with h5py.File(os.path.join(analyze_folder, '{}/INFO/SOM_{}.hdf5'.format(tag, label)), 'r') as file:
+        with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/SOM_{}.hdf5'.format(tag, label)), 'r') as file:
             som_scatter_lens = file['lens']['scatter'][...]
             som_scatter_source = file['source']['scatter'][...]
             
             som_deviation_lens = file['lens']['deviation'][...]
             som_deviation_source = file['source']['deviation'][...]
         
-        with h5py.File(os.path.join(analyze_folder, '{}/INFO/MODEL_{}.hdf5'.format(tag, label)), 'r') as file:
+        with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/MODEL_{}.hdf5'.format(tag, label)), 'r') as file:
             model_scatter_lens = file['lens']['scatter'][...]
             model_scatter_source = file['source']['scatter'][...]
             
             model_deviation_lens = file['lens']['deviation'][...]
             model_deviation_source = file['source']['deviation'][...]
         
-        with h5py.File(os.path.join(analyze_folder, '{}/INFO/PRODUCT_{}.hdf5'.format(tag, label)), 'r') as file:
+        with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/PRODUCT_{}.hdf5'.format(tag, label)), 'r') as file:
             product_scatter_lens = file['lens']['scatter'][...]
             product_scatter_source = file['source']['scatter'][...]
             
             product_deviation_lens = file['lens']['deviation'][...]
             product_deviation_source = file['source']['deviation'][...]
         
-        with h5py.File(os.path.join(analyze_folder, '{}/INFO/FIDUCIAL_{}.hdf5'.format(tag, label)), 'r') as file:
+        with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/FIDUCIAL_{}.hdf5'.format(tag, label)), 'r') as file:
             fiducial_scatter_lens = file['lens']['scatter'][...]
             fiducial_scatter_source = file['source']['scatter'][...]
             
             fiducial_deviation_lens = file['lens']['deviation'][...]
             fiducial_deviation_source = file['source']['deviation'][...]
         
-        with h5py.File(os.path.join(analyze_folder, '{}/INFO/HISTOGRAM_{}.hdf5'.format(tag, label)), 'r') as file:
+        with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/HISTOGRAM_{}.hdf5'.format(tag, label)), 'r') as file:
             histogram_scatter_lens = file['lens']['scatter'][...]
             histogram_scatter_source = file['source']['scatter'][...]
             

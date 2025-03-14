@@ -60,35 +60,35 @@ def main(tag, folder):
         os.makedirs(os.path.join(analyze_folder, '{}/PRIOR/{}'.format(tag, label)), exist_ok=True)
         
         # Info
-        with h5py.File(os.path.join(analyze_folder, '{}/INFO/SOM_{}.hdf5'.format(tag, label)), 'r') as file:
+        with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/SOM_{}.hdf5'.format(tag, label)), 'r') as file:
             som_scale_lens = file['lens']['scale'][...]
             som_scale_source = file['source']['scale'][...]
             
             som_correlation_lens = file['lens']['correlation'][...]
             som_correlation_source = file['source']['correlation'][...]
         
-        with h5py.File(os.path.join(analyze_folder, '{}/INFO/MODEL_{}.hdf5'.format(tag, label)), 'r') as file:
+        with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/MODEL_{}.hdf5'.format(tag, label)), 'r') as file:
             model_scale_lens = file['lens']['scale'][...]
             model_scale_source = file['source']['scale'][...]
             
             model_correlation_lens = file['lens']['correlation'][...]
             model_correlation_source = file['source']['correlation'][...]
         
-        with h5py.File(os.path.join(analyze_folder, '{}/INFO/PRODUCT_{}.hdf5'.format(tag, label)), 'r') as file:
+        with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/PRODUCT_{}.hdf5'.format(tag, label)), 'r') as file:
             product_scale_lens = file['lens']['scale'][...]
             product_scale_source = file['source']['scale'][...]
             
             product_correlation_lens = file['lens']['correlation'][...]
             product_correlation_source = file['source']['correlation'][...]
         
-        with h5py.File(os.path.join(analyze_folder, '{}/INFO/FIDUCIAL_{}.hdf5'.format(tag, label)), 'r') as file:
+        with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/FIDUCIAL_{}.hdf5'.format(tag, label)), 'r') as file:
             fiducial_scale_lens = file['lens']['scale'][...]
             fiducial_scale_source = file['source']['scale'][...]
             
             fiducial_correlation_lens = file['lens']['correlation'][...]
             fiducial_correlation_source = file['source']['correlation'][...]
         
-        with h5py.File(os.path.join(analyze_folder, '{}/INFO/HISTOGRAM_{}.hdf5'.format(tag, label)), 'r') as file:
+        with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/HISTOGRAM_{}.hdf5'.format(tag, label)), 'r') as file:
             histogram_scale_lens = file['lens']['scale'][...]
             histogram_scale_source = file['source']['scale'][...]
             

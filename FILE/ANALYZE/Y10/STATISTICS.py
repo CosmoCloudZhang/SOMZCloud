@@ -22,7 +22,7 @@ def main(tag, folder):
     # Path
     analyze_folder = os.path.join(folder, 'ANALYZE/')
     synthesize_folder = os.path.join(folder, 'SYNTHESIZE/')
-    os.makedirs(os.path.join(analyze_folder, '{}/INFO/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(analyze_folder, '{}/STATISTICS/'.format(tag)), exist_ok=True)
     
     label_list = ['ZERO', 'HALF', 'UNITY', 'DOUBLE']
     for label in label_list:
@@ -238,7 +238,7 @@ def main(tag, folder):
             histogram_shift_source[:, m, :] = scipy.interpolate.CubicSpline(z_grid, histogram_average_source[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - histogram_delta_source[:, m, numpy.newaxis])
         
         # Save
-        with h5py.File(os.path.join(analyze_folder, '{}/INFO/SOM_{}.hdf5'.format(tag, label)), 'w') as file:
+        with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/SOM_{}.hdf5'.format(tag, label)), 'w') as file:
             file.create_group('lens')
             file['lens'].create_dataset('delta', data=som_delta_lens)
             file['lens'].create_dataset('scale', data=som_scale_lens)
@@ -261,7 +261,7 @@ def main(tag, folder):
             file['source'].create_dataset('expectation', data=som_expectation_source)
             file['source'].create_dataset('correlation', data=som_correlation_source)
         
-        with h5py.File(os.path.join(analyze_folder, '{}/INFO/MODEL_{}.hdf5'.format(tag, label)), 'w') as file:
+        with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/MODEL_{}.hdf5'.format(tag, label)), 'w') as file:
             file.create_group('lens')
             file['lens'].create_dataset('delta', data=model_delta_lens)
             file['lens'].create_dataset('scale', data=model_scale_lens)
@@ -284,7 +284,7 @@ def main(tag, folder):
             file['source'].create_dataset('expectation', data=model_expectation_source)
             file['source'].create_dataset('correlation', data=model_correlation_source)
         
-        with h5py.File(os.path.join(analyze_folder, '{}/INFO/PRODUCT_{}.hdf5'.format(tag, label)), 'w') as file:
+        with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/PRODUCT_{}.hdf5'.format(tag, label)), 'w') as file:
             file.create_group('lens')
             file['lens'].create_dataset('delta', data=product_delta_lens)
             file['lens'].create_dataset('scale', data=product_scale_lens)
@@ -307,7 +307,7 @@ def main(tag, folder):
             file['source'].create_dataset('expectation', data=product_expectation_source)
             file['source'].create_dataset('correlation', data=product_correlation_source)
         
-        with h5py.File(os.path.join(analyze_folder, '{}/INFO/FIDUCIAL_{}.hdf5'.format(tag, label)), 'w') as file:
+        with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/FIDUCIAL_{}.hdf5'.format(tag, label)), 'w') as file:
             file.create_group('lens')
             file['lens'].create_dataset('delta', data=fiducial_delta_lens)
             file['lens'].create_dataset('scale', data=fiducial_scale_lens)
@@ -330,7 +330,7 @@ def main(tag, folder):
             file['source'].create_dataset('expectation', data=fiducial_expectation_source)
             file['source'].create_dataset('correlation', data=fiducial_correlation_source)
         
-        with h5py.File(os.path.join(analyze_folder, '{}/INFO/HISTOGRAM_{}.hdf5'.format(tag, label)), 'w') as file:
+        with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/HISTOGRAM_{}.hdf5'.format(tag, label)), 'w') as file:
             file.create_group('lens')
             file['lens'].create_dataset('delta', data=histogram_delta_lens)
             file['lens'].create_dataset('scale', data=histogram_scale_lens)
@@ -364,7 +364,7 @@ def main(tag, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Analysis Info')
+    PARSE = argparse.ArgumentParser(description='Analysis Statistics')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the dataset')
     

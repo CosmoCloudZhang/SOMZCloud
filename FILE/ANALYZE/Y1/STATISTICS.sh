@@ -6,9 +6,9 @@
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH -J ANALYZE_Y10_INFO
 #SBATCH --cpus-per-task=256
 #SBATCH --ntasks-per-node=1
+#SBATCH -J ANALYZE_Y1_STATISTICS
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -29,9 +29,9 @@ export OMP_PROC_BIND=spread
 export OMP_PLACES=threads
 
 # Initialize the process
-TAG="Y10"
+TAG="Y1"
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 
 # Run applications
-srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}FILE/ANALYZE/${TAG}/INFO.py" --tag=$TAG --folder=$BASE_FOLDER 
+srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}FILE/ANALYZE/${TAG}/STATISTICS.py" --tag=$TAG --folder=$BASE_FOLDER 

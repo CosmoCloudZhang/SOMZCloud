@@ -26,35 +26,35 @@ def main(tag, folder):
     label_list = ['ZERO', 'HALF', 'UNITY', 'DOUBLE']
     for label in label_list:
         # Info
-        with h5py.File(os.path.join(analyze_folder, '{}/INFO/SOM_{}.hdf5'.format(tag, label)), 'r') as file:
+        with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/SOM_{}.hdf5'.format(tag, label)), 'r') as file:
             som_middle_lens = file['lens']['middle'][...]
             som_middle_source = file['source']['middle'][...]
             
             som_expectation_lens = file['lens']['expectation'][...]
             som_expectation_source = file['source']['expectation'][...]
         
-        with h5py.File(os.path.join(analyze_folder, '{}/INFO/MODEL_{}.hdf5'.format(tag, label)), 'r') as file:
+        with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/MODEL_{}.hdf5'.format(tag, label)), 'r') as file:
             model_middle_lens = file['lens']['middle'][...]
             model_middle_source = file['source']['middle'][...]
             
             model_expectation_lens = file['lens']['expectation'][...]
             model_expectation_source = file['source']['expectation'][...]
         
-        with h5py.File(os.path.join(analyze_folder, '{}/INFO/PRODUCT_{}.hdf5'.format(tag, label)), 'r') as file:
+        with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/PRODUCT_{}.hdf5'.format(tag, label)), 'r') as file:
             product_middle_lens = file['lens']['middle'][...]
             product_middle_source = file['source']['middle'][...]
             
             product_expectation_lens = file['lens']['expectation'][...]
             product_expectation_source = file['source']['expectation'][...]
         
-        with h5py.File(os.path.join(analyze_folder, '{}/INFO/FIDUCIAL_{}.hdf5'.format(tag, label)), 'r') as file:
+        with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/FIDUCIAL_{}.hdf5'.format(tag, label)), 'r') as file:
             fiducial_middle_lens = file['lens']['middle'][...]
             fiducial_middle_source = file['source']['middle'][...]
             
             fiducial_expectation_lens = file['lens']['expectation'][...]
             fiducial_expectation_source = file['source']['expectation'][...]
         
-        with h5py.File(os.path.join(analyze_folder, '{}/INFO/HISTOGRAM_{}.hdf5'.format(tag, label)), 'r') as file:
+        with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/HISTOGRAM_{}.hdf5'.format(tag, label)), 'r') as file:
             histogram_middle_lens = file['lens']['middle'][...]
             histogram_middle_source = file['source']['middle'][...]
             
