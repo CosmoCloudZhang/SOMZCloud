@@ -6,10 +6,10 @@ import argparse
 
 def main(folder):
     '''
-    Store the fiducial cosmology
+    Store the fiducial values of cosmological parameters
     
     Arguments:
-        folder (str): The base folder of the data
+        folder (str): The base folder of the datasets
     
     Returns:
         duration (float): The duration of the process
@@ -59,7 +59,7 @@ def main(folder):
 if __name__ == '__main__':
     # Input
     PARSE = argparse.ArgumentParser(description='Info Cosmology')
-    PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the data')
+    PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the datasets')
     
     # Parse
     FOLDER = PARSE.parse_args().folder

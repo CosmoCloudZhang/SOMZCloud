@@ -8,10 +8,10 @@ import argparse
 
 def main(folder):
     '''
-    Store the fiducial cosmology
+    Store the fiducial values of intrinsic alignment
     
     Arguments:
-        folder (str): The base folder of the data
+        folder (str): The base folder of the datasets
     
     Returns:
         duration (float): The duration of the process
@@ -52,8 +52,8 @@ def main(folder):
     grid_size = 300
     z_grid = numpy.linspace(z1, z2, grid_size + 1)
     
-    a_pivot = 1.0
-    z_pivot = 1.0
+    a_pivot = 0.5
+    z_pivot = 0.5
     eta_pivot = 0.0
     a_grid = - constant * rho_m / growth_factor * a_pivot * numpy.power((1 + z_grid) / (1 + z_pivot), eta_pivot)
     
@@ -76,7 +76,7 @@ def main(folder):
 if __name__ == '__main__':
     # Input
     PARSE = argparse.ArgumentParser(description='Info Alignment')
-    PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the data')
+    PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the datasets')
     
     # Parse
     FOLDER = PARSE.parse_args().folder

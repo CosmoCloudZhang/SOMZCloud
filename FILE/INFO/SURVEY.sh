@@ -2,11 +2,11 @@
 #SBATCH -A m1727
 #SBATCH --nodes=1
 #SBATCH -q regular
+#SBATCH -J INFO_SURVEY
 #SBATCH --time=04:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH -J CELL_COSMOLOGY
 #SBATCH --cpus-per-task=256
 #SBATCH --ntasks-per-node=1
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
@@ -22,8 +22,9 @@ source $HOME/.bashrc
 conda activate $CosmoENV
 
 # Initialize the process
+NUMBER=500
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 
 # Run applications
-python -u "${BASE_PATH}FILE/CELL/COSMOLOGY.py" --folder=$BASE_FOLDER 
+python -u "${BASE_PATH}FILE/INFO/SURVEY.py" --number=$NUMBER --folder=$BASE_FOLDER 
