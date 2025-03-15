@@ -1,14 +1,14 @@
 #!/bin/bash
 #SBATCH -A m1727
-#SBATCH --nodes=4
+#SBATCH --nodes=1
 #SBATCH -q regular
 #SBATCH --time=04:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
+#SBATCH --cpus-per-task=8
 #SBATCH -J CELL_Y1_NN_DATA
-#SBATCH --cpus-per-task=256
-#SBATCH --ntasks-per-node=1
+#SBATCH --ntasks-per-node=32
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -36,6 +36,11 @@ BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 
 # Run applications
 LABEL_LIST=("ZERO" "HALF" "UNITY" "DOUBLE")
+TYPE_LIST=("SOM" "MODEL" "PRODUCT" "FIDUCIAL" "HISTOGRAM")
+
 for LABEL in "${LABEL_LIST[@]}"; do
-    srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}FILE/CELL/${TAG}/${NAME}/DATA.py" --tag=$TAG --name=$NAME --label=$LABEL --folder=$BASE_FOLDER 
+    for TYPE in "${TYPE_LIST[@]}"; do
+        srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}FILE/CELL/${TAG}/${NAME}/DATA.py" --tag=$TAG --name=$NAME --type=$TYPE --label=$LABEL --folder=$BASE_FOLDER &
+    done
 done
+wait

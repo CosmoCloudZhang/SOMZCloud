@@ -30,15 +30,15 @@ def main(tag, name, type, label, folder):
     # Path
     cell_folder = os.path.join(folder, 'CELL/')
     info_folder = os.path.join(folder, 'INFO/')
-    synthesize_folder = os.path.join(folder, 'SYNTHESIZE/')
+    analyze_folder = os.path.join(folder, 'ANALYZE/')
     
     os.makedirs(os.path.join(cell_folder, '{}/'.format(tag)), exist_ok = True)
     os.makedirs(os.path.join(cell_folder, '{}/{}'.format(tag, name)), exist_ok = True)
     
     # Load
-    with h5py.File(os.path.join(synthesize_folder, '{}/{}_{}.hdf5'.format(tag, type, label)), 'r') as file:
-        data_lens = file['lens']['data'][...]
-        data_source = file['source']['data'][...]
+    with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/{}_{}.hdf5'.format(tag, type, label)), 'r') as file:
+        data_lens = file['lens']['shift'][...]
+        data_source = file['source']['shift'][...]
     data_size, bin_lens_size, z_size = data_lens.shape
     data_size, bin_source_size, z_size = data_source.shape
     
@@ -98,7 +98,7 @@ def main(tag, name, type, label, folder):
     cell_average = numpy.median(cell_data, axis = 0)
     
     # Save
-    with h5py.File(os.path.join(cell_folder, '{}/{}/{}_DATA_{}.hdf5'.format(tag, name, type, label)), 'w') as file:
+    with h5py.File(os.path.join(cell_folder, '{}/{}/{}_SHIFT_{}.hdf5'.format(tag, name, type, label)), 'w') as file:
         file.create_dataset('data', data = cell_data)
         file.create_dataset('average', data = cell_average)
     
@@ -113,7 +113,7 @@ def main(tag, name, type, label, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Cell Data')
+    PARSE = argparse.ArgumentParser(description='Cell Shift')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
     PARSE.add_argument('--name', type=str, required=True, help='The name of the power spectra')
     PARSE.add_argument('--type', type=str, required=True, help='The type of the configuration')
