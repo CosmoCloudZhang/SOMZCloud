@@ -216,26 +216,46 @@ def main(tag, folder):
         histogram_shift_source = numpy.zeros((data_size, bin_source_size, z_size))
         
         for m in range(bin_lens_size):
-            som_shift_lens[:, m, :] = scipy.interpolate.CubicSpline(z_grid, som_average_lens[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - som_delta_lens[:, m, numpy.newaxis])
+            som_shift_lens[:, m, :] = numpy.maximum(scipy.interpolate.CubicSpline(z_grid, som_average_lens[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - som_delta_lens[:, m, numpy.newaxis]), 0)
             
-            model_shift_lens[:, m, :] = scipy.interpolate.CubicSpline(z_grid, model_average_lens[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - model_delta_lens[:, m, numpy.newaxis])
+            model_shift_lens[:, m, :] = numpy.maximum(scipy.interpolate.CubicSpline(z_grid, model_average_lens[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - model_delta_lens[:, m, numpy.newaxis]), 0)
             
-            product_shift_lens[:, m, :] = scipy.interpolate.CubicSpline(z_grid, product_average_lens[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - product_delta_lens[:, m, numpy.newaxis])
+            product_shift_lens[:, m, :] = numpy.maximum(scipy.interpolate.CubicSpline(z_grid, product_average_lens[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - product_delta_lens[:, m, numpy.newaxis]), 0)
             
-            fiducial_shift_lens[:, m, :] = scipy.interpolate.CubicSpline(z_grid, fiducial_average_lens[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - fiducial_delta_lens[:, m, numpy.newaxis])
+            fiducial_shift_lens[:, m, :] = numpy.maximum(scipy.interpolate.CubicSpline(z_grid, fiducial_average_lens[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - fiducial_delta_lens[:, m, numpy.newaxis]), 0)
             
-            histogram_shift_lens[:, m, :] = scipy.interpolate.CubicSpline(z_grid, histogram_average_lens[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - histogram_delta_lens[:, m, numpy.newaxis])
+            histogram_shift_lens[:, m, :] = numpy.maximum(scipy.interpolate.CubicSpline(z_grid, histogram_average_lens[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - histogram_delta_lens[:, m, numpy.newaxis]), 0)
+        
+        som_shift_lens = som_shift_lens / scipy.integrate.trapezoid(x=z_grid, y=som_shift_lens, axis=2)[:, :, numpy.newaxis]
+        
+        model_shift_lens = model_shift_lens / scipy.integrate.trapezoid(x=z_grid, y=model_shift_lens, axis=2)[:, :, numpy.newaxis]
+        
+        product_shift_lens = product_shift_lens / scipy.integrate.trapezoid(x=z_grid, y=product_shift_lens, axis=2)[:, :, numpy.newaxis]
+        
+        fiducial_shift_lens = fiducial_shift_lens / scipy.integrate.trapezoid(x=z_grid, y=fiducial_shift_lens, axis=2)[:, :, numpy.newaxis]
+        
+        histogram_shift_lens = histogram_shift_lens / scipy.integrate.trapezoid(x=z_grid, y=histogram_shift_lens, axis=2)[:, :, numpy.newaxis]
         
         for m in range(bin_source_size):
-            som_shift_source[:, m, :] = scipy.interpolate.CubicSpline(z_grid, som_average_source[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - som_delta_source[:, m, numpy.newaxis])
+            som_shift_source[:, m, :] = numpy.maximum(scipy.interpolate.CubicSpline(z_grid, som_average_source[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - som_delta_source[:, m, numpy.newaxis]), 0)
             
-            model_shift_source[:, m, :] = scipy.interpolate.CubicSpline(z_grid, model_average_source[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - model_delta_source[:, m, numpy.newaxis])
+            model_shift_source[:, m, :] = numpy.maximum(scipy.interpolate.CubicSpline(z_grid, model_average_source[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - model_delta_source[:, m, numpy.newaxis]), 0)
             
-            product_shift_source[:, m, :] = scipy.interpolate.CubicSpline(z_grid, product_average_source[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - product_delta_source[:, m, numpy.newaxis])
+            product_shift_source[:, m, :] = numpy.maximum(scipy.interpolate.CubicSpline(z_grid, product_average_source[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - product_delta_source[:, m, numpy.newaxis]), 0)
             
-            fiducial_shift_source[:, m, :] = scipy.interpolate.CubicSpline(z_grid, fiducial_average_source[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - fiducial_delta_source[:, m, numpy.newaxis])
+            fiducial_shift_source[:, m, :] = numpy.maximum(scipy.interpolate.CubicSpline(z_grid, fiducial_average_source[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - fiducial_delta_source[:, m, numpy.newaxis]), 0)
             
-            histogram_shift_source[:, m, :] = scipy.interpolate.CubicSpline(z_grid, histogram_average_source[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - histogram_delta_source[:, m, numpy.newaxis])
+            histogram_shift_source[:, m, :] = numpy.maximum(scipy.interpolate.CubicSpline(z_grid, histogram_average_source[m, :], extrapolate=True)(z_grid[numpy.newaxis, :] - histogram_delta_source[:, m, numpy.newaxis]), 0)
+        
+        som_shift_source = som_shift_source / scipy.integrate.trapezoid(x=z_grid, y=som_shift_source, axis=2)[:, :, numpy.newaxis]
+        
+        model_shift_source = model_shift_source / scipy.integrate.trapezoid(x=z_grid, y=model_shift_source, axis=2)[:, :, numpy.newaxis]
+        
+        product_shift_source = product_shift_source / scipy.integrate.trapezoid(x=z_grid, y=product_shift_source, axis=2)[:, :, numpy.newaxis]
+        
+        fiducial_shift_source = fiducial_shift_source / scipy.integrate.trapezoid(x=z_grid, y=fiducial_shift_source, axis=2)[:, :, numpy.newaxis]
+        
+        histogram_shift_source = histogram_shift_source / scipy.integrate.trapezoid(x=z_grid, y=histogram_shift_source, axis=2)[:, :, numpy.newaxis]
         
         # Save
         with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/SOM_{}.hdf5'.format(tag, label)), 'w') as file:
