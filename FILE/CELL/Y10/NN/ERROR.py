@@ -92,27 +92,26 @@ def main(tag, name, type, label, folder):
     pyplot.rcParams['font.size'] = 25
     
     # Figure
-    color_list = cm.rainbow(numpy.linspace(0, 1, cell_size))
+    varsigma1 = 2e-3
+    varsigma2 = 2e+2
+    color_list = cm.rainbow(numpy.linspace(0, 1, bin_lens_size))
     figure, plot = pyplot.subplots(nrows=bin_lens_size, ncols=1, figsize=(12, 4 * bin_lens_size))
     
-    index = 0
     for m in range(bin_lens_size):
-        for n in range(m, bin_lens_size):
-            if m == n:
-                variance = numpy.diag(covariance_matrix[m * ell_size: (m + 1) * ell_size, n * ell_size: (n + 1) * ell_size])
-                cell_data_varsigma = numpy.divide(cell_data_error[m, n, :], numpy.sqrt(variance), out=numpy.zeros(ell_size), where=variance != 0)
-                cell_shift_varsigma = numpy.divide(cell_shift_error[m, n, :], numpy.sqrt(variance), out=numpy.zeros(ell_size), where=variance != 0)
-                
-                plot[m].scatter(ell_data, cell_data_varsigma, s=50, marker='s', facecolors=color_list[index], edgecolors=color_list[index])
-                plot[m].plot(ell_data, cell_data_varsigma, linestyle='-', linewidth=2.5, color=color_list[index], label=r'$n = {:.0f}$'.format(n + 1))
-                
-                plot[m].plot(ell_data, cell_shift_varsigma, linestyle=':', linewidth=2.5, color=color_list[index])
-                plot[m].scatter(ell_data, cell_shift_varsigma, s=50, marker='s', facecolors='none', edgecolors=color_list[index])
-                
-                plot[m].axhline(y=1, color='black', linestyle='-')
-                plot[m].text(x=1000, y=1e-2, s=r'$m = {:.0f}$'.format(m + 1), fontsize=20, color='black')
-                plot[m].fill_betweenx(y=[1e-3, 1e+2], x1=ell_maximal[m], x2=ell2, color='gray', alpha=0.2)
-            index = index + 1
+        cell_sigma = numpy.sqrt(numpy.diag(covariance_matrix[m * ell_size: (m + 1) * ell_size, m * ell_size: (m + 1) * ell_size]))
+        
+        cell_data_varsigma = numpy.divide(cell_data_error[m, m, :], cell_sigma, out=numpy.zeros(ell_size), where=cell_sigma != 0)
+        cell_shift_varsigma = numpy.divide(cell_shift_error[m, m, :], cell_sigma, out=numpy.zeros(ell_size), where=cell_sigma != 0)
+        
+        plot[m].scatter(ell_data, cell_data_varsigma, s=50, marker='s', facecolors=color_list[m], edgecolors=color_list[m])
+        plot[m].plot(ell_data, cell_data_varsigma, linestyle='-', linewidth=2.5, color=color_list[m], label=r'$n = {:.0f}$'.format(m + 1))
+        
+        plot[m].plot(ell_data, cell_shift_varsigma, linestyle=':', linewidth=2.5, color=color_list[m])
+        plot[m].scatter(ell_data, cell_shift_varsigma, s=50, marker='s', facecolors='none', edgecolors=color_list[m])
+        
+        plot[m].axhline(y=1, color='black', linestyle='-')
+        plot[m].text(x=1000, y=5 * varsigma1, s=r'$m = {:.0f}$'.format(m + 1), fontsize=20, color='black')
+        plot[m].fill_betweenx(y=[varsigma1, varsigma2], x1=ell_maximal[m], x2=ell2, color='gray', alpha=0.2)
         
         plot[m].set_xscale('log')
         plot[m].set_yscale('log')
@@ -122,7 +121,7 @@ def main(tag, name, type, label, folder):
         plot[m].set_ylabel(r'$\varsigma_{\theta \theta}^{mn} (\ell)$')
         
         plot[m].set_xlim(ell1, ell2)
-        plot[m].set_ylim(1e-3, 1e+2)
+        plot[m].set_ylim(varsigma1, varsigma2)
     
     figure.subplots_adjust(wspace=0, hspace=0)
     figure.savefig(os.path.join(cell_folder, '{}/{}/{}_ERROR_{}.pdf'.format(tag, name, type, label)), format='pdf', bbox_inches='tight')
