@@ -57,6 +57,8 @@ def main(tag, name, type, label, folder):
     # Bin
     with h5py.File(os.path.join(model_folder, '{}/SELECT/DATA0.hdf5'.format(tag)), 'r') as file:
         bin_lens = file['bin_lens'][...]
+        bin_source = file['bin_source'][...]
+    
     k_maximal = 0.1 * cosmology_info['H']
     ell_maximal = k_maximal * pyccl.comoving_radial_distance(cosmo=cosmology, a=1 / (1 + bin_lens)) - 1 / 2
     
@@ -64,14 +66,12 @@ def main(tag, name, type, label, folder):
     with h5py.File(os.path.join(cell_folder, '{}/{}/{}_DATA_{}.hdf5'.format(tag, name, type, label)), 'r') as file:
         cell_data = file['data'][...]
     cell_data_error = numpy.std(cell_data, axis = 0)
+    bin_lens_size, bin_source_size, ell_size = cell_data_error.shape
     
     with h5py.File(os.path.join(cell_folder, '{}/{}/{}_SHIFT_{}.hdf5'.format(tag, name, type, label)), 'r') as file:
         cell_shift = file['data'][...]
     cell_shift_error = numpy.std(cell_shift, axis = 0)
-    
     bin_lens_size, bin_source_size, ell_size = cell_shift_error.shape
-    bin_lens_size, bin_source_size, ell_size = cell_data_error.shape
-    cell_size = bin_lens_size * bin_source_size
     
     # Multipole
     ell1 = 20
@@ -81,8 +81,7 @@ def main(tag, name, type, label, folder):
     ell_data = numpy.sqrt(ell_grid[+1:] * ell_grid[:-1])
     
     # Covariance
-    covariance_matrix = numpy.loadtxt(os.path.join(cell_folder, '{}/COVARIANCE/COVARIANCE_MATRIX_{}.ascii'.format(tag, label)))
-    covariance_matrix = covariance_matrix[:cell_size * ell_size, :cell_size * ell_size]
+    variance = numpy.diagonal(numpy.loadtxt(os.path.join(cell_folder, '{}/COVARIANCE/COVARIANCE_MATRIX_{}.ascii'.format(tag, label)), dtype=numpy.float32), axis1=0, axis2=1)
     
     # Configuration
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
@@ -92,37 +91,40 @@ def main(tag, name, type, label, folder):
     pyplot.rcParams['font.size'] = 25
     
     # Figure
-    color_list = cm.rainbow(numpy.linspace(0, 1, cell_size))
+    varsigma1 = 2e-3
+    varsigma2 = 2e+0
+    color_list = cm.rainbow(numpy.linspace(0, 1, bin_source_size))
     figure, plot = pyplot.subplots(nrows=bin_lens_size, ncols=1, figsize=(12, 4 * bin_lens_size))
     
     index = 0
     for m in range(bin_lens_size):
         for n in range(bin_source_size):
-            variance = numpy.diag(covariance_matrix[m * ell_size: (m + 1) * ell_size, n * ell_size: (n + 1) * ell_size])
-            cell_data_varsigma = numpy.divide(cell_data_error[m, n, :], numpy.sqrt(variance), out=numpy.zeros(ell_size), where=variance != 0)
-            cell_shift_varsigma = numpy.divide(cell_shift_error[m, n, :], numpy.sqrt(variance), out=numpy.zeros(ell_size), where=variance != 0)
-            
-            plot[m].scatter(ell_data, cell_data_varsigma, s=50, marker='s', facecolors=color_list[index], edgecolors=color_list[index])
-            plot[m].plot(ell_data, cell_data_varsigma, linestyle='-', linewidth=2.5, color=color_list[index], label=r'$n = {:.0f}$'.format(n + 1))
-            
-            plot[m].plot(ell_data, cell_shift_varsigma, linestyle=':', linewidth=2.5, color=color_list[index])
-            plot[m].scatter(ell_data, cell_shift_varsigma, s=50, marker='s', facecolors='none', edgecolors=color_list[index])
-            
-            plot[m].axhline(y=1, color='black', linestyle='-')
-            plot[m].text(x=1000, y=1e-2, s=r'$m = {:.0f}$'.format(m + 1), fontsize=20, color='black')
-            plot[m].fill_betweenx(y=[1e-3, 1e+2], x1=ell_maximal[m], x2=ell2, color='gray', alpha=0.2)
-            
+            cell_sigma = numpy.sqrt(variance[index * ell_size: (index + 1) * ell_size])
             index = index + 1
+            
+            if bin_lens[m + 1] < bin_source[n + 1]:
+                cell_data_varsigma = numpy.divide(cell_data_error[m, n, :], cell_sigma, out=numpy.zeros(ell_size), where=cell_sigma != 0)
+                cell_shift_varsigma = numpy.divide(cell_shift_error[m, n, :], cell_sigma, out=numpy.zeros(ell_size), where=cell_sigma != 0)
+                
+                plot[m].scatter(ell_data, cell_data_varsigma, s=50, marker='s', facecolors=color_list[n], edgecolors=color_list[n])
+                plot[m].plot(ell_data, cell_data_varsigma, linestyle='-', linewidth=1.0, color=color_list[n], label=r'$n = {:.0f}$'.format(n + 1))
+                
+                plot[m].plot(ell_data, cell_shift_varsigma, linestyle=':', linewidth=1.0, color=color_list[n])
+                plot[m].scatter(ell_data, cell_shift_varsigma, s=50, marker='s', facecolors='none', edgecolors=color_list[n])
+        
+        plot[m].axhline(y=1, color='black', linestyle='--', linewidth=1.0)
+        plot[m].fill_betweenx(y=[varsigma1, varsigma2], x1=ell_maximal[m], x2=ell2, color='gray', alpha=0.2)
+        plot[m].text(x=ell2 / 2, y=2 * varsigma1, s=r'$m = {:.0f}$'.format(m + 1), fontsize=15, color='black')
         
         plot[m].set_xscale('log')
         plot[m].set_yscale('log')
-        plot[m].legend(loc='upper left', fontsize=20)
+        plot[m].legend(loc='upper left', fontsize=15)
         
         plot[m].set_xlabel(r'$\ell$')
         plot[m].set_ylabel(r'$\varsigma_{\theta \epsilon}^{mn} (\ell)$')
         
         plot[m].set_xlim(ell1, ell2)
-        plot[m].set_ylim(1e-3, 1e+2)
+        plot[m].set_ylim(varsigma1, varsigma2)
     
     figure.subplots_adjust(wspace=0, hspace=0)
     figure.savefig(os.path.join(cell_folder, '{}/{}/{}_ERROR_{}.pdf'.format(tag, name, type, label)), format='pdf', bbox_inches='tight')
