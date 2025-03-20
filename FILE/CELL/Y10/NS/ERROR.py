@@ -34,6 +34,22 @@ def main(tag, name, type, label, folder):
     os.makedirs(os.path.join(cell_folder, '{}/'.format(tag)), exist_ok = True)
     os.makedirs(os.path.join(cell_folder, '{}/{}'.format(tag, name)), exist_ok = True)
     
+    # Load
+    with h5py.File(os.path.join(cell_folder, '{}/{}/{}_DATA_{}.hdf5'.format(tag, name, type, label)), 'r') as file:
+        cell_data = file['data'][...]
+    cell_data_error = numpy.std(cell_data, axis = 0)
+    
+    with h5py.File(os.path.join(cell_folder, '{}/{}/{}_SHIFT_{}.hdf5'.format(tag, name, type, label)), 'r') as file:
+        cell_shift = file['data'][...]
+    cell_shift_error = numpy.std(cell_shift, axis = 0)
+    
+    # Multipole
+    ell1 = 20
+    ell2 = 2000
+    ell_size = 20
+    ell_grid = numpy.geomspace(ell1, ell2, ell_size + 1)
+    ell_data = numpy.sqrt(ell_grid[+1:] * ell_grid[:-1])
+    
     # Cosmology
     with open(os.path.join(info_folder, 'COSMOLOGY.json'), 'r') as file:
         cosmology_info = json.load(file)
@@ -59,29 +75,19 @@ def main(tag, name, type, label, folder):
         bin_lens = file['bin_lens'][...]
         bin_source = file['bin_source'][...]
     
-    k_maximal = 0.1 * cosmology_info['H']
-    ell_maximal = k_maximal * pyccl.comoving_radial_distance(cosmo=cosmology, a=1 / (1 + bin_lens)) - 1 / 2
+    bin_lens_size = len(bin_lens) - 1
+    bin_source_size = len(bin_source) - 1
     
-    # Load
-    with h5py.File(os.path.join(cell_folder, '{}/{}/{}_DATA_{}.hdf5'.format(tag, name, type, label)), 'r') as file:
-        cell_data = file['data'][...]
-    cell_data_error = numpy.std(cell_data, axis = 0)
-    bin_lens_size, bin_source_size, ell_size = cell_data_error.shape
-    
-    with h5py.File(os.path.join(cell_folder, '{}/{}/{}_SHIFT_{}.hdf5'.format(tag, name, type, label)), 'r') as file:
-        cell_shift = file['data'][...]
-    cell_shift_error = numpy.std(cell_shift, axis = 0)
-    bin_lens_size, bin_source_size, ell_size = cell_shift_error.shape
-    
-    # Multipole
-    ell1 = 20
-    ell2 = 2000
-    ell_size = 20
-    ell_grid = numpy.geomspace(ell1, ell2, ell_size + 1)
-    ell_data = numpy.sqrt(ell_grid[+1:] * ell_grid[:-1])
+    k_maximal_lens = 0.1 * cosmology_info['H']
+    ell_maximal_lens = k_maximal_lens * pyccl.comoving_radial_distance(cosmo=cosmology, a=1 / (1 + bin_lens)) - 1 / 2
     
     # Covariance
-    variance = numpy.diagonal(numpy.loadtxt(os.path.join(cell_folder, '{}/COVARIANCE/COVARIANCE_MATRIX_{}.ascii'.format(tag, label)), dtype=numpy.float32), axis1=0, axis2=1)
+    cell_range1 = bin_lens_size * (bin_lens_size + 1) // 2 * ell_size
+    cell_range2 = cell_range1 + bin_lens_size * bin_source_size * ell_size
+    
+    covariance = numpy.loadtxt(os.path.join(cell_folder, '{}/COVARIANCE/COVARIANCE_MATRIX_{}.ascii'.format(tag, label)), dtype=numpy.float32)
+    variance = numpy.diagonal(covariance, axis1=0, axis2=1)
+    sigma = numpy.sqrt(variance)[cell_range1: cell_range2]
     
     # Configuration
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
@@ -91,34 +97,33 @@ def main(tag, name, type, label, folder):
     pyplot.rcParams['font.size'] = 25
     
     # Figure
-    varsigma1 = 2e-4
-    varsigma2 = 2e-1
+    varsigma1 = 1e-2
+    varsigma2 = 2e+0
     color_list = cm.rainbow(numpy.linspace(0, 1, bin_source_size))
     figure, plot = pyplot.subplots(nrows=bin_lens_size, ncols=1, figsize=(12, 4 * bin_lens_size))
     
     index = 0
     for m in range(bin_lens_size):
         for n in range(bin_source_size):
-            cell_sigma = numpy.sqrt(variance[index * ell_size: (index + 1) * ell_size])
+            cell_sigma = sigma[index * ell_size: (index + 1) * ell_size]
             index = index + 1
             
-            if bin_lens[m + 1] < bin_source[n + 1]:
+            if bin_lens[m + 1] < (bin_source[n] + bin_source[n + 1]) / 2:
                 cell_data_varsigma = numpy.divide(cell_data_error[m, n, :], cell_sigma, out=numpy.zeros(ell_size), where=cell_sigma != 0)
                 cell_shift_varsigma = numpy.divide(cell_shift_error[m, n, :], cell_sigma, out=numpy.zeros(ell_size), where=cell_sigma != 0)
                 
                 plot[m].scatter(ell_data, cell_data_varsigma, s=50, marker='s', facecolors=color_list[n], edgecolors=color_list[n])
-                plot[m].plot(ell_data, cell_data_varsigma, linestyle='-', linewidth=1.0, color=color_list[n], label=r'$n = {:.0f}$'.format(n + 1))
+                plot[m].plot(ell_data, cell_data_varsigma, linestyle='-', linewidth=1.0, color=color_list[n], label=r'${} \times {}$'.format(m + 1, n + 1))
                 
                 plot[m].plot(ell_data, cell_shift_varsigma, linestyle=':', linewidth=1.0, color=color_list[n])
                 plot[m].scatter(ell_data, cell_shift_varsigma, s=50, marker='s', facecolors='none', edgecolors=color_list[n])
         
-        plot[m].axhline(y=1, color='black', linestyle='-', linewidth=1.0)
-        plot[m].fill_betweenx(y=[varsigma1, varsigma2], x1=ell_maximal[m], x2=ell2, color='gray', alpha=0.2)
-        plot[m].text(x=ell2 / 2, y=2 * varsigma1, s=r'$m = {:.0f}$'.format(m + 1), fontsize=15, color='black')
+        plot[m].axhline(y=1, color='black', linestyle='--', linewidth=1.0)
+        plot[m].fill_betweenx(y=[varsigma1, varsigma2], x1=ell_maximal_lens[m], x2=ell2, color='gray', alpha=0.2)
         
         plot[m].set_xscale('log')
         plot[m].set_yscale('log')
-        plot[m].legend(loc='upper left', fontsize=15)
+        plot[m].legend(loc='center left', bbox_to_anchor=(1.0, 0.8), fontsize=20)
         
         plot[m].set_xlabel(r'$\ell$')
         plot[m].set_ylabel(r'$\varsigma_{\theta \epsilon}^{mn} (\ell)$')
