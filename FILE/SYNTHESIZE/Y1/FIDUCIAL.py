@@ -47,12 +47,11 @@ def main(tag, folder):
         z_grid = numpy.linspace(z1, z2, grid_size + 1)
         
         # Fiducial
-        epsilon = 1e-4
-        product_response_lens = numpy.divide(histogram_average_lens + epsilon, product_average_lens + epsilon)
-        product_response_source = numpy.divide(histogram_average_source + epsilon, product_average_source + epsilon)
+        product_response_lens = histogram_average_lens - product_average_lens
+        product_response_source = histogram_average_source - product_average_source
         
-        fiducial_data_lens = numpy.maximum(product_data_lens * product_response_lens[numpy.newaxis, :, :], 0.0)
-        fiducial_data_source = numpy.maximum(product_data_source * product_response_source[numpy.newaxis, :, :], 0.0)
+        fiducial_data_lens = numpy.maximum(product_data_lens + product_response_lens[numpy.newaxis, :, :], 0.0)
+        fiducial_data_source = numpy.maximum(product_data_source + product_response_source[numpy.newaxis, :, :], 0.0)
         
         fiducial_data_lens = fiducial_data_lens / scipy.integrate.trapezoid(x=z_grid, y=fiducial_data_lens, axis=2)[:, :, numpy.newaxis]
         fiducial_data_source = fiducial_data_source / scipy.integrate.trapezoid(x=z_grid, y=fiducial_data_source, axis=2)[:, :, numpy.newaxis]
