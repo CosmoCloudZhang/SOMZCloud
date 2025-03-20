@@ -6,8 +6,8 @@
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH --cpus-per-task=256
-#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=64
+#SBATCH --ntasks-per-node=4
 #SBATCH -J ANALYZE_Y10_COVARIANCE
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
@@ -33,5 +33,13 @@ TAG="Y10"
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 
-# Run the application
-srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}FILE/ANALYZE/${TAG}/COVARIANCE.py" --tag=$TAG --folder=$BASE_FOLDER
+# Run applications
+LABEL_LIST=("ZERO" "HALF" "UNITY" "DOUBLE")
+TYPE_LIST=("SOM" "MODEL" "PRODUCT" "FIDUCIAL" "HISTOGRAM")
+
+for LABEL in "${LABEL_LIST[@]}"; do
+    for TYPE in "${TYPE_LIST[@]}"; do
+        srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}FILE/ANALYZE/${TAG}/COVARIANCE.py" --tag=$TAG --type=$TYPE --label=$LABEL --folder=$BASE_FOLDER &
+    done
+done
+wait

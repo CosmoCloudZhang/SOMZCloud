@@ -61,106 +61,63 @@ def plot_ensemble(z_grid, select_lens, select_source, bin_lens_size, bin_source_
     return figure
 
 
-def main(tag, folder):
+def main(tag, type, label, folder):
     '''
     Plot the ensemble of the lens and source redshift distributions
     
     Arguments:
         tag (str): The tag of the configuration
+        type (str): The type of the configuration
+        label (str): The label of the configuration
         folder (str): The base folder of the figure
     
     Returns:
         duration (float): The duration of the process
     '''
     start = time.time()
+    print('Type: {}, Label: {}'.format(type, label))
     
     # Path
     analyze_folder = os.path.join(folder, 'ANALYZE/')
     synthesize_folder = os.path.join(folder, 'SYNTHESIZE/')
     
-    label_list = ['ZERO', 'HALF', 'UNITY', 'DOUBLE']
-    for label in label_list:
-        os.makedirs(os.path.join(analyze_folder, '{}/ENSEMBLE/'.format(tag)), exist_ok=True)
-        os.makedirs(os.path.join(analyze_folder, '{}/ENSEMBLE/{}/'.format(tag, label)), exist_ok=True)
-        
-        # Summarize
-        with h5py.File(os.path.join(synthesize_folder, '{}/SOM_{}.hdf5'.format(tag, label)), 'r') as file:
-            som_data_lens = file['lens']['data'][...]
-            som_data_source = file['source']['data'][...]
-        
-        with h5py.File(os.path.join(synthesize_folder, '{}/MODEL_{}.hdf5'.format(tag, label)), 'r') as file:
-            model_data_lens = file['lens']['data'][...]
-            model_data_source = file['source']['data'][...]
-        
-        with h5py.File(os.path.join(synthesize_folder, '{}/PRODUCT_{}.hdf5'.format(tag, label)), 'r') as file:
-            product_data_lens = file['lens']['data'][...]
-            product_data_source = file['source']['data'][...]
-        
-        with h5py.File(os.path.join(synthesize_folder, '{}/FIDUCIAL_{}.hdf5'.format(tag, label)), 'r') as file:
-            fiducial_data_lens = file['lens']['data'][...]
-            fiducial_data_source = file['source']['data'][...]
-        
-        with h5py.File(os.path.join(synthesize_folder, '{}/HISTOGRAM_{}.hdf5'.format(tag, label)), 'r') as file:
-            histogram_data_lens = file['lens']['data'][...]
-            histogram_data_source = file['source']['data'][...]
-        
-        # Size
-        select_size = 5000
-        data_size, bin_lens_size, z_size = histogram_data_lens.shape
-        data_size, bin_source_size, z_size = histogram_data_source.shape
-        indices = numpy.sort(numpy.random.choice(data_size, select_size, replace=False))
-        
-        # Select
-        som_select_lens = som_data_lens[indices, :, :]
-        som_select_source = som_data_source[indices, :, :]
-        
-        model_select_lens = model_data_lens[indices, :, :]
-        model_select_source = model_data_source[indices, :, :]
-        
-        product_select_lens = product_data_lens[indices, :, :]
-        product_select_source = product_data_source[indices, :, :]
-        
-        fiducial_select_lens = fiducial_data_lens[indices, :, :]
-        fiducial_select_source = fiducial_data_source[indices, :, :]
-        
-        histogram_select_lens = histogram_data_lens[indices, :, :]
-        histogram_select_source = histogram_data_source[indices, :, :]
-        
-        # Redshift
-        z1 = 0.0
-        z2 = 3.0
-        z_grid = numpy.linspace(z1, z2, z_size)
-        
-        # Configuration
-        os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
-        pyplot.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
-        pyplot.rcParams['pgf.texsystem'] = 'pdflatex'
-        pyplot.rcParams['text.usetex'] = True
-        pyplot.rcParams['font.size'] = 20
-        
-        os.makedirs(analyze_folder, exist_ok=True)
-        os.makedirs(os.path.join(analyze_folder, '{}/ENSEMBLE/'.format(tag)), exist_ok=True)
-        
-        # Plot
-        figure = plot_ensemble(z_grid, som_select_lens, som_select_source, bin_lens_size, bin_source_size)
-        figure.savefig(os.path.join(analyze_folder, '{}/ENSEMBLE/{}/FIGURE_SOM.pdf'.format(tag, label)), format='pdf', bbox_inches='tight')
-        pyplot.close(figure)
-        
-        figure = plot_ensemble(z_grid, model_select_lens, model_select_source, bin_lens_size, bin_source_size)
-        figure.savefig(os.path.join(analyze_folder, '{}/ENSEMBLE/{}/FIGURE_MODEL.pdf'.format(tag, label)), format='pdf', bbox_inches='tight')
-        pyplot.close(figure)
-        
-        figure = plot_ensemble(z_grid, product_select_lens, product_select_source, bin_lens_size, bin_source_size)
-        figure.savefig(os.path.join(analyze_folder, '{}/ENSEMBLE/{}/FIGURE_PRODUCT.pdf'.format(tag, label)), format='pdf', bbox_inches='tight')
-        pyplot.close(figure)
-        
-        figure = plot_ensemble(z_grid, fiducial_select_lens, fiducial_select_source, bin_lens_size, bin_source_size)
-        figure.savefig(os.path.join(analyze_folder, '{}/ENSEMBLE/{}/FIGURE_FIDUCIAL.pdf'.format(tag, label)), format='pdf', bbox_inches='tight')
-        pyplot.close(figure)
-        
-        figure = plot_ensemble(z_grid, histogram_select_lens, histogram_select_source, bin_lens_size, bin_source_size)
-        figure.savefig(os.path.join(analyze_folder, '{}/ENSEMBLE/{}/FIGURE_HISTOGRAM.pdf'.format(tag, label)), format='pdf', bbox_inches='tight')
-        pyplot.close(figure)
+    os.makedirs(os.path.join(analyze_folder, '{}/ENSEMBLE/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(analyze_folder, '{}/ENSEMBLE/{}/'.format(tag, label)), exist_ok=True)
+    
+    # Summarize
+    with h5py.File(os.path.join(synthesize_folder, '{}/{}_{}.hdf5'.format(tag, type, label)), 'r') as file:
+        data_lens = file['lens']['data'][...]
+        data_source = file['source']['data'][...]
+    
+    # Size
+    select_size = 5000
+    data_size, bin_lens_size, z_size = data_lens.shape
+    data_size, bin_source_size, z_size = data_source.shape
+    indices = numpy.sort(numpy.random.choice(data_size, select_size, replace=False))
+    
+    # Select
+    select_lens = data_lens[indices, :, :]
+    select_source = data_source[indices, :, :]
+    
+    # Redshift
+    z1 = 0.0
+    z2 = 3.0
+    z_grid = numpy.linspace(z1, z2, z_size)
+    
+    # Configuration
+    os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
+    pyplot.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
+    pyplot.rcParams['pgf.texsystem'] = 'pdflatex'
+    pyplot.rcParams['text.usetex'] = True
+    pyplot.rcParams['font.size'] = 20
+    
+    os.makedirs(analyze_folder, exist_ok=True)
+    os.makedirs(os.path.join(analyze_folder, '{}/ENSEMBLE/'.format(tag)), exist_ok=True)
+    
+    # Plot
+    figure = plot_ensemble(z_grid, select_lens, select_source, bin_lens_size, bin_source_size)
+    figure.savefig(os.path.join(analyze_folder, '{}/ENSEMBLE/{}/FIGURE_{}.pdf'.format(tag, label, type)), format='pdf', bbox_inches='tight')
+    pyplot.close(figure)
     
     # Duration
     end = time.time()
@@ -175,11 +132,15 @@ if __name__ == '__main__':
     # Input
     PARSE = argparse.ArgumentParser(description='Analysis Ensemble')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
+    PARSE.add_argument('--type', type=str, required=True, help='The type of the configuration')
+    PARSE.add_argument('--label', type=str, required=True, help='The label of the configuration')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the figure')
     
     # Parse
     TAG = PARSE.parse_args().tag
+    TYPE = PARSE.parse_args().type
+    LABEL = PARSE.parse_args().label
     FOLDER = PARSE.parse_args().folder
     
     # Output
-    OUTPUT = main(TAG, FOLDER)
+    OUTPUT = main(TAG, TYPE, LABEL, FOLDER)
