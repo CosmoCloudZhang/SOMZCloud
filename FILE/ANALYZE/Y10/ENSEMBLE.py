@@ -22,14 +22,14 @@ def plot_ensemble(z_grid, select_lens, select_source, bin_lens_size, bin_source_
     '''
     # Figure
     figure, plot = pyplot.subplots(nrows = 2, ncols = 1, figsize = (12, 12))
-    source_color_list = ['darkmagenta', 'darkblue', 'darkgreen', 'darkorange', 'darkred']
-    lens_color_list = ['hotpink', 'darkmagenta', 'darkorchid', 'darkblue', 'deepskyblue', 'darkgreen', 'darkgoldenrod', 'darkorange', 'darksalmon', 'darkred']
+    color_source_list = ['darkmagenta', 'darkblue', 'darkgreen', 'darkorange', 'darkred']
+    color_lens_list = ['hotpink', 'darkmagenta', 'darkorchid', 'darkblue', 'deepskyblue', 'darkgreen', 'darkgoldenrod', 'darkorange', 'darksalmon', 'darkred']
     
     for m in range(bin_lens_size):
         
-        plot[0].plot(z_grid, numpy.transpose(select_lens[:, m, :]), color = lens_color_list[m], linewidth = 0.05, alpha = 0.05)
+        plot[0].plot(z_grid, numpy.transpose(select_lens[:, m, :]), color = color_lens_list[m], linewidth = 0.05, alpha = 0.05)
         
-        plot[0].plot(z_grid, numpy.mean(select_lens[:, m, :], axis=0), color = lens_color_list[m], linewidth = 5.0, label=r'$\mathrm{Bin} \,' + r'{:.0f}$'.format(m + 1))
+        plot[0].plot(z_grid, numpy.mean(select_lens[:, m, :], axis=0), color = color_lens_list[m], linewidth = 5.0, label=r'$\mathrm{Bin} \,' + r'{:.0f}$'.format(m + 1))
     
     plot[0].set_xlim(0.0, 2.5)
     plot[0].set_ylim(0.0, 12.0)
@@ -43,9 +43,9 @@ def plot_ensemble(z_grid, select_lens, select_source, bin_lens_size, bin_source_
     
     for m in range(bin_source_size):
         
-        plot[1].plot(z_grid, numpy.transpose(select_source[:, m, :]), color = source_color_list[m], linewidth = 0.05, alpha = 0.05)
+        plot[1].plot(z_grid, numpy.transpose(select_source[:, m, :]), color = color_source_list[m], linewidth = 0.05, alpha = 0.05)
         
-        plot[1].plot(z_grid, numpy.mean(select_source[:, m, :], axis=0), color = source_color_list[m], linewidth = 5.0, label=r'$\mathrm{Bin} \,' + r'{:.0f}$'.format(m + 1))
+        plot[1].plot(z_grid, numpy.mean(select_source[:, m, :], axis=0), color = color_source_list[m], linewidth = 5.0, label=r'$\mathrm{Bin} \,' + r'{:.0f}$'.format(m + 1))
     
     plot[1].set_xlim(0.0, 2.5)
     plot[1].set_ylim(0.0, 6.0)
