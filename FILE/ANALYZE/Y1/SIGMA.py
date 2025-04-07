@@ -68,11 +68,11 @@ def main(tag, folder):
     plot.set_xlim(mu1, mu2)
     plot.set_ylim(eta1, eta2)
     
-    plot.set_xlabel(r'$\mu = \frac{S}{N}$')
-    plot.set_ylabel(r'$\eta = \frac{R^2}{R^2_\mathrm{PSF}}$')
+    plot.set_xlabel(r'$\frac{S}{N}$')
+    plot.set_ylabel(r'$\frac{R^2}{R^2_\mathrm{PSF}}$')
     
     color_bar = figure.colorbar(image, cax=figure.add_axes([0.85, 0.15, 0.05, 0.70]),  orientation='vertical')
-    color_bar.set_label(r'$\sigma_\gamma$')
+    color_bar.set_label(r'$\sigma_\mathrm{m}$')
     
     os.makedirs(os.path.join(analyze_folder, '{}/'.format(tag)), exist_ok=True)
     os.makedirs(os.path.join(analyze_folder, '{}/SIGMA/'.format(tag)), exist_ok=True)
