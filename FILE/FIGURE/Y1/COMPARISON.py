@@ -75,7 +75,7 @@ def main(tag, index, folder):
         select_source = (z_mean[m] <= z_true_source) & (z_true_source < z_mean[m + 1])
         if numpy.sum(select_source) > 0:
             delta_mean_source[m] = numpy.mean(delta_source[select_source])
-    
+    print(delta_mean_lens, delta_mean_source)
     # Plot
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
     pyplot.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
@@ -102,8 +102,10 @@ def main(tag, index, folder):
     plot1.set_ylim(z1, z2)
     
     plot1.set_xticklabels([])
-    plot1.set_ylabel(r'$z_\mathrm{phot}$')
     plot1.get_yticklabels()[0].set_visible(False)
+    
+    plot1.set_title(r'$\mathtt{Lens}$')
+    plot1.set_ylabel(r'$z_\mathrm{phot}$')
     
     # Plot 2
     plot2 = figure.add_subplot(plot[0, 1])
@@ -121,6 +123,7 @@ def main(tag, index, folder):
     
     plot2.set_xticklabels([])
     plot2.set_yticklabels([])
+    plot2.set_title(r'$\mathtt{Source}$')
     
     # Plot 3
     plot3 = figure.add_subplot(plot[1, 0])

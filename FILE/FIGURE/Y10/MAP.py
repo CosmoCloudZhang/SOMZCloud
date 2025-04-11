@@ -65,19 +65,19 @@ def main(tag, index, folder):
     figure, plot = pyplot.subplots(nrows=2, ncols=2, figsize=(12, 12))
     
     mesh = plot[0, 0].imshow(application_map, norm=normalize, cmap='coolwarm')
-    plot[0, 0].set_title(r'$\mathrm{application}$')
+    plot[0, 0].set_title(r'$\mathtt{application}$')
     plot[0, 0].axis('off')
     
     mesh = plot[0, 1].imshow(degradation_map, norm=normalize, cmap='coolwarm')
-    plot[0, 1].set_title(r'$\mathrm{degradation}$')
+    plot[0, 1].set_title(r'$\mathtt{degradation}$')
     plot[0, 1].axis('off')
     
     mesh = plot[1, 0].imshow(augmentation_map, norm=normalize, cmap='coolwarm')
-    plot[1, 0].set_title(r'$\mathrm{augmentation}$')
+    plot[1, 0].set_title(r'$\mathtt{augmentation}$')
     plot[1, 0].axis('off')
     
     mesh = plot[1, 1].imshow(combination_map, norm=normalize, cmap='coolwarm')
-    plot[1, 1].set_title(r'$\mathrm{combination}$')
+    plot[1, 1].set_title(r'$\mathtt{combination}$')
     plot[1, 1].axis('off')
     
     color_bar = figure.colorbar(mesh, cax=figure.add_axes([0.15, 0.05, 0.70, 0.05]), orientation='horizontal')
