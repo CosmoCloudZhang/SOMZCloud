@@ -5,8 +5,6 @@ import numpy
 import scipy
 import argparse
 
-import scipy.interpolate
-
 
 def main(tag, index, folder):
     '''
@@ -58,14 +56,6 @@ def main(tag, index, folder):
         combination_redshift_true = file['photometry']['redshift_true'][...]
     combination_size = len(combination_magnitude)
     
-    # Bin
-    with h5py.File(os.path.join(model_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        bin_lens = file['bin_lens'][...]
-        bin_source = file['bin_source'][...]
-    
-    lens_size = len(bin_lens) - 1
-    source_size = len(bin_source) - 1
-    
     # Evaluate
     chunk_size = 100000
     z_phot = numpy.zeros(combination_size, dtype=numpy.float32)
@@ -86,24 +76,75 @@ def main(tag, index, folder):
     reference_source = (z1_source <= z_phot) & (z_phot < z2_source)
     reference_lens = (z1_lens <= z_phot) & (z_phot < z2_lens) & (combination_magnitude < slope * z_phot + intercept)
     
-    # Metric
+    # Bin
+    lens_size = 5
+    bin_lens = numpy.linspace(z1_lens, z2_lens, lens_size + 1)
+    
+    source_size = 5
+    quantiles = numpy.linspace(0, 1, source_size + 1)
+    
+    bin_source = numpy.quantile(z_phot[reference_source], quantiles)
+    bin_source[-1] = z2_source
+    bin_source[0] = z1_source
+    
+    # Point
     z_phot_lens = z_phot[reference_lens]
     z_true_lens = combination_redshift_true[reference_lens]
-    
-    sigma_lens = numpy.abs(z_phot_lens - z_true_lens) / (1 + z_true_lens)
-    nmad_lens = 1.4826 * numpy.median(numpy.abs(sigma_lens - numpy.median(sigma_lens)))
-    
-    fraction_lens = len(sigma_lens[sigma_lens > 0.15]) / len(sigma_lens) * 100
-    percentile_lens = len(sigma_lens[numpy.abs(z_phot_lens - z_true_lens) > 1.0]) / len(sigma_lens) * 100
     
     z_phot_source = z_phot[reference_source]
     z_true_source = combination_redshift_true[reference_source]
     
-    sigma_source = numpy.abs(z_phot_source - z_true_source) / (1 + z_true_source)
-    nmad_source = 1.4826 * numpy.median(numpy.abs(sigma_source - numpy.median(sigma_source)))
+    # Metric Lens
+    average_lens_size = 6
+    z_average_lens = numpy.linspace(z1_lens, z2_lens, average_lens_size + 1)
     
-    fraction_source = len(sigma_source[sigma_source > 0.15]) / len(sigma_source) * 100
-    percentile_source = len(sigma_source[numpy.abs(z_phot_source - z_true_source) > 1.0]) / len(sigma_source) * 100
+    nmad_lens = numpy.zeros(average_lens_size)
+    fraction_lens = numpy.zeros(average_lens_size)
+    percentile_lens = numpy.zeros(average_lens_size)
+    delta_average_lens = numpy.zeros(average_lens_size)
+    
+    for m in range(average_lens_size):
+        reference_lens_average = (z_average_lens[m] <= z_true_lens) & (z_true_lens < z_average_lens[m + 1])
+        if numpy.sum(reference_lens_average) > 0:
+            z_phot_lens_select = z_phot_lens[reference_lens_average]
+            z_true_lens_select = z_true_lens[reference_lens_average]
+            delta_lens_select = numpy.abs(z_phot_lens_select - z_true_lens_select) / (1 + z_true_lens_select)
+            
+            delta_average_lens[m] = numpy.mean(delta_lens_select)
+            fraction_lens[m] = len(delta_lens_select[delta_lens_select > 0.15]) / len(delta_lens_select)
+            nmad_lens[m] = 1.4826 * numpy.median(numpy.abs(delta_lens_select - numpy.median(delta_lens_select)))
+            percentile_lens[m] = len(delta_lens_select[numpy.abs(z_phot_lens_select - z_true_lens_select) > 1.0]) / len(delta_lens_select) * 100
+        else:
+            nmad_lens[m] = numpy.nan
+            fraction_lens[m] = numpy.nan
+            percentile_lens[m] = numpy.nan
+            delta_average_lens[m] = numpy.nan
+    
+    # Metric Source
+    average_source_size = 6
+    z_average_source = numpy.linspace(z1, z2, average_source_size + 1)
+    
+    nmad_source = numpy.zeros(average_source_size)
+    fraction_source = numpy.zeros(average_source_size)
+    percentile_source = numpy.zeros(average_source_size)
+    delta_average_source = numpy.zeros(average_source_size)
+    
+    for m in range(average_source_size):
+        reference_source_average = (z_average_source[m] <= z_true_source) & (z_true_source < z_average_source[m + 1])
+        if numpy.sum(reference_source_average) > 0:
+            z_phot_source_select = z_phot_source[reference_source_average]
+            z_true_source_select = z_true_source[reference_source_average]
+            delta_source_select = numpy.abs(z_phot_source_select - z_true_source_select) / (1 + z_true_source_select)
+            
+            delta_average_source[m] = numpy.mean(delta_source_select)
+            fraction_source[m] = len(delta_source_select[delta_source_select > 0.15]) / len(delta_source_select)
+            nmad_source[m] = 1.4826 * numpy.median(numpy.abs(delta_source_select - numpy.median(delta_source_select)))
+            percentile_source[m] = len(delta_source_select[numpy.abs(z_phot_source_select - z_true_source_select) > 1.0]) / len(delta_source_select) * 100
+        else:
+            nmad_source[m] = numpy.nan
+            fraction_source[m] = numpy.nan
+            percentile_source[m] = numpy.nan
+            delta_average_source[m] = numpy.nan
     
     # Save
     with h5py.File(os.path.join(model_folder, '{}/REFERENCE/DATA{}.hdf5'.format(tag, index)), 'w') as file:
@@ -115,6 +156,7 @@ def main(tag, index, folder):
         file.create_dataset('nmad_lens', data=nmad_lens, dtype=numpy.float32)
         file.create_dataset('fraction_lens', data=fraction_lens, dtype=numpy.float32)
         file.create_dataset('percentile_lens', data=percentile_lens, dtype=numpy.float32)
+        file.create_dataset('delta_average_lens', data=delta_average_lens, dtype=numpy.float32)
         
         file.create_dataset('bin_source', data=bin_source, dtype=numpy.float32)
         file.create_dataset('reference_source', data=reference_source, dtype=bool)
@@ -122,66 +164,23 @@ def main(tag, index, folder):
         file.create_dataset('nmad_source', data=nmad_source, dtype=numpy.float32)
         file.create_dataset('fraction_source', data=fraction_source, dtype=numpy.float32)
         file.create_dataset('percentile_source', data=percentile_source, dtype=numpy.float32)
+        file.create_dataset('delta_average_source', data=delta_average_source, dtype=numpy.float32)
     
     # Lens bin
-    nmad_lens_bin = numpy.zeros(lens_size, dtype=numpy.float32)
-    fraction_lens_bin = numpy.zeros(lens_size, dtype=numpy.float32)
-    percentile_lens_bin = numpy.zeros(lens_size, dtype=numpy.float32)
     reference_lens_bin = numpy.ones((lens_size, combination_size), dtype=bool)
-    
     for m in range(len(bin_lens) - 1):
         reference_lens_bin[m, :] = reference_lens & (bin_lens[m] <= z_phot) & (z_phot < bin_lens[m + 1])
-        
-        if numpy.sum(reference_lens_bin[m, :]) > 0:
-            z_phot_lens_bin = z_phot[reference_lens_bin[m, :]]
-            z_true_lens_bin = combination_redshift_true[reference_lens_bin[m, :]]
-            
-            sigma_lens_bin = numpy.abs(z_phot_lens_bin - z_true_lens_bin) / (1 + z_true_lens_bin)
-            nmad_lens_bin[m] = 1.4826 * numpy.median(numpy.abs(sigma_lens_bin - numpy.median(sigma_lens_bin)))
-            
-            fraction_lens_bin[m] = len(sigma_lens_bin[sigma_lens_bin > 0.15]) / len(sigma_lens_bin) * 100
-            percentile_lens_bin[m] = len(sigma_lens_bin[numpy.abs(z_phot_lens_bin - z_true_lens_bin) > 1.0]) / len(sigma_lens_bin) * 100
-        else:
-            nmad_lens_bin[m] = numpy.nan
-            fraction_lens_bin[m] = numpy.nan
-            percentile_lens_bin[m] = numpy.nan
     
     with h5py.File(os.path.join(model_folder, '{}/LENS/LENS{}/REFERENCE.hdf5'.format(tag, index)), 'w') as file:    
         file.create_dataset('reference', data=reference_lens_bin, dtype=bool)
-        
-        file.create_dataset('nmad', data=nmad_lens_bin, dtype=numpy.float32)
-        file.create_dataset('fraction', data=fraction_lens_bin, dtype=numpy.float32)
-        file.create_dataset('percentile', data=percentile_lens_bin, dtype=numpy.float32)
     
     # Source
-    nmad_source_bin = numpy.zeros(source_size, dtype=numpy.float32)
-    fraction_source_bin = numpy.zeros(source_size, dtype=numpy.float32)
-    percentile_source_bin = numpy.zeros(source_size, dtype=numpy.float32)
     reference_source_bin = numpy.ones((source_size, combination_size), dtype=bool)
-    
     for m in range(len(bin_source) - 1):
         reference_source_bin[m, :] = reference_source & (bin_source[m] <= z_phot) & (z_phot < bin_source[m + 1])
-        
-        if numpy.sum(reference_source_bin[m, :]) > 0:
-            z_phot_source_bin = z_phot[reference_source_bin[m, :]]
-            z_true_source_bin = combination_redshift_true[reference_source_bin[m, :]]
-            
-            sigma_source_bin = numpy.abs(z_phot_source_bin - z_true_source_bin) / (1 + z_true_source_bin)
-            nmad_source_bin[m] = 1.4826 * numpy.median(numpy.abs(sigma_source_bin - numpy.median(sigma_source_bin)))
-            
-            fraction_source_bin[m] = len(sigma_source_bin[sigma_source_bin > 0.15]) / len(sigma_source_bin) * 100
-            percentile_source_bin[m] = len(sigma_source_bin[numpy.abs(z_phot_source_bin - z_true_source_bin) > 1.0]) / len(sigma_source_bin) * 100
-        else:
-            nmad_source_bin[m] = numpy.nan
-            fraction_source_bin[m] = numpy.nan
-            percentile_source_bin[m] = numpy.nan
     
     with h5py.File(os.path.join(model_folder, '{}/SOURCE/SOURCE{}/REFERENCE.hdf5'.format(tag, index)), 'w') as file:
         file.create_dataset('reference', data=reference_source_bin, dtype=bool)
-        
-        file.create_dataset('nmad', data=nmad_source_bin, dtype=numpy.float32)
-        file.create_dataset('fraction', data=fraction_source_bin, dtype=numpy.float32)
-        file.create_dataset('percentile', data=percentile_source_bin, dtype=numpy.float32)
     
     # Duration
     end = time.time()
