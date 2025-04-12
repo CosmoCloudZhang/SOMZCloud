@@ -70,12 +70,12 @@ def main(tag, index, folder):
     for m in range(mean_size):
         reference_lens = (z_mean[m] <= z_true_lens) & (z_true_lens < z_mean[m + 1])
         if numpy.sum(reference_lens) > 0:
-            delta_mean_lens[m] = numpy.mean(delta_lens[reference_lens])
+            delta_mean_lens[m] = numpy.median(delta_lens[reference_lens])
         
         reference_source = (z_mean[m] <= z_true_source) & (z_true_source < z_mean[m + 1])
         if numpy.sum(reference_source) > 0:
-            delta_mean_source[m] = numpy.mean(delta_source[reference_source])
-    print(delta_mean_lens, delta_mean_source)
+            delta_mean_source[m] = numpy.median(delta_source[reference_source])
+    
     # Plot
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
     pyplot.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
