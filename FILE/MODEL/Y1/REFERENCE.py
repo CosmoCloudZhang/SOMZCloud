@@ -95,7 +95,7 @@ def main(tag, index, folder):
     z_true_source = combination_redshift_true[reference_source]
     
     # Metric Lens
-    average_lens_size = 6
+    average_lens_size = 5
     z_average_lens = numpy.linspace(z1_lens, z2_lens, average_lens_size + 1)
     
     nmad_lens = numpy.zeros(average_lens_size)
@@ -110,7 +110,7 @@ def main(tag, index, folder):
             z_true_lens_select = z_true_lens[reference_lens_average]
             delta_lens_select = numpy.abs(z_phot_lens_select - z_true_lens_select) / (1 + z_true_lens_select)
             
-            delta_average_lens[m] = numpy.mean(delta_lens_select)
+            delta_average_lens[m] = numpy.median(delta_lens_select)
             fraction_lens[m] = len(delta_lens_select[delta_lens_select > 0.15]) / len(delta_lens_select)
             nmad_lens[m] = 1.4826 * numpy.median(numpy.abs(delta_lens_select - numpy.median(delta_lens_select)))
             percentile_lens[m] = len(delta_lens_select[numpy.abs(z_phot_lens_select - z_true_lens_select) > 1.0]) / len(delta_lens_select) * 100
@@ -136,7 +136,7 @@ def main(tag, index, folder):
             z_true_source_select = z_true_source[reference_source_average]
             delta_source_select = numpy.abs(z_phot_source_select - z_true_source_select) / (1 + z_true_source_select)
             
-            delta_average_source[m] = numpy.mean(delta_source_select)
+            delta_average_source[m] = numpy.median(delta_source_select)
             fraction_source[m] = len(delta_source_select[delta_source_select > 0.15]) / len(delta_source_select)
             nmad_source[m] = 1.4826 * numpy.median(numpy.abs(delta_source_select - numpy.median(delta_source_select)))
             percentile_source[m] = len(delta_source_select[numpy.abs(z_phot_source_select - z_true_source_select) > 1.0]) / len(delta_source_select) * 100
