@@ -8,7 +8,7 @@ import argparse
 
 def main(tag, index, folder):
     '''
-    Model summarization of the lens samples
+    Product summarization of the lens samples
     
     Arguments:
         tag (str): The tag of the configuration
@@ -34,15 +34,15 @@ def main(tag, index, folder):
     grid_size = 300
     z_grid = numpy.linspace(z1, z2, grid_size + 1)
     
-    # SOM
-    with h5py.File(os.path.join(summarization_folder, '{}/LENS/LENS{}/SOM.hdf5'.format(tag, index)), 'r') as file:
-        data_lens_som = file['data'][...]
+    # HISTOGRAM
+    with h5py.File(os.path.join(summarization_folder, '{}/LENS/LENS{}/HISTOGRAM.hdf5'.format(tag, index)), 'r') as file:
+        data_lens_histogram = file['data'][...]
     
     # Model
     with h5py.File(os.path.join(summarization_folder, '{}/LENS/LENS{}/MODEL.hdf5'.format(tag, index)), 'r') as file:
         data_lens_model = file['data'][...]
     
-    data_lens = numpy.sqrt(numpy.maximum(data_lens_som * data_lens_model, 0.0))
+    data_lens = numpy.sqrt(numpy.maximum(data_lens_histogram * data_lens_model, 0.0))
     data_lens = data_lens / scipy.integrate.trapezoid(x=z_grid, y=data_lens, axis=2)[:, :, numpy.newaxis]
     
     # Average

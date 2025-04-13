@@ -8,7 +8,7 @@ import argparse
 
 def main(tag, index, folder):
     '''
-    Model summarization of the source samples
+    Product summarization of the source samples
     
     Arguments:
         tag (str): The tag of the configuration
@@ -35,15 +35,15 @@ def main(tag, index, folder):
     grid_size = 300
     z_grid = numpy.linspace(z1, z2, grid_size + 1)
     
-    # SOM
-    with h5py.File(os.path.join(summarization_folder, '{}/SOURCE/SOURCE{}/SOM.hdf5'.format(tag, index)), 'r') as file:
-        data_source_som = file['data'][...]
+    # HISTOGRAM
+    with h5py.File(os.path.join(summarization_folder, '{}/SOURCE/SOURCE{}/HISTOGRAM.hdf5'.format(tag, index)), 'r') as file:
+        data_source_histogram = file['data'][...]
     
     # Model
     with h5py.File(os.path.join(summarization_folder, '{}/SOURCE/SOURCE{}/MODEL.hdf5'.format(tag, index)), 'r') as file:
         data_source_model = file['data'][...]
     
-    data_source = numpy.sqrt(numpy.maximum(data_source_som * data_source_model, 0.0))
+    data_source = numpy.sqrt(numpy.maximum(data_source_histogram * data_source_model, 0.0))
     data_source = data_source / scipy.integrate.trapezoid(x=z_grid, y=data_source, axis=2)[:, :, numpy.newaxis]
     
     # Average

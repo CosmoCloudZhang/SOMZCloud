@@ -145,16 +145,16 @@ def main(tag, index, folder):
             application_cluster_mask = filter_data[application_cluster_id_data]
             application_weight_data = numpy.array(application_cluster_mask, dtype=numpy.float32)
             
-            # Histogram Cluster
-            histogram_cluster = numpy.zeros((cluster_size, grid_size + 1))
-            numpy.add.at(histogram_cluster, application_cluster_id_data[application_cluster_mask], (z_pdf[application_indices[application_cluster_mask], :] * application_weight_data[application_cluster_mask, numpy.newaxis]))
+            # Ensemble Cluster
+            ensemble_cluster = numpy.zeros((cluster_size, grid_size + 1))
+            numpy.add.at(ensemble_cluster, application_cluster_id_data[application_cluster_mask], (z_pdf[application_indices[application_cluster_mask], :] * application_weight_data[application_cluster_mask, numpy.newaxis]))
             
-            factor = scipy.integrate.trapezoid(x=z_grid, y=histogram_cluster, axis=1)
-            histogram_cluster = numpy.divide(histogram_cluster, factor[:, numpy.newaxis], out=numpy.zeros((cluster_size, grid_size + 1)), where=factor[:, numpy.newaxis] > 0)
+            factor = scipy.integrate.trapezoid(x=z_grid, y=ensemble_cluster, axis=1)
+            ensemble_cluster = numpy.divide(ensemble_cluster, factor[:, numpy.newaxis], out=numpy.zeros((cluster_size, grid_size + 1)), where=factor[:, numpy.newaxis] > 0)
             
-            # Histogram
-            histogram = numpy.average(histogram_cluster, axis=0, weights=application_cluster_count_data)
-            data_lens[m, n, :] = histogram / scipy.integrate.trapezoid(x=z_grid, y=histogram, axis=0)
+            # Ensemble
+            ensemble = numpy.average(ensemble_cluster, axis=0, weights=application_cluster_count_data)
+            data_lens[m, n, :] = ensemble / scipy.integrate.trapezoid(x=z_grid, y=ensemble, axis=0)
     
     # Average
     average_lens = numpy.mean(data_lens, axis=1)
