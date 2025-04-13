@@ -50,7 +50,7 @@ def main(tag, index, folder):
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         cell_size = file['meta']['cell_size'][...]
         application_cell_id = file['meta']['cell_id'][...]
-        application_sigma = numpy.square(file['morphology']['sigma'][...])
+        application_sigma = file['morphology']['sigma'][...]
         application_redshift_true = file['photometry']['redshift_true'][...]
     
     # Select
