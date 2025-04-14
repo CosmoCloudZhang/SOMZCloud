@@ -97,9 +97,9 @@ def main(tag, number, folder):
             metric_source[n, :, :] = file['metric'][...]
             fraction_source[n, :, :] = file['fraction'][...]
     
-    factor_sigma_source = numpy.prod(sigma_source, axis=1)
-    factor_metric_source = numpy.prod(metric_source, axis=1)
-    factor_fraction_source = numpy.prod(fraction_source, axis=1)
+    factor_sigma_source = numpy.sum(numpy.square(sigma_source), axis=1)
+    factor_metric_source = numpy.sum(numpy.square(metric_source), axis=1)
+    factor_fraction_source = numpy.square(numpy.sum(fraction_source, axis=1))
     factor_source = factor_fraction_source / factor_sigma_source / factor_metric_source
     
     # Loop
