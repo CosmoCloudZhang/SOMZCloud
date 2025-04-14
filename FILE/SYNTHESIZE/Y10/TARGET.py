@@ -69,10 +69,10 @@ def main(tag, number, folder):
     
     for n in range(number):
         
-        with h5py.File(os.path.join(summarize_folder, '{}/LENS/LENS{}/SOM.hdf5'.format(tag, n + 1)), 'r') as file:
+        with h5py.File(os.path.join(summarize_folder, '{}/LENS/LENS{}/TARGET.hdf5'.format(tag, n + 1)), 'r') as file:
             summarize_lens[n, :, :, :] = file['data'][...]
         
-        with h5py.File(os.path.join(summarize_folder, '{}/LENS/LENS{}/HISTOGRAM.hdf5'.format(tag, n + 1)), 'r') as file:
+        with h5py.File(os.path.join(summarize_folder, '{}/LENS/LENS{}/TARGET.hdf5'.format(tag, n + 1)), 'r') as file:
             sigma_lens[n, :, :] = file['sigma'][...]
             metric_lens[n, :, :] = file['metric'][...]
             fraction_lens[n, :, :] = file['fraction'][...]
@@ -89,10 +89,10 @@ def main(tag, number, folder):
     
     for n in range(number):
         
-        with h5py.File(os.path.join(summarize_folder, '{}/SOURCE/SOURCE{}/SOM.hdf5'.format(tag, n + 1)), 'r') as file:
+        with h5py.File(os.path.join(summarize_folder, '{}/SOURCE/SOURCE{}/TARGET.hdf5'.format(tag, n + 1)), 'r') as file:
             summarize_source[n, :, :, :] = file['data'][...]
         
-        with h5py.File(os.path.join(summarize_folder, '{}/SOURCE/SOURCE{}/HISTOGRAM.hdf5'.format(tag, n + 1)), 'r') as file:
+        with h5py.File(os.path.join(summarize_folder, '{}/SOURCE/SOURCE{}/TARGET.hdf5'.format(tag, n + 1)), 'r') as file:
             sigma_source[n, :, :] = file['sigma'][...]
             metric_source[n, :, :] = file['metric'][...]
             fraction_source[n, :, :] = file['fraction'][...]
@@ -126,7 +126,7 @@ def main(tag, number, folder):
         average_source = numpy.median(data_source, axis=0)
         average_source = average_source / scipy.integrate.trapezoid(x=z_grid, y=average_source, axis=1)[:, numpy.newaxis]
         
-        with h5py.File(os.path.join(synthesize_folder, '{}/SOM_{}.hdf5'.format(tag, label)), 'w') as file:
+        with h5py.File(os.path.join(synthesize_folder, '{}/TARGET_{}.hdf5'.format(tag, label)), 'w') as file:
             file.create_group('lens')
             file['lens'].create_dataset('data', data=data_lens, dtype=numpy.float32)
             file['lens'].create_dataset('average', data=average_lens, dtype=numpy.float32)

@@ -72,7 +72,7 @@ def main(tag, number, folder):
         with h5py.File(os.path.join(summarize_folder, '{}/LENS/LENS{}/PRODUCT.hdf5'.format(tag, n + 1)), 'r') as file:
             summarize_lens[n, :, :, :] = file['data'][...]
         
-        with h5py.File(os.path.join(summarize_folder, '{}/LENS/LENS{}/HISTOGRAM.hdf5'.format(tag, n + 1)), 'r') as file:
+        with h5py.File(os.path.join(summarize_folder, '{}/LENS/LENS{}/TARGET.hdf5'.format(tag, n + 1)), 'r') as file:
             sigma_lens[n, :, :] = file['sigma'][...]
             metric_lens[n, :, :] = file['metric'][...]
             fraction_lens[n, :, :] = file['fraction'][...]
@@ -92,7 +92,7 @@ def main(tag, number, folder):
         with h5py.File(os.path.join(summarize_folder, '{}/SOURCE/SOURCE{}/PRODUCT.hdf5'.format(tag, n + 1)), 'r') as file:
             summarize_source[n, :, :, :] = file['data'][...]
         
-        with h5py.File(os.path.join(summarize_folder, '{}/SOURCE/SOURCE{}/HISTOGRAM.hdf5'.format(tag, n + 1)), 'r') as file:
+        with h5py.File(os.path.join(summarize_folder, '{}/SOURCE/SOURCE{}/TARGET.hdf5'.format(tag, n + 1)), 'r') as file:
             sigma_source[n, :, :] = file['sigma'][...]
             metric_source[n, :, :] = file['metric'][...]
             fraction_source[n, :, :] = file['fraction'][...]

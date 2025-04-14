@@ -35,10 +35,10 @@ def main(tag, folder):
             product_average_lens = file['lens']['average'][...]
             product_average_source = file['source']['average'][...]
         
-        # Histogram
-        with h5py.File(os.path.join(synthesize_folder, '{}/HISTOGRAM_{}.hdf5'.format(tag, label)), 'r') as file:
-            histogram_average_lens = file['lens']['average'][...]
-            histogram_average_source = file['source']['average'][...]
+        # Target
+        with h5py.File(os.path.join(synthesize_folder, '{}/TARGET_{}.hdf5'.format(tag, label)), 'r') as file:
+            target_average_lens = file['lens']['average'][...]
+            target_average_source = file['source']['average'][...]
         
         # Redshift
         z1 = 0.0
@@ -47,8 +47,8 @@ def main(tag, folder):
         z_grid = numpy.linspace(z1, z2, grid_size + 1)
         
         # Fiducial
-        product_response_lens = histogram_average_lens - product_average_lens
-        product_response_source = histogram_average_source - product_average_source
+        product_response_lens = target_average_lens - product_average_lens
+        product_response_source = target_average_source - product_average_source
         
         fiducial_data_lens = numpy.maximum(product_data_lens + product_response_lens[numpy.newaxis, :, :], 0.0)
         fiducial_data_source = numpy.maximum(product_data_source + product_response_source[numpy.newaxis, :, :], 0.0)
