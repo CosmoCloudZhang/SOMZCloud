@@ -7,7 +7,7 @@
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
 #SBATCH --cpus-per-task=8
-#SBATCH -J CELL_Y10_NS_SHIFT
+#SBATCH -J CELL_Y1_NN_SCALE
 #SBATCH --ntasks-per-node=32
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
@@ -29,8 +29,8 @@ export OMP_PROC_BIND=spread
 export OMP_PLACES=threads
 
 # Initialize the process
-TAG="Y10"
-NAME="NS"
+TAG="Y1"
+NAME="NN"
 BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 
@@ -40,7 +40,7 @@ TYPE_LIST=("TARGET" "MODEL" "PRODUCT" "FIDUCIAL" "HISTOGRAM")
 
 for LABEL in "${LABEL_LIST[@]}"; do
     for TYPE in "${TYPE_LIST[@]}"; do
-        srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}FILE/CELL/${TAG}/${NAME}/SHIFT.py" --tag=$TAG --name=$NAME --type=$TYPE --label=$LABEL --folder=$BASE_FOLDER &
+        srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}FILE/CELL/${TAG}/${NAME}/SCALE.py" --tag=$TAG --name=$NAME --type=$TYPE --label=$LABEL --folder=$BASE_FOLDER &
     done
 done
 wait

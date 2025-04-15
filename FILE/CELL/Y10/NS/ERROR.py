@@ -10,7 +10,7 @@ from matplotlib import cm, pyplot
 
 def main(tag, name, type, label, folder):
     '''
-    Calculate the shape-shape angular power spectra
+    Calculate the position-shape angular power spectra
     
     Arguments:
         tag (str): The tag of the configuration
@@ -42,6 +42,10 @@ def main(tag, name, type, label, folder):
     with h5py.File(os.path.join(cell_folder, '{}/{}/{}_SHIFT_{}.hdf5'.format(tag, name, type, label)), 'r') as file:
         cell_shift = file['data'][...]
     cell_shift_error = numpy.std(cell_shift, axis = 0)
+    
+    with h5py.File(os.path.join(cell_folder, '{}/{}/{}_SCALE_{}.hdf5'.format(tag, name, type, label)), 'r') as file:
+        cell_scale = file['data'][...]
+    cell_scale_error = numpy.std(cell_scale, axis = 0)
     
     # Multipole
     ell1 = 20
@@ -100,7 +104,7 @@ def main(tag, name, type, label, folder):
     varsigma1 = 1e-2
     varsigma2 = 2e+0
     color_list = cm.rainbow(numpy.linspace(0, 1, bin_source_size))
-    figure, plot = pyplot.subplots(nrows=bin_lens_size, ncols=1, figsize=(12, 4 * bin_lens_size))
+    figure, plot = pyplot.subplots(nrows=bin_lens_size, ncols=1, figsize=(12, 20))
     
     index = 0
     for m in range(bin_lens_size):
@@ -109,14 +113,14 @@ def main(tag, name, type, label, folder):
             index = index + 1
             
             if bin_lens[m + 1] < (bin_source[n] + bin_source[n + 1]) / 2:
-                cell_data_varsigma = numpy.divide(cell_data_error[m, n, :], cell_sigma, out=numpy.zeros(ell_size), where=cell_sigma != 0)
-                cell_shift_varsigma = numpy.divide(cell_shift_error[m, n, :], cell_sigma, out=numpy.zeros(ell_size), where=cell_sigma != 0)
+                cell_shift_zeta = numpy.divide(numpy.abs(cell_shift_error[m, n, :] - cell_data_error[m, n, :]), cell_sigma, out=numpy.zeros(ell_size), where=cell_sigma != 0)
+                cell_scale_zeta = numpy.divide(numpy.abs(cell_scale_error[m, n, :] - cell_data_error[m, n, :]), cell_sigma, out=numpy.zeros(ell_size), where=cell_sigma != 0)
                 
-                plot[m].scatter(ell_data, cell_data_varsigma, s=50, marker='s', facecolors=color_list[n], edgecolors=color_list[n])
-                plot[m].plot(ell_data, cell_data_varsigma, linestyle='-', linewidth=1.0, color=color_list[n], label=r'${} \times {}$'.format(m + 1, n + 1))
+                plot[m].scatter(ell_data, cell_shift_zeta, s=50, marker='s', facecolors=color_list[n], edgecolors=color_list[n])
+                plot[m].plot(ell_data, cell_shift_zeta, linestyle='--', linewidth=1.0, color=color_list[n], label=r'${} \times {}$'.format(m + 1, n + 1))
                 
-                plot[m].plot(ell_data, cell_shift_varsigma, linestyle=':', linewidth=1.0, color=color_list[n])
-                plot[m].scatter(ell_data, cell_shift_varsigma, s=50, marker='s', facecolors='none', edgecolors=color_list[n])
+                plot[m].plot(ell_data, cell_scale_zeta, linestyle=':', linewidth=1.0, color=color_list[n])
+                plot[m].scatter(ell_data, cell_scale_zeta, s=50, marker='d', facecolors='none', edgecolors=color_list[n])
         
         plot[m].axhline(y=1, color='black', linestyle='--', linewidth=1.0)
         plot[m].fill_betweenx(y=[varsigma1, varsigma2], x1=ell_maximal_lens[m], x2=ell2, color='gray', alpha=0.2)

@@ -11,7 +11,7 @@ from itertools import product
 
 def main(tag, name, type, label, folder):
     '''
-    Calculate the shape-shape angular power spectra
+    Calculate the position-shape angular power spectra
     
     Arguments:
         tag (str): The tag of the configuration

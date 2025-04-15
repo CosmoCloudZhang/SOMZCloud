@@ -36,7 +36,7 @@ BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
 
 # Run applications
 LABEL_LIST=("ZERO" "HALF" "UNITY" "DOUBLE")
-TYPE_LIST=("SOM" "MODEL" "PRODUCT" "FIDUCIAL" "HISTOGRAM")
+TYPE_LIST=("TARGET" "MODEL" "PRODUCT" "FIDUCIAL" "HISTOGRAM")
 
 for LABEL in "${LABEL_LIST[@]}"; do
     for TYPE in "${TYPE_LIST[@]}"; do

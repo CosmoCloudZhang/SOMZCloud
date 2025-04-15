@@ -11,7 +11,7 @@ from itertools import product
 
 def main(tag, name, type, label, folder):
     '''
-    Calculate the position-shape angular power spectra
+    Calculate the shape-shape angular power spectra
     
     Arguments:
         tag (str): The tag of the configuration
@@ -37,9 +37,7 @@ def main(tag, name, type, label, folder):
     
     # Load
     with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/{}_{}.hdf5'.format(tag, type, label)), 'r') as file:
-        data_lens = file['lens']['shift'][...]
-        data_source = file['source']['shift'][...]
-    data_size, bin_lens_size, z_size = data_lens.shape
+        data_source = file['source']['scale'][...]
     data_size, bin_source_size, z_size = data_source.shape
     
     # Redshift
@@ -81,24 +79,22 @@ def main(tag, name, type, label, folder):
     with open(os.path.join(info_folder, 'ALIGNMENT.json'), 'r') as file:
         alignment_info = json.load(file)
     
-    # Galaxy
-    with open(os.path.join(info_folder, 'GALAXY.json'), 'r') as file:
-        galaxy_info = json.load(file)
-    
-    cell_data = numpy.zeros((data_size, bin_lens_size, bin_source_size, ell_size))
+    cell_data = numpy.zeros((data_size, bin_source_size, bin_source_size, ell_size))
     for n in range(data_size):
-        for (i, j) in product(range(bin_lens_size), range(bin_source_size)):
-            tracer1 = pyccl.tracers.NumberCountsTracer(cosmo=cosmology, dndz=[z_grid, data_lens[n, i, :]], bias=[z_grid, galaxy_info[tag]], mag_bias=None, has_rsd=False, n_samples=z_size)
-            tracer2 = pyccl.tracers.WeakLensingTracer(cosmo=cosmology, dndz=[z_grid, data_source[n, j, :]], has_shear=True, ia_bias=[z_grid, alignment_info['A']], use_A_ia=False, n_samples=z_size)
-            cell_grid = pyccl.cells.angular_cl(cosmo=cosmology, tracer1=tracer1, tracer2=tracer2, ell=ell_grid, p_of_k_a='delta_matter:delta_matter', l_limber=-1, limber_max_error=0.01, limber_integration_method='spline', non_limber_integration_method='FKEM', fkem_chi_min=0, fkem_Nchi=z_size, p_of_k_a_lin='delta_matter:delta_matter', return_meta=False)
-            
-            cell_value = scipy.interpolate.CubicSpline(x=numpy.log(ell_grid), y=ell_grid * cell_grid, bc_type='natural', extrapolate=True)
-            for k in range(ell_size):
-                cell_data[n, i, j, k] = cell_value.integrate(numpy.log(ell_grid[k]), numpy.log(ell_grid[k + 1])) / (ell_grid[k + 1] - ell_grid[k])
+        for (i, j) in product(range(bin_source_size), range(bin_source_size)):
+            if i <= j:
+                tracer1 = pyccl.tracers.WeakLensingTracer(cosmo=cosmology, dndz=[z_grid, data_source[n, i, :]], has_shear=True, ia_bias=[z_grid, alignment_info['A']], use_A_ia=False, n_samples=z_size)
+                tracer2 = pyccl.tracers.WeakLensingTracer(cosmo=cosmology, dndz=[z_grid, data_source[n, j, :]], has_shear=True, ia_bias=[z_grid, alignment_info['A']], use_A_ia=False, n_samples=z_size)
+                cell_grid = pyccl.cells.angular_cl(cosmo=cosmology, tracer1=tracer1, tracer2=tracer2, ell=ell_grid, p_of_k_a='delta_matter:delta_matter', l_limber=-1, limber_max_error=0.01, limber_integration_method='spline', non_limber_integration_method='FKEM', fkem_chi_min=0, fkem_Nchi=z_size, p_of_k_a_lin='delta_matter:delta_matter', return_meta=False)
+                
+                cell_value = scipy.interpolate.CubicSpline(x=numpy.log(ell_grid), y=ell_grid * cell_grid, bc_type='natural', extrapolate=True)
+                for k in range(ell_size):
+                    cell_data[n, i, j, k] = cell_value.integrate(numpy.log(ell_grid[k]), numpy.log(ell_grid[k + 1])) / (ell_grid[k + 1] - ell_grid[k])
+                    cell_data[n, j, i, k] = cell_data[n, i, j, k]
     cell_average = numpy.median(cell_data, axis = 0)
     
     # Save
-    with h5py.File(os.path.join(cell_folder, '{}/{}/{}_SHIFT_{}.hdf5'.format(tag, name, type, label)), 'w') as file:
+    with h5py.File(os.path.join(cell_folder, '{}/{}/{}_SCALE_{}.hdf5'.format(tag, name, type, label)), 'w') as file:
         file.create_dataset('data', data = cell_data)
         file.create_dataset('average', data = cell_average)
     
@@ -113,7 +109,7 @@ def main(tag, name, type, label, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Cell Shift')
+    PARSE = argparse.ArgumentParser(description='Cell Scale')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
     PARSE.add_argument('--name', type=str, required=True, help='The name of the power spectra')
     PARSE.add_argument('--type', type=str, required=True, help='The type of the configuration')
