@@ -19,7 +19,7 @@ def main(tag, label, folder):
         duration (float): The duration of the process
     '''
     start = time.time()
-    print('Type: {}, Label: {}'.format(type, label))
+    print('Label: {}'.format(label))
     
     # Path
     model_folder = os.path.join(folder, 'MODEL/')
@@ -32,9 +32,9 @@ def main(tag, label, folder):
         bin_source = file['bin_source'][...]
     
     # Summarize
-    with h5py.File(os.path.join(synthesize_folder, '{}/SOM_{}.hdf5'.format(tag, label)), 'r') as file:
-        som_average_lens = file['lens']['average'][...]
-        som_average_source = file['source']['average'][...]
+    with h5py.File(os.path.join(synthesize_folder, '{}/TARGET_{}.hdf5'.format(tag, label)), 'r') as file:
+        target_average_lens = file['lens']['average'][...]
+        target_average_source = file['source']['average'][...]
     
     with h5py.File(os.path.join(synthesize_folder, '{}/MODEL_{}.hdf5'.format(tag, label)), 'r') as file:
         model_average_lens = file['lens']['average'][...]
@@ -72,13 +72,13 @@ def main(tag, label, folder):
     
     for m in range(bin_size):
         
-        plot[m, 0].plot(z_grid, som_average_lens[m, :], color='darkblue', linewidth=2.0, linestyle='-')
+        plot[m, 0].plot(z_grid, target_average_lens[m, :], color='black', linewidth=2.0, linestyle='-')
         
         plot[m, 0].plot(z_grid, model_average_lens[m, :], color='darkgreen', linewidth=2.0, linestyle='-')
         
         plot[m, 0].plot(z_grid, product_average_lens[m, :], color='darkorange', linewidth=2.0, linestyle='-')
         
-        plot[m, 0].plot(z_grid, histogram_average_lens[m, :], color='black', linewidth=2.0, linestyle='-')
+        plot[m, 0].plot(z_grid, histogram_average_lens[m, :], color='darkblue', linewidth=2.0, linestyle='-')
         
         plot[m, 0].fill_betweenx(y=[0, 12], x1=bin_lens[m], x2=bin_lens[m + 1], color='gray', alpha=0.5)
         
@@ -97,13 +97,13 @@ def main(tag, label, folder):
     
     for m in range(bin_size):
         
-        plot[m, 1].plot(z_grid, som_average_lens[m + bin_size, :], color='darkblue', linewidth=2.0, linestyle='-')
+        plot[m, 1].plot(z_grid, target_average_lens[m + bin_size, :], color='black', linewidth=2.0, linestyle='-')
         
         plot[m, 1].plot(z_grid, model_average_lens[m + bin_size, :], color='darkgreen', linewidth=2.0, linestyle='-')
         
         plot[m, 1].plot(z_grid, product_average_lens[m + bin_size, :], color='darkorange', linewidth=2.0, linestyle='-')
         
-        plot[m, 1].plot(z_grid, histogram_average_lens[m + bin_size, :], color='black', linewidth=2.0, linestyle='-')
+        plot[m, 1].plot(z_grid, histogram_average_lens[m + bin_size, :], color='darkblue', linewidth=2.0, linestyle='-')
         
         plot[m, 1].fill_betweenx(y=[0, 12], x1=bin_lens[m + bin_size], x2=bin_lens[m + bin_size + 1], color='gray', alpha=0.5)
         
@@ -121,13 +121,13 @@ def main(tag, label, folder):
     
     for m in range(bin_size):
         
-        plot[m, 2].plot(z_grid, som_average_source[m, :], color='darkblue', linewidth=2.0, linestyle='-')
+        plot[m, 2].plot(z_grid, target_average_source[m, :], color='black', linewidth=2.0, linestyle='-')
         
         plot[m, 2].plot(z_grid, model_average_source[m, :], color='darkgreen', linewidth=2.0, linestyle='-')
         
         plot[m, 2].plot(z_grid, product_average_source[m, :], color='darkorange', linewidth=2.0, linestyle='-')
         
-        plot[m, 2].plot(z_grid, histogram_average_source[m, :], color='black', linewidth=2.0, linestyle='-')
+        plot[m, 2].plot(z_grid, histogram_average_source[m, :], color='darkblue', linewidth=2.0, linestyle='-')
         
         plot[m, 2].fill_betweenx(y=[0, 6], x1=bin_source[m], x2=bin_source[m + 1], color='gray', alpha=0.5)
         
@@ -149,7 +149,7 @@ def main(tag, label, folder):
     figure.subplots_adjust(wspace=0.12, hspace=0.24)
     figure.savefig(os.path.join(analyze_folder, '{}/MARGINAL/FIGURE_{}.pdf'.format(tag, label)), format='pdf', bbox_inches='tight')
     pyplot.close(figure)
-
+    
     # Duration
     end = time.time()
     duration = (end - start) / 60

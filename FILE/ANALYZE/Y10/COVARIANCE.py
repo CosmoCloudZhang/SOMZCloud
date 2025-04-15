@@ -83,7 +83,7 @@ def main(tag, type, label, folder):
     index_lower_source = numpy.maximum(0, numpy.array(numpy.round(bin_source[:-1] / z_delta, decimals=0), dtype='int32') - map_source_size // 4)
     index_upper_source = index_lower_source + map_source_size
     
-    # Synthesize
+    # Synthesize Data
     with h5py.File(os.path.join(synthesize_folder, '{}/{}_{}.hdf5'.format(tag, type, label)), 'r') as file:
         data_lens = file['lens']['data'][...]
         data_source = file['source']['data'][...]
@@ -104,6 +104,48 @@ def main(tag, type, label, folder):
     covariance_lens = numpy.cov(numpy.reshape(select_lens, (data_size, bin_lens_size * map_lens_size)), rowvar=False)
     covariance_source = numpy.cov(numpy.reshape(select_source, (data_size, bin_source_size * map_source_size)), rowvar=False)
     
+    # Synthesize Shift
+    with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/{}_{}.hdf5'.format(tag, type, label)), 'r') as file:
+        shift_lens = file['lens']['shift'][...]
+        shift_source = file['source']['shift'][...]
+    
+    data_size, bin_lens_size, z_size = shift_lens.shape
+    data_size, bin_source_size, z_size = shift_source.shape
+    
+    # Select
+    select_shift_lens = numpy.zeros((data_size, bin_lens_size, map_lens_size))
+    select_shift_source = numpy.zeros((data_size, bin_source_size, map_source_size))
+    
+    for m in range(bin_lens_size):
+        select_shift_lens[:, m, :numpy.minimum(map_lens_size, z_size - index_lower_lens[m])] = shift_lens[:, m, index_lower_lens[m]: numpy.minimum(z_size, index_upper_lens[m])]
+    
+    for m in range(bin_source_size):
+        select_shift_source[:, m, :numpy.minimum(map_source_size, z_size - index_lower_source[m])] = shift_source[:, m, index_lower_source[m]: numpy.minimum(z_size, index_upper_source[m])]
+    
+    covariance_shift_lens = numpy.cov(numpy.reshape(select_shift_lens, (data_size, bin_lens_size * map_lens_size)), rowvar=False)
+    covariance_shift_source = numpy.cov(numpy.reshape(select_shift_source, (data_size, bin_source_size * map_source_size)), rowvar=False)
+    
+    # Synthesize Scale
+    with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/{}_{}.hdf5'.format(tag, type, label)), 'r') as file:
+        scale_lens = file['lens']['scale'][...]
+        scale_source = file['source']['scale'][...]
+    
+    data_size, bin_lens_size, z_size = scale_lens.shape
+    data_size, bin_source_size, z_size = scale_source.shape
+    
+    # Select
+    select_scale_lens = numpy.zeros((data_size, bin_lens_size, map_lens_size))
+    select_scale_source = numpy.zeros((data_size, bin_source_size, map_source_size))
+    
+    for m in range(bin_lens_size):
+        select_scale_lens[:, m, :numpy.minimum(map_lens_size, z_size - index_lower_lens[m])] = scale_lens[:, m, index_lower_lens[m]: numpy.minimum(z_size, index_upper_lens[m])]
+    
+    for m in range(bin_source_size):
+        select_scale_source[:, m, :numpy.minimum(map_source_size, z_size - index_lower_source[m])] = scale_source[:, m, index_lower_source[m]: numpy.minimum(z_size, index_upper_source[m])]
+    
+    covariance_scale_lens = numpy.cov(numpy.reshape(select_scale_lens, (data_size, bin_lens_size * map_lens_size)), rowvar=False)
+    covariance_scale_source = numpy.cov(numpy.reshape(select_scale_source, (data_size, bin_source_size * map_source_size)), rowvar=False)
+    
     # Configuration
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
     pyplot.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
@@ -111,13 +153,31 @@ def main(tag, type, label, folder):
     pyplot.rcParams['text.usetex'] = True
     pyplot.rcParams['font.size'] = 20
     
-    # Plot
+    # Plot Data
     figure = plot_covariance(bin_lens_size, map_lens_size, covariance_lens)
     figure.savefig(os.path.join(analyze_folder, '{}/COVARIANCE/{}/FIGURE_{}_LENS.pdf'.format(tag, label, type)), format='pdf', bbox_inches='tight')
     pyplot.close(figure)
     
     figure = plot_covariance(bin_source_size, map_source_size, covariance_source)
     figure.savefig(os.path.join(analyze_folder, '{}/COVARIANCE/{}/FIGURE_{}_SOURCE.pdf'.format(tag, label, type)), format='pdf', bbox_inches='tight')
+    pyplot.close(figure)
+    
+    # Plot Shift
+    figure = plot_covariance(bin_lens_size, map_lens_size, covariance_shift_lens)
+    figure.savefig(os.path.join(analyze_folder, '{}/COVARIANCE/{}/FIGURE_{}_SHIFT_LENS.pdf'.format(tag, label, type)), format='pdf', bbox_inches='tight')
+    pyplot.close(figure)
+    
+    figure = plot_covariance(bin_source_size, map_source_size, covariance_shift_source)
+    figure.savefig(os.path.join(analyze_folder, '{}/COVARIANCE/{}/FIGURE_{}_SHIFT_SOURCE.pdf'.format(tag, label, type)), format='pdf', bbox_inches='tight')
+    pyplot.close(figure)
+    
+    # Plot Scale
+    figure = plot_covariance(bin_lens_size, map_lens_size, covariance_scale_lens)
+    figure.savefig(os.path.join(analyze_folder, '{}/COVARIANCE/{}/FIGURE_{}_SCALE_LENS.pdf'.format(tag, label, type)), format='pdf', bbox_inches='tight')
+    pyplot.close(figure)
+    
+    figure = plot_covariance(bin_source_size, map_source_size, covariance_scale_source)
+    figure.savefig(os.path.join(analyze_folder, '{}/COVARIANCE/{}/FIGURE_{}_SCALE_SOURCE.pdf'.format(tag, label, type)), format='pdf', bbox_inches='tight')
     pyplot.close(figure)
     
     # Duration

@@ -26,56 +26,56 @@ def main(tag, label, folder):
     os.makedirs(os.path.join(analyze_folder, '{}/DEVIATION/'.format(tag)), exist_ok=True)
     
     # Info
-    with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/SOM_{}.hdf5'.format(tag, label)), 'r') as file:
-        som_scatter_lens = file['lens']['scatter'][...]
-        som_scatter_source = file['source']['scatter'][...]
+    with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/HISTOGRAM_{}.hdf5'.format(tag, label)), 'r') as file:
+        histogram_width_lens = file['lens']['width'][...]
+        histogram_width_source = file['source']['width'][...]
         
-        som_deviation_lens = file['lens']['deviation'][...]
-        som_deviation_source = file['source']['deviation'][...]
+        histogram_deviation_lens = file['lens']['deviation'][...]
+        histogram_deviation_source = file['source']['deviation'][...]
     
     with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/MODEL_{}.hdf5'.format(tag, label)), 'r') as file:
-        model_scatter_lens = file['lens']['scatter'][...]
-        model_scatter_source = file['source']['scatter'][...]
+        model_width_lens = file['lens']['width'][...]
+        model_width_source = file['source']['width'][...]
         
         model_deviation_lens = file['lens']['deviation'][...]
         model_deviation_source = file['source']['deviation'][...]
     
     with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/PRODUCT_{}.hdf5'.format(tag, label)), 'r') as file:
-        product_scatter_lens = file['lens']['scatter'][...]
-        product_scatter_source = file['source']['scatter'][...]
+        product_width_lens = file['lens']['width'][...]
+        product_width_source = file['source']['width'][...]
         
         product_deviation_lens = file['lens']['deviation'][...]
         product_deviation_source = file['source']['deviation'][...]
     
     with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/FIDUCIAL_{}.hdf5'.format(tag, label)), 'r') as file:
-        fiducial_scatter_lens = file['lens']['scatter'][...]
-        fiducial_scatter_source = file['source']['scatter'][...]
+        fiducial_width_lens = file['lens']['width'][...]
+        fiducial_width_source = file['source']['width'][...]
         
         fiducial_deviation_lens = file['lens']['deviation'][...]
         fiducial_deviation_source = file['source']['deviation'][...]
     
-    with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/HISTOGRAM_{}.hdf5'.format(tag, label)), 'r') as file:
-        histogram_scatter_lens = file['lens']['scatter'][...]
-        histogram_scatter_source = file['source']['scatter'][...]
+    with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/TARGET_{}.hdf5'.format(tag, label)), 'r') as file:
+        target_width_lens = file['lens']['width'][...]
+        target_width_source = file['source']['width'][...]
         
-        histogram_deviation_lens = file['lens']['deviation'][...]
-        histogram_deviation_source = file['source']['deviation'][...]
+        target_deviation_lens = file['lens']['deviation'][...]
+        target_deviation_source = file['source']['deviation'][...]
         
-        histogram_middle_lens = file['lens']['middle'][...]
-        histogram_middle_source = file['source']['middle'][...]
+        target_middle_lens = file['lens']['middle'][...]
+        target_middle_source = file['source']['middle'][...]
     
     # Delta
-    som_delta_lens = numpy.abs(som_scatter_lens - histogram_scatter_lens) / (1 + histogram_middle_lens)
-    som_delta_source = numpy.abs(som_scatter_source - histogram_scatter_source) / (1 + histogram_middle_source)
+    histogram_delta_lens = numpy.abs(histogram_width_lens - target_width_lens) / (1 + target_middle_lens)
+    histogram_delta_source = numpy.abs(histogram_width_source - target_width_source) / (1 + target_middle_source)
     
-    model_delta_lens = numpy.abs(model_scatter_lens - histogram_scatter_lens) / (1 + histogram_middle_lens)
-    model_delta_source = numpy.abs(model_scatter_source - histogram_scatter_source) / (1 + histogram_middle_source)
+    model_delta_lens = numpy.abs(model_width_lens - target_width_lens) / (1 + target_middle_lens)
+    model_delta_source = numpy.abs(model_width_source - target_width_source) / (1 + target_middle_source)
     
-    product_delta_lens = numpy.abs(product_scatter_lens - histogram_scatter_lens) / (1 + histogram_middle_lens)
-    product_delta_source = numpy.abs(product_scatter_source - histogram_scatter_source) / (1 + histogram_middle_source)
+    product_delta_lens = numpy.abs(product_width_lens - target_width_lens) / (1 + target_middle_lens)
+    product_delta_source = numpy.abs(product_width_source - target_width_source) / (1 + target_middle_source)
     
-    fiducial_delta_lens = numpy.abs(fiducial_scatter_lens - histogram_scatter_lens) / (1 + histogram_middle_lens)
-    fiducial_delta_source = numpy.abs(fiducial_scatter_source - histogram_scatter_source) / (1 + histogram_middle_source)
+    fiducial_delta_lens = numpy.abs(fiducial_width_lens - target_width_lens) / (1 + target_middle_lens)
+    fiducial_delta_source = numpy.abs(fiducial_width_source - target_width_source) / (1 + target_middle_source)
     
     # Configuration
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
@@ -88,72 +88,72 @@ def main(tag, label, folder):
     size = 100
     bin_size = 5
     
-    range_lens = 1.0 * histogram_scatter_lens
-    range_source = 1.0 * histogram_scatter_source
+    range_lens = 1.0 * target_width_lens
+    range_source = 1.0 * target_width_source
     
-    factor_lens = 0.005 * (1 + histogram_middle_lens)
-    factor_source = 0.002 * (1 + histogram_middle_source)
+    factor_lens = 0.005 * (1 + target_middle_lens)
+    factor_source = 0.002 * (1 + target_middle_source)
     
     # Plot
     figure, plot = pyplot.subplots(nrows=bin_size, ncols=2, figsize=(12, 3 * bin_size))
     
     for m in range(bin_size):
         
-        plot[m, 0].hist(som_deviation_lens[:, m], bins=size, range=(histogram_scatter_lens[m] - range_lens[m], histogram_scatter_lens[m] + range_lens[m]), color='darkblue', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 0].hist(histogram_deviation_lens[:, m], bins=size, range=(target_width_lens[m] - range_lens[m], target_width_lens[m] + range_lens[m]), color='darkblue', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 0].hist(model_deviation_lens[:, m], bins=size, range=(histogram_scatter_lens[m] - range_lens[m], histogram_scatter_lens[m] + range_lens[m]), color='darkgreen', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 0].hist(model_deviation_lens[:, m], bins=size, range=(target_width_lens[m] - range_lens[m], target_width_lens[m] + range_lens[m]), color='darkgreen', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 0].hist(product_deviation_lens[:, m], bins=size, range=(histogram_scatter_lens[m] - range_lens[m], histogram_scatter_lens[m] + range_lens[m]), color='darkorange', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 0].hist(product_deviation_lens[:, m], bins=size, range=(target_width_lens[m] - range_lens[m], target_width_lens[m] + range_lens[m]), color='darkorange', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 0].hist(fiducial_deviation_lens[:, m], bins=size, range=(histogram_scatter_lens[m] - range_lens[m], histogram_scatter_lens[m] + range_lens[m]), color='darkred', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 0].hist(fiducial_deviation_lens[:, m], bins=size, range=(target_width_lens[m] - range_lens[m], target_width_lens[m] + range_lens[m]), color='darkred', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 0].hist(histogram_deviation_lens[:, m], bins=size, range=(histogram_scatter_lens[m] - range_lens[m], histogram_scatter_lens[m] + range_lens[m]), color='black', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 0].hist(target_deviation_lens[:, m], bins=size, range=(target_width_lens[m] - range_lens[m], target_width_lens[m] + range_lens[m]), color='black', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 0].text(x=histogram_scatter_lens[m] - range_lens[m] * 0.80, y=250, s=r'$\delta^\mathrm{SOM}_{\bar{\zeta}} = ' + r'{:.3f}$'.format(som_delta_lens[m]), fontsize=15, color='darkblue')
+        plot[m, 0].text(x=target_width_lens[m] - range_lens[m] * 0.80, y=250, s=r'$\delta^\mathtt{histogram}_{\tilde{\eta}} = ' + r'{:.3f}$'.format(histogram_delta_lens[m]), fontsize=15, color='darkblue')
         
-        plot[m, 0].text(x=histogram_scatter_lens[m] - range_lens[m] * 0.80, y=100, s=r'$\delta^\mathrm{Model}_{\bar{\zeta}} = ' + r'{:.3f}$'.format(model_delta_lens[m]), fontsize=15, color='darkgreen')
+        plot[m, 0].text(x=target_width_lens[m] - range_lens[m] * 0.80, y=100, s=r'$\delta^\mathtt{model}_{\tilde{\eta}} = ' + r'{:.3f}$'.format(model_delta_lens[m]), fontsize=15, color='darkgreen')
         
-        plot[m, 0].text(x=histogram_scatter_lens[m] + range_lens[m] * 0.24, y=250, s=r'$\delta^\mathrm{Product}_{\bar{\zeta}} = ' + r'{:.3f}$'.format(product_delta_lens[m]), fontsize=15, color='darkorange')
+        plot[m, 0].text(x=target_width_lens[m] + range_lens[m] * 0.24, y=250, s=r'$\delta^\mathtt{product}_{\tilde{\eta}} = ' + r'{:.3f}$'.format(product_delta_lens[m]), fontsize=15, color='darkorange')
         
-        plot[m, 0].text(x=histogram_scatter_lens[m] + range_lens[m] * 0.24, y=100, s=r'$\delta^\mathrm{Fiducial}_{\bar{\zeta}} = ' + r'{:.3f}$'.format(fiducial_delta_lens[m]), fontsize=15, color='darkred')
+        plot[m, 0].text(x=target_width_lens[m] + range_lens[m] * 0.24, y=100, s=r'$\delta^\mathtt{fiducial}_{\tilde{\eta}} = ' + r'{:.3f}$'.format(fiducial_delta_lens[m]), fontsize=15, color='darkred')
         
-        plot[m, 0].fill_betweenx(y=[10, 800], x1=histogram_scatter_lens[m] - factor_lens[m], x2=histogram_scatter_lens[m] + factor_lens[m], color='gray', alpha=0.5)
+        plot[m, 0].fill_betweenx(y=[10, 800], x1=target_width_lens[m] - factor_lens[m], x2=target_width_lens[m] + factor_lens[m], color='gray', alpha=0.5)
         
         plot[m, 0].set_ylim(10, 800)
-        plot[m, 0].set_xlim(histogram_scatter_lens[m] - range_lens[m], histogram_scatter_lens[m] + range_lens[m])
+        plot[m, 0].set_xlim(target_width_lens[m] - range_lens[m], target_width_lens[m] + range_lens[m])
         
         plot[m, 0].set_yscale('log')
-        plot[m, 0].set_ylabel(r'$\psi ( \zeta )$')
+        plot[m, 0].set_ylabel(r'$\psi ( \eta )$')
         
         if m == 0:
             plot[m, 0].set_title(r'$\mathrm{Lens}$')
         
         if m == bin_size - 1:
-            plot[m, 0].set_xlabel(r'$\zeta$')
+            plot[m, 0].set_xlabel(r'$\eta$')
     
     for m in range(bin_size):
-        plot[m, 1].hist(som_deviation_source[:, m], bins=size, range=(histogram_scatter_source[m] - range_source[m], histogram_scatter_source[m] + range_source[m]), color='darkblue', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 1].hist(histogram_deviation_source[:, m], bins=size, range=(target_width_source[m] - range_source[m], target_width_source[m] + range_source[m]), color='darkblue', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 1].hist(model_deviation_source[:, m], bins=size, range=(histogram_scatter_source[m] - range_source[m], histogram_scatter_source[m] + range_source[m]), color='darkgreen', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 1].hist(model_deviation_source[:, m], bins=size, range=(target_width_source[m] - range_source[m], target_width_source[m] + range_source[m]), color='darkgreen', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 1].hist(product_deviation_source[:, m], bins=size, range=(histogram_scatter_source[m] - range_source[m], histogram_scatter_source[m] + range_source[m]), color='darkorange', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 1].hist(product_deviation_source[:, m], bins=size, range=(target_width_source[m] - range_source[m], target_width_source[m] + range_source[m]), color='darkorange', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 1].hist(fiducial_deviation_source[:, m], bins=size, range=(histogram_scatter_source[m] - range_source[m], histogram_scatter_source[m] + range_source[m]), color='darkred', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 1].hist(fiducial_deviation_source[:, m], bins=size, range=(target_width_source[m] - range_source[m], target_width_source[m] + range_source[m]), color='darkred', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 1].hist(histogram_deviation_source[:, m], bins=size, range=(histogram_scatter_source[m] - range_source[m], histogram_scatter_source[m] + range_source[m]), color='black', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 1].hist(target_deviation_source[:, m], bins=size, range=(target_width_source[m] - range_source[m], target_width_source[m] + range_source[m]), color='black', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 1].text(x=histogram_scatter_source[m] - range_source[m] * 0.80, y=250, s=r'$\delta^\mathrm{SOM}_{\bar{\zeta}} = ' + r'{:.3f}$'.format(som_delta_source[m]), fontsize=15, color='darkblue')
+        plot[m, 1].text(x=target_width_source[m] - range_source[m] * 0.80, y=250, s=r'$\delta^\mathtt{histogram}_{\tilde{\eta}} = ' + r'{:.3f}$'.format(histogram_delta_source[m]), fontsize=15, color='darkblue')
         
-        plot[m, 1].text(x=histogram_scatter_source[m] - range_source[m] * 0.80, y=100, s=r'$\delta^\mathrm{Model}_{\bar{\zeta}} = ' + r'{:.3f}$'.format(model_delta_source[m]), fontsize=15, color='darkgreen')
+        plot[m, 1].text(x=target_width_source[m] - range_source[m] * 0.80, y=100, s=r'$\delta^\mathtt{model}_{\tilde{\eta}} = ' + r'{:.3f}$'.format(model_delta_source[m]), fontsize=15, color='darkgreen')
         
-        plot[m, 1].text(x=histogram_scatter_source[m] + range_source[m] * 0.24, y=250, s=r'$\delta^\mathrm{Product}_{\bar{\zeta}} = ' + r'{:.3f}$'.format(product_delta_source[m]), fontsize=15, color='darkorange')
+        plot[m, 1].text(x=target_width_source[m] + range_source[m] * 0.24, y=250, s=r'$\delta^\mathtt{product}_{\tilde{\eta}} = ' + r'{:.3f}$'.format(product_delta_source[m]), fontsize=15, color='darkorange')
         
-        plot[m, 1].text(x=histogram_scatter_source[m] + range_source[m] * 0.24, y=100, s=r'$\delta^\mathrm{Fiducial}_{\bar{\zeta}} = ' + r'{:.3f}$'.format(fiducial_delta_source[m]), fontsize=15, color='darkred')
+        plot[m, 1].text(x=target_width_source[m] + range_source[m] * 0.24, y=100, s=r'$\delta^\mathtt{fiducial}_{\tilde{\eta}} = ' + r'{:.3f}$'.format(fiducial_delta_source[m]), fontsize=15, color='darkred')
         
-        plot[m, 1].fill_betweenx(y=[10, 800], x1=histogram_scatter_source[m] - factor_source[m], x2=histogram_scatter_source[m] + factor_source[m], color='gray', alpha=0.5)
+        plot[m, 1].fill_betweenx(y=[10, 800], x1=target_width_source[m] - factor_source[m], x2=target_width_source[m] + factor_source[m], color='gray', alpha=0.5)
         
         plot[m, 1].set_ylim(10, 800)
-        plot[m, 1].set_xlim(histogram_scatter_source[m] - range_source[m], histogram_scatter_source[m] + range_source[m])
+        plot[m, 1].set_xlim(target_width_source[m] - range_source[m], target_width_source[m] + range_source[m])
         
         plot[m, 1].set_yscale('log')
         plot[m, 1].set_ylabel('')
@@ -162,7 +162,7 @@ def main(tag, label, folder):
             plot[m, 1].set_title(r'$\mathrm{Source}$')
         
         if m == bin_size - 1:
-            plot[m, 1].set_xlabel(r'$\zeta$')
+            plot[m, 1].set_xlabel(r'$\eta$')
     
     figure.subplots_adjust(wspace=0.12, hspace=0.24)
     figure.savefig(os.path.join(analyze_folder, '{}/DEVIATION/FIGURE_{}.pdf'.format(tag, label)), format='pdf', bbox_inches='tight')
