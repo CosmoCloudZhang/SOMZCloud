@@ -22,9 +22,15 @@ def plot_expectation(sigma, correlation):
     
     for (i, j), value in numpy.ndenumerate(correlation):
         if i == j:
-            plot.text(j, i, r'$\sigma_\mu^{' + str(j + 1) + r'} = ' + r'{:.3f}$'.format(sigma[i]), va='center', ha='center', color='black', fontsize = 30)
+            plot.text(j, i, r'$\sigma_\mu = ' + r'{:.3f}$'.format(sigma[i]), va='center', ha='center', color='black', fontsize = 30)
         else:
             plot.text(j, i, r'${:.3f}$'.format(value), va='center', ha='center', color='black', fontsize = 30)
+    
+    for i in range(len(sigma)):
+        plot.text(i, -1, r'$\mathrm{Bin} \, ' + r'{:.0f}$'.format(i + 1), va='center', ha='center', color='black', fontsize = 30)
+    
+    for j in range(len(sigma)):
+        plot.text(-1, j, r'$\mathrm{Bin} \, ' + r'{:.0f}$'.format(j + 1), va='center', ha='center', color='black', fontsize = 30)
     
     plot.axis('off')
     cax = figure.add_axes([0.15, 0.05, 0.72, 0.05])
@@ -48,9 +54,15 @@ def plot_deviation(sigma, correlation):
     
     for (i, j), value in numpy.ndenumerate(correlation):
         if i == j:
-            plot.text(j, i, r'$\sigma_\eta^{' + str(j + 1) + r'} = ' + r'{:.3f}$'.format(sigma[i]), va='center', ha='center', color='black', fontsize = 30)
+            plot.text(j, i, r'$\sigma_\eta = ' + r'{:.3f}$'.format(sigma[i]), va='center', ha='center', color='black', fontsize = 30)
         else:
             plot.text(j, i, r'${:.3f}$'.format(value), va='center', ha='center', color='black', fontsize = 30)
+    
+    for i in range(len(sigma)):
+        plot.text(i, -1, r'$\mathrm{Bin} \, ' + r'{:.0f}$'.format(i + 1), va='center', ha='center', color='black', fontsize = 30)
+    
+    for j in range(len(sigma)):
+        plot.text(-1, j, r'$\mathrm{Bin} \, ' + r'{:.0f}$'.format(j + 1), va='center', ha='center', color='black', fontsize = 30)
     
     plot.axis('off')
     cax = figure.add_axes([0.15, 0.05, 0.72, 0.05])
@@ -97,7 +109,7 @@ def main(tag, type, label, folder):
         correlation_expectation_source = file['source']['correlation_expectation'][...]
     
     # Configuration
-    os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
+    os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/Bin/x86_64-linux:' + os.environ['PATH']
     pyplot.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
     pyplot.rcParams['pgf.texsystem'] = 'pdflatex'
     pyplot.rcParams['text.usetex'] = True

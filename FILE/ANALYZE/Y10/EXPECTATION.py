@@ -106,13 +106,13 @@ def main(tag, label, folder):
         
         plot[m, 0].hist(target_expectation_lens[:, m], bins=size, range=(target_middle_lens[m] - range_lens[m], target_middle_lens[m] + range_lens[m]), color='black', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 0].text(x=target_middle_lens[m] - range_lens[m] * 0.80, y=500, s=r'$\delta^\mathtt{histogram}_{\tilde{\mu}} = ' + r'{:.3f}$'.format(histogram_delta_lens[m]), fontsize=15, color='darkblue')
+        plot[m, 0].text(x=target_middle_lens[m] - range_lens[m] * 0.85, y=500, s=r'$\delta^\mathtt{histogram}_{\tilde{\mu}} = ' + r'{:.3f}$'.format(histogram_delta_lens[m]), fontsize=15, color='darkblue')
         
-        plot[m, 0].text(x=target_middle_lens[m] - range_lens[m] * 0.80, y=200, s=r'$\delta^\mathtt{model}_{\tilde{\mu}} = ' + r'{:.3f}$'.format(model_delta_lens[m]), fontsize=15, color='darkgreen')
+        plot[m, 0].text(x=target_middle_lens[m] - range_lens[m] * 0.85, y=200, s=r'$\delta^\mathtt{model}_{\tilde{\mu}} = ' + r'{:.3f}$'.format(model_delta_lens[m]), fontsize=15, color='darkgreen')
         
-        plot[m, 0].text(x=target_middle_lens[m] + range_lens[m] * 0.24, y=500, s=r'$\delta^\mathtt{product}_{\tilde{\mu}} = ' + r'{:.3f}$'.format(product_delta_lens[m]), fontsize=15, color='darkorange')
+        plot[m, 0].text(x=target_middle_lens[m] + range_lens[m] * 0.25, y=500, s=r'$\delta^\mathtt{product}_{\tilde{\mu}} = ' + r'{:.3f}$'.format(product_delta_lens[m]), fontsize=15, color='darkorange')
         
-        plot[m, 0].text(x=target_middle_lens[m] + range_lens[m] * 0.24, y=200, s=r'$\delta^\mathtt{fiducial}_{\tilde{\mu}} = ' + r'{:.3f}$'.format(fiducial_delta_lens[m]), fontsize=15, color='darkred')
+        plot[m, 0].text(x=target_middle_lens[m] + range_lens[m] * 0.25, y=200, s=r'$\delta^\mathtt{fiducial}_{\tilde{\mu}} = ' + r'{:.3f}$'.format(fiducial_delta_lens[m]), fontsize=15, color='darkred')
         
         plot[m, 0].fill_betweenx(y=[10, 800], x1=target_middle_lens[m] - factor_lens[m], x2=target_middle_lens[m] + factor_lens[m], color='gray', alpha=0.5)
         
@@ -140,13 +140,13 @@ def main(tag, label, folder):
         
         plot[m, 1].hist(target_expectation_lens[:, m + bin_size], bins=size, range=(target_middle_lens[m + bin_size] - range_lens[m], target_middle_lens[m + bin_size] + range_lens[m]), color='black', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 1].text(x=target_middle_lens[m + bin_size] - range_lens[m] * 0.80, y=500, s=r'$\delta^\mathtt{histogram}_{\tilde{\mu}} = ' + r'{:.3f}$'.format(histogram_delta_lens[m + bin_size]), fontsize=15, color='darkblue')
+        plot[m, 1].text(x=target_middle_lens[m + bin_size] - range_lens[m] * 0.85, y=500, s=r'$\delta^\mathtt{histogram}_{\tilde{\mu}} = ' + r'{:.3f}$'.format(histogram_delta_lens[m + bin_size]), fontsize=15, color='darkblue')
         
-        plot[m, 1].text(x=target_middle_lens[m + bin_size] - range_lens[m] * 0.80, y=200, s=r'$\delta^\mathtt{model}_{\tilde{\mu}} = ' + r'{:.3f}$'.format(model_delta_lens[m + bin_size]), fontsize=15, color='darkgreen')
+        plot[m, 1].text(x=target_middle_lens[m + bin_size] - range_lens[m] * 0.85, y=200, s=r'$\delta^\mathtt{model}_{\tilde{\mu}} = ' + r'{:.3f}$'.format(model_delta_lens[m + bin_size]), fontsize=15, color='darkgreen')
         
-        plot[m, 1].text(x=target_middle_lens[m + bin_size] + range_lens[m] * 0.24, y=500, s=r'$\delta^\mathtt{product}_{\tilde{\mu}} = ' + r'{:.3f}$'.format(product_delta_lens[m + bin_size]), fontsize=15, color='darkorange')
+        plot[m, 1].text(x=target_middle_lens[m + bin_size] + range_lens[m] * 0.25, y=500, s=r'$\delta^\mathtt{product}_{\tilde{\mu}} = ' + r'{:.3f}$'.format(product_delta_lens[m + bin_size]), fontsize=15, color='darkorange')
         
-        plot[m, 1].text(x=target_middle_lens[m + bin_size] + range_lens[m] * 0.24, y=200, s=r'$\delta^\mathtt{fiducial}_{\tilde{\mu}} = ' + r'{:.3f}$'.format(fiducial_delta_lens[m + bin_size]), fontsize=15, color='darkred')
+        plot[m, 1].text(x=target_middle_lens[m + bin_size] + range_lens[m] * 0.25, y=200, s=r'$\delta^\mathtt{fiducial}_{\tilde{\mu}} = ' + r'{:.3f}$'.format(fiducial_delta_lens[m + bin_size]), fontsize=15, color='darkred')
         
         plot[m, 1].fill_betweenx(y=[10, 800], x1=target_middle_lens[m + bin_size] - factor_lens[m], x2=target_middle_lens[m + bin_size] + factor_lens[m], color='gray', alpha=0.5)
         
@@ -173,13 +173,13 @@ def main(tag, label, folder):
         
         plot[m, 2].hist(target_expectation_source[:, m], bins=size, range=(target_middle_source[m] - range_source[m], target_middle_source[m] + range_source[m]), color='black', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 2].text(x=target_middle_source[m] - range_source[m] * 0.80, y=500, s=r'$\delta^\mathtt{histogram}_{\tilde{\mu}} = ' + r'{:.3f}$'.format(histogram_delta_source[m]), fontsize=15, color='darkblue')
+        plot[m, 2].text(x=target_middle_source[m] - range_source[m] * 0.85, y=500, s=r'$\delta^\mathtt{histogram}_{\tilde{\mu}} = ' + r'{:.3f}$'.format(histogram_delta_source[m]), fontsize=15, color='darkblue')
         
-        plot[m, 2].text(x=target_middle_source[m] - range_source[m] * 0.80, y=200, s=r'$\delta^\mathtt{model}_{\tilde{\mu}} = ' + r'{:.3f}$'.format(model_delta_source[m]), fontsize=15, color='darkgreen')
+        plot[m, 2].text(x=target_middle_source[m] - range_source[m] * 0.85, y=200, s=r'$\delta^\mathtt{model}_{\tilde{\mu}} = ' + r'{:.3f}$'.format(model_delta_source[m]), fontsize=15, color='darkgreen')
         
-        plot[m, 2].text(x=target_middle_source[m] + range_source[m] * 0.24, y=500, s=r'$\delta^\mathtt{product}_{\tilde{\mu}} = ' + r'{:.3f}$'.format(product_delta_source[m]), fontsize=15, color='darkorange')
+        plot[m, 2].text(x=target_middle_source[m] + range_source[m] * 0.25, y=500, s=r'$\delta^\mathtt{product}_{\tilde{\mu}} = ' + r'{:.3f}$'.format(product_delta_source[m]), fontsize=15, color='darkorange')
         
-        plot[m, 2].text(x=target_middle_source[m] + range_source[m] * 0.24, y=200, s=r'$\delta^\mathtt{fiducial}_{\tilde{\mu}} = ' + r'{:.3f}$'.format(fiducial_delta_source[m]), fontsize=15, color='darkred')
+        plot[m, 2].text(x=target_middle_source[m] + range_source[m] * 0.25, y=200, s=r'$\delta^\mathtt{fiducial}_{\tilde{\mu}} = ' + r'{:.3f}$'.format(fiducial_delta_source[m]), fontsize=15, color='darkred')
         
         plot[m, 2].fill_betweenx(y=[10, 800], x1=target_middle_source[m] - factor_source[m], x2=target_middle_source[m] + factor_source[m], color='gray', alpha=0.5)
         

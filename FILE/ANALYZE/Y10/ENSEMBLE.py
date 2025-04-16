@@ -39,7 +39,7 @@ def plot_ensemble(z_grid, select_lens, select_source, bin_lens_size, bin_source_
     
     plot[0].legend(loc='upper right', fontsize=20)
     plot[0].set_ylabel(r'$\phi \left( z \right)$')
-    plot[0].text(x=2.25, y=3.0, s=r'$\mathrm{Lens}$', fontsize=20)
+    plot[0].text(x=1.5625, y=9.0, s=r'$\mathtt{Lens}$', fontsize=20)
     
     for m in range(bin_source_size):
         
@@ -55,7 +55,7 @@ def plot_ensemble(z_grid, select_lens, select_source, bin_lens_size, bin_source_
     
     plot[1].set_xlabel(r'$z$')
     plot[1].set_ylabel(r'$\phi \left( z \right)$')
-    plot[1].text(x=2.25, y=1.5, s=r'$\mathrm{Source}$', fontsize=20)
+    plot[1].text(x=1.5625, y=4.5, s=r'$\mathtt{Source}$', fontsize=20)
     
     figure.subplots_adjust(hspace=0.0)
     return figure
