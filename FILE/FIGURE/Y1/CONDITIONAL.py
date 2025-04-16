@@ -96,11 +96,11 @@ def main(tag, index, folder):
         plot[m, 0].set_xlim(numpy.maximum(z1, center_lens[m] - range_lens / 2), numpy.minimum(numpy.maximum(z1, center_lens[m] - range_lens / 2) + range_lens, z2))
         
         plot[m, 0].set_yticks([2, 4, 6, 8])
-        plot[m, 0].set_ylabel(r'$\phi \left( z \right)$')
+        plot[m, 0].set_ylabel(r'$\phi \left( z | \mathcal{S}_n, \mathcal{P}_n \right)$')
         plot[m, 0].text(x=numpy.minimum(numpy.maximum(z1, center_lens[m] - range_lens / 2) + range_lens, z2) - range_lens / 5, y=6.0, s=r'$\mathrm{Bin} \, ' + r'{}$'.format(m + 1), fontsize=20)
         
         if m == 0:
-            plot[m, 0].set_title(r'$\mathrm{Lens}$')
+            plot[m, 0].set_title(r'$\mathtt{Lens}$')
         
         if m == bin_size - 1:
             plot[m, 0].set_xlabel(r'$z$')
@@ -123,7 +123,7 @@ def main(tag, index, folder):
         plot[m, 1].text(x=numpy.minimum(numpy.maximum(z1, center_source[m] - range_source / 2) + range_source, z2) - range_source / 5, y=6.0, s=r'$\mathrm{Bin} \, ' + r'{}$'.format(m + 1), fontsize=20)
         
         if m == 0:
-            plot[m, 1].set_title(r'$\mathrm{Source}$')
+            plot[m, 1].set_title(r'$\mathtt{Source}$')
         
         if m == bin_size - 1:
             plot[m, 1].set_xlabel(r'$z$')
