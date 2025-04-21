@@ -101,8 +101,8 @@ def main(tag, name, type, label, folder):
     pyplot.rcParams['font.size'] = 25
     
     # Figure
-    varsigma1 = 5e-2
-    varsigma2 = 2e+0
+    varsigma1 = 5e-4
+    varsigma2 = 5e-1
     color_list = cm.rainbow(numpy.linspace(0, 1, bin_source_size))
     figure, plot = pyplot.subplots(nrows=bin_source_size, ncols=1, figsize=(12, 20))
     
@@ -115,7 +115,7 @@ def main(tag, name, type, label, folder):
             cell_shift_zeta = numpy.divide(numpy.abs(cell_shift_error[m, n, :] - cell_data_error[m, n, :]), cell_sigma, out=numpy.zeros(ell_size), where=cell_sigma != 0)
             cell_scale_zeta = numpy.divide(numpy.abs(cell_scale_error[m, n, :] - cell_data_error[m, n, :]), cell_sigma, out=numpy.zeros(ell_size), where=cell_sigma != 0)
             
-            plot[m].scatter(ell_data, cell_shift_zeta, s=50, marker='s', facecolors=color_list[n], edgecolors=color_list[n])
+            plot[m].scatter(ell_data, cell_shift_zeta, s=50, marker='s', facecolors='none', edgecolors=color_list[n])
             plot[m].plot(ell_data, cell_shift_zeta, linestyle='--', linewidth=1.0, color=color_list[n], label=r'${} \times {}$'.format(m + 1, n + 1))
             
             plot[m].plot(ell_data, cell_scale_zeta, linestyle=':', linewidth=1.0, color=color_list[n])
