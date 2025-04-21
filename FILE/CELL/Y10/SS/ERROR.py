@@ -121,7 +121,9 @@ def main(tag, name, type, label, folder):
             plot[m].plot(ell_data, cell_scale_zeta, linestyle=':', linewidth=1.0, color=color_list[n])
             plot[m].scatter(ell_data, cell_scale_zeta, s=50, marker='d', facecolors='none', edgecolors=color_list[n])
         
-        plot[m].axhline(y=1, color='black', linestyle='--', linewidth=1.0)
+        plot[m].axhline(y=1e-0, color='black', linestyle='--', linewidth=1.0)
+        plot[m].axhline(y=1e-1, color='black', linestyle='--', linewidth=1.0)
+        plot[m].axhline(y=1e-2, color='black', linestyle='--', linewidth=1.0)
         plot[m].fill_betweenx(y=[varsigma1, varsigma2], x1=ell_maximal_source[m], x2=ell2, color='gray', alpha=0.2)
         
         plot[m].set_xscale('log')
