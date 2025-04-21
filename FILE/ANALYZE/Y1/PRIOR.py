@@ -34,7 +34,7 @@ def plot_expectation(sigma, correlation):
     
     plot.axis('off')
     cax = figure.add_axes([0.15, 0.05, 0.72, 0.05])
-    figure.colorbar(cax = cax, mappable = image, orientation = 'horizontal', label = r'$\mathcal{R} \: [\mu_{i}, \mu_{j}]$')
+    figure.colorbar(cax = cax, mappable = image, orientation = 'horizontal', label = r'$\mathcal{R}_\mu$')
     
     figure.subplots_adjust(wspace = 0.02, hspace = 0.02)
     return figure
@@ -66,7 +66,7 @@ def plot_deviation(sigma, correlation):
     
     plot.axis('off')
     cax = figure.add_axes([0.15, 0.05, 0.72, 0.05])
-    figure.colorbar(cax = cax, mappable = image, orientation = 'horizontal', label = r'$\mathcal{R} \: [\eta_{i}, \eta_{j}]$')
+    figure.colorbar(cax = cax, mappable = image, orientation = 'horizontal', label = r'$\mathcal{R}_\eta$')
     
     figure.subplots_adjust(wspace = 0.02, hspace = 0.02)
     return figure

@@ -34,7 +34,7 @@ def plot_covariance(bin_size, map_size, covariance):
     cax = figure.add_axes([0.15, 0.05, 0.72, 0.05])
     figure.subplots_adjust(wspace = 0.0, hspace = 0.0)
     
-    figure.colorbar(cax = cax, mappable = image, orientation = 'horizontal', label = r'$\mathcal{C} \: [\phi^{i} (z_1), \phi^{j} (z_2)]$')
+    figure.colorbar(cax = cax, mappable = image, orientation = 'horizontal', label = r'$\mathcal{C} \: [\phi^{a} (z_1), \phi^{b} (z_2)]$')
     return figure
 
 
