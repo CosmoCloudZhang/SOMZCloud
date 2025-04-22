@@ -102,6 +102,9 @@ def main(tag, type, label, folder):
         scatter_lens = file['lens']['scatter'][...]
         scatter_source = file['source']['scatter'][...]
         
+        variation_lens = file['lens']['variation'][...]
+        variation_source = file['source']['variation'][...]
+        
         correlation_deviation_lens = file['lens']['correlation_deviation'][...]
         correlation_deviation_source = file['source']['correlation_deviation'][...]
         
@@ -125,11 +128,11 @@ def main(tag, type, label, folder):
     pyplot.close(figure)
     
     # Plot Deviation
-    figure = plot_deviation(scatter_lens, correlation_deviation_lens)
+    figure = plot_deviation(variation_lens, correlation_deviation_lens)
     figure.savefig(os.path.join(analyze_folder, '{}/PRIOR/{}/FIGURE_{}_DEVIATION_LENS.pdf'.format(tag, label, type)), format='pdf', bbox_inches='tight')
     pyplot.close(figure)
     
-    figure = plot_deviation(scatter_source, correlation_deviation_source)
+    figure = plot_deviation(variation_source, correlation_deviation_source)
     figure.savefig(os.path.join(analyze_folder, '{}/PRIOR/{}/FIGURE_{}_DEVIATION_SOURCE.pdf'.format(tag, label, type)), format='pdf', bbox_inches='tight')
     pyplot.close(figure)
     
