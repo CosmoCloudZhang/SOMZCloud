@@ -103,8 +103,8 @@ def main(tag, name, type, label, folder):
     # Figure
     zeta1 = 5e-4
     zeta2 = 5e-1
-    figure, plot = pyplot.subplots(nrows=bin_lens_size, ncols=1, figsize=(12, 20))
     color_list = ['darkmagenta', 'darkblue', 'darkgreen', 'darkorange', 'darkred']
+    figure, plot = pyplot.subplots(nrows=bin_source_size, ncols=1, figsize=(12, 20))
     
     index = 0
     for m in range(bin_source_size):
