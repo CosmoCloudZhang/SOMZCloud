@@ -5,7 +5,7 @@ import time
 import numpy
 import pyccl
 import argparse
-from matplotlib import cm, pyplot
+from matplotlib import pyplot
 
 
 def main(tag, name, type, label, folder):
@@ -98,10 +98,10 @@ def main(tag, name, type, label, folder):
     pyplot.rcParams['font.size'] = 25
     
     # Figure
-    varsigma1 = 2e-3
-    varsigma2 = 2e+1
-    color_list = cm.rainbow(numpy.linspace(0, 1, bin_lens_size))
+    zeta1 = 2e-3
+    zeta2 = 2e+1
     figure, plot = pyplot.subplots(nrows=bin_lens_size, ncols=1, figsize=(12, 20))
+    color_list = ['darkmagenta', 'darkblue', 'darkgreen', 'darkorange', 'darkred']
     
     index = 0
     for m in range(bin_lens_size):
@@ -113,26 +113,26 @@ def main(tag, name, type, label, folder):
                 cell_shift_zeta = numpy.divide(numpy.abs(cell_shift_error[m, n, :] - cell_data_error[m, n, :]), cell_sigma, out=numpy.zeros(ell_size), where=cell_sigma != 0)
                 cell_scale_zeta = numpy.divide(numpy.abs(cell_scale_error[m, n, :] - cell_data_error[m, n, :]), cell_sigma, out=numpy.zeros(ell_size), where=cell_sigma != 0)
                 
-                plot[m].scatter(ell_data, cell_shift_zeta, s=50, marker='s', facecolors='none', edgecolors=color_list[n])
-                plot[m].plot(ell_data, cell_shift_zeta, linestyle='--', linewidth=1.0, color=color_list[n], label=r'${} \times {}$'.format(m + 1, n + 1))
+                plot[m].scatter(ell_data, cell_shift_zeta, s=100, marker='s', facecolors='none', edgecolors=color_list[n])
+                plot[m].plot(ell_data, cell_shift_zeta, linestyle='--', linewidth=2.0, color=color_list[n], label=r'${} \times {}$'.format(m + 1, n + 1))
                 
-                plot[m].plot(ell_data, cell_scale_zeta, linestyle=':', linewidth=1.0, color=color_list[n])
-                plot[m].scatter(ell_data, cell_scale_zeta, s=50, marker='d', facecolors='none', edgecolors=color_list[n])
+                plot[m].plot(ell_data, cell_scale_zeta, linestyle=':', linewidth=2.0, color=color_list[n])
+                plot[m].scatter(ell_data, cell_scale_zeta, s=100, marker='d', facecolors='none', edgecolors=color_list[n])
         
-        plot[m].axhline(y=1e-0, color='black', linestyle='--', linewidth=1.0)
-        plot[m].axhline(y=1e-1, color='black', linestyle='--', linewidth=1.0)
-        plot[m].axhline(y=1e-2, color='black', linestyle='--', linewidth=1.0)
-        plot[m].fill_betweenx(y=[varsigma1, varsigma2], x1=ell_maximal_lens[m], x2=ell2, color='gray', alpha=0.2)
+        plot[m].axhline(y=1e-0, color='black', linestyle='-.', linewidth=1.0)
+        plot[m].axhline(y=1e-1, color='black', linestyle='-.', linewidth=1.0)
+        plot[m].axhline(y=1e-2, color='black', linestyle='-.', linewidth=1.0)
+        plot[m].fill_betweenx(y=[zeta1, zeta2], x1=ell_maximal_lens[m], x2=ell2, color='gray', alpha=0.2)
         
         plot[m].set_xscale('log')
         plot[m].set_yscale('log')
-        plot[m].legend(loc='center left', bbox_to_anchor=(1.0, 0.8), fontsize=20)
+        plot[m].legend(loc='center left', bbox_to_anchor=(1.0, 0.8), fontsize=15)
         
         plot[m].set_xlabel(r'$\ell$')
-        plot[m].set_ylabel(r'$\varsigma_{\theta \theta}^{mn} (\ell)$')
+        plot[m].set_ylabel(r'$\zeta_{\theta \theta}^{ab} (\ell)$')
         
         plot[m].set_xlim(ell1, ell2)
-        plot[m].set_ylim(varsigma1, varsigma2)
+        plot[m].set_ylim(zeta1, zeta2)
     
     figure.subplots_adjust(wspace=0, hspace=0)
     figure.savefig(os.path.join(cell_folder, '{}/{}/{}_ERROR_{}.pdf'.format(tag, name, type, label)), format='pdf', bbox_inches='tight')
