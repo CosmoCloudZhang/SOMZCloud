@@ -73,13 +73,13 @@ def main(tag, index, folder):
     pyplot.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
     pyplot.rcParams['pgf.texsystem'] = 'pdflatex'
     pyplot.rcParams['text.usetex'] = True
-    pyplot.rcParams['font.size'] = 20
+    pyplot.rcParams['font.size'] = 30
     
     # Plot
     bin_size = 5
     range_lens = 0.8
     range_source = 1.2
-    figure, plot = pyplot.subplots(nrows=bin_size, ncols=2, figsize=(12, 3 * bin_size))
+    figure, plot = pyplot.subplots(nrows=bin_size, ncols=2, figsize=(12, 5 * bin_size))
     
     for m in range(bin_size):
         plot[m, 0].plot(z_grid, target_lens[m, :], color='black', linewidth=1.5, linestyle='-')
@@ -97,7 +97,7 @@ def main(tag, index, folder):
         
         plot[m, 0].set_yticks([2, 4, 6, 8])
         plot[m, 0].set_ylabel(r'$\phi \left( z | \mathcal{S}_n, \mathcal{P}_n \right)$')
-        plot[m, 0].text(x=numpy.minimum(numpy.maximum(z1, center_lens[m] - range_lens / 2) + range_lens, z2) - range_lens / 5, y=6.0, s=r'$\mathrm{Bin} \, ' + r'{}$'.format(m + 1), fontsize=20)
+        plot[m, 0].text(x=numpy.minimum(numpy.maximum(z1, center_lens[m] - range_lens / 2) + range_lens, z2) - range_lens / 3, y=6.0, s=r'$\mathrm{Bin} \, ' + r'{}$'.format(m + 1))
         
         if m == 0:
             plot[m, 0].set_title(r'$\mathtt{Lens}$')
@@ -120,7 +120,7 @@ def main(tag, index, folder):
         plot[m, 1].set_xlim(numpy.maximum(z1, center_source[m] - range_source / 2), numpy.minimum(numpy.maximum(z1, center_source[m] - range_source / 2) + range_source, z2))
         
         plot[m, 1].set_yticks([2, 4, 6, 8])
-        plot[m, 1].text(x=numpy.minimum(numpy.maximum(z1, center_source[m] - range_source / 2) + range_source, z2) - range_source / 5, y=6.0, s=r'$\mathrm{Bin} \, ' + r'{}$'.format(m + 1), fontsize=20)
+        plot[m, 1].text(x=numpy.minimum(numpy.maximum(z1, center_source[m] - range_source / 2) + range_source, z2) - range_source / 3, y=6.0, s=r'$\mathrm{Bin} \, ' + r'{}$'.format(m + 1))
         
         if m == 0:
             plot[m, 1].set_title(r'$\mathtt{Source}$')
@@ -131,7 +131,7 @@ def main(tag, index, folder):
     os.makedirs(figure_folder, exist_ok=True)
     os.makedirs(os.path.join(figure_folder, '{}/CONDITIONAL/'.format(tag)), exist_ok=True)
     
-    figure.subplots_adjust(wspace=0.12, hspace=0.24)
+    figure.subplots_adjust(wspace=0.2, hspace=0.2)
     figure.savefig(os.path.join(figure_folder, '{}/CONDITIONAL/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
     
     # Return
