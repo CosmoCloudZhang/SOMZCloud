@@ -1,7 +1,6 @@
 import os
 import h5py
 import time
-import numpy
 import argparse
 from matplotlib import pyplot
 
@@ -27,32 +26,16 @@ def main(tag, label, folder):
     
     # Info
     with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/HISTOGRAM_{}.hdf5'.format(tag, label)), 'r') as file:
-        histogram_middle_lens = file['lens']['middle'][...]
-        histogram_middle_source = file['source']['middle'][...]
-        
         histogram_expectation_lens = file['lens']['expectation'][...]
         histogram_expectation_source = file['source']['expectation'][...]
     
     with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/MODEL_{}.hdf5'.format(tag, label)), 'r') as file:
-        model_middle_lens = file['lens']['middle'][...]
-        model_middle_source = file['source']['middle'][...]
-        
         model_expectation_lens = file['lens']['expectation'][...]
         model_expectation_source = file['source']['expectation'][...]
     
     with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/PRODUCT_{}.hdf5'.format(tag, label)), 'r') as file:
-        product_middle_lens = file['lens']['middle'][...]
-        product_middle_source = file['source']['middle'][...]
-        
         product_expectation_lens = file['lens']['expectation'][...]
         product_expectation_source = file['source']['expectation'][...]
-    
-    with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/FIDUCIAL_{}.hdf5'.format(tag, label)), 'r') as file:
-        fiducial_middle_lens = file['lens']['middle'][...]
-        fiducial_middle_source = file['source']['middle'][...]
-        
-        fiducial_expectation_lens = file['lens']['expectation'][...]
-        fiducial_expectation_source = file['source']['expectation'][...]
     
     with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/TARGET_{}.hdf5'.format(tag, label)), 'r') as file:
         target_middle_lens = file['lens']['middle'][...]
@@ -61,24 +44,11 @@ def main(tag, label, folder):
         target_expectation_lens = file['lens']['expectation'][...]
         target_expectation_source = file['source']['expectation'][...]
     
-    # Delta
-    histogram_delta_lens = numpy.abs(histogram_middle_lens - target_middle_lens) / (1 + target_middle_lens)
-    histogram_delta_source = numpy.abs(histogram_middle_source - target_middle_source) / (1 + target_middle_source)
-    
-    model_delta_lens = numpy.abs(model_middle_lens - target_middle_lens) / (1 + target_middle_lens)
-    model_delta_source = numpy.abs(model_middle_source - target_middle_source) / (1 + target_middle_source)
-    
-    product_delta_lens = numpy.abs(product_middle_lens - target_middle_lens) / (1 + target_middle_lens)
-    product_delta_source = numpy.abs(product_middle_source - target_middle_source) / (1 + target_middle_source)
-    
-    fiducial_delta_lens = numpy.abs(fiducial_middle_lens - target_middle_lens) / (1 + target_middle_lens)
-    fiducial_delta_source = numpy.abs(fiducial_middle_source - target_middle_source) / (1 + target_middle_source)
-    
     # Variable
     size = 100
     bin_size = 5
     
-    range_lens = 0.025 * (1 + target_middle_lens)
+    range_lens = 0.015 * (1 + target_middle_lens)
     range_source = 0.050 * (1 + target_middle_source)
     
     factor_lens = 0.005 * (1 + target_middle_lens)
@@ -89,10 +59,10 @@ def main(tag, label, folder):
     pyplot.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
     pyplot.rcParams['pgf.texsystem'] = 'pdflatex'
     pyplot.rcParams['text.usetex'] = True
-    pyplot.rcParams['font.size'] = 20
+    pyplot.rcParams['font.size'] = 30
     
     # Plot
-    figure, plot = pyplot.subplots(nrows=bin_size, ncols=2, figsize=(12, 3 * bin_size))
+    figure, plot = pyplot.subplots(nrows=bin_size, ncols=2, figsize=(12, 5 * bin_size))
     
     for m in range(bin_size):
         
@@ -102,28 +72,20 @@ def main(tag, label, folder):
         
         plot[m, 0].hist(product_expectation_lens[:, m], bins=size, range=(target_middle_lens[m] - range_lens[m], target_middle_lens[m] + range_lens[m]), color='darkorange', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 0].hist(fiducial_expectation_lens[:, m], bins=size, range=(target_middle_lens[m] - range_lens[m], target_middle_lens[m] + range_lens[m]), color='darkred', density=True, histtype='step', linewidth=2.0, linestyle='-')
-        
         plot[m, 0].hist(target_expectation_lens[:, m], bins=size, range=(target_middle_lens[m] - range_lens[m], target_middle_lens[m] + range_lens[m]), color='black', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 0].text(x=target_middle_lens[m] - range_lens[m] * 0.85, y=500, s=r'$\delta^\mathtt{histogram}_{\tilde{\mu}} = ' + r'{:.3f}$'.format(histogram_delta_lens[m]), fontsize=15, color='darkblue')
+        plot[m, 0].fill_betweenx(y=[5, 500], x1=target_middle_lens[m] - factor_lens[m], x2=target_middle_lens[m] + factor_lens[m], color='gray', alpha=0.5)
         
-        plot[m, 0].text(x=target_middle_lens[m] - range_lens[m] * 0.85, y=200, s=r'$\delta^\mathtt{model}_{\tilde{\mu}} = ' + r'{:.3f}$'.format(model_delta_lens[m]), fontsize=15, color='darkgreen')
+        plot[m, 0].text(x=target_middle_lens[m] + range_lens[m] / 3, y=250, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black')
         
-        plot[m, 0].text(x=target_middle_lens[m] + range_lens[m] * 0.25, y=500, s=r'$\delta^\mathtt{product}_{\tilde{\mu}} = ' + r'{:.3f}$'.format(product_delta_lens[m]), fontsize=15, color='darkorange')
-        
-        plot[m, 0].text(x=target_middle_lens[m] + range_lens[m] * 0.25, y=200, s=r'$\delta^\mathtt{fiducial}_{\tilde{\mu}} = ' + r'{:.3f}$'.format(fiducial_delta_lens[m]), fontsize=15, color='darkred')
-        
-        plot[m, 0].fill_betweenx(y=[10, 800], x1=target_middle_lens[m] - factor_lens[m], x2=target_middle_lens[m] + factor_lens[m], color='gray', alpha=0.5)
-        
-        plot[m, 0].set_ylim(10, 800)
+        plot[m, 0].set_ylim(5, 500)
         plot[m, 0].set_xlim(target_middle_lens[m] - range_lens[m], target_middle_lens[m] + range_lens[m])
         
         plot[m, 0].set_yscale('log')
         plot[m, 0].set_ylabel(r'$\psi \left( \mu \right)$')
         
         if m == 0:
-            plot[m, 0].set_title(r'$\mathrm{Lens}$')
+            plot[m, 0].set_title(r'$\mathtt{Lens}$')
         
         if m == bin_size - 1:
             plot[m, 0].set_xlabel(r'$\mu$')
@@ -135,33 +97,25 @@ def main(tag, label, folder):
         
         plot[m, 1].hist(product_expectation_source[:, m], bins=size, range=(target_middle_source[m] - range_source[m], target_middle_source[m] + range_source[m]), color='darkorange', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 1].hist(fiducial_expectation_source[:, m], bins=size, range=(target_middle_source[m] - range_source[m], target_middle_source[m] + range_source[m]), color='darkred', density=True, histtype='step', linewidth=2.0, linestyle='-')
-        
         plot[m, 1].hist(target_expectation_source[:, m], bins=size, range=(target_middle_source[m] - range_source[m], target_middle_source[m] + range_source[m]), color='black', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 1].text(x=target_middle_source[m] - range_source[m] * 0.85, y=500, s=r'$\delta^\mathtt{histogram}_{\tilde{\mu}} = ' + r'{:.3f}$'.format(histogram_delta_source[m]), fontsize=15, color='darkblue')
+        plot[m, 1].fill_betweenx(y=[2, 200], x1=target_middle_source[m] - factor_source[m], x2=target_middle_source[m] + factor_source[m], color='gray', alpha=0.5)
         
-        plot[m, 1].text(x=target_middle_source[m] - range_source[m] * 0.85, y=200, s=r'$\delta^\mathtt{model}_{\tilde{\mu}} = ' + r'{:.3f}$'.format(model_delta_source[m]), fontsize=15, color='darkgreen')
+        plot[m, 1].text(x=target_middle_source[m] + range_source[m] / 3, y=100, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black')
         
-        plot[m, 1].text(x=target_middle_source[m] + range_source[m] * 0.25, y=500, s=r'$\delta^\mathtt{product}_{\tilde{\mu}} = ' + r'{:.3f}$'.format(product_delta_source[m]), fontsize=15, color='darkorange')
-        
-        plot[m, 1].text(x=target_middle_source[m] + range_source[m] * 0.25, y=200, s=r'$\delta^\mathtt{fiducial}_{\tilde{\mu}} = ' + r'{:.3f}$'.format(fiducial_delta_source[m]), fontsize=15, color='darkred')
-        
-        plot[m, 1].fill_betweenx(y=[10, 800], x1=target_middle_source[m] - factor_source[m], x2=target_middle_source[m] + factor_source[m], color='gray', alpha=0.5)
-        
-        plot[m, 1].set_ylim(10, 800)
+        plot[m, 1].set_ylim(2, 200)
         plot[m, 1].set_xlim(target_middle_source[m] - range_source[m], target_middle_source[m] + range_source[m])
         
         plot[m, 1].set_yscale('log')
         plot[m, 1].set_ylabel('')
         
         if m == 0:
-            plot[m, 1].set_title(r'$\mathrm{Source}$')
+            plot[m, 1].set_title(r'$\mathtt{Source}$')
         
         if m == bin_size - 1:
             plot[m, 1].set_xlabel(r'$\mu$')
     
-    figure.subplots_adjust(wspace=0.12, hspace=0.24)
+    figure.subplots_adjust(wspace=0.2, hspace=0.2)
     figure.savefig(os.path.join(analyze_folder, '{}/EXPECTATION/FIGURE_{}.pdf'.format(tag, label)), format='pdf', bbox_inches='tight')
     pyplot.close(figure)
     

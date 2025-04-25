@@ -39,7 +39,7 @@ def plot_ensemble(z_grid, select_lens, select_source, bin_lens_size, bin_source_
     plot[0].legend(loc='upper right', fontsize=20)
     
     plot[0].set_ylabel(r'$\phi \left( z \right)$')
-    plot[0].text(x=1.25, y=6.0, s=r'$\mathtt{Lens}$', fontsize=20)
+    plot[0].text(x=1.25, y=6.0, s=r'$\mathtt{Lens}$', fontsize=25)
     
     for m in range(bin_source_size):
         
@@ -55,7 +55,7 @@ def plot_ensemble(z_grid, select_lens, select_source, bin_lens_size, bin_source_
     
     plot[1].set_xlabel(r'$z$')
     plot[1].set_ylabel(r'$\phi \left( z \right)$')
-    plot[1].text(x=1.25, y=6.0, s=r'$\mathtt{Source}$', fontsize=20)
+    plot[1].text(x=1.25, y=6.0, s=r'$\mathtt{Source}$', fontsize=25)
     
     figure.subplots_adjust(hspace=0.0)
     return figure
@@ -109,7 +109,7 @@ def main(tag, type, label, folder):
     pyplot.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
     pyplot.rcParams['pgf.texsystem'] = 'pdflatex'
     pyplot.rcParams['text.usetex'] = True
-    pyplot.rcParams['font.size'] = 20
+    pyplot.rcParams['font.size'] = 25
     
     os.makedirs(analyze_folder, exist_ok=True)
     os.makedirs(os.path.join(analyze_folder, '{}/ENSEMBLE/'.format(tag)), exist_ok=True)
