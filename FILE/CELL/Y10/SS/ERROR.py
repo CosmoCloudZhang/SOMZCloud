@@ -82,7 +82,7 @@ def main(tag, name, type, label, folder):
     bin_lens_size = len(bin_lens) - 1
     bin_source_size = len(bin_source) - 1
     
-    k_maximal_source = 10 * cosmology_info['H']
+    k_maximal_source = 1.0 * cosmology_info['H']
     ell_maximal_source = k_maximal_source * pyccl.comoving_radial_distance(cosmo=cosmology, a=1 / (1 + bin_source)) - 1 / 2
     
     # Covariance
@@ -104,7 +104,7 @@ def main(tag, name, type, label, folder):
     zeta1 = 5e-4
     zeta2 = 5e-1
     color_list = ['darkmagenta', 'darkblue', 'darkgreen', 'darkorange', 'darkred']
-    figure, plot = pyplot.subplots(nrows=bin_source_size, ncols=1, figsize=(12, 20))
+    figure, plot = pyplot.subplots(nrows=bin_source_size, ncols=1, figsize=(12, 30))
     
     index = 0
     for m in range(bin_source_size):
@@ -128,15 +128,18 @@ def main(tag, name, type, label, folder):
         
         plot[m].set_xscale('log')
         plot[m].set_yscale('log')
-        plot[m].legend(loc='center left', bbox_to_anchor=(1.0, 0.8), fontsize=15)
-        
-        plot[m].set_xlabel(r'$\ell$')
-        plot[m].set_ylabel(r'$\zeta_{\epsilon \epsilon}^{ab} (\ell)$')
+        plot[m].legend(loc='center left', bbox_to_anchor=(1.0, 0.8), fontsize=25)
         
         plot[m].set_xlim(ell1, ell2)
         plot[m].set_ylim(zeta1, zeta2)
+        plot[m].set_ylabel(r'$\zeta_{\epsilon \epsilon}^{ab} (\ell)$')
+        
+        if m == bin_source_size - 1:
+            plot[m].set_xlabel(r'$\ell$')
+        else: 
+            plot[m].set_xticklabels([])
     
-    figure.subplots_adjust(wspace=0, hspace=0)
+    figure.subplots_adjust(wspace=0.00, hspace=0.05)
     figure.savefig(os.path.join(cell_folder, '{}/{}/{}_ERROR_{}.pdf'.format(tag, name, type, label)), format='pdf', bbox_inches='tight')
     
     # Duration

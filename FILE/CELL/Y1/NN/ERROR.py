@@ -100,7 +100,7 @@ def main(tag, name, type, label, folder):
     # Figure
     zeta1 = 2e-3
     zeta2 = 2e+1
-    figure, plot = pyplot.subplots(nrows=bin_lens_size, ncols=1, figsize=(12, 20))
+    figure, plot = pyplot.subplots(nrows=bin_lens_size, ncols=1, figsize=(12, 30))
     color_list = ['darkmagenta', 'darkblue', 'darkgreen', 'darkorange', 'darkred']
     
     index = 0
@@ -126,15 +126,18 @@ def main(tag, name, type, label, folder):
         
         plot[m].set_xscale('log')
         plot[m].set_yscale('log')
-        plot[m].legend(loc='center left', bbox_to_anchor=(1.0, 0.8), fontsize=15)
-        
-        plot[m].set_xlabel(r'$\ell$')
-        plot[m].set_ylabel(r'$\zeta_{\theta \theta}^{ab} (\ell)$')
+        plot[m].legend(loc='center left', bbox_to_anchor=(1.0, 0.8), fontsize=25)
         
         plot[m].set_xlim(ell1, ell2)
         plot[m].set_ylim(zeta1, zeta2)
+        plot[m].set_ylabel(r'$\zeta_{\theta \theta}^{ab} (\ell)$')
+        
+        if m == bin_lens_size - 1:
+            plot[m].set_xlabel(r'$\ell$')
+        else:
+            plot[m].set_xticklabels([])
     
-    figure.subplots_adjust(wspace=0, hspace=0)
+    figure.subplots_adjust(wspace=0.00, hspace=0.05)
     figure.savefig(os.path.join(cell_folder, '{}/{}/{}_ERROR_{}.pdf'.format(tag, name, type, label)), format='pdf', bbox_inches='tight')
     
     # Duration
