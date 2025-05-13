@@ -98,15 +98,6 @@ def main(tag, index, folder):
     with h5py.File(os.path.join(dataset_folder, '{}/COMBINATION/DATA{}.hdf5'.format(tag, index)), 'w') as file:
         file.create_group('meta')
         
-        file['meta'].create_dataset('selection_size', data=selection_dataset['meta']['size'], dtype=numpy.int32)
-        file['meta'].create_dataset('selection_amount', data=selection_dataset['meta']['amount'], dtype=numpy.int32)
-        file['meta'].create_dataset('selection_sequence', data=selection_dataset['meta']['sequence'], dtype=numpy.int32)
-        
-        file['meta'].create_dataset('augmentation_size', data=augmentation_dataset['meta']['size'], dtype=numpy.int32)
-        file['meta'].create_dataset('augmentation_fraction', data=augmentation_dataset['meta']['fraction'], dtype=numpy.float32)
-        file['meta'].create_dataset('augmentation_redshift', data=augmentation_dataset['meta']['redshift'], dtype=numpy.float32)
-        file['meta'].create_dataset('augmentation_magnitude', data=augmentation_dataset['meta']['magnitude'], dtype=numpy.float32)
-        
         file['meta'].create_dataset('size', data=size, dtype=numpy.int32)
         file['meta'].create_dataset('cell_size', data=cell_size, dtype=numpy.int32)
         file['meta'].create_dataset('cell_size1', data=cell_size1, dtype=numpy.int32)
