@@ -21,8 +21,8 @@ def main(tag, index, folder):
     '''
     # Start
     start = time.time()
-    numpy.random.seed(index)
     print('Index: {}'.format(index))
+    random_generator = numpy.random.default_rng(seed=index)
     
     # Path
     dataset_folder = os.path.join(folder, 'DATASET/')
@@ -44,26 +44,26 @@ def main(tag, index, folder):
     # Magnitude
     magnitude1 = {'Y1': 21, 'Y10': 22}
     magnitude2 = {'Y1': 24, 'Y10': 25}
-    magnitude = numpy.random.uniform(low=magnitude1[tag], high=magnitude2[tag])
+    magnitude = random_generator.uniform(low=magnitude1[tag], high=magnitude2[tag])
     
     filter = (application_dataset['photometry']['mag_i_lsst'] < magnitude)
     
     # Redshift
     redshift1 = {'Y1': 0.6, 'Y10': 1.2}
     redshift2 = {'Y1': 2.4, 'Y10': 3.0}
-    redshift = numpy.random.uniform(low=redshift1[tag], high=redshift2[tag])
+    redshift = random_generator.uniform(low=redshift1[tag], high=redshift2[tag])
     
     filter = filter & (application_dataset['photometry']['redshift'] < redshift)
     
     # Color
     color1 = {'Y1': 0.5, 'Y10': 0.5}
     color2 = {'Y1': 2.0, 'Y10': 2.0}
-    color = numpy.random.uniform(low=color1[tag], high=color2[tag])
+    color = random_generator.uniform(low=color1[tag], high=color2[tag])
     
     # Angle
     angle1 = {'Y1': 0.0, 'Y10': 0.0}
     angle2 = {'Y1': numpy.pi / 2, 'Y10': numpy.pi / 2}
-    angle = numpy.random.uniform(low=angle1[tag], high=angle2[tag])
+    angle = random_generator.uniform(low=angle1[tag], high=angle2[tag])
     
     application_color = application_dataset['photometry']['mag_g_lsst'] - application_dataset['photometry']['mag_z_lsst']
     filter = filter & (application_dataset['photometry']['mag_i_lsst'] - magnitude  - numpy.tan(angle) * (application_color - color) < 0)
@@ -71,16 +71,16 @@ def main(tag, index, folder):
     # Factor
     factor1 = {'Y1': 0.5, 'Y10': 1.5}
     factor2 = {'Y1': 1.5, 'Y10': 3.0}
-    factor = numpy.random.uniform(low=factor1[tag], high=factor2[tag])
+    factor = random_generator.uniform(low=factor1[tag], high=factor2[tag])
     rate = 1 / (1 + factor * numpy.exp(application_dataset['photometry']['mag_i_lsst'] - application_dataset['photometry']['mag_i_lsst'].max()))
     
     # Size
     size1 = {'Y1': 100000, 'Y10': 250000}
     size2 = {'Y1': 200000, 'Y10': 500000}
-    size = numpy.random.randint(low=size1[tag], high=size2[tag])
+    size = random_generator.integers(low=size1[tag], high=size2[tag], endpoint=True)
     
     application_size = len(application_dataset['photometry']['redshift'])
-    indices = numpy.random.choice(numpy.arange(application_size)[filter], size=size, replace=True, p=rate[filter] / numpy.sum(rate[filter]))
+    indices = random_generator.choice(numpy.arange(application_size)[filter], size=size, replace=True, p=rate[filter] / numpy.sum(rate[filter]))
     
     # Degradation
     degradation_dataset = {

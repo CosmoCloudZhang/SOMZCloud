@@ -29,8 +29,8 @@ export OMP_PROC_BIND=spread
 export OMP_PLACES=threads
 
 # Initialize the process
-BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
+BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
+BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 
 # Run the application
 srun -N 1 -n 1 -c $SLURM_CPUS_PER_TASK --cpu_bind=cores python -u "${BASE_PATH}FILE/DATASET/CATALOG.py" --folder=$BASE_FOLDER

@@ -22,8 +22,8 @@ source $HOME/.bashrc
 conda activate $CosmoENV
 
 # Initialize the process
-BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
+BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
+BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 
 # Run applications
 python -u "${BASE_PATH}FILE/INFO/GALAXY.py" --folder=$BASE_FOLDER 

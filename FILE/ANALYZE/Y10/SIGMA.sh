@@ -30,8 +30,8 @@ export OMP_PLACES=threads
 
 # Initialize the process
 TAG="Y10"
-BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
+BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
+BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 
 # Run the application
 srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}FILE/ANALYZE/${TAG}/SIGMA.py" --tag=$TAG --folder=$BASE_FOLDER

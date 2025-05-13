@@ -21,8 +21,8 @@ def main(tag, index, folder):
     '''
     # Start
     start = time.time()
-    numpy.random.seed(index)
     print('Index: {}'.format(index))
+    random_generator = numpy.random.default_rng(seed=index)
     
     # Path
     dataset_folder = os.path.join(folder, 'DATASET/')
@@ -35,49 +35,49 @@ def main(tag, index, folder):
         application_cell_count = file['meta']['cell_count'][...]
     application_size = numpy.sum(application_cell_count)
     
-    # Degradation
-    with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        cell_size = file['meta']['cell_size'][...]
-        degradation_cell_count = file['meta']['cell_count'][...]
-        degradation_redshift = file['photometry']['redshift'][...]
-        degradation_magnitude = file['photometry']['mag_i_lsst'][...]
-    degradation_size = len(degradation_redshift)
-    
     # Selection
-    selection_dataset = {
+    with h5py.File(os.path.join(dataset_folder, '{}/SELECTION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+        cell_size = file['meta']['cell_size'][...]
+        selection_cell_count = file['meta']['cell_count'][...]
+        selection_redshift = file['photometry']['redshift'][...]
+        selection_magnitude = file['photometry']['mag_i_lsst'][...]
+    selection_size = len(selection_redshift)
+    
+    # Association
+    association_dataset = {
         'meta': {},
         'morphology': {},
         'photometry': {}
     }
     
-    with h5py.File(os.path.join(dataset_folder, '{}/SELECTION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        selection_dataset['meta'] = {key: file['meta'][key][...] for key in file['meta'].keys()}
-        selection_dataset['morphology'] = {key: file['morphology'][key][...] for key in file['morphology'].keys()}
-        selection_dataset['photometry'] = {key: file['photometry'][key][...] for key in file['photometry'].keys()}
+    with h5py.File(os.path.join(dataset_folder, '{}/ASSOCIATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+        association_dataset['meta'] = {key: file['meta'][key][...] for key in file['meta'].keys()}
+        association_dataset['morphology'] = {key: file['morphology'][key][...] for key in file['morphology'].keys()}
+        association_dataset['photometry'] = {key: file['photometry'][key][...] for key in file['photometry'].keys()}
     
-    selection_cell_id = selection_dataset['meta']['cell_id']
-    selection_size = len(selection_dataset['photometry']['redshift'])
-    filter = numpy.isin(selection_cell_id, numpy.arange(cell_size)[degradation_cell_count == 0])
+    association_cell_id = association_dataset['meta']['cell_id']
+    association_size = len(association_dataset['photometry']['redshift'])
+    filter = numpy.isin(association_cell_id, numpy.arange(cell_size)[selection_cell_count == 0])
     
     # Magnitude
-    magnitude = numpy.max(degradation_magnitude)
-    filter = filter | (selection_dataset['photometry']['mag_i_lsst'] > magnitude)
+    magnitude = numpy.max(selection_magnitude)
+    filter = filter | (association_dataset['photometry']['mag_i_lsst'] > magnitude)
     
     # Redshift
-    redshift = numpy.max(degradation_redshift)
-    filter = filter | (selection_dataset['photometry']['redshift'] > redshift)
+    redshift = numpy.max(selection_redshift)
+    filter = filter | (association_dataset['photometry']['redshift'] > redshift)
     
     # Fraction
-    fraction = numpy.sum(application_cell_count[degradation_cell_count == 0]) / application_size
+    fraction = numpy.sum(application_cell_count[selection_cell_count == 0]) / application_size
     
     # Size
-    size = int(degradation_size * fraction * (1 + fraction))
-    indices = numpy.random.choice(numpy.arange(selection_size)[filter], size=size, replace=True)
+    size = int(selection_size * fraction * (1 + fraction))
+    indices = random_generator.choice(numpy.arange(association_size)[filter], size=size, replace=True)
     
     # Augmentation
     augmentation_dataset = {
-        'morphology': {key: selection_dataset['morphology'][key][indices] for key in selection_dataset['morphology'].keys()},
-        'photometry': {key: selection_dataset['photometry'][key][indices] for key in selection_dataset['photometry'].keys()}
+        'morphology': {key: association_dataset['morphology'][key][indices] for key in association_dataset['morphology'].keys()},
+        'photometry': {key: association_dataset['photometry'][key][indices] for key in association_dataset['photometry'].keys()}
     }
     
     # SOM
@@ -130,11 +130,11 @@ def main(tag, index, folder):
         file['meta'].create_dataset('cell_z_true', data=augmentation_cell_z_true, dtype=numpy.float32)
         
         file.create_group('morphology')
-        for key in selection_dataset['morphology'].keys():
+        for key in association_dataset['morphology'].keys():
             file['morphology'].create_dataset(key, data=augmentation_dataset['morphology'][key], dtype=augmentation_dataset['morphology'][key].dtype)
         
         file.create_group('photometry')
-        for key in selection_dataset['photometry'].keys():
+        for key in association_dataset['photometry'].keys():
             file['photometry'].create_dataset(key, data=augmentation_dataset['photometry'][key], dtype=augmentation_dataset['photometry'][key].dtype)
     
     # Duration

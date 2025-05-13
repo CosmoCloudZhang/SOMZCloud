@@ -23,8 +23,8 @@ conda activate $CosmoENV
 
 # Initialize the process
 NUMBER=500
-BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
+BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
+BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 
 # Run applications
 python -u "${BASE_PATH}FILE/INFO/DENSITY.py" --number=$NUMBER --folder=$BASE_FOLDER 

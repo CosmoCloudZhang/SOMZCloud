@@ -6,9 +6,9 @@
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH --cpus-per-task=8
+#SBATCH --cpus-per-task=16
 #SBATCH -J DATASET_Y1_APPLY
-#SBATCH --ntasks-per-node=32
+#SBATCH --ntasks-per-node=16
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -31,8 +31,8 @@ export OMP_PLACES=threads
 # Initialize the process
 TAG="Y1"
 NUMBER=500
-BASE_PATH="/pscratch/sd/y/yhzhang/ZCloud/"
-BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/ZCloud/"
+BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
+BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 
 # Run the application
 for INDEX in $(seq 0 $NUMBER); do
