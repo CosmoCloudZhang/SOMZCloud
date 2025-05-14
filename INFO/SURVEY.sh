@@ -26,4 +26,4 @@ BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 
 # Run applications
-python -u "${BASE_PATH}FILE/INFO/SURVEY.py" --folder=$BASE_FOLDER 
+python -u "${BASE_PATH}INFO/SURVEY.py" --folder=$BASE_FOLDER 

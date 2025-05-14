@@ -27,4 +27,4 @@ BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 
 # Run applications
-python -u "${BASE_PATH}FILE/INFO/METRIC.py" --number=$NUMBER --folder=$BASE_FOLDER 
+python -u "${BASE_PATH}INFO/METRIC.py" --number=$NUMBER --folder=$BASE_FOLDER 

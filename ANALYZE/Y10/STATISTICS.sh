@@ -39,7 +39,7 @@ TYPE_LIST=("TARGET" "MODEL" "PRODUCT" "FIDUCIAL" "HISTOGRAM")
 
 for LABEL in "${LABEL_LIST[@]}"; do
     for TYPE in "${TYPE_LIST[@]}"; do
-        srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}FILE/ANALYZE/${TAG}/STATISTICS.py" --tag=$TAG --type=$TYPE --label=$LABEL --folder=$BASE_FOLDER &
+        srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}ANALYZE/${TAG}/STATISTICS.py" --tag=$TAG --type=$TYPE --label=$LABEL --folder=$BASE_FOLDER &
     done
 done
 wait

@@ -32,4 +32,4 @@ BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 
 # Run the application
-srun -N 1 -n 1 -c $SLURM_CPUS_PER_TASK --cpu_bind=cores python -u "${BASE_PATH}FILE/DATASET/${TAG}/SIMULATE.py" --tag=$TAG --folder=$BASE_FOLDER
+srun -N 1 -n 1 -c $SLURM_CPUS_PER_TASK --cpu_bind=cores python -u "${BASE_PATH}DATASET/${TAG}/SIMULATE.py" --tag=$TAG --folder=$BASE_FOLDER

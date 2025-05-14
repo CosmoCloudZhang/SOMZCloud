@@ -37,6 +37,6 @@ BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 LABEL_LIST=("ZERO" "HALF" "UNITY" "DOUBLE")
 
 for LABEL in "${LABEL_LIST[@]}"; do
-    srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}FILE/ANALYZE/${TAG}/EXPECTATION.py" --tag=$TAG --label=$LABEL --folder=$BASE_FOLDER &
+    srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}ANALYZE/${TAG}/EXPECTATION.py" --tag=$TAG --label=$LABEL --folder=$BASE_FOLDER &
 done
 wait
