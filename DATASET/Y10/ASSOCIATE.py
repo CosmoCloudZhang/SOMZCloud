@@ -24,6 +24,7 @@ def main(tag, index, folder):
     # Start
     start = time.time()
     print('Index: {}'.format(index))
+    random_generator = numpy.random.default_rng(seed=index)
     
     # Path
     dataset_folder = os.path.join(folder, 'DATASET/')
@@ -65,6 +66,7 @@ def main(tag, index, folder):
         }
     )
     
+    # Simulation
     simulation_dataset = error_model(pandas.DataFrame(simulation_dataset), random_state=index)
     
     # Filter
@@ -73,7 +75,6 @@ def main(tag, index, folder):
     magnitude2 = error_model.getLimitingMags(nSigma=snr, coadded=True, aperture=0)['mag_i_lsst']
     filter = (magnitude1 < simulation_dataset['mag_i_lsst'].values) & (simulation_dataset['mag_i_lsst'].values < magnitude2)
     
-    random_generator = numpy.random.default_rng(seed=index)
     value_list = numpy.unique(simulation_dataset['value'].values)
     filter = filter & (numpy.isin(simulation_dataset['value'].values, random_generator.choice(value_list, len(value_list) // 2, replace=False)))
     

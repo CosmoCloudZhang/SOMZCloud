@@ -20,11 +20,16 @@ def main(tag, folder):
     '''
     # Start
     start = time.time()
+    random_generator = numpy.random.default_rng(seed=0)
     
     # Path
     dataset_folder = os.path.join(folder, 'DATASET/')
     os.makedirs(os.path.join(dataset_folder, '{}'.format(tag)), exist_ok=True)
     os.makedirs(os.path.join(dataset_folder, '{}/SOM/'.format(tag)), exist_ok=True)
+    
+    # Load
+    with h5py.File(os.path.join(dataset_folder, '{}/OBSERVATION/OBSERVATION.hdf5'.format(tag)), 'r') as file:
+        observation_dataset = {key: file[key][...] for key in file.keys()}
     
     # Error
     error_model = LsstErrorModel(
@@ -47,8 +52,6 @@ def main(tag, folder):
     )
     
     # Observation
-    with h5py.File(os.path.join(dataset_folder, '{}/OBSERVATION/OBSERVATION.hdf5'.format(tag)), 'r') as file:
-        observation_dataset = {key: file[key][...] for key in file.keys()}
     observation_dataset = error_model(pandas.DataFrame(observation_dataset), random_state=0)
     
     # Filter
@@ -57,9 +60,8 @@ def main(tag, folder):
     magnitude2 = error_model.getLimitingMags(nSigma=snr, coadded=True, aperture=0)['mag_i_lsst']
     filter = (magnitude1 < observation_dataset['mag_i_lsst'].values) & (observation_dataset['mag_i_lsst'].values < magnitude2)
     
-    numpy.random.seed(0)
     value_list = numpy.unique(observation_dataset['value'].values)
-    filter = filter & (numpy.isin(observation_dataset['value'].values, numpy.random.choice(value_list, len(value_list) // 2, replace=False)))
+    filter = filter & (numpy.isin(observation_dataset['value'].values, random_generator.choice(value_list, len(value_list) // 2, replace=False)))
     
     # Inform
     inform_dataset = {key: observation_dataset[key].values[filter] for key in observation_dataset.keys()}
