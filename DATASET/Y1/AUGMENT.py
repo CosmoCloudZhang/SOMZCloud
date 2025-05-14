@@ -71,9 +71,9 @@ def main(tag, index, folder):
     fraction = numpy.sum(application_cell_count[selection_cell_count == 0]) / application_size
     
     # Size
-    size = int(selection_size * fraction * (1 + fraction))
+    size = int(selection_size * fraction / (1 - fraction))
     indices = random_generator.choice(numpy.arange(association_size)[filter], size=size, replace=True)
-    
+
     # Augmentation
     augmentation_dataset = {
         'morphology': {key: association_dataset['morphology'][key][indices] for key in association_dataset['morphology'].keys()},

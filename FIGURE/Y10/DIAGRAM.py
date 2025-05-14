@@ -39,10 +39,10 @@ def main(tag, index, folder):
         application_magnitude = file['photometry']['mag_i_lsst'][...]
         application_color = file['photometry']['mag_g_lsst'][...] - file['photometry']['mag_z_lsst'][...]
     
-    # Degradation
-    with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        degradation_magnitude = file['photometry']['mag_i_lsst'][...]
-        degradation_color = file['photometry']['mag_g_lsst'][...] - file['photometry']['mag_z_lsst'][...]
+    # Selection
+    with h5py.File(os.path.join(dataset_folder, '{}/SELECTION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+        selection_magnitude = file['photometry']['mag_i_lsst'][...]
+        selection_color = file['photometry']['mag_g_lsst'][...] - file['photometry']['mag_z_lsst'][...]
     
     # Augmentation
     with h5py.File(os.path.join(dataset_folder, '{}/AUGMENTATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
@@ -86,9 +86,9 @@ def main(tag, index, folder):
     
     plot = figure.add_subplot(gridspec[0, 1])
     
-    plot.text(3.0, 17.0, r'$\mathtt{degradation}$')
+    plot.text(3.0, 17.0, r'$\mathtt{selection}$')
     
-    image = plot.hist2d(degradation_color, degradation_magnitude, bins=[color_bin, magnitude_bin], norm=normalize, cmap='magma')[-1]
+    image = plot.hist2d(selection_color, selection_magnitude, bins=[color_bin, magnitude_bin], norm=normalize, cmap='magma')[-1]
     
     plot.set_yticklabels([])
     plot.set_xticklabels([])

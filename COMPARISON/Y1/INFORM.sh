@@ -2,13 +2,13 @@
 #SBATCH -A m1727
 #SBATCH --nodes=4
 #SBATCH -q regular
-#SBATCH --time=08:00:00
+#SBATCH --time=04:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH --cpus-per-task=4
-#SBATCH --ntasks-per-node=64
-#SBATCH -J COMPARISON_Y10_INFORM
+#SBATCH --cpus-per-task=2
+#SBATCH --ntasks-per-node=128
+#SBATCH -J COMPARISON_Y1_INFORM
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -29,7 +29,7 @@ export OMP_PROC_BIND=spread
 export OMP_PLACES=threads
 
 # Initialize the process
-TAG="Y10"
+TAG="Y1"
 NUMBER=500
 BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
@@ -37,9 +37,9 @@ BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 for INDEX in $(seq 0 $NUMBER); do
     # Set variables
     NAME="INFORM${INDEX}"
+    INPUT_PATH="${BASE_FOLDER}DATASET/${TAG}/SELECTION/DATA${INDEX}.hdf5"
     MODEL_PATH="${BASE_FOLDER}COMPARISON/${TAG}/INFORM/INFORM${INDEX}.pkl"
     CONFIG_PATH="${BASE_FOLDER}COMPARISON/${TAG}/INFORM/INFORM${INDEX}.yaml"
-    INPUT_PATH="${BASE_FOLDER}DATASET/${TAG}/DEGRADATION/DATA${INDEX}.hdf5"
     # Run applications
     python -u "${BASE_PATH}FILE/COMPARISON/${TAG}/INFORM.py" --tag=$TAG --index=$INDEX --folder=$BASE_FOLDER &&
     srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -m ceci rail.estimation.algos.flexzboost.FlexZBoostInformer --mpi --name=$NAME --input=$INPUT_PATH --model=$MODEL_PATH --config=$CONFIG_PATH &
