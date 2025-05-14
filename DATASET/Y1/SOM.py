@@ -7,6 +7,7 @@ import pandas
 import argparse
 from photerr import LsstErrorModel
 
+
 def main(tag, folder):
     '''
     Generate the configuration file for the SOM Informer.
