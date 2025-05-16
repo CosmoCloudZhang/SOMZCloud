@@ -72,8 +72,8 @@ def main(tag, index, folder):
     plot.set_xlabel(r'$z_\mathrm{true}$')
     
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(figure_folder, '{}/DISTRIBUTION/'.format(tag)), exist_ok=True)
-    figure.savefig(os.path.join(figure_folder, '{}/DISTRIBUTION/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
+    os.makedirs(os.path.join(figure_folder, '{}/DENSITY/'.format(tag)), exist_ok=True)
+    figure.savefig(os.path.join(figure_folder, '{}/DENSITY/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
     
     # Duration
     end = time.time()
