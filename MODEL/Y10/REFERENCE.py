@@ -95,7 +95,7 @@ def main(tag, index, folder):
     z_true_source = combination_redshift_true[reference_source]
     
     # Metric Lens
-    average_lens_size = 6
+    average_lens_size = 5
     z_average_lens = numpy.linspace(z1_lens, z2_lens, average_lens_size + 1)
     
     nmad_lens = numpy.zeros(average_lens_size)
@@ -121,7 +121,7 @@ def main(tag, index, folder):
             delta_average_lens[m] = numpy.nan
     
     # Metric Source
-    average_source_size = 5
+    average_source_size = 10
     z_average_source = numpy.linspace(z1, z2, average_source_size + 1)
     
     nmad_source = numpy.zeros(average_source_size)

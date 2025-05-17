@@ -121,7 +121,7 @@ def main(tag, index, folder):
             delta_average_lens[m] = numpy.nan
     
     # Metric Source
-    average_source_size = 6
+    average_source_size = 10
     z_average_source = numpy.linspace(z1, z2, average_source_size + 1)
     
     nmad_source = numpy.zeros(average_source_size)
