@@ -61,8 +61,8 @@ def main(tag, index, folder):
     color1_edge2 = +1.5
     color1_bin = numpy.linspace(color1_edge1, color1_edge2, color_size + 1)
     
-    color2_edge1 = -2.0
-    color2_edge2 = +2.0
+    color2_edge1 = -1.8
+    color2_edge2 = +1.8
     color2_bin = numpy.linspace(color2_edge1, color2_edge2, color_size + 1)
     
     figure = pyplot.figure(figsize = (12, 16))
@@ -78,9 +78,6 @@ def main(tag, index, folder):
     plot.set_ylabel(r'$i - z$')
     plot.set_xticklabels([])
     
-    plot.get_yticklabels()[0].set_visible(False)
-    plot.get_xticklabels()[0].set_visible(False)
-    
     plot.set_ylim(color1_edge1, color1_edge2)
     plot.set_xlim(color2_edge1, color2_edge2)
     
@@ -92,9 +89,6 @@ def main(tag, index, folder):
     
     plot.set_yticklabels([])
     plot.set_xticklabels([])
-    
-    plot.get_yticklabels()[0].set_visible(False)
-    plot.get_xticklabels()[0].set_visible(False)
     
     plot.set_ylim(color1_edge1, color1_edge2)
     plot.set_xlim(color2_edge1, color2_edge2)
@@ -108,9 +102,6 @@ def main(tag, index, folder):
     plot.set_ylim(color1_edge1, color1_edge2)
     plot.set_xlim(color2_edge1, color2_edge2)
     
-    plot.get_yticklabels()[0].set_visible(False)
-    plot.get_xticklabels()[0].set_visible(False)
-    
     plot.set_ylabel(r'$i - z$')
     plot.set_xlabel(r'$z - y$')
     
@@ -122,9 +113,6 @@ def main(tag, index, folder):
     
     plot.set_ylim(color1_edge1, color1_edge2)
     plot.set_xlim(color2_edge1, color2_edge2)
-    
-    plot.get_yticklabels()[0].set_visible(False)
-    plot.get_xticklabels()[0].set_visible(False)
     
     plot.set_yticklabels([])
     plot.set_xlabel(r'$z - y$')

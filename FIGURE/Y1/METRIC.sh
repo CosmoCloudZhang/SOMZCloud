@@ -6,8 +6,8 @@
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH -J FIGURE_Y10_SOM
 #SBATCH --cpus-per-task=16
+#SBATCH -J FIGURE_Y1_METRIC
 #SBATCH --ntasks-per-node=16
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
@@ -29,14 +29,14 @@ export OMP_PROC_BIND=spread
 export OMP_PLACES=threads
 
 # Initialize the process
-TAG="Y10"
-NUMBER=500
+TAG="Y1"
+NUMBER=0
 BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 
 # Run the application
 for INDEX in $(seq 0 $NUMBER); do
-    srun -N 1 -n 1 -c $SLURM_CPUS_PER_TASK --cpu_bind=cores python -u "${BASE_PATH}FIGURE/${TAG}/SOM.py" --tag=$TAG --index=$INDEX --folder=$BASE_FOLDER & 
+    srun -N 1 -n 1 -c $SLURM_CPUS_PER_TASK --cpu_bind=cores python -u "${BASE_PATH}FIGURE/${TAG}/METRIC.py" --tag=$TAG --index=$INDEX --folder=$BASE_FOLDER & 
     # Control parallel execution
     if (( $INDEX % $SLURM_NTASKS == 0 )); then
         wait
