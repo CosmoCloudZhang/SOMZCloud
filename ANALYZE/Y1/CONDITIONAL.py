@@ -34,30 +34,30 @@ def main(tag, index, folder):
         bin_source = file['bin_source'][...]
     
     # Summarize Lens
-    with h5py.File(os.path.join(summarize_folder, '{}/LENS/LENS{}/TARGET.hdf5'.format(tag, index)), 'r') as file:
-        target_lens = file['average'][...]
+    with h5py.File(os.path.join(summarize_folder, '{}/LENS/LENS{}/DIR.hdf5'.format(tag, index)), 'r') as file:
+        dir_lens = file['average'][...]
     
-    with h5py.File(os.path.join(summarize_folder, '{}/LENS/LENS{}/MODEL.hdf5'.format(tag, index)), 'r') as file:
-        model_lens = file['average'][...]
+    with h5py.File(os.path.join(summarize_folder, '{}/LENS/LENS{}/STACK.hdf5'.format(tag, index)), 'r') as file:
+        stack_lens = file['average'][...]
     
     with h5py.File(os.path.join(summarize_folder, '{}/LENS/LENS{}/PRODUCT.hdf5'.format(tag, index)), 'r') as file:
         product_lens = file['average'][...]
     
-    with h5py.File(os.path.join(summarize_folder, '{}/LENS/LENS{}/HISTOGRAM.hdf5'.format(tag, index)), 'r') as file:
-        histogram_lens = file['average'][...]
+    with h5py.File(os.path.join(summarize_folder, '{}/LENS/LENS{}/TRUTH.hdf5'.format(tag, index)), 'r') as file:
+        truth_lens = file['average'][...]
     
     # Summarize Source
-    with h5py.File(os.path.join(summarize_folder, '{}/SOURCE/SOURCE{}/TARGET.hdf5'.format(tag, index)), 'r') as file:
-        target_source = file['average'][...]
+    with h5py.File(os.path.join(summarize_folder, '{}/SOURCE/SOURCE{}/DIR.hdf5'.format(tag, index)), 'r') as file:
+        dir_source = file['average'][...]
     
-    with h5py.File(os.path.join(summarize_folder, '{}/SOURCE/SOURCE{}/MODEL.hdf5'.format(tag, index)), 'r') as file:
-        model_source = file['average'][...]
+    with h5py.File(os.path.join(summarize_folder, '{}/SOURCE/SOURCE{}/STACK.hdf5'.format(tag, index)), 'r') as file:
+        stack_source = file['average'][...]
     
     with h5py.File(os.path.join(summarize_folder, '{}/SOURCE/SOURCE{}/PRODUCT.hdf5'.format(tag, index)), 'r') as file:
         product_source = file['average'][...]
     
-    with h5py.File(os.path.join(summarize_folder, '{}/SOURCE/SOURCE{}/HISTOGRAM.hdf5'.format(tag, index)), 'r') as file:
-        histogram_source = file['average'][...]
+    with h5py.File(os.path.join(summarize_folder, '{}/SOURCE/SOURCE{}/TRUTH.hdf5'.format(tag, index)), 'r') as file:
+        truth_source = file['average'][...]
     
     # Redshift
     z1 = 0.0
@@ -65,8 +65,8 @@ def main(tag, index, folder):
     grid_size = 300
     z_grid = numpy.linspace(z1, z2, grid_size + 1)
     
-    center_lens = scipy.integrate.trapezoid(x=z_grid, y=z_grid[numpy.newaxis, :] * histogram_lens, axis=1)
-    center_source = scipy.integrate.trapezoid(x=z_grid, y=z_grid[numpy.newaxis, :] * histogram_source, axis=1)
+    center_lens = scipy.integrate.trapezoid(x=z_grid, y=z_grid[numpy.newaxis, :] * truth_lens, axis=1)
+    center_source = scipy.integrate.trapezoid(x=z_grid, y=z_grid[numpy.newaxis, :] * truth_source, axis=1)
     
     # Configuration
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
@@ -82,13 +82,13 @@ def main(tag, index, folder):
     figure, plot = pyplot.subplots(nrows=bin_size, ncols=2, figsize=(12, 5 * bin_size))
     
     for m in range(bin_size):
-        plot[m, 0].plot(z_grid, target_lens[m, :], color='black', linewidth=1.5, linestyle='-')
+        plot[m, 0].plot(z_grid, dir_lens[m, :], color='darkblue', linewidth=1.5, linestyle='-')
         
-        plot[m, 0].plot(z_grid, model_lens[m, :], color='darkgreen', linewidth=1.5, linestyle='-')
+        plot[m, 0].plot(z_grid, stack_lens[m, :], color='darkgreen', linewidth=1.5, linestyle='-')
         
         plot[m, 0].plot(z_grid, product_lens[m, :], color='darkorange', linewidth=1.5, linestyle='-')
         
-        plot[m, 0].plot(z_grid, histogram_lens[m, :], color='darkblue', linewidth=1.5, linestyle='-')
+        plot[m, 0].plot(z_grid, truth_lens[m, :], color='black', linewidth=1.5, linestyle='-')
         
         plot[m, 0].fill_betweenx(y=[0, 8], x1=bin_lens[m], x2=bin_lens[m + 1], color='gray', alpha=0.5)
         
@@ -106,13 +106,13 @@ def main(tag, index, folder):
             plot[m, 0].set_xlabel(r'$z$')
     
     for m in range(bin_size):
-        plot[m, 1].plot(z_grid, target_source[m, :], color='black', linewidth=1.5, linestyle='-')
+        plot[m, 1].plot(z_grid, dir_source[m, :], color='darkblue', linewidth=1.5, linestyle='-')
         
-        plot[m, 1].plot(z_grid, model_source[m, :], color='darkgreen', linewidth=1.5, linestyle='-')
+        plot[m, 1].plot(z_grid, stack_source[m, :], color='darkgreen', linewidth=1.5, linestyle='-')
         
         plot[m, 1].plot(z_grid, product_source[m, :], color='darkorange', linewidth=1.5, linestyle='-')
         
-        plot[m, 1].plot(z_grid, histogram_source[m, :], color='darkblue', linewidth=1.5, linestyle='-')
+        plot[m, 1].plot(z_grid, truth_source[m, :], color='black', linewidth=1.5, linestyle='-')
         
         plot[m, 1].fill_betweenx(y=[0, 8], x1=bin_source[m], x2=bin_source[m + 1], color='gray', alpha=0.5)
         

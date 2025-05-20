@@ -25,34 +25,34 @@ def main(tag, label, folder):
     os.makedirs(os.path.join(analyze_folder, '{}/EXPECTATION/'.format(tag)), exist_ok=True)
     
     # Info
-    with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/HISTOGRAM_{}.hdf5'.format(tag, label)), 'r') as file:
-        histogram_expectation_lens = file['lens']['expectation'][...]
-        histogram_expectation_source = file['source']['expectation'][...]
+    with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/DIR_{}.hdf5'.format(tag, label)), 'r') as file:
+        dir_expectation_lens = file['lens']['expectation'][...]
+        dir_expectation_source = file['source']['expectation'][...]
     
-    with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/MODEL_{}.hdf5'.format(tag, label)), 'r') as file:
-        model_expectation_lens = file['lens']['expectation'][...]
-        model_expectation_source = file['source']['expectation'][...]
+    with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/STACK_{}.hdf5'.format(tag, label)), 'r') as file:
+        stack_expectation_lens = file['lens']['expectation'][...]
+        stack_expectation_source = file['source']['expectation'][...]
     
     with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/PRODUCT_{}.hdf5'.format(tag, label)), 'r') as file:
         product_expectation_lens = file['lens']['expectation'][...]
         product_expectation_source = file['source']['expectation'][...]
     
-    with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/TARGET_{}.hdf5'.format(tag, label)), 'r') as file:
-        target_middle_lens = file['lens']['middle'][...]
-        target_middle_source = file['source']['middle'][...]
+    with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/TRUTH_{}.hdf5'.format(tag, label)), 'r') as file:
+        truth_middle_lens = file['lens']['middle'][...]
+        truth_middle_source = file['source']['middle'][...]
         
-        target_expectation_lens = file['lens']['expectation'][...]
-        target_expectation_source = file['source']['expectation'][...]
+        truth_expectation_lens = file['lens']['expectation'][...]
+        truth_expectation_source = file['source']['expectation'][...]
     
     # Variable
     size = 100
     bin_size = 5
     
-    range_lens = 0.015 * (1 + target_middle_lens)
-    range_source = 0.050 * (1 + target_middle_source)
+    range_lens = 0.015 * (1 + truth_middle_lens)
+    range_source = 0.050 * (1 + truth_middle_source)
     
-    factor_lens = 0.003 * (1 + target_middle_lens)
-    factor_source = 0.001 * (1 + target_middle_source)
+    factor_lens = 0.003 * (1 + truth_middle_lens)
+    factor_source = 0.001 * (1 + truth_middle_source)
     
     # Configuration
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
@@ -66,20 +66,20 @@ def main(tag, label, folder):
     
     for m in range(bin_size):
         
-        plot[m, 0].hist(histogram_expectation_lens[:, m], bins=size, range=(target_middle_lens[m] - range_lens[m], target_middle_lens[m] + range_lens[m]), color='darkblue', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 0].hist(dir_expectation_lens[:, m], bins=size, range=(truth_middle_lens[m] - range_lens[m], truth_middle_lens[m] + range_lens[m]), color='darkblue', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 0].hist(model_expectation_lens[:, m], bins=size, range=(target_middle_lens[m] - range_lens[m], target_middle_lens[m] + range_lens[m]), color='darkgreen', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 0].hist(stack_expectation_lens[:, m], bins=size, range=(truth_middle_lens[m] - range_lens[m], truth_middle_lens[m] + range_lens[m]), color='darkgreen', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 0].hist(product_expectation_lens[:, m], bins=size, range=(target_middle_lens[m] - range_lens[m], target_middle_lens[m] + range_lens[m]), color='darkorange', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 0].hist(product_expectation_lens[:, m], bins=size, range=(truth_middle_lens[m] - range_lens[m], truth_middle_lens[m] + range_lens[m]), color='darkorange', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 0].hist(target_expectation_lens[:, m], bins=size, range=(target_middle_lens[m] - range_lens[m], target_middle_lens[m] + range_lens[m]), color='black', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 0].hist(truth_expectation_lens[:, m], bins=size, range=(truth_middle_lens[m] - range_lens[m], truth_middle_lens[m] + range_lens[m]), color='black', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 0].fill_betweenx(y=[8, 800], x1=target_middle_lens[m] - factor_lens[m], x2=target_middle_lens[m] + factor_lens[m], color='gray', alpha=0.5)
+        plot[m, 0].fill_betweenx(y=[8, 800], x1=truth_middle_lens[m] - factor_lens[m], x2=truth_middle_lens[m] + factor_lens[m], color='gray', alpha=0.5)
         
-        plot[m, 0].text(x=target_middle_lens[m] + range_lens[m] / 3, y=400, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black')
+        plot[m, 0].text(x=truth_middle_lens[m] + range_lens[m] / 3, y=400, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black')
         
         plot[m, 0].set_ylim(8, 800)
-        plot[m, 0].set_xlim(target_middle_lens[m] - range_lens[m], target_middle_lens[m] + range_lens[m])
+        plot[m, 0].set_xlim(truth_middle_lens[m] - range_lens[m], truth_middle_lens[m] + range_lens[m])
         
         plot[m, 0].set_yscale('log')
         plot[m, 0].set_ylabel(r'$\psi ( \mu )$')
@@ -92,20 +92,20 @@ def main(tag, label, folder):
     
     for m in range(bin_size):
         
-        plot[m, 1].hist(histogram_expectation_lens[:, m + bin_size], bins=size, range=(target_middle_lens[m + bin_size] - range_lens[m + bin_size], target_middle_lens[m + bin_size] + range_lens[m + bin_size]), color='darkblue', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 1].hist(dir_expectation_lens[:, m + bin_size], bins=size, range=(truth_middle_lens[m + bin_size] - range_lens[m + bin_size], truth_middle_lens[m + bin_size] + range_lens[m + bin_size]), color='darkblue', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 1].hist(model_expectation_lens[:, m + bin_size], bins=size, range=(target_middle_lens[m + bin_size] - range_lens[m + bin_size], target_middle_lens[m + bin_size] + range_lens[m + bin_size]), color='darkgreen', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 1].hist(stack_expectation_lens[:, m + bin_size], bins=size, range=(truth_middle_lens[m + bin_size] - range_lens[m + bin_size], truth_middle_lens[m + bin_size] + range_lens[m + bin_size]), color='darkgreen', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 1].hist(product_expectation_lens[:, m + bin_size], bins=size, range=(target_middle_lens[m + bin_size] - range_lens[m + bin_size], target_middle_lens[m + bin_size] + range_lens[m + bin_size]), color='darkorange', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 1].hist(product_expectation_lens[:, m + bin_size], bins=size, range=(truth_middle_lens[m + bin_size] - range_lens[m + bin_size], truth_middle_lens[m + bin_size] + range_lens[m + bin_size]), color='darkorange', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 1].hist(target_expectation_lens[:, m + bin_size], bins=size, range=(target_middle_lens[m + bin_size] - range_lens[m + bin_size], target_middle_lens[m + bin_size] + range_lens[m + bin_size]), color='black', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 1].hist(truth_expectation_lens[:, m + bin_size], bins=size, range=(truth_middle_lens[m + bin_size] - range_lens[m + bin_size], truth_middle_lens[m + bin_size] + range_lens[m + bin_size]), color='black', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 1].fill_betweenx(y=[8, 800], x1=target_middle_lens[m + bin_size] - factor_lens[m + bin_size], x2=target_middle_lens[m + bin_size] + factor_lens[m + bin_size], color='gray', alpha=0.5)
+        plot[m, 1].fill_betweenx(y=[8, 800], x1=truth_middle_lens[m + bin_size] - factor_lens[m + bin_size], x2=truth_middle_lens[m + bin_size] + factor_lens[m + bin_size], color='gray', alpha=0.5)
         
-        plot[m, 1].text(x=target_middle_lens[m + bin_size] + range_lens[m + bin_size] / 3, y=400, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + bin_size + 1), color='black')
+        plot[m, 1].text(x=truth_middle_lens[m + bin_size] + range_lens[m + bin_size] / 3, y=400, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + bin_size + 1), color='black')
         
         plot[m, 1].set_ylim(8, 800)
-        plot[m, 1].set_xlim(target_middle_lens[m + bin_size] - range_lens[m + bin_size], target_middle_lens[m + bin_size] + range_lens[m + bin_size])
+        plot[m, 1].set_xlim(truth_middle_lens[m + bin_size] - range_lens[m + bin_size], truth_middle_lens[m + bin_size] + range_lens[m + bin_size])
         
         plot[m, 1].set_yscale('log')
         plot[m, 1].set_ylabel('')
@@ -117,20 +117,20 @@ def main(tag, label, folder):
             plot[m, 1].set_xlabel(r'$\mu$')
     
     for m in range(bin_size):
-        plot[m, 2].hist(histogram_expectation_source[:, m], bins=size, range=(target_middle_source[m] - range_source[m], target_middle_source[m] + range_source[m]), color='darkblue', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 2].hist(dir_expectation_source[:, m], bins=size, range=(truth_middle_source[m] - range_source[m], truth_middle_source[m] + range_source[m]), color='darkblue', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 2].hist(model_expectation_source[:, m], bins=size, range=(target_middle_source[m] - range_source[m], target_middle_source[m] + range_source[m]), color='darkgreen', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 2].hist(stack_expectation_source[:, m], bins=size, range=(truth_middle_source[m] - range_source[m], truth_middle_source[m] + range_source[m]), color='darkgreen', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 2].hist(product_expectation_source[:, m], bins=size, range=(target_middle_source[m] - range_source[m], target_middle_source[m] + range_source[m]), color='darkorange', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 2].hist(product_expectation_source[:, m], bins=size, range=(truth_middle_source[m] - range_source[m], truth_middle_source[m] + range_source[m]), color='darkorange', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 2].hist(target_expectation_source[:, m], bins=size, range=(target_middle_source[m] - range_source[m], target_middle_source[m] + range_source[m]), color='black', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 2].hist(truth_expectation_source[:, m], bins=size, range=(truth_middle_source[m] - range_source[m], truth_middle_source[m] + range_source[m]), color='black', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 2].fill_betweenx(y=[2, 200], x1=target_middle_source[m] - factor_source[m], x2=target_middle_source[m] + factor_source[m], color='gray', alpha=0.5)
+        plot[m, 2].fill_betweenx(y=[2, 200], x1=truth_middle_source[m] - factor_source[m], x2=truth_middle_source[m] + factor_source[m], color='gray', alpha=0.5)
         
-        plot[m, 2].text(x=target_middle_source[m] + range_source[m] / 3, y=100, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black')
+        plot[m, 2].text(x=truth_middle_source[m] + range_source[m] / 3, y=100, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black')
         
         plot[m, 2].set_ylim(2, 200)
-        plot[m, 2].set_xlim(target_middle_source[m] - range_source[m], target_middle_source[m] + range_source[m])
+        plot[m, 2].set_xlim(truth_middle_source[m] - range_source[m], truth_middle_source[m] + range_source[m])
         
         plot[m, 2].set_yscale('log')
         plot[m, 2].set_ylabel('')

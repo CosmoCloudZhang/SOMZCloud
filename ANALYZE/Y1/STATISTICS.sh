@@ -35,7 +35,7 @@ BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 
 # Run applications
 LABEL_LIST=("ZERO" "HALF" "UNITY" "DOUBLE")
-TYPE_LIST=("TARGET" "MODEL" "PRODUCT" "FIDUCIAL" "HISTOGRAM")
+TYPE_LIST=("DIR" "FIDUCIAL" "STACK" "PRODUCT" "TRUTH")
 
 for LABEL in "${LABEL_LIST[@]}"; do
     for TYPE in "${TYPE_LIST[@]}"; do

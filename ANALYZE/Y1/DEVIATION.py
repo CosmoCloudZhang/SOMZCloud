@@ -25,27 +25,27 @@ def main(tag, label, folder):
     os.makedirs(os.path.join(analyze_folder, '{}/DEVIATION/'.format(tag)), exist_ok=True)
     
     # Info
-    with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/HISTOGRAM_{}.hdf5'.format(tag, label)), 'r') as file:
-        histogram_deviation_lens = file['lens']['deviation'][...]
-        histogram_deviation_source = file['source']['deviation'][...]
+    with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/DIR_{}.hdf5'.format(tag, label)), 'r') as file:
+        dir_deviation_lens = file['lens']['deviation'][...]
+        dir_deviation_source = file['source']['deviation'][...]
     
-    with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/MODEL_{}.hdf5'.format(tag, label)), 'r') as file:
-        model_deviation_lens = file['lens']['deviation'][...]
-        model_deviation_source = file['source']['deviation'][...]
+    with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/STACK_{}.hdf5'.format(tag, label)), 'r') as file:
+        stack_deviation_lens = file['lens']['deviation'][...]
+        stack_deviation_source = file['source']['deviation'][...]
     
     with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/PRODUCT_{}.hdf5'.format(tag, label)), 'r') as file:
         product_deviation_lens = file['lens']['deviation'][...]
         product_deviation_source = file['source']['deviation'][...]
     
-    with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/TARGET_{}.hdf5'.format(tag, label)), 'r') as file:
-        target_width_lens = file['lens']['width'][...]
-        target_width_source = file['source']['width'][...]
+    with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/TRUTH_{}.hdf5'.format(tag, label)), 'r') as file:
+        truth_width_lens = file['lens']['width'][...]
+        truth_width_source = file['source']['width'][...]
         
-        target_deviation_lens = file['lens']['deviation'][...]
-        target_deviation_source = file['source']['deviation'][...]
+        truth_deviation_lens = file['lens']['deviation'][...]
+        truth_deviation_source = file['source']['deviation'][...]
         
-        target_middle_lens = file['lens']['middle'][...]
-        target_middle_source = file['source']['middle'][...]
+        truth_middle_lens = file['lens']['middle'][...]
+        truth_middle_source = file['source']['middle'][...]
     
     # Configuration
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
@@ -58,31 +58,31 @@ def main(tag, label, folder):
     size = 100
     bin_size = 5
     
-    range_lens = 0.5 * target_width_lens
-    range_source = 1.0 * target_width_source
+    range_lens = 0.5 * truth_width_lens
+    range_source = 1.0 * truth_width_source
     
-    factor_lens = 0.005 * (1 + target_middle_lens)
-    factor_source = 0.002 * (1 + target_middle_source)
+    factor_lens = 0.005 * (1 + truth_middle_lens)
+    factor_source = 0.002 * (1 + truth_middle_source)
     
     # Plot
     figure, plot = pyplot.subplots(nrows=bin_size, ncols=2, figsize=(12, 5 * bin_size))
     
     for m in range(bin_size):
         
-        plot[m, 0].hist(histogram_deviation_lens[:, m], bins=size, range=(target_width_lens[m] - range_lens[m], target_width_lens[m] + range_lens[m]), color='darkblue', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 0].hist(dir_deviation_lens[:, m], bins=size, range=(truth_width_lens[m] - range_lens[m], truth_width_lens[m] + range_lens[m]), color='darkblue', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 0].hist(model_deviation_lens[:, m], bins=size, range=(target_width_lens[m] - range_lens[m], target_width_lens[m] + range_lens[m]), color='darkgreen', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 0].hist(stack_deviation_lens[:, m], bins=size, range=(truth_width_lens[m] - range_lens[m], truth_width_lens[m] + range_lens[m]), color='darkgreen', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 0].hist(product_deviation_lens[:, m], bins=size, range=(target_width_lens[m] - range_lens[m], target_width_lens[m] + range_lens[m]), color='darkorange', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 0].hist(product_deviation_lens[:, m], bins=size, range=(truth_width_lens[m] - range_lens[m], truth_width_lens[m] + range_lens[m]), color='darkorange', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 0].hist(target_deviation_lens[:, m], bins=size, range=(target_width_lens[m] - range_lens[m], target_width_lens[m] + range_lens[m]), color='black', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 0].hist(truth_deviation_lens[:, m], bins=size, range=(truth_width_lens[m] - range_lens[m], truth_width_lens[m] + range_lens[m]), color='black', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 0].fill_betweenx(y=[8, 800], x1=target_width_lens[m] - factor_lens[m], x2=target_width_lens[m] + factor_lens[m], color='gray', alpha=0.5)
+        plot[m, 0].fill_betweenx(y=[8, 800], x1=truth_width_lens[m] - factor_lens[m], x2=truth_width_lens[m] + factor_lens[m], color='gray', alpha=0.5)
         
-        plot[m, 0].text(x=target_width_lens[m] + range_lens[m] / 3, y=400, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black')
+        plot[m, 0].text(x=truth_width_lens[m] + range_lens[m] / 3, y=400, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black')
         
         plot[m, 0].set_ylim(8, 800)
-        plot[m, 0].set_xlim(target_width_lens[m] - range_lens[m], target_width_lens[m] + range_lens[m])
+        plot[m, 0].set_xlim(truth_width_lens[m] - range_lens[m], truth_width_lens[m] + range_lens[m])
         
         plot[m, 0].set_yscale('log')
         plot[m, 0].set_ylabel(r'$\psi ( \eta )$')
@@ -94,20 +94,20 @@ def main(tag, label, folder):
             plot[m, 0].set_xlabel(r'$\eta$')
     
     for m in range(bin_size):
-        plot[m, 1].hist(histogram_deviation_source[:, m], bins=size, range=(target_width_source[m] - range_source[m], target_width_source[m] + range_source[m]), color='darkblue', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 1].hist(dir_deviation_source[:, m], bins=size, range=(truth_width_source[m] - range_source[m], truth_width_source[m] + range_source[m]), color='darkblue', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 1].hist(model_deviation_source[:, m], bins=size, range=(target_width_source[m] - range_source[m], target_width_source[m] + range_source[m]), color='darkgreen', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 1].hist(stack_deviation_source[:, m], bins=size, range=(truth_width_source[m] - range_source[m], truth_width_source[m] + range_source[m]), color='darkgreen', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 1].hist(product_deviation_source[:, m], bins=size, range=(target_width_source[m] - range_source[m], target_width_source[m] + range_source[m]), color='darkorange', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 1].hist(product_deviation_source[:, m], bins=size, range=(truth_width_source[m] - range_source[m], truth_width_source[m] + range_source[m]), color='darkorange', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 1].hist(target_deviation_source[:, m], bins=size, range=(target_width_source[m] - range_source[m], target_width_source[m] + range_source[m]), color='black', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 1].hist(truth_deviation_source[:, m], bins=size, range=(truth_width_source[m] - range_source[m], truth_width_source[m] + range_source[m]), color='black', density=True, histtype='step', linewidth=2.0, linestyle='-')
         
-        plot[m, 1].fill_betweenx(y=[4, 400], x1=target_width_source[m] - factor_source[m], x2=target_width_source[m] + factor_source[m], color='gray', alpha=0.5)
+        plot[m, 1].fill_betweenx(y=[4, 400], x1=truth_width_source[m] - factor_source[m], x2=truth_width_source[m] + factor_source[m], color='gray', alpha=0.5)
         
-        plot[m, 1].text(x=target_width_source[m] + range_source[m] / 3, y=200, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black')
+        plot[m, 1].text(x=truth_width_source[m] + range_source[m] / 3, y=200, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black')
         
         plot[m, 1].set_ylim(4, 400)
-        plot[m, 1].set_xlim(target_width_source[m] - range_source[m], target_width_source[m] + range_source[m])
+        plot[m, 1].set_xlim(truth_width_source[m] - range_source[m], truth_width_source[m] + range_source[m])
         
         plot[m, 1].set_yscale('log')
         plot[m, 1].set_ylabel('')
@@ -133,7 +133,7 @@ def main(tag, label, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Analyze Expectation')
+    PARSE = argparse.ArgumentParser(description='Analyze Deviation')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
     PARSE.add_argument('--label', type=str, required=True, help='The label of the configuration')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the figure')
