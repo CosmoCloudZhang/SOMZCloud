@@ -5,7 +5,6 @@ import numpy
 import scipy
 import argparse
 from matplotlib import pyplot
-import scipy.integrate
 
 
 def main(tag, index, folder):
@@ -26,7 +25,7 @@ def main(tag, index, folder):
     
     # Path
     model_folder = os.path.join(folder, 'MODEL/')
-    figure_folder = os.path.join(folder, 'FIGURE/')
+    analyze_folder = os.path.join(folder, 'ANALYZE/')
     summarize_folder = os.path.join(folder, 'SUMMARIZE/')
     
     # Bin
@@ -152,11 +151,11 @@ def main(tag, index, folder):
         if m == bin_size - 1:
             plot[m, 2].set_xlabel(r'$z$')
     
-    os.makedirs(figure_folder, exist_ok=True)
-    os.makedirs(os.path.join(figure_folder, '{}/CONDITIONAL/'.format(tag)), exist_ok=True)
+    os.makedirs(analyze_folder, exist_ok=True)
+    os.makedirs(os.path.join(analyze_folder, '{}/CONDITIONAL/'.format(tag)), exist_ok=True)
     
     figure.subplots_adjust(wspace=0.2, hspace=0.2)
-    figure.savefig(os.path.join(figure_folder, '{}/CONDITIONAL/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(analyze_folder, '{}/CONDITIONAL/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
     
     # Return
     end = time.time()
