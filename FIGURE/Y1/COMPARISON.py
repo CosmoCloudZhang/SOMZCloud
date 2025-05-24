@@ -90,7 +90,7 @@ def main(tag, index, folder):
     # Plot 1
     plot1 = figure.add_subplot(plot[0, 0])
     
-    image = plot1.hist2d(x=z_true_lens, y=z_phot_lens, bins=[z_bin, z_bin], norm=normalize, cmap='plasma')[-1]
+    image = plot1.hist2d(x=z_true_lens, y=z_phot_lens, bins=[z_bin, z_bin], norm=normalize, cmap='rainbow')[-1]
     
     plot1.plot(z_bin, z_bin - 0.15 * (1 + z_bin), color='black', linestyle='-.', linewidth=2.5)
     
@@ -110,7 +110,7 @@ def main(tag, index, folder):
     # Plot 2
     plot2 = figure.add_subplot(plot[0, 1])
     
-    image = plot2.hist2d(x=z_true_source, y=z_phot_source, bins=[z_bin, z_bin], norm=normalize, cmap='plasma')[-1]
+    image = plot2.hist2d(x=z_true_source, y=z_phot_source, bins=[z_bin, z_bin], norm=normalize, cmap='rainbow')[-1]
     
     plot2.plot(z_bin, z_bin - 0.15 * (1 + z_bin), color='black', linestyle='-.', linewidth=2.5)
     
@@ -128,7 +128,7 @@ def main(tag, index, folder):
     # Plot 3
     plot3 = figure.add_subplot(plot[1, 0])
     
-    image = plot3.hist2d(x=z_true_lens, y=delta_lens, bins=[z_bin, delta_bin], norm=normalize, cmap='plasma')[-1]
+    image = plot3.hist2d(x=z_true_lens, y=delta_lens, bins=[z_bin, delta_bin], norm=normalize, cmap='turbo')[-1]
     
     plot3.plot(z_bin, 0.03 * numpy.ones(bin_size + 1), color='black', linestyle=':', linewidth=2.5)
     
@@ -144,7 +144,7 @@ def main(tag, index, folder):
     # Plot 4
     plot4 = figure.add_subplot(plot[1, 1])
     
-    image = plot4.hist2d(x=z_true_source, y=delta_source, bins=[z_bin, delta_bin], norm=normalize, cmap='plasma')[-1]
+    image = plot4.hist2d(x=z_true_source, y=delta_source, bins=[z_bin, delta_bin], norm=normalize, cmap='rainbow')[-1]
     
     plot4.plot(z_bin, 0.05 * numpy.ones(bin_size + 1), color='black', linestyle=':', linewidth=2.5)
     

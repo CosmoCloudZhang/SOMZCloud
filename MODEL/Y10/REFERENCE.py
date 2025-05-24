@@ -95,8 +95,10 @@ def main(tag, index, folder):
     z_true_source = combination_redshift_true[reference_source]
     
     # Metric Lens
-    average_lens_size = 5
-    z_average_lens = numpy.linspace(z1_lens, z2_lens, average_lens_size + 1)
+    z1_average_lens = 0.2
+    z2_average_lens = 1.8
+    average_lens_size = 8
+    z_average_lens = numpy.linspace(z1_average_lens, z2_average_lens, average_lens_size + 1)
     
     rate_lens = numpy.zeros(average_lens_size)
     delta_lens = numpy.zeros(average_lens_size)
@@ -121,8 +123,10 @@ def main(tag, index, folder):
             fraction_lens[m] = numpy.nan
     
     # Metric Source
+    z1_average_source = 0.0
+    z2_average_source = 3.0
     average_source_size = 10
-    z_average_source = numpy.linspace(z1, z2, average_source_size + 1)
+    z_average_source = numpy.linspace(z1_average_source, z2_average_source, average_source_size + 1)
     
     rate_source = numpy.zeros(average_source_size)
     delta_source = numpy.zeros(average_source_size)

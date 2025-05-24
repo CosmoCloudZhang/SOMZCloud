@@ -28,17 +28,17 @@ def main(tag, index, folder):
     comparison_folder = os.path.join(folder, 'COMPARISON/')
     
     # Redshift
-    z1_lens = 0.2
-    z2_lens = 1.2
-    bin_size_lens = 5
-    z_edge_lens = numpy.linspace(z1_lens, z2_lens, bin_size_lens + 1)
-    z_bin_lens = (z_edge_lens[1:] + z_edge_lens[:-1]) / 2
+    z1_average_lens = 0.2
+    z2_average_lens = 1.8
+    average_lens_size = 8
+    z_average_lens = numpy.linspace(z1_average_lens, z2_average_lens, average_lens_size + 1)
+    z_bin_lens = (z_average_lens[1:] + z_average_lens[:-1]) / 2
     
-    z1_source = 0.0
-    z2_source = 3.0
-    bin_size_source = 10
-    z_edge_source = numpy.linspace(z1_source, z2_source, bin_size_source + 1)
-    z_bin_source = (z_edge_source[1:] + z_edge_source[:-1]) / 2
+    z1_average_source = 0.0
+    z2_average_source = 3.0
+    average_source_size = 10
+    z_average_source = numpy.linspace(z1_average_source, z2_average_source, average_source_size + 1)
+    z_bin_source = (z_average_source[1:] + z_average_source[:-1]) / 2
     
     # Select
     with h5py.File(os.path.join(model_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
@@ -82,16 +82,16 @@ def main(tag, index, folder):
     # Plot lens delta 
     plot = figure.add_subplot(plot_list[0, 0])
     
-    plot.plot(z_bin_lens, delta_lens, color='darkred', linestyle='-', linewidth=2.5)
+    plot.plot(z_bin_lens, delta_lens, color='darkred', linestyle='-', linewidth=2.5, label=r'$\mathrm{No \, Augmentation}$')
     
-    plot.plot(z_bin_lens, comparison_delta_lens, color='darkblue', linestyle='-', linewidth=2.5)
+    plot.plot(z_bin_lens, comparison_delta_lens, color='darkblue', linestyle='-', linewidth=2.5, label=r'$\mathrm{With \, Augmentation}$')
     
     plot.scatter(z_bin_lens, delta_lens, marker='s', s=100, alpha=0.8, facecolors='none', edgecolors='darkred', linewidths=2.5)
     
     plot.scatter(z_bin_lens, comparison_delta_lens, marker='d', s=100, alpha=0.8, facecolors='none', edgecolors='darkblue', linewidths=2.5)
     
     plot.set_ylim(-0.005, 0.015)
-    plot.set_xlim(z1_lens, z2_lens)
+    plot.set_xlim(z1_average_lens, z2_average_lens)
     
     plot.set_xticklabels([])
     plot.set_title(r'$\mathtt{lens}$')
@@ -100,16 +100,16 @@ def main(tag, index, folder):
     # Plot lens sigma 
     plot = figure.add_subplot(plot_list[1, 0])
     
-    plot.plot(z_bin_lens, sigma_lens, color='darkred', linestyle='-', linewidth=2.5)
+    plot.plot(z_bin_lens, sigma_lens, color='darkred', linestyle='-', linewidth=2.5, label=r'$\mathrm{No \, Augmentation}$')
     
-    plot.plot(z_bin_lens, comparison_sigma_lens, color='darkblue', linestyle='-', linewidth=2.5) 
+    plot.plot(z_bin_lens, comparison_sigma_lens, color='darkblue', linestyle='-', linewidth=2.5, label=r'$\mathrm{With \, Augmentation}$') 
     
     plot.scatter(z_bin_lens, sigma_lens, marker='s', s=100, alpha=0.8, facecolors='none', edgecolors='darkred', linewidths=2.5)
     
     plot.scatter(z_bin_lens, comparison_sigma_lens, marker='d', s=100, alpha=0.8, facecolors='none', edgecolors='darkblue', linewidths=2.5)
     
     plot.set_ylim(-0.005, 0.015)
-    plot.set_xlim(z1_lens, z2_lens)
+    plot.set_xlim(z1_average_lens, z2_average_lens)
     
     plot.set_xticklabels([])
     plot.set_ylabel(r'$\sigma_z$')
@@ -117,51 +117,52 @@ def main(tag, index, folder):
     # Plot lens fraction
     plot = figure.add_subplot(plot_list[2, 0])
     
-    plot.plot(z_bin_lens, fraction_lens, color='darkred', linestyle='-', linewidth=2.5)
+    plot.plot(z_bin_lens, fraction_lens, color='darkred', linestyle='-', linewidth=2.5, label=r'$\mathrm{No \, Augmentation}$')
     
-    plot.plot(z_bin_lens, comparison_fraction_lens, color='darkblue', linestyle='-', linewidth=2.5)
+    plot.plot(z_bin_lens, comparison_fraction_lens, color='darkblue', linestyle='-', linewidth=2.5, label=r'$\mathrm{With \, Augmentation}$')
     
     plot.scatter(z_bin_lens, fraction_lens, marker='s', s=100, alpha=0.8, facecolors='none', edgecolors='darkred', linewidths=2.5)
     
     plot.scatter(z_bin_lens, comparison_fraction_lens, marker='d', s=100, alpha=0.8, facecolors='none', edgecolors='darkblue', linewidths=2.5)
     
     plot.set_ylim(-0.005, 0.015)
-    plot.set_xlim(z1_lens, z2_lens)
+    plot.set_xlim(z1_average_lens, z2_average_lens)
+    
+    plot.set_xticklabels([])
     plot.set_ylabel(r'$f_\mathrm{o}$')
     
     # Plot lens rate
     plot = figure.add_subplot(plot_list[3, 0])
     
-    plot.plot(z_bin_lens, rate_lens, color='darkred', linestyle='-', linewidth=2.5)
+    plot.plot(z_bin_lens, rate_lens, color='darkred', linestyle='-', linewidth=2.5, label=r'$\mathrm{No \, Augmentation}$')
     
-    plot.plot(z_bin_lens, comparison_rate_lens, color='darkblue', linestyle='-', linewidth=2.5)
+    plot.plot(z_bin_lens, comparison_rate_lens, color='darkblue', linestyle='-', linewidth=2.5, label=r'$\mathrm{With \, Augmentation}$')
     
     plot.scatter(z_bin_lens, rate_lens, marker='s', s=100, alpha=0.8, facecolors='none', edgecolors='darkred', linewidths=2.5)
     
     plot.scatter(z_bin_lens, comparison_rate_lens, marker='d', s=100, alpha=0.8, facecolors='none', edgecolors='darkblue', linewidths=2.5)
     
     plot.set_ylim(-0.005, 0.015)
-    plot.set_xlim(z1_lens, z2_lens)
+    plot.set_xlim(z1_average_lens, z2_average_lens)
     
-    plot.set_xticklabels([])
     plot.set_ylabel(r'$r_\mathrm{c}$')
-    
     plot.set_xlabel(r'$z_\mathrm{true}$')
     plot.set_xticks([0.2, 0.4, 0.6, 0.8, 1.0, 1.2])
     
     # Plot source delta 
     plot = figure.add_subplot(plot_list[0, 1])
     
-    plot.plot(z_bin_source, delta_source, color='darkred', linestyle='-', linewidth=2.5)
+    plot.plot(z_bin_source, delta_source, color='darkred', linestyle='-', linewidth=2.5, label=r'$\mathrm{No \, Augmentation}$')
     
-    plot.plot(z_bin_source, comparison_delta_source, color='darkblue', linestyle='-', linewidth=2.5)    
+    plot.plot(z_bin_source, comparison_delta_source, color='darkblue', linestyle='-', linewidth=2.5, label=r'$\mathrm{With \, Augmentation}$')    
     
     plot.scatter(z_bin_source, delta_source, marker='s', s=100, alpha=0.8, facecolors='none', edgecolors='darkred', linewidths=2.5)
     
     plot.scatter(z_bin_source, comparison_delta_source, marker='d', s=100, alpha=0.8, facecolors='none', edgecolors='darkblue', linewidths=2.5)
     
     plot.set_ylim(-0.100, 0.800)
-    plot.set_xlim(z1_source, z2_source) 
+    plot.set_xlim(z1_average_source, z2_average_source) 
+    plot.legend(loc='upper left', fontsize=20)
     
     plot.set_xticklabels([])
     plot.set_title(r'$\mathtt{source}$') 
@@ -169,9 +170,9 @@ def main(tag, index, folder):
     # Plot source sigma 
     plot = figure.add_subplot(plot_list[1, 1])
     
-    plot.plot(z_bin_source, sigma_source, color='darkred', linestyle='-', linewidth=2.5)
+    plot.plot(z_bin_source, sigma_source, color='darkred', linestyle='-', linewidth=2.5, label=r'$\mathrm{No \, Augmentation}$')
     
-    plot.plot(z_bin_source, comparison_sigma_source, color='darkblue', linestyle='-', linewidth=2.5)
+    plot.plot(z_bin_source, comparison_sigma_source, color='darkblue', linestyle='-', linewidth=2.5, label=r'$\mathrm{With \, Augmentation}$')
     
     plot.scatter(z_bin_source, sigma_source, marker='s', s=100, alpha=0.8, facecolors='none', edgecolors='darkred', linewidths=2.5)
     
@@ -179,40 +180,41 @@ def main(tag, index, folder):
     
     plot.set_xticklabels([])
     plot.set_ylim(-0.100, 0.400)
-    plot.set_xlim(z1_source, z2_source)
+    plot.set_xlim(z1_average_source, z2_average_source)
     
     # Plot source fraction
     plot = figure.add_subplot(plot_list[2, 1])
     
-    plot.plot(z_bin_source, fraction_source, color='darkred', linestyle='-', linewidth=2.5)
+    plot.plot(z_bin_source, fraction_source, color='darkred', linestyle='-', linewidth=2.5, label=r'$\mathrm{No \, Augmentation}$')
     
-    plot.plot(z_bin_source, comparison_fraction_source, color='darkblue', linestyle='-', linewidth=2.5)
+    plot.plot(z_bin_source, comparison_fraction_source, color='darkblue', linestyle='-', linewidth=2.5, label=r'$\mathrm{With \, Augmentation}$')
     
     plot.scatter(z_bin_source, fraction_source, marker='s', s=100, alpha=0.8, facecolors='none', edgecolors='darkred', linewidths=2.5)
     
     plot.scatter(z_bin_source, comparison_fraction_source, marker='d', s=100, alpha=0.8, facecolors='none', edgecolors='darkblue', linewidths=2.5)
     
+    plot.set_xticklabels([])
     plot.set_ylim(-0.100, 1.000)
-    plot.set_xlim(z1_source, z2_source)
+    plot.set_xlim(z1_average_source, z2_average_source)
     
     # Plot source rate
     plot = figure.add_subplot(plot_list[3, 1])
     
-    plot.plot(z_bin_source, rate_source, color='darkred', linestyle='-', linewidth=2.5)
+    plot.plot(z_bin_source, rate_source, color='darkred', linestyle='-', linewidth=2.5, label=r'$\mathrm{No \, Augmentation}$')
     
-    plot.plot(z_bin_source, comparison_rate_source, color='darkblue', linestyle='-', linewidth=2.5)
+    plot.plot(z_bin_source, comparison_rate_source, color='darkblue', linestyle='-', linewidth=2.5, label=r'$\mathrm{With \, Augmentation}$')
     
     plot.scatter(z_bin_source, rate_source, marker='s', s=100, alpha=0.8, facecolors='none', edgecolors='darkred', linewidths=2.5)
     
     plot.scatter(z_bin_source, comparison_rate_source, marker='d', s=100, alpha=0.8, facecolors='none', edgecolors='darkblue', linewidths=2.5)
     
-    plot.set_xticklabels([])
     plot.set_ylim(-0.100, 1.000)
-    plot.set_xlim(z1_source, z2_source)
+    plot.set_xlim(z1_average_source, z2_average_source)
     
     plot.set_xlabel(r'$z_\mathrm{true}$')
     plot.set_xticks([0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0])
     
+    # Save
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)
     os.makedirs(os.path.join(figure_folder, '{}/METRIC/'.format(tag)), exist_ok=True)
     
@@ -230,7 +232,7 @@ def main(tag, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Figure Redshift')
+    PARSE = argparse.ArgumentParser(description='Figure Metric')
     PARSE.add_argument('--tag', type=str, help='The tag of the configuration')
     PARSE.add_argument('--index', type=int, help='The index of all the datasets')
     PARSE.add_argument('--folder', type=str, help='The base folder of all the datasets')

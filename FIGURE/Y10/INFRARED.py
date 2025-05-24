@@ -73,7 +73,7 @@ def main(tag, index, folder):
     
     plot.text(-1.8, -1.2, r'$\mathtt{application}$')
     
-    image = plot.hist2d(application_color2, application_color1, bins=[color1_bin, color2_bin], norm=normalize, cmap='magma')[-1]
+    image = plot.hist2d(application_color2, application_color1, bins=[color1_bin, color2_bin], norm=normalize, cmap='plasma')[-1]
     
     plot.set_ylabel(r'$i - z$')
     plot.set_xticklabels([])
@@ -85,7 +85,7 @@ def main(tag, index, folder):
     
     plot.text(-1.8, -1.2, r'$\mathtt{selection}$')
     
-    image = plot.hist2d(selection_color2, selection_color1, bins=[color1_bin, color2_bin], norm=normalize, cmap='magma')[-1]
+    image = plot.hist2d(selection_color2, selection_color1, bins=[color1_bin, color2_bin], norm=normalize, cmap='plasma')[-1]
     
     plot.set_yticklabels([])
     plot.set_xticklabels([])
@@ -97,7 +97,7 @@ def main(tag, index, folder):
     
     plot.text(-1.8, -1.2, r'$\mathtt{augmentation}$')
     
-    image = plot.hist2d(augmentation_color2, augmentation_color1, bins=[color1_bin, color2_bin], norm=normalize, cmap='magma')[-1]
+    image = plot.hist2d(augmentation_color2, augmentation_color1, bins=[color1_bin, color2_bin], norm=normalize, cmap='plasma')[-1]
     
     plot.set_ylim(color1_edge1, color1_edge2)
     plot.set_xlim(color2_edge1, color2_edge2)
@@ -109,7 +109,7 @@ def main(tag, index, folder):
     
     plot.text(-1.8, -1.2, r'$\mathtt{combination}$')
     
-    image = plot.hist2d(combination_color2, combination_color1, bins=[color1_bin, color2_bin], norm=normalize, cmap='magma')[-1]
+    image = plot.hist2d(combination_color2, combination_color1, bins=[color1_bin, color2_bin], norm=normalize, cmap='plasma')[-1]
     
     plot.set_ylim(color1_edge1, color1_edge2)
     plot.set_xlim(color2_edge1, color2_edge2)
