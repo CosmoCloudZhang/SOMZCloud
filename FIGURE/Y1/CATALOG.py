@@ -96,8 +96,8 @@ def main(tag, folder):
             observation_select = (magnitude_edge[i] < observation_dataset['mag_i_lsst']) & (observation_dataset['mag_i_lsst'] < magnitude_edge[i + 1])
             simulation_select = (magnitude_edge[i] < simulation_dataset['mag_i_lsst']) & (simulation_dataset['mag_i_lsst'] < magnitude_edge[i + 1])
             
-            plot.scatter(simulation_redshift[simulation_select], simulation_color[j][simulation_select], s=0.1, c='darkgreen', marker='o', label=r'$\mathtt{CosmoDC2}$', alpha=0.1)
-            plot.scatter(observation_redshift[observation_select], observation_color[j][observation_select], s=0.1, c='darkorange', marker='o', label=r'$\mathtt{OpenUniverse2024}$', alpha=0.1)
+            plot.scatter(simulation_redshift[simulation_select], simulation_color[j][simulation_select], s=0.05, c='darkgreen', marker='o', label=r'$\mathtt{CosmoDC2}$', alpha=0.05)
+            plot.scatter(observation_redshift[observation_select], observation_color[j][observation_select], s=0.05, c='darkorange', marker='o', label=r'$\mathtt{OpenUniverse2024}$', alpha=0.05)
             
             plot.set_xticks([0.5, 1.0, 1.5, 2.0, 2.5])
             plot.set_yticks([0.0, 0.5, 1.0, 1.5, 2.0, 2.5])
@@ -122,7 +122,7 @@ def main(tag, folder):
                 plot.set_title(r'${:.0f}'.format(magnitude_edge[i]) + r'\, \mathrm{mag} < i < ' + r'{:.0f}'.format(magnitude_edge[i + 1]) + r'\, \mathrm{mag}$')
             
             if j == 0 and i == 0:
-                plot.text(1.2, 2.0, r'$\mathtt{CosmoDC2}$', fontsize=20, color='darkgreen')
+                plot.text(1.2, 2.0, r'$\mathtt{CosmoDC2}$', color='darkgreen')
                 plot.text(1.2, 1.5, r'$\mathtt{OpenUniverse2024}$', fontsize=20, color='darkorange')
     
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)

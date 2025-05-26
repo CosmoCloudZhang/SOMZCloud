@@ -31,7 +31,7 @@ def main(tag, index, folder):
     pyplot.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
     pyplot.rcParams['pgf.texsystem'] = 'pdflatex'
     pyplot.rcParams['text.usetex'] = True
-    pyplot.rcParams['font.size'] = 20
+    pyplot.rcParams['font.size'] = 25
     
     # Application
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
@@ -40,12 +40,12 @@ def main(tag, index, folder):
         application_cell_z_true = file['meta']['cell_z_true'][...]
     application_map = application_cell_z_true.reshape((cell_size1, cell_size2))
     
-    # Selection
-    with h5py.File(os.path.join(dataset_folder, '{}/SELECTION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+    # Degradation
+    with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         cell_size1 = file['meta']['cell_size1'][...]
         cell_size2 = file['meta']['cell_size2'][...]
-        selection_cell_z_true = file['meta']['cell_z_true'][...]
-    selection_map = selection_cell_z_true.reshape((cell_size1, cell_size2))
+        degradation_cell_z_true = file['meta']['cell_z_true'][...]
+    degradation_map = degradation_cell_z_true.reshape((cell_size1, cell_size2))
     
     # Augmentation
     with h5py.File(os.path.join(dataset_folder, '{}/AUGMENTATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
@@ -69,8 +69,8 @@ def main(tag, index, folder):
     plot[0, 0].set_title(r'$\mathtt{application}$')
     plot[0, 0].axis('off')
     
-    mesh = plot[0, 1].imshow(selection_map, norm=normalize, cmap='coolwarm')
-    plot[0, 1].set_title(r'$\mathtt{selection}$')
+    mesh = plot[0, 1].imshow(degradation_map, norm=normalize, cmap='coolwarm')
+    plot[0, 1].set_title(r'$\mathtt{degradation}$')
     plot[0, 1].axis('off')
     
     mesh = plot[1, 0].imshow(augmentation_map, norm=normalize, cmap='coolwarm')

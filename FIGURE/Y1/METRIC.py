@@ -147,7 +147,6 @@ def main(tag, index, folder):
     
     plot.set_ylabel(r'$r_\mathrm{c}$')
     plot.set_xlabel(r'$z_\mathrm{true}$')
-    plot.set_xticks([0.2, 0.4, 0.6, 0.8, 1.0, 1.2])
     
     # Plot source delta 
     plot = figure.add_subplot(plot_list[0, 1])
@@ -209,10 +208,8 @@ def main(tag, index, folder):
     plot.scatter(z_bin_source, comparison_rate_source, marker='d', s=100, alpha=0.8, facecolors='none', edgecolors='darkblue', linewidths=2.5)
     
     plot.set_ylim(-0.100, 1.000)
-    plot.set_xlim(z1_average_source, z2_average_source)
-    
     plot.set_xlabel(r'$z_\mathrm{true}$')
-    plot.set_xticks([0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0])
+    plot.set_xlim(z1_average_source, z2_average_source)
     
     # Save
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)

@@ -31,15 +31,15 @@ def main(tag, index, folder):
     pyplot.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
     pyplot.rcParams['pgf.texsystem'] = 'pdflatex'
     pyplot.rcParams['text.usetex'] = True
-    pyplot.rcParams['font.size'] = 20
+    pyplot.rcParams['font.size'] = 25
     
     # Application
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         application_redshift_true = file['photometry']['redshift_true'][...]
     
-    # Selection
-    with h5py.File(os.path.join(dataset_folder, '{}/SELECTION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        selection_redshift_true = file['photometry']['redshift_true'][...]
+    # Degradation
+    with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+        degradation_redshift_true = file['photometry']['redshift_true'][...]
     
     # Augmentation
     with h5py.File(os.path.join(dataset_folder, '{}/AUGMENTATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
@@ -59,7 +59,7 @@ def main(tag, index, folder):
     
     plot.hist(application_redshift_true, bins=z_bin, linewidth=4.0, density=True, histtype='step', color='black', label=r'$\mathtt{application}$')
     
-    plot.hist(selection_redshift_true, bins=z_bin, linewidth=4.0, density=True, histtype='step', color='darkred', label=r'$\mathtt{selection}$')
+    plot.hist(degradation_redshift_true, bins=z_bin, linewidth=4.0, density=True, histtype='step', color='darkred', label=r'$\mathtt{degradation}$')
     
     plot.hist(augmentation_redshift_true, bins=z_bin, linewidth=4.0, density=True, histtype='step', color='darkorange', label=r'$\mathtt{augmentation}$')
     

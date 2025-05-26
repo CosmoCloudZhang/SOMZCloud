@@ -81,7 +81,7 @@ def main(tag, index, folder):
     pyplot.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
     pyplot.rcParams['pgf.texsystem'] = 'pdflatex'
     pyplot.rcParams['text.usetex'] = True
-    pyplot.rcParams['font.size'] = 25
+    pyplot.rcParams['font.size'] = 30
     
     figure = pyplot.figure(figsize=(15, 12))
     normalize = colors.LogNorm(vmin=1, vmax=10000)
@@ -90,7 +90,7 @@ def main(tag, index, folder):
     # Plot 1
     plot1 = figure.add_subplot(plot[0, 0])
     
-    image = plot1.hist2d(x=z_true_lens, y=z_phot_lens, bins=[z_bin, z_bin], norm=normalize, cmap='rainbow')[-1]
+    image = plot1.hist2d(x=z_true_lens, y=z_phot_lens, bins=[z_bin, z_bin], norm=normalize, cmap='turbo')[-1]
     
     plot1.plot(z_bin, z_bin - 0.15 * (1 + z_bin), color='black', linestyle='-.', linewidth=2.5)
     
@@ -110,7 +110,7 @@ def main(tag, index, folder):
     # Plot 2
     plot2 = figure.add_subplot(plot[0, 1])
     
-    image = plot2.hist2d(x=z_true_source, y=z_phot_source, bins=[z_bin, z_bin], norm=normalize, cmap='rainbow')[-1]
+    image = plot2.hist2d(x=z_true_source, y=z_phot_source, bins=[z_bin, z_bin], norm=normalize, cmap='turbo')[-1]
     
     plot2.plot(z_bin, z_bin - 0.15 * (1 + z_bin), color='black', linestyle='-.', linewidth=2.5)
     
@@ -144,7 +144,7 @@ def main(tag, index, folder):
     # Plot 4
     plot4 = figure.add_subplot(plot[1, 1])
     
-    image = plot4.hist2d(x=z_true_source, y=delta_source, bins=[z_bin, delta_bin], norm=normalize, cmap='rainbow')[-1]
+    image = plot4.hist2d(x=z_true_source, y=delta_source, bins=[z_bin, delta_bin], norm=normalize, cmap='turbo')[-1]
     
     plot4.plot(z_bin, 0.05 * numpy.ones(bin_size + 1), color='black', linestyle=':', linewidth=2.5)
     

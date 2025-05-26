@@ -32,17 +32,17 @@ def main(tag, index, folder):
     pyplot.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
     pyplot.rcParams['pgf.texsystem'] = 'pdflatex'
     pyplot.rcParams['text.usetex'] = True
-    pyplot.rcParams['font.size'] = 20
+    pyplot.rcParams['font.size'] = 25
     
     # Application
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         application_color1 = file['photometry']['mag_u_lsst'][...] - file['photometry']['mag_g_lsst'][...]
         application_color2 = file['photometry']['mag_g_lsst'][...] - file['photometry']['mag_r_lsst'][...]
     
-    # Selection
-    with h5py.File(os.path.join(dataset_folder, '{}/SELECTION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        selection_color1 = file['photometry']['mag_u_lsst'][...] - file['photometry']['mag_g_lsst'][...]
-        selection_color2 = file['photometry']['mag_g_lsst'][...] - file['photometry']['mag_r_lsst'][...]
+    # Degradation
+    with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+        degradation_color1 = file['photometry']['mag_u_lsst'][...] - file['photometry']['mag_g_lsst'][...]
+        degradation_color2 = file['photometry']['mag_g_lsst'][...] - file['photometry']['mag_r_lsst'][...]
     
     # Augmentation
     with h5py.File(os.path.join(dataset_folder, '{}/AUGMENTATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
@@ -83,9 +83,9 @@ def main(tag, index, folder):
     
     plot = figure.add_subplot(gridspec[0, 1])
     
-    plot.text(-0.5, -1.2, r'$\mathtt{selection}$')
+    plot.text(-0.5, -1.2, r'$\mathtt{degradation}$')
     
-    image = plot.hist2d(selection_color2, selection_color1, bins=[color1_bin, color2_bin], norm=normalize, cmap='plasma')[-1]
+    image = plot.hist2d(degradation_color2, degradation_color1, bins=[color1_bin, color2_bin], norm=normalize, cmap='plasma')[-1]
     
     plot.set_yticklabels([])
     plot.set_xticklabels([])
