@@ -7,7 +7,7 @@ from rail import core
 from rail.estimation.algos import somoclu_som
 
 
-def main(tag, index, number, folder):
+def main(tag, index, folder):
     '''
     Create the selection datasets
     
@@ -29,44 +29,63 @@ def main(tag, index, number, folder):
     os.makedirs(os.path.join(dataset_folder, '{}'.format(tag)), exist_ok=True)
     os.makedirs(os.path.join(dataset_folder, '{}/SELECTION/'.format(tag)), exist_ok=True)
     
-    # Amount
-    amount1 = {'Y1': 3, 'Y10': 6}
-    amount2 = {'Y1': 5, 'Y10': 10}
-    amount = random_generator.integers(low=amount1[tag], high=amount2[tag], endpoint=True)
+    # Application
+    application_dataset = {
+        'meta': {},
+        'morphology': {},
+        'photometry': {}
+    }
     
-    # Sequence
-    sequence = random_generator.integers(low=0, high=number, size=amount, endpoint=True)
+    with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+        application_dataset['meta'] = {key: file['meta'][key][...] for key in file['meta'].keys()}
+        application_dataset['morphology'] = {key: file['morphology'][key][...] for key in file['morphology'].keys()}
+        application_dataset['photometry'] = {key: file['photometry'][key][...] for key in file['photometry'].keys()}
+    
+    # Magnitude
+    magnitude1 = {'Y1': 21.0, 'Y10': 21.0}
+    magnitude2 = {'Y1': 24.0, 'Y10': 25.0}
+    magnitude = random_generator.uniform(low=magnitude1[tag], high=magnitude2[tag])
+    
+    filter = (application_dataset['photometry']['mag_i_lsst'] < magnitude)
+    
+    # Redshift
+    redshift1 = {'Y1': 0.5, 'Y10': 0.5}
+    redshift2 = {'Y1': 2.5, 'Y10': 3.0}
+    redshift = random_generator.uniform(low=redshift1[tag], high=redshift2[tag])
+    
+    filter = filter & (application_dataset['photometry']['redshift'] < redshift)
+    
+    # Color
+    color1 = {'Y1': 0.5, 'Y10': 0.5}
+    color2 = {'Y1': 2.0, 'Y10': 2.0}
+    color = random_generator.uniform(low=color1[tag], high=color2[tag])
+    
+    # Angle
+    angle1 = {'Y1': 0.0, 'Y10': 0.0}
+    angle2 = {'Y1': numpy.pi / 2, 'Y10': numpy.pi / 2}
+    angle = random_generator.uniform(low=angle1[tag], high=angle2[tag])
+    
+    application_color = application_dataset['photometry']['mag_g_lsst'] - application_dataset['photometry']['mag_z_lsst']
+    filter = filter & (application_dataset['photometry']['mag_i_lsst'] - magnitude  - numpy.tan(angle) * (application_color - color) < 0)
+    
+    # Factor
+    factor1 = {'Y1': 0.5, 'Y10': 1.5}
+    factor2 = {'Y1': 1.5, 'Y10': 3.0}
+    factor = random_generator.uniform(low=factor1[tag], high=factor2[tag])
+    rate = 1 / (1 + factor * numpy.exp(application_dataset['photometry']['mag_i_lsst'] - application_dataset['photometry']['mag_i_lsst'].max()))
     
     # Size
     size1 = {'Y1': 100000, 'Y10': 250000}
     size2 = {'Y1': 200000, 'Y10': 500000}
     size = random_generator.integers(low=size1[tag], high=size2[tag], endpoint=True)
     
-    # Degradation
-    degradation_dataset = {
-        'morphology': {},
-        'photometry': {}
-    }
-    
-    with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        degradation_dataset['morphology'] = {key: numpy.array([]) for key in file['morphology'].keys()}
-        degradation_dataset['photometry'] = {key: numpy.array([]) for key in file['photometry'].keys()}
-    
-    for rank in sequence:
-        with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, rank)), 'r') as file:
-            for key in file['morphology'].keys():
-                degradation_dataset['morphology'][key] = numpy.append(degradation_dataset['morphology'][key][...], file['morphology'][key][...])
-            
-            for key in file['photometry'].keys():
-                degradation_dataset['photometry'][key] = numpy.append(degradation_dataset['photometry'][key][...], file['photometry'][key][...])
-    
-    degradation_size = len(degradation_dataset['photometry']['redshift'])
-    indices = random_generator.choice(numpy.arange(degradation_size), size=size, replace=True)
+    application_size = len(application_dataset['photometry']['redshift'])
+    indices = random_generator.choice(numpy.arange(application_size)[filter], size=size, replace=True, p=rate[filter] / numpy.sum(rate[filter]))
     
     # Selection
     selection_dataset = {
-        'morphology': {key: degradation_dataset['morphology'][key][indices] for key in degradation_dataset['morphology'].keys()},
-        'photometry': {key: degradation_dataset['photometry'][key][indices] for key in degradation_dataset['photometry'].keys()}
+        'morphology': {key: application_dataset['morphology'][key][indices] for key in application_dataset['morphology'].keys()},
+        'photometry': {key: application_dataset['photometry'][key][indices] for key in application_dataset['photometry'].keys()}
     }
     
     # SOM
@@ -103,8 +122,11 @@ def main(tag, index, number, folder):
         file.create_group('meta')
         
         file['meta'].create_dataset('size', data=size, dtype=numpy.int32)
-        file['meta'].create_dataset('amount', data=amount, dtype=numpy.int32)
-        file['meta'].create_dataset('sequence', data=sequence, dtype=numpy.int32)
+        file['meta'].create_dataset('angle', data=angle, dtype=numpy.float32)
+        file['meta'].create_dataset('color', data=color, dtype=numpy.float32)
+        file['meta'].create_dataset('factor', data=factor, dtype=numpy.float32)
+        file['meta'].create_dataset('redshift', data=redshift, dtype=numpy.float32)
+        file['meta'].create_dataset('magnitude', data=magnitude, dtype=numpy.float32)
         
         file['meta'].create_dataset('cell_size', data=cell_size, dtype=numpy.int32)
         file['meta'].create_dataset('cell_size1', data=model['n_rows'], dtype=numpy.int32)
@@ -139,14 +161,12 @@ if __name__ == '__main__':
     PARSE = argparse.ArgumentParser(description='Selection datasets')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
     PARSE.add_argument('--index', type=int, required=True, help='The index of the selection datasets')
-    PARSE.add_argument('--number', type=int, required=True, help='The number of the selection datasets')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the selection datasets')
     
     # Argument
     TAG = PARSE.parse_args().tag
     INDEX = PARSE.parse_args().index
-    NUMBER = PARSE.parse_args().number
     FOLDER = PARSE.parse_args().folder
     
     # Output
-    OUTPUT = main(TAG, INDEX, NUMBER, FOLDER)
+    OUTPUT = main(TAG, INDEX, FOLDER)

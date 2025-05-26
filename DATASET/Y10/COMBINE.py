@@ -24,32 +24,32 @@ def main(tag, index, folder):
     # Path
     dataset_folder = os.path.join(folder, 'DATASET/')
     
-    # Selection
-    selection_dataset = {
+    # Degradation
+    degradation_dataset = {
         'meta': {},
         'morphology': {},
         'photometry': {}
     }
     
-    with h5py.File(os.path.join(dataset_folder, '{}/SELECTION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+    with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         
         cell_size = file['meta']['cell_size'][...]
         cell_size1 = file['meta']['cell_size1'][...]
         cell_size2 = file['meta']['cell_size2'][...]
         
-        selection_dataset['meta']['size'] = file['meta']['size'][...]
-        selection_dataset['meta']['amount'] = file['meta']['amount'][...]
-        selection_dataset['meta']['sequence'] = file['meta']['sequence'][...]
+        degradation_dataset['meta']['size'] = file['meta']['size'][...]
+        degradation_dataset['meta']['amount'] = file['meta']['amount'][...]
+        degradation_dataset['meta']['sequence'] = file['meta']['sequence'][...]
         
-        selection_dataset['meta']['cell_id'] = file['meta']['cell_id'][...]
-        selection_dataset['meta']['cell_coordinate1'] = file['meta']['cell_coordinate1'][...]
-        selection_dataset['meta']['cell_coordinate2'] = file['meta']['cell_coordinate2'][...]
+        degradation_dataset['meta']['cell_id'] = file['meta']['cell_id'][...]
+        degradation_dataset['meta']['cell_coordinate1'] = file['meta']['cell_coordinate1'][...]
+        degradation_dataset['meta']['cell_coordinate2'] = file['meta']['cell_coordinate2'][...]
         
-        selection_dataset['meta']['cell_count'] = file['meta']['cell_count'][...]
-        selection_dataset['meta']['cell_z_true'] = numpy.nan_to_num(file['meta']['cell_z_true'][...])
+        degradation_dataset['meta']['cell_count'] = file['meta']['cell_count'][...]
+        degradation_dataset['meta']['cell_z_true'] = numpy.nan_to_num(file['meta']['cell_z_true'][...])
         
-        selection_dataset['morphology'] = {key: file['morphology'][key][...] for key in file['morphology'].keys()}
-        selection_dataset['photometry'] = {key: file['photometry'][key][...] for key in file['photometry'].keys()}
+        degradation_dataset['morphology'] = {key: file['morphology'][key][...] for key in file['morphology'].keys()}
+        degradation_dataset['photometry'] = {key: file['photometry'][key][...] for key in file['photometry'].keys()}
     
     # Augmentation
     augmentation_dataset = {
@@ -80,16 +80,16 @@ def main(tag, index, folder):
         augmentation_dataset['photometry'] = {key: file['photometry'][key][...] for key in file['photometry'].keys()}
     
     # Combine
-    cell_id = numpy.append(selection_dataset['meta']['cell_id'], augmentation_dataset['meta']['cell_id'], axis=0)
-    cell_coordinate1 = numpy.append(selection_dataset['meta']['cell_coordinate1'], augmentation_dataset['meta']['cell_coordinate1'], axis=0)
-    cell_coordinate2 = numpy.append(selection_dataset['meta']['cell_coordinate2'], augmentation_dataset['meta']['cell_coordinate2'], axis=0)
+    cell_id = numpy.append(degradation_dataset['meta']['cell_id'], augmentation_dataset['meta']['cell_id'], axis=0)
+    cell_coordinate1 = numpy.append(degradation_dataset['meta']['cell_coordinate1'], augmentation_dataset['meta']['cell_coordinate1'], axis=0)
+    cell_coordinate2 = numpy.append(degradation_dataset['meta']['cell_coordinate2'], augmentation_dataset['meta']['cell_coordinate2'], axis=0)
     
-    selection_summation = selection_dataset['meta']['cell_z_true'] * selection_dataset['meta']['cell_count']
+    degradation_summation = degradation_dataset['meta']['cell_z_true'] * degradation_dataset['meta']['cell_count']
     augmentation_summation = augmentation_dataset['meta']['cell_z_true'] * augmentation_dataset['meta']['cell_count']
     
-    size = selection_dataset['meta']['size'] + augmentation_dataset['meta']['size']
-    cell_count = selection_dataset['meta']['cell_count'] + augmentation_dataset['meta']['cell_count']
-    cell_z_true = numpy.divide(selection_summation + augmentation_summation, cell_count, out=numpy.ones_like(cell_count) * numpy.nan, where=cell_count != 0)
+    size = degradation_dataset['meta']['size'] + augmentation_dataset['meta']['size']
+    cell_count = degradation_dataset['meta']['cell_count'] + augmentation_dataset['meta']['cell_count']
+    cell_z_true = numpy.divide(degradation_summation + augmentation_summation, cell_count, out=numpy.ones_like(cell_count) * numpy.nan, where=cell_count != 0)
     
     # Save
     os.makedirs(os.path.join(dataset_folder, '{}/'.format(tag)), exist_ok=True)
@@ -111,13 +111,13 @@ def main(tag, index, folder):
         file['meta'].create_dataset('cell_z_true', data=cell_z_true, dtype=numpy.float32)
         
         file.create_group('morphology')
-        for key in selection_dataset['morphology'].keys():
-            value = numpy.append(selection_dataset['morphology'][key], augmentation_dataset['morphology'][key], axis=0)
+        for key in degradation_dataset['morphology'].keys():
+            value = numpy.append(degradation_dataset['morphology'][key], augmentation_dataset['morphology'][key], axis=0)
             file['morphology'].create_dataset(key, data=value, dtype=value.dtype)
         
         file.create_group('photometry')
-        for key in selection_dataset['photometry'].keys():
-            value = numpy.append(selection_dataset['photometry'][key], augmentation_dataset['photometry'][key], axis=0)
+        for key in degradation_dataset['photometry'].keys():
+            value = numpy.append(degradation_dataset['photometry'][key], augmentation_dataset['photometry'][key], axis=0)
             file['photometry'].create_dataset(key, data=value, dtype=value.dtype)
     
     # Duration

@@ -35,13 +35,13 @@ def main(tag, index, folder):
         application_cell_count = file['meta']['cell_count'][...]
     application_size = numpy.sum(application_cell_count)
     
-    # Selection
-    with h5py.File(os.path.join(dataset_folder, '{}/SELECTION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+    # Degradation
+    with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         cell_size = file['meta']['cell_size'][...]
-        selection_cell_count = file['meta']['cell_count'][...]
-        selection_redshift = file['photometry']['redshift'][...]
-        selection_magnitude = file['photometry']['mag_i_lsst'][...]
-    selection_size = len(selection_redshift)
+        degradation_cell_count = file['meta']['cell_count'][...]
+        degradation_redshift = file['photometry']['redshift'][...]
+        degradation_magnitude = file['photometry']['mag_i_lsst'][...]
+    degradation_size = len(degradation_redshift)
     
     # Association
     association_dataset = {
@@ -57,23 +57,23 @@ def main(tag, index, folder):
     
     association_cell_id = association_dataset['meta']['cell_id']
     association_size = len(association_dataset['photometry']['redshift'])
-    filter = numpy.isin(association_cell_id, numpy.arange(cell_size)[selection_cell_count == 0])
+    filter = numpy.isin(association_cell_id, numpy.arange(cell_size)[degradation_cell_count == 0])
     
     # Magnitude
-    magnitude = numpy.max(selection_magnitude)
+    magnitude = numpy.max(degradation_magnitude)
     filter = filter | (association_dataset['photometry']['mag_i_lsst'] > magnitude)
     
     # Redshift
-    redshift = numpy.max(selection_redshift)
+    redshift = numpy.max(degradation_redshift)
     filter = filter | (association_dataset['photometry']['redshift'] > redshift)
     
     # Fraction
-    fraction = numpy.sum(application_cell_count[selection_cell_count == 0]) / application_size
+    fraction = numpy.sum(application_cell_count[degradation_cell_count == 0]) / application_size
     
     # Size
-    size = int(selection_size * fraction / (1 - fraction))
+    size = int(degradation_size * fraction / (1 - fraction))
     indices = random_generator.choice(numpy.arange(association_size)[filter], size=size, replace=True)
-
+    
     # Augmentation
     augmentation_dataset = {
         'morphology': {key: association_dataset['morphology'][key][indices] for key in association_dataset['morphology'].keys()},
