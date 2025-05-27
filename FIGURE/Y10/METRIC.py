@@ -28,8 +28,8 @@ def main(tag, index, folder):
     comparison_folder = os.path.join(folder, 'COMPARISON/')
     
     # Redshift
-    z1_average_lens = 0.2
-    z2_average_lens = 1.8
+    z1_average_lens = 0.0
+    z2_average_lens = 1.6
     average_lens_size = 8
     z_average_lens = numpy.linspace(z1_average_lens, z2_average_lens, average_lens_size + 1)
     z_bin_lens = (z_average_lens[1:] + z_average_lens[:-1]) / 2
@@ -74,9 +74,9 @@ def main(tag, index, folder):
     pyplot.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
     pyplot.rcParams['pgf.texsystem'] = 'pdflatex'
     pyplot.rcParams['text.usetex'] = True
-    pyplot.rcParams['font.size'] = 30
+    pyplot.rcParams['font.size'] = 25
     
-    figure = pyplot.figure(figsize=(16, 16))
+    figure = pyplot.figure(figsize=(15, 15))
     plot_list = gridspec.GridSpec(nrows=4, ncols=2, figure=figure)
     
     # Plot lens delta 

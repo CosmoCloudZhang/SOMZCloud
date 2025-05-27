@@ -28,8 +28,8 @@ def main(tag, index, folder):
     comparison_folder = os.path.join(folder, 'COMPARISON/')
     
     # Redshift
-    z1_average_lens = 0.2
-    z2_average_lens = 1.8
+    z1_average_lens = 0.0
+    z2_average_lens = 1.6
     average_lens_size = 8
     z_average_lens = numpy.linspace(z1_average_lens, z2_average_lens, average_lens_size + 1)
     z_bin_lens = (z_average_lens[1:] + z_average_lens[:-1]) / 2
@@ -160,8 +160,8 @@ def main(tag, index, folder):
     plot.scatter(z_bin_source, comparison_delta_source, marker='d', s=100, alpha=0.8, facecolors='none', edgecolors='darkblue', linewidths=2.5)
     
     plot.set_ylim(-0.100, 0.800)
+    plot.legend(loc='upper left', fontsize=25)
     plot.set_xlim(z1_average_source, z2_average_source) 
-    plot.legend(loc='upper left', fontsize=20)
     
     plot.set_xticklabels([])
     plot.set_title(r'$\mathtt{source}$') 
