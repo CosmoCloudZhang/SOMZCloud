@@ -95,8 +95,8 @@ def main(tag, index, folder):
     z_true_source = combination_redshift_true[reference_source]
     
     # Metric Lens
-    z1_average_lens = 0.2
-    z2_average_lens = 1.8
+    z1_average_lens = 0.0
+    z2_average_lens = 1.6
     average_lens_size = 8
     z_average_lens = numpy.linspace(z1_average_lens, z2_average_lens, average_lens_size + 1)
     
@@ -151,7 +151,7 @@ def main(tag, index, folder):
             fraction_source[m] = numpy.nan
     
     # Save
-    with h5py.File(os.path.join(model_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'w') as file:
+    with h5py.File(os.path.join(model_folder, '{}/REFERENCE/DATA{}.hdf5'.format(tag, index)), 'w') as file:
         file.create_dataset('z_phot', data=z_phot, dtype=numpy.float32)
         
         file.create_dataset('bin_lens', data=bin_lens, dtype=numpy.float32)
@@ -175,16 +175,16 @@ def main(tag, index, folder):
     for m in range(len(bin_lens) - 1):
         reference_lens_bin[m, :] = reference_lens & (bin_lens[m] <= z_phot) & (z_phot < bin_lens[m + 1])
     
-    with h5py.File(os.path.join(model_folder, '{}/LENS/LENS{}/SELECT.hdf5'.format(tag, index)), 'w') as file:    
-        file.create_dataset('select', data=reference_lens_bin, dtype=bool)
+    with h5py.File(os.path.join(model_folder, '{}/LENS/LENS{}/REFERENCE.hdf5'.format(tag, index)), 'w') as file:    
+        file.create_dataset('reference', data=reference_lens_bin, dtype=bool)
     
     # Source
     reference_source_bin = numpy.ones((source_size, combination_size), dtype=bool)
     for m in range(len(bin_source) - 1):
         reference_source_bin[m, :] = reference_source & (bin_source[m] <= z_phot) & (z_phot < bin_source[m + 1])
     
-    with h5py.File(os.path.join(model_folder, '{}/SOURCE/SOURCE{}/SELECT.hdf5'.format(tag, index)), 'w') as file:
-        file.create_dataset('select', data=reference_source_bin, dtype=bool)
+    with h5py.File(os.path.join(model_folder, '{}/SOURCE/SOURCE{}/REFERENCE.hdf5'.format(tag, index)), 'w') as file:
+        file.create_dataset('reference', data=reference_source_bin, dtype=bool)
     
     # Duration
     end = time.time()
