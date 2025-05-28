@@ -95,8 +95,8 @@ def main(tag, index, folder):
     z_true_source = application_redshift_true[select_source]
     
     # Metric Lens
-    z1_average_lens = 0.2
-    z2_average_lens = 1.8
+    z1_average_lens = 0.0
+    z2_average_lens = 1.6
     average_lens_size = 8
     z_average_lens = numpy.linspace(z1_average_lens, z2_average_lens, average_lens_size + 1)
     
