@@ -57,13 +57,13 @@ def main(tag, index, folder):
     
     figure, plot = pyplot.subplots(nrows=1, ncols=1, figsize=(12, 6))
     
-    plot.hist(application_redshift_true, bins=z_bin, linewidth=4.0, density=True, histtype='step', color='black', label=r'$\mathtt{application}$')
+    plot.hist(application_redshift_true, bins=z_bin, linewidth=4.0, density=True, histtype='step', color='black', label=r'$\mathtt{Application}$')
     
-    plot.hist(degradation_redshift_true, bins=z_bin, linewidth=4.0, density=True, histtype='step', color='darkred', label=r'$\mathtt{degradation}$')
+    plot.hist(degradation_redshift_true, bins=z_bin, linewidth=4.0, density=True, histtype='step', color='darkred', label=r'$\mathtt{Degradation}$')
     
-    plot.hist(augmentation_redshift_true, bins=z_bin, linewidth=4.0, density=True, histtype='step', color='darkorange', label=r'$\mathtt{augmentation}$')
+    plot.hist(augmentation_redshift_true, bins=z_bin, linewidth=4.0, density=True, histtype='step', color='darkorange', label=r'$\mathtt{Augmentation}$')
     
-    plot.hist(combination_redshift_true, bins=z_bin, linewidth=4.0, density=True, histtype='step', color='darkblue', label=r'$\mathtt{combination}$')
+    plot.hist(combination_redshift_true, bins=z_bin, linewidth=4.0, density=True, histtype='step', color='darkblue', label=r'$\mathtt{Combination}$')
     
     plot.legend()
     plot.set_xlim(z_bin.min(), z_bin.max())

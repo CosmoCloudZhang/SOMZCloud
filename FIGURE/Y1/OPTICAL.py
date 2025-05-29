@@ -71,7 +71,7 @@ def main(tag, index, folder):
     
     plot = figure.add_subplot(gridspec[0, 0])
     
-    plot.text(-0.5, -1.2, r'$\mathtt{application}$')
+    plot.text(-0.5, -1.2, r'$\mathtt{Application}$')
     
     image = plot.hist2d(application_color2, application_color1, bins=[color1_bin, color2_bin], norm=normalize, cmap='plasma')[-1]
     
@@ -83,7 +83,7 @@ def main(tag, index, folder):
     
     plot = figure.add_subplot(gridspec[0, 1])
     
-    plot.text(-0.5, -1.2, r'$\mathtt{degradation}$')
+    plot.text(-0.5, -1.2, r'$\mathtt{Degradation}$')
     
     image = plot.hist2d(degradation_color2, degradation_color1, bins=[color1_bin, color2_bin], norm=normalize, cmap='plasma')[-1]
     
@@ -95,7 +95,7 @@ def main(tag, index, folder):
     
     plot = figure.add_subplot(gridspec[1, 0])
     
-    plot.text(-0.5, -1.2, r'$\mathtt{augmentation}$')
+    plot.text(-0.5, -1.2, r'$\mathtt{Augmentation}$')
     
     image = plot.hist2d(augmentation_color2, augmentation_color1, bins=[color1_bin, color2_bin], norm=normalize, cmap='plasma')[-1]
     
@@ -107,7 +107,7 @@ def main(tag, index, folder):
     
     plot = figure.add_subplot(gridspec[1, 1])
     
-    plot.text(-0.5, -1.2, r'$\mathtt{combination}$')
+    plot.text(-0.5, -1.2, r'$\mathtt{Combination}$')
     
     image = plot.hist2d(combination_color2, combination_color1, bins=[color1_bin, color2_bin], norm=normalize, cmap='plasma')[-1]
     

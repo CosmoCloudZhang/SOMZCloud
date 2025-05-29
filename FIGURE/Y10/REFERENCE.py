@@ -104,7 +104,7 @@ def main(tag, index, folder):
     plot1.set_xticklabels([])
     plot1.get_yticklabels()[0].set_visible(False)
     
-    plot1.set_title(r'$\mathtt{Lens}$')
+    plot1.set_title(r'$\mathrm{Lens}$')
     plot1.set_ylabel(r'$z_\mathrm{phot}$')
     
     # Plot 2
@@ -123,7 +123,7 @@ def main(tag, index, folder):
     
     plot2.set_xticklabels([])
     plot2.set_yticklabels([])
-    plot2.set_title(r'$\mathtt{Source}$')
+    plot2.set_title(r'$\mathrm{Source}$')
     
     # Plot 3
     plot3 = figure.add_subplot(plot[1, 0])

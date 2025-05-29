@@ -71,7 +71,7 @@ def main(tag, index, folder):
     
     plot = figure.add_subplot(gridspec[0, 0])
     
-    plot.text(2.1, 17.0, r'$\mathtt{application}$')
+    plot.text(2.1, 17.0, r'$\mathtt{Application}$')
     
     image = plot.hist2d(application_color, application_magnitude, bins=[color_bin, magnitude_bin], norm=normalize, cmap='magma')[-1]
     
@@ -86,7 +86,7 @@ def main(tag, index, folder):
     
     plot = figure.add_subplot(gridspec[0, 1])
     
-    plot.text(2.1, 17.0, r'$\mathtt{degradation}$')
+    plot.text(2.1, 17.0, r'$\mathtt{Degradation}$')
     
     image = plot.hist2d(degradation_color, degradation_magnitude, bins=[color_bin, magnitude_bin], norm=normalize, cmap='magma')[-1]
     
@@ -101,7 +101,7 @@ def main(tag, index, folder):
     
     plot = figure.add_subplot(gridspec[1, 0])
     
-    plot.text(2.1, 17.0, r'$\mathtt{augmentation}$')
+    plot.text(2.1, 17.0, r'$\mathtt{Augmentation}$')
     
     image = plot.hist2d(augmentation_color, augmentation_magnitude, bins=[color_bin, magnitude_bin], norm=normalize, cmap='magma')[-1]
     
@@ -116,7 +116,7 @@ def main(tag, index, folder):
     
     plot = figure.add_subplot(gridspec[1, 1])
     
-    plot.text(2.1, 17.0, r'$\mathtt{combination}$')
+    plot.text(2.1, 17.0, r'$\mathtt{Combination}$')
     
     image = plot.hist2d(combination_color, combination_magnitude, bins=[color_bin, magnitude_bin], norm=normalize, cmap='magma')[-1]
     

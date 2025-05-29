@@ -59,11 +59,11 @@ def main(tag, index, folder):
     figure, plot = pyplot.subplots(nrows=1, ncols=2, figsize=(12, 8))
     
     mesh = plot[0].imshow(application_map, norm=normalize, cmap='coolwarm')
-    plot[0].set_title(r'$\mathtt{application}$')
+    plot[0].set_title(r'$\mathtt{Application}$')
     plot[0].axis('off')
     
     mesh = plot[1].imshow(association_map, norm=normalize, cmap='coolwarm')
-    plot[1].set_title(r'$\mathtt{association}$')
+    plot[1].set_title(r'$\mathtt{Association}$')
     plot[1].axis('off')
     
     color_bar = figure.colorbar(mesh, cax=figure.add_axes([0.15, 0.05, 0.70, 0.05]), orientation='horizontal')
