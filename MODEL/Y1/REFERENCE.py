@@ -50,7 +50,7 @@ def main(tag, index, folder):
     z_delta = (z2 - z1) / mesh_size
     z_mesh = numpy.linspace(z1, z2, mesh_size + 1)
     
-    # Application
+    # Combination
     with h5py.File(os.path.join(dataset_folder, '{}/COMBINATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         combination_magnitude = file['photometry']['mag_i_lsst'][...]
         combination_redshift_true = file['photometry']['redshift_true'][...]
@@ -58,19 +58,26 @@ def main(tag, index, folder):
     
     # Evaluate
     chunk_size = 100000
-    z_phot = numpy.zeros(combination_size, dtype=numpy.float32)
     evaluator = h5py.File(os.path.join(model_folder, '{}/EVALUATE/EVALUATE{}.hdf5'.format(tag, index)), 'r')
+    
+    z_loss = numpy.zeros(combination_size, dtype=numpy.float32)
+    z_phot = numpy.zeros(combination_size, dtype=numpy.float32)
+    z_quantile = numpy.zeros(combination_size, dtype=numpy.float32)
     
     for m in range(combination_size // chunk_size + 1):
         begin = m * chunk_size
         stop = min((m + 1) * chunk_size, combination_size)
         
         if begin < stop:
-            z_pdf = scipy.interpolate.CubicSpline(x=z_grid, y=evaluator['data']['yvals'][begin: stop].astype(numpy.float32), axis=1, bc_type='natural', extrapolate=False)(z_mesh)
+            z_pdf = numpy.maximum(scipy.interpolate.CubicSpline(x=z_grid, y=evaluator['data']['yvals'][begin: stop].astype(numpy.float32), axis=1, bc_type='natural', extrapolate=False)(z_mesh), 0.0)
             z_pdf = z_pdf / numpy.sum(z_pdf, axis=1, keepdims=True) / z_delta
             z_phot[begin: stop] = z_mesh[numpy.argmax(z_pdf, axis=1)]
+            
+            z_cdf = numpy.cumsum(z_pdf, axis=1) * z_delta
+            z_quantile[begin: stop] = z_cdf[numpy.arange(stop - begin), numpy.round((combination_redshift_true[begin: stop] - z1) / z_delta).astype(numpy.int32)]
+            z_loss[begin: stop] = numpy.sqrt(numpy.sum(numpy.square(z_cdf - numpy.array(z_mesh[numpy.newaxis, :] >= combination_redshift_true[begin: stop, numpy.newaxis], dtype=numpy.float32)), axis=1) * z_delta / (z2 - z1))
     
-    # Reference
+    # Select
     slope = 4.0
     intercept = 18.0
     reference_source = (z1_source <= z_phot) & (z_phot < z2_source)
@@ -81,11 +88,10 @@ def main(tag, index, folder):
     bin_lens = numpy.linspace(z1_lens, z2_lens, lens_size + 1)
     
     source_size = 5
-    quantiles = numpy.linspace(0, 1, source_size + 1)
+    bin_source = numpy.quantile(z_phot[reference_source], numpy.linspace(0, 1, source_size + 1))
     
-    bin_source = numpy.quantile(z_phot[reference_source], quantiles)
-    bin_source[-1] = z2_source
     bin_source[0] = z1_source
+    bin_source[-1] = z2_source
     
     # Point
     z_phot_lens = z_phot[reference_lens]
@@ -94,16 +100,35 @@ def main(tag, index, folder):
     z_phot_source = z_phot[reference_source]
     z_true_source = combination_redshift_true[reference_source]
     
+    # Loss
+    z_loss_lens = z_loss[reference_lens]
+    z_loss_source = z_loss[reference_source]
+    
+    # Quantile
+    z_quantile_lens = z_quantile[reference_lens]
+    z_quantile_source = z_quantile[reference_source]
+    
+    # Histogram
+    histogram_lens_size = 10
+    histogram_bin_lens = numpy.linspace(0, 1, histogram_lens_size + 1)
+    
+    histogram_source_size = 20
+    histogram_bin_source = numpy.linspace(0, 1, histogram_source_size + 1)
+    
     # Metric Lens
     z1_average_lens = 0.0
-    z2_average_lens = 1.6
-    average_lens_size = 8
+    z2_average_lens = 1.5
+    average_lens_size = 5
     z_average_lens = numpy.linspace(z1_average_lens, z2_average_lens, average_lens_size + 1)
     
     rate_lens = numpy.zeros(average_lens_size)
     delta_lens = numpy.zeros(average_lens_size)
     sigma_lens = numpy.zeros(average_lens_size)
     fraction_lens = numpy.zeros(average_lens_size)
+    
+    score_lens = numpy.zeros(average_lens_size)
+    divergence_lens = numpy.zeros(average_lens_size)
+    histogram_lens = numpy.zeros((average_lens_size, histogram_lens_size))
     
     for m in range(average_lens_size):
         reference_lens_average = (z_average_lens[m] <= z_true_lens) & (z_true_lens < z_average_lens[m + 1])
@@ -113,14 +138,25 @@ def main(tag, index, folder):
             delta_lens_select = numpy.abs(z_phot_lens_select - z_true_lens_select) / (1 + z_true_lens_select)
             
             delta_lens[m] = numpy.median(delta_lens_select)
-            fraction_lens[m] = len(delta_lens_select[delta_lens_select > 0.15]) / len(delta_lens_select)
-            sigma_lens[m] = 1.4826 * numpy.median(numpy.abs(delta_lens_select - numpy.median(delta_lens_select)))
-            rate_lens[m] = len(delta_lens_select[numpy.abs(z_phot_lens_select - z_true_lens_select) > 1.0]) / len(delta_lens_select)
+            sigma_lens[m] = scipy.stats.median_abs_deviation(delta_lens_select, scale='normal')
+            fraction_lens[m] = numpy.sum(delta_lens_select > 0.15) / numpy.sum(reference_lens_average)
+            rate_lens[m] = numpy.sum(numpy.abs(z_phot_lens_select - z_true_lens_select) > 1.0) / numpy.sum(reference_lens_average)
+            
+            z_loss_lens_select = z_loss_lens[reference_lens_average]
+            score_lens[m] = numpy.median(z_loss_lens_select)
+            
+            z_quantile_lens_select = z_quantile_lens[reference_lens_average]
+            histogram_lens[m, :] = numpy.histogram(z_quantile_lens_select, bins=histogram_bin_lens, range=(0, 1), density=True)[0]
+            divergence_lens[m] = numpy.sqrt(numpy.sum(numpy.square(histogram_lens[m, :] - numpy.ones(histogram_lens_size))) / histogram_lens_size)
         else:
             rate_lens[m] = numpy.nan
             delta_lens[m] = numpy.nan
             sigma_lens[m] = numpy.nan
             fraction_lens[m] = numpy.nan
+            
+            score_lens[m] = numpy.nan
+            divergence_lens[m] = numpy.nan
+            histogram_lens[m, :] = numpy.nan
     
     # Metric Source
     z1_average_source = 0.0
@@ -133,6 +169,10 @@ def main(tag, index, folder):
     sigma_source = numpy.zeros(average_source_size)
     fraction_source = numpy.zeros(average_source_size)
     
+    score_source = numpy.zeros(average_source_size)
+    divergence_source = numpy.zeros(average_source_size)
+    histogram_source = numpy.zeros((average_source_size, histogram_source_size))
+    
     for m in range(average_source_size):
         reference_source_average = (z_average_source[m] <= z_true_source) & (z_true_source < z_average_source[m + 1])
         if numpy.sum(reference_source_average) > 0:
@@ -141,19 +181,33 @@ def main(tag, index, folder):
             delta_source_select = numpy.abs(z_phot_source_select - z_true_source_select) / (1 + z_true_source_select)
             
             delta_source[m] = numpy.median(delta_source_select)
-            fraction_source[m] = len(delta_source_select[delta_source_select > 0.15]) / len(delta_source_select)
-            sigma_source[m] = 1.4826 * numpy.median(numpy.abs(delta_source_select - numpy.median(delta_source_select)))
-            rate_source[m] = len(delta_source_select[numpy.abs(z_phot_source_select - z_true_source_select) > 1.0]) / len(delta_source_select)
+            sigma_source[m] = scipy.stats.median_abs_deviation(delta_source_select, scale='normal')
+            fraction_source[m] = numpy.sum(delta_source_select > 0.15) / numpy.sum(reference_source_average)
+            rate_source[m] = numpy.sum(numpy.abs(z_phot_source_select - z_true_source_select) > 1.0) / numpy.sum(reference_source_average)
+            
+            z_loss_source_select = z_loss_source[reference_source_average]
+            score_source[m] = numpy.median(z_loss_source_select)
+            
+            z_quantile_source_select = z_quantile_source[reference_source_average]
+            histogram_source[m, :] = numpy.histogram(z_quantile_source_select, bins=histogram_bin_source, range=(0, 1), density=True)[0]
+            divergence_source[m] = numpy.sqrt(numpy.sum(numpy.square(histogram_source[m, :] - numpy.ones(histogram_source_size))) / histogram_source_size)
         else:
             rate_source[m] = numpy.nan
             delta_source[m] = numpy.nan
             sigma_source[m] = numpy.nan
             fraction_source[m] = numpy.nan
+            
+            score_source[m] = numpy.nan
+            divergence_source[m] = numpy.nan
+            histogram_source[m, :] = numpy.nan
     
     # Save
     with h5py.File(os.path.join(model_folder, '{}/REFERENCE/DATA{}.hdf5'.format(tag, index)), 'w') as file:
         file.create_dataset('z_phot', data=z_phot, dtype=numpy.float32)
+        file.create_dataset('z_loss', data=z_loss, dtype=numpy.float32)
+        file.create_dataset('z_quantile', data=z_quantile, dtype=numpy.float32)
         
+        # Lens
         file.create_dataset('bin_lens', data=bin_lens, dtype=numpy.float32)
         file.create_dataset('reference_lens', data=reference_lens, dtype=bool)
         
@@ -162,6 +216,11 @@ def main(tag, index, folder):
         file.create_dataset('sigma_lens', data=sigma_lens, dtype=numpy.float32)
         file.create_dataset('fraction_lens', data=fraction_lens, dtype=numpy.float32)
         
+        file.create_dataset('score_lens', data=score_lens, dtype=numpy.float32)
+        file.create_dataset('histogram_lens', data=histogram_lens, dtype=numpy.float32)
+        file.create_dataset('divergence_lens', data=divergence_lens, dtype=numpy.float32)   
+        
+        # Source
         file.create_dataset('bin_source', data=bin_source, dtype=numpy.float32)
         file.create_dataset('reference_source', data=reference_source, dtype=bool)
         
@@ -169,6 +228,10 @@ def main(tag, index, folder):
         file.create_dataset('delta_source', data=delta_source, dtype=numpy.float32)
         file.create_dataset('sigma_source', data=sigma_source, dtype=numpy.float32)
         file.create_dataset('fraction_source', data=fraction_source, dtype=numpy.float32)
+        
+        file.create_dataset('score_source', data=score_source, dtype=numpy.float32)
+        file.create_dataset('histogram_source', data=histogram_source, dtype=numpy.float32)
+        file.create_dataset('divergence_source', data=divergence_source, dtype=numpy.float32)
     
     # Lens bin
     reference_lens_bin = numpy.ones((lens_size, combination_size), dtype=bool)
@@ -178,7 +241,7 @@ def main(tag, index, folder):
     with h5py.File(os.path.join(model_folder, '{}/LENS/LENS{}/REFERENCE.hdf5'.format(tag, index)), 'w') as file:    
         file.create_dataset('reference', data=reference_lens_bin, dtype=bool)
     
-    # Source
+    # Source bin
     reference_source_bin = numpy.ones((source_size, combination_size), dtype=bool)
     for m in range(len(bin_source) - 1):
         reference_source_bin[m, :] = reference_source & (bin_source[m] <= z_phot) & (z_phot < bin_source[m + 1])
