@@ -6,8 +6,8 @@
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH --cpus-per-task=256
-#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=64
+#SBATCH --ntasks-per-node=4
 #SBATCH -J SYNTHESIZE_Y1_FIDUCIAL
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
@@ -34,4 +34,8 @@ BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 
 # Run applications
-srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}SYNTHESIZE/${TAG}/FIDUCIAL.py" --tag=$TAG --folder=$BASE_FOLDER 
+LABEL_LIST=("ZERO" "HALF" "UNITY" "DOUBLE")
+for LABEL in "${LABEL_LIST[@]}"; do
+    srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}SYNTHESIZE/${TAG}/FIDUCIAL.py" --tag=$TAG --label=$LABEL --folder=$BASE_FOLDER &
+done
+wait

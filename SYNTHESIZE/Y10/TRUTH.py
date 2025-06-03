@@ -20,12 +20,13 @@ def synthesize(data, weight, z_grid, number, sample_size, random_generator):
     return value
 
 
-def main(tag, number, folder):
+def main(tag, label, number, folder):
     '''
     Truth of the spectroscopic redshift distributions of the lens and source samples
     
     Arguments:
         tag (str): The tag of the configuration
+        label (str): The label of the configuration
         number (int): The number of all the datasets
         folder (str): The base folder of all the datasets
     
@@ -34,6 +35,7 @@ def main(tag, number, folder):
     '''
     # Data store
     start = time.time()
+    print('Label: {}'.format(label))
     random_generator = numpy.random.default_rng(0)
     
     # Path
@@ -104,38 +106,40 @@ def main(tag, number, folder):
     
     factor_source = factor_gamma_source / factor_pi_source / factor_xi_source
     
-    # Loop
-    factor_list = [0.0, 0.5, 1.0, 2.0]
-    label_list = ['ZERO', 'HALF', 'UNITY', 'DOUBLE']
-    for factor, label in zip(factor_list, label_list):
-        print('Factor: {:.1f}, Label: {}'.format(factor, label))
+    # Factor
+    factor = {
+        'ZERO': 0.0,
+        'HALF': 0.5,
+        'UNITY': 1.0,
+        'DOUBLE': 2.0
+    }
+    
+    # Weight
+    weight_lens = numpy.power(factor_lens, factor[label])
+    weight_source = numpy.power(factor_source, factor[label])
+    
+    # Synthesize Lens
+    with multiprocessing.Pool(processes=size) as pool:
+        data_lens = numpy.stack(pool.starmap(synthesize, [(summarize_lens, weight_lens, z_grid, number, sample_size, random_generator) for _ in range(synthesize_size)]), axis=0)
+    
+    average_lens = numpy.median(data_lens, axis=0)
+    average_lens = average_lens / scipy.integrate.trapezoid(x=z_grid, y=average_lens, axis=1)[:, numpy.newaxis]
+    
+    # Synthesize Source
+    with multiprocessing.Pool(processes=size) as pool:
+        data_source = numpy.stack(pool.starmap(synthesize, [(summarize_source, weight_source, z_grid, number, sample_size, random_generator) for _ in range(synthesize_size)]), axis=0)
+    
+    average_source = numpy.median(data_source, axis=0)
+    average_source = average_source / scipy.integrate.trapezoid(x=z_grid, y=average_source, axis=1)[:, numpy.newaxis]
+    
+    with h5py.File(os.path.join(synthesize_folder, '{}/TRUTH_{}.hdf5'.format(tag, label)), 'w') as file:
+        file.create_group('lens')
+        file['lens'].create_dataset('data', data=data_lens, dtype=numpy.float32)
+        file['lens'].create_dataset('average', data=average_lens, dtype=numpy.float32)
         
-        # Weight
-        weight_lens = numpy.power(factor_lens, factor)
-        weight_source = numpy.power(factor_source, factor)
-        
-        # Synthesize Lens
-        with multiprocessing.Pool(processes=size) as pool:
-            data_lens = numpy.stack(pool.starmap(synthesize, [(summarize_lens, weight_lens, z_grid, number, sample_size, random_generator) for _ in range(synthesize_size)]), axis=0)
-        
-        average_lens = numpy.median(data_lens, axis=0)
-        average_lens = average_lens / scipy.integrate.trapezoid(x=z_grid, y=average_lens, axis=1)[:, numpy.newaxis]
-        
-        # Synthesize Source
-        with multiprocessing.Pool(processes=size) as pool:
-            data_source = numpy.stack(pool.starmap(synthesize, [(summarize_source, weight_source, z_grid, number, sample_size, random_generator) for _ in range(synthesize_size)]), axis=0)
-        
-        average_source = numpy.median(data_source, axis=0)
-        average_source = average_source / scipy.integrate.trapezoid(x=z_grid, y=average_source, axis=1)[:, numpy.newaxis]
-        
-        with h5py.File(os.path.join(synthesize_folder, '{}/TRUTH_{}.hdf5'.format(tag, label)), 'w') as file:
-            file.create_group('lens')
-            file['lens'].create_dataset('data', data=data_lens, dtype=numpy.float32)
-            file['lens'].create_dataset('average', data=average_lens, dtype=numpy.float32)
-            
-            file.create_group('source')
-            file['source'].create_dataset('data', data=data_source, dtype=numpy.float32)
-            file['source'].create_dataset('average', data=average_source, dtype=numpy.float32)
+        file.create_group('source')
+        file['source'].create_dataset('data', data=data_source, dtype=numpy.float32)
+        file['source'].create_dataset('average', data=average_source, dtype=numpy.float32)
     
     # Return
     end = time.time()
@@ -149,13 +153,15 @@ if __name__ == '__main__':
     # Input
     PARSE = argparse.ArgumentParser(description='Synthesize Truth')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
+    PARSE.add_argument('--label', type=str, required=True, help='The label of the configuration')
     PARSE.add_argument('--number', type=int, required=True, help='The number of all the datasets')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of all the datasets')
     
     # Parse
     TAG = PARSE.parse_args().tag
+    LABEL = PARSE.parse_args().label
     NUMBER = PARSE.parse_args().number
     FOLDER = PARSE.parse_args().folder
     
     # Output
-    OUTPUT = main(TAG, NUMBER, FOLDER)
+    OUTPUT = main(TAG, LABEL, NUMBER, FOLDER)
