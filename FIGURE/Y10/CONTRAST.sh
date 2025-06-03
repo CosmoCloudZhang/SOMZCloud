@@ -30,7 +30,7 @@ export OMP_PLACES=threads
 
 # Initialize the process
 TAG="Y10"
-NUMBER=500
+NUMBER=0
 BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 

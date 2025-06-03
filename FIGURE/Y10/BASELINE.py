@@ -164,9 +164,9 @@ def main(tag, index, folder):
     color_bar.set_label(r'$\mathrm{Counts}$')
     
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(figure_folder, '{}/REFERENCE/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(figure_folder, '{}/BASELINE/'.format(tag)), exist_ok=True)
     
-    figure.savefig(os.path.join(figure_folder, '{}/REFERENCE/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(figure_folder, '{}/BASELINE/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
     pyplot.close(figure)
     
     # Return
@@ -179,7 +179,7 @@ def main(tag, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Figure Reference')
+    PARSE = argparse.ArgumentParser(description='Figure Baseline')
     PARSE.add_argument('--tag', type=str, help='The tag of the configuration')
     PARSE.add_argument('--index', type=int, help='The index of all the datasets')
     PARSE.add_argument('--folder', type=str, help='The base folder of all the datasets')

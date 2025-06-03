@@ -29,16 +29,16 @@ def main(tag, index, folder):
     
     # Redshift
     z1_average_lens = 0.0
-    z2_average_lens = 1.6
-    average_lens_size = 8
-    z_average_lens = numpy.linspace(z1_average_lens, z2_average_lens, average_lens_size + 1)
-    z_bin_lens = (z_average_lens[1:] + z_average_lens[:-1]) / 2
+    z2_average_lens = 1.5
+    average_size_lens = 5
+    average_delta_lens = (z2_average_lens - z1_average_lens) / average_size_lens
+    z_average_lens = numpy.linspace(z1_average_lens + average_delta_lens / 2, z2_average_lens - average_delta_lens / 2, average_size_lens)
     
     z1_average_source = 0.0
     z2_average_source = 3.0
-    average_source_size = 10
-    z_average_source = numpy.linspace(z1_average_source, z2_average_source, average_source_size + 1)
-    z_bin_source = (z_average_source[1:] + z_average_source[:-1]) / 2
+    average_size_source = 10
+    average_delta_source = (z2_average_source - z1_average_source) / average_size_source
+    z_average_source = numpy.linspace(z1_average_source + average_delta_source / 2, z2_average_source - average_delta_source / 2, average_size_source)
     
     # Select
     with h5py.File(os.path.join(model_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
@@ -49,11 +49,37 @@ def main(tag, index, folder):
         sigma_lens = file['sigma_lens'][...]
         sigma_source = file['sigma_source'][...]
         
+        fraction_lens = file['fraction_lens'][...]
+        fraction_source = file['fraction_source'][...]
+        
         rate_lens = file['rate_lens'][...]
         rate_source = file['rate_source'][...]
         
-        fraction_lens = file['fraction_lens'][...]
-        fraction_source = file['fraction_source'][...]
+        divergence_lens = file['divergence_lens'][...]
+        divergence_source = file['divergence_source'][...]
+        
+        loss_lens = file['loss_lens'][...]
+        loss_source = file['loss_source'][...]
+    
+    # Reference
+    with h5py.File(os.path.join(model_folder, '{}/REFERENCE/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+        reference_sigma_lens = file['sigma_lens'][...]
+        reference_sigma_source = file['sigma_source'][...]
+        
+        reference_delta_lens = file['delta_lens'][...]
+        reference_delta_source = file['delta_source'][...]
+        
+        reference_fraction_lens = file['fraction_lens'][...]
+        reference_fraction_source = file['fraction_source'][...]
+        
+        reference_rate_lens = file['rate_lens'][...]
+        reference_rate_source = file['rate_source'][...]
+        
+        reference_divergence_lens = file['divergence_lens'][...]
+        reference_divergence_source = file['divergence_source'][...]
+        
+        reference_loss_lens = file['loss_lens'][...]
+        reference_loss_source = file['loss_source'][...]
     
     # Comparison
     with h5py.File(os.path.join(comparison_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
@@ -63,11 +89,17 @@ def main(tag, index, folder):
         comparison_delta_lens = file['delta_lens'][...]
         comparison_delta_source = file['delta_source'][...]
         
+        comparison_fraction_lens = file['fraction_lens'][...]
+        comparison_fraction_source = file['fraction_source'][...]   
+        
         comparison_rate_lens = file['rate_lens'][...]
         comparison_rate_source = file['rate_source'][...]
         
-        comparison_fraction_lens = file['fraction_lens'][...]
-        comparison_fraction_source = file['fraction_source'][...]
+        comparison_divergence_lens = file['divergence_lens'][...]
+        comparison_divergence_source = file['divergence_source'][...]
+        
+        comparison_loss_lens = file['loss_lens'][...]
+        comparison_loss_source = file['loss_source'][...]
     
     # Plot
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
@@ -77,38 +109,34 @@ def main(tag, index, folder):
     pyplot.rcParams['font.size'] = 30
     
     figure = pyplot.figure(figsize=(16, 16))
-    plot_list = gridspec.GridSpec(nrows=4, ncols=2, figure=figure)
+    plot_list = gridspec.GridSpec(nrows=6, ncols=2, figure=figure)
     
     # Plot lens delta 
     plot = figure.add_subplot(plot_list[0, 0])
     
-    plot.plot(z_bin_lens, delta_lens, color='darkred', linestyle='-', linewidth=2.5, label=r'$\mathrm{No \, Augmentation}$')
+    plot.errorbar(x=z_average_lens, y=delta_lens, color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
     
-    plot.plot(z_bin_lens, comparison_delta_lens, color='darkblue', linestyle='-', linewidth=2.5, label=r'$\mathrm{With \, Augmentation}$')
+    plot.errorbar(x=z_average_lens, y=reference_delta_lens, color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
     
-    plot.scatter(z_bin_lens, delta_lens, marker='s', s=100, alpha=0.8, facecolors='none', edgecolors='darkred', linewidths=2.5)
+    plot.errorbar(x=z_average_lens, y=comparison_delta_lens, color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
     
-    plot.scatter(z_bin_lens, comparison_delta_lens, marker='d', s=100, alpha=0.8, facecolors='none', edgecolors='darkblue', linewidths=2.5)
-    
-    plot.set_ylim(-0.005, 0.015)
+    plot.set_ylim(-0.005, +0.050)
     plot.set_xlim(z1_average_lens, z2_average_lens)
     
     plot.set_xticklabels([])
-    plot.set_title(r'$\mathtt{lens}$')
-    plot.set_ylabel(r'$\bar{\delta}_z$')
+    plot.set_title(r'$\mathrm{lens}$')
+    plot.set_ylabel(r'$\tilde{\delta}_z$')
     
     # Plot lens sigma 
     plot = figure.add_subplot(plot_list[1, 0])
     
-    plot.plot(z_bin_lens, sigma_lens, color='darkred', linestyle='-', linewidth=2.5, label=r'$\mathrm{No \, Augmentation}$')
+    plot.errorbar(x=z_average_lens, y=sigma_lens, color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
     
-    plot.plot(z_bin_lens, comparison_sigma_lens, color='darkblue', linestyle='-', linewidth=2.5, label=r'$\mathrm{With \, Augmentation}$') 
+    plot.errorbar(x=z_average_lens, y=reference_sigma_lens, color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
     
-    plot.scatter(z_bin_lens, sigma_lens, marker='s', s=100, alpha=0.8, facecolors='none', edgecolors='darkred', linewidths=2.5)
+    plot.errorbar(x=z_average_lens, y=comparison_sigma_lens, color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
     
-    plot.scatter(z_bin_lens, comparison_sigma_lens, marker='d', s=100, alpha=0.8, facecolors='none', edgecolors='darkblue', linewidths=2.5)
-    
-    plot.set_ylim(-0.005, 0.015)
+    plot.set_ylim(-0.005, +0.050)
     plot.set_xlim(z1_average_lens, z2_average_lens)
     
     plot.set_xticklabels([])
@@ -117,15 +145,13 @@ def main(tag, index, folder):
     # Plot lens fraction
     plot = figure.add_subplot(plot_list[2, 0])
     
-    plot.plot(z_bin_lens, fraction_lens, color='darkred', linestyle='-', linewidth=2.5, label=r'$\mathrm{No \, Augmentation}$')
+    plot.errorbar(x=z_average_lens, y=fraction_lens, color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
     
-    plot.plot(z_bin_lens, comparison_fraction_lens, color='darkblue', linestyle='-', linewidth=2.5, label=r'$\mathrm{With \, Augmentation}$')
+    plot.errorbar(x=z_average_lens, y=reference_fraction_lens, color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
     
-    plot.scatter(z_bin_lens, fraction_lens, marker='s', s=100, alpha=0.8, facecolors='none', edgecolors='darkred', linewidths=2.5)
+    plot.errorbar(x=z_average_lens, y=comparison_fraction_lens, color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
     
-    plot.scatter(z_bin_lens, comparison_fraction_lens, marker='d', s=100, alpha=0.8, facecolors='none', edgecolors='darkblue', linewidths=2.5)
-    
-    plot.set_ylim(-0.005, 0.015)
+    plot.set_ylim(-0.100, +1.000)
     plot.set_xlim(z1_average_lens, z2_average_lens)
     
     plot.set_xticklabels([])
@@ -134,82 +160,138 @@ def main(tag, index, folder):
     # Plot lens rate
     plot = figure.add_subplot(plot_list[3, 0])
     
-    plot.plot(z_bin_lens, rate_lens, color='darkred', linestyle='-', linewidth=2.5, label=r'$\mathrm{No \, Augmentation}$')
+    plot.errorbar(x=z_average_lens, y=rate_lens, color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
     
-    plot.plot(z_bin_lens, comparison_rate_lens, color='darkblue', linestyle='-', linewidth=2.5, label=r'$\mathrm{With \, Augmentation}$')
+    plot.errorbar(x=z_average_lens, y=reference_rate_lens, color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
     
-    plot.scatter(z_bin_lens, rate_lens, marker='s', s=100, alpha=0.8, facecolors='none', edgecolors='darkred', linewidths=2.5)
+    plot.errorbar(x=z_average_lens, y=comparison_rate_lens, color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
     
-    plot.scatter(z_bin_lens, comparison_rate_lens, marker='d', s=100, alpha=0.8, facecolors='none', edgecolors='darkblue', linewidths=2.5)
-    
-    plot.set_ylim(-0.005, 0.015)
+    plot.set_ylim(-0.100, +1.000)
     plot.set_xlim(z1_average_lens, z2_average_lens)
     
     plot.set_ylabel(r'$r_\mathrm{c}$')
     plot.set_xlabel(r'$z_\mathrm{true}$')
     
+    # Plot lens divergence
+    plot = figure.add_subplot(plot_list[4, 0])
+    
+    plot.errorbar(x=z_average_lens, y=divergence_lens, color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    
+    plot.errorbar(x=z_average_lens, y=reference_divergence_lens, color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    
+    plot.errorbar(x=z_average_lens, y=comparison_divergence_lens, color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    
+    plot.set_ylim(-0.500, +5.000)
+    plot.set_xlim(z1_average_lens, z2_average_lens)
+    
+    plot.set_xticklabels([])
+    plot.set_ylabel(r'$\mathcal{D}_\mathrm{q}$')
+    
+    # Plot lens loss
+    plot = figure.add_subplot(plot_list[5, 0])
+    
+    plot.errorbar(x=z_average_lens, y=loss_lens, color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    
+    plot.errorbar(x=z_average_lens, y=reference_loss_lens, color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    
+    plot.errorbar(x=z_average_lens, y=comparison_loss_lens, color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    
+    plot.set_ylim(-0.100, +1.000)
+    plot.set_xlim(z1_average_lens, z2_average_lens)
+    
+    plot.set_xlabel(r'$z_\mathrm{true}$')
+    plot.set_ylabel(r'$\mathcal{L}_\mathrm{q}$')
+    
     # Plot source delta 
     plot = figure.add_subplot(plot_list[0, 1])
     
-    plot.plot(z_bin_source, delta_source, color='darkred', linestyle='-', linewidth=2.5, label=r'$\mathrm{No \, Augmentation}$')
+    plot.errorbar(x=z_average_source, y=delta_source, color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
     
-    plot.plot(z_bin_source, comparison_delta_source, color='darkblue', linestyle='-', linewidth=2.5, label=r'$\mathrm{With \, Augmentation}$')    
+    plot.errorbar(x=z_average_source, y=reference_delta_source, color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
     
-    plot.scatter(z_bin_source, delta_source, marker='s', s=100, alpha=0.8, facecolors='none', edgecolors='darkred', linewidths=2.5)
+    plot.errorbar(x=z_average_source, y=comparison_delta_source, color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
     
-    plot.scatter(z_bin_source, comparison_delta_source, marker='d', s=100, alpha=0.8, facecolors='none', edgecolors='darkblue', linewidths=2.5)
-    
-    plot.set_ylim(-0.100, 0.800)
-    plot.legend(loc='upper left', fontsize=25)
-    plot.set_xlim(z1_average_source, z2_average_source) 
+    plot.set_ylim(-0.005, +0.050)
+    plot.set_xlim(z1_average_source, z2_average_source)
     
     plot.set_xticklabels([])
-    plot.set_title(r'$\mathtt{source}$') 
+    plot.set_title(r'$\mathrm{source}$')
+    plot.set_ylabel(r'$\tilde{\delta}_z$')
     
     # Plot source sigma 
     plot = figure.add_subplot(plot_list[1, 1])
     
-    plot.plot(z_bin_source, sigma_source, color='darkred', linestyle='-', linewidth=2.5, label=r'$\mathrm{No \, Augmentation}$')
+    plot.errorbar(x=z_average_source, y=sigma_source, color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
     
-    plot.plot(z_bin_source, comparison_sigma_source, color='darkblue', linestyle='-', linewidth=2.5, label=r'$\mathrm{With \, Augmentation}$')
+    plot.errorbar(x=z_average_source, y=reference_sigma_source, color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
     
-    plot.scatter(z_bin_source, sigma_source, marker='s', s=100, alpha=0.8, facecolors='none', edgecolors='darkred', linewidths=2.5)
+    plot.errorbar(x=z_average_source, y=comparison_sigma_source, color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
     
-    plot.scatter(z_bin_source, comparison_sigma_source, marker='d', s=100, alpha=0.8, facecolors='none', edgecolors='darkblue', linewidths=2.5)
+    plot.set_ylim(-0.005, +0.050)
+    plot.set_xlim(z1_average_source, z2_average_source)
     
     plot.set_xticklabels([])
-    plot.set_ylim(-0.100, 0.400)
-    plot.set_xlim(z1_average_source, z2_average_source)
+    plot.set_ylabel(r'$\sigma_z$')
     
     # Plot source fraction
     plot = figure.add_subplot(plot_list[2, 1])
     
-    plot.plot(z_bin_source, fraction_source, color='darkred', linestyle='-', linewidth=2.5, label=r'$\mathrm{No \, Augmentation}$')
+    plot.errorbar(x=z_average_source, y=fraction_source, color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
     
-    plot.plot(z_bin_source, comparison_fraction_source, color='darkblue', linestyle='-', linewidth=2.5, label=r'$\mathrm{With \, Augmentation}$')
+    plot.errorbar(x=z_average_source, y=reference_fraction_source, color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
     
-    plot.scatter(z_bin_source, fraction_source, marker='s', s=100, alpha=0.8, facecolors='none', edgecolors='darkred', linewidths=2.5)
+    plot.errorbar(x=z_average_source, y=comparison_fraction_source, color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
     
-    plot.scatter(z_bin_source, comparison_fraction_source, marker='d', s=100, alpha=0.8, facecolors='none', edgecolors='darkblue', linewidths=2.5)
+    plot.set_ylim(-0.100, +1.000)
+    plot.set_xlim(z1_average_source, z2_average_source)
     
     plot.set_xticklabels([])
-    plot.set_ylim(-0.100, 1.000)
-    plot.set_xlim(z1_average_source, z2_average_source)
+    plot.set_ylabel(r'$f_\mathrm{o}$')
     
     # Plot source rate
     plot = figure.add_subplot(plot_list[3, 1])
     
-    plot.plot(z_bin_source, rate_source, color='darkred', linestyle='-', linewidth=2.5, label=r'$\mathrm{No \, Augmentation}$')
+    plot.errorbar(x=z_average_source, y=rate_source, color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
     
-    plot.plot(z_bin_source, comparison_rate_source, color='darkblue', linestyle='-', linewidth=2.5, label=r'$\mathrm{With \, Augmentation}$')
+    plot.errorbar(x=z_average_source, y=reference_rate_source, color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
     
-    plot.scatter(z_bin_source, rate_source, marker='s', s=100, alpha=0.8, facecolors='none', edgecolors='darkred', linewidths=2.5)
+    plot.errorbar(x=z_average_source, y=comparison_rate_source, color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
     
-    plot.scatter(z_bin_source, comparison_rate_source, marker='d', s=100, alpha=0.8, facecolors='none', edgecolors='darkblue', linewidths=2.5)
-    
-    plot.set_ylim(-0.100, 1.000)
-    plot.set_xlabel(r'$z_\mathrm{true}$')
+    plot.set_ylim(-0.100, +1.000)
     plot.set_xlim(z1_average_source, z2_average_source)
+    
+    plot.set_xticklabels([])
+    plot.set_ylabel(r'$r_\mathrm{c}$')
+    
+    # Plot source divergence
+    plot = figure.add_subplot(plot_list[4, 1])
+    
+    plot.errorbar(x=z_average_source, y=divergence_source, color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    
+    plot.errorbar(x=z_average_source, y=reference_divergence_source, color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    
+    plot.errorbar(x=z_average_source, y=comparison_divergence_source, color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    
+    plot.set_ylim(-0.500, +5.000)
+    plot.set_xlim(z1_average_source, z2_average_source)
+    
+    plot.set_xticklabels([])
+    plot.set_ylabel(r'$\mathcal{D}_\mathrm{q}$')
+    
+    # Plot source loss
+    plot = figure.add_subplot(plot_list[5, 1])
+    
+    plot.errorbar(x=z_average_source, y=loss_source, color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    
+    plot.errorbar(x=z_average_source, y=reference_loss_source, color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    
+    plot.errorbar(x=z_average_source, y=comparison_loss_source, color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    
+    plot.set_ylim(-0.100, +1.000)
+    plot.set_xlim(z1_average_source, z2_average_source)
+    
+    plot.set_xlabel(r'$z_\mathrm{true}$')
+    plot.set_ylabel(r'$\mathcal{L}_\mathrm{q}$')
     
     # Save
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)

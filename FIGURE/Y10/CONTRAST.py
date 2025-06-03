@@ -125,10 +125,10 @@ def main(tag, index, folder):
     
     # Color bar
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(figure_folder, '{}/QUANTILE/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(figure_folder, '{}/CONTRAST/'.format(tag)), exist_ok=True)
     
     figure.subplots_adjust(wspace=0.0, hspace=0.0)
-    figure.savefig(os.path.join(figure_folder, '{}/QUANTILE/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(figure_folder, '{}/CONTRAST/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
     pyplot.close(figure)
     
     # Return
