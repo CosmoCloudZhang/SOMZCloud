@@ -67,7 +67,7 @@ def main(tag, index, folder):
     normalize = colors.LogNorm(vmin=1, vmax=10000)
     figure, plot = pyplot.subplots(nrows=1, ncols=1, figsize=(12, 8))
     
-    image = plot.hist2d(x=z_phot, y=application_magnitude, bins=[z_bin, magnitude_grid], norm=normalize, cmap='inferno')[-1]
+    image = plot.hist2d(x=z_phot, y=application_magnitude, bins=[z_bin, magnitude_grid], norm=normalize, cmap='plasma')[-1]
     
     plot.plot(numpy.ones(bin_size) * z1_source, numpy.linspace(magnitude1, magnitude2, bin_size), color='black', linestyle='--', linewidth=2.5)
     

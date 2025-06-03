@@ -8,7 +8,7 @@ from matplotlib import pyplot
 
 def main(tag, index, folder):
     '''
-    Plot the distribution of the redshifts
+    Plot the histogram of the redshifts
     
     Arguments:
         tag (str): The tag of the configuration
@@ -72,8 +72,8 @@ def main(tag, index, folder):
     plot.set_xlabel(r'$z_\mathrm{true}$')
     
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(figure_folder, '{}/DENSITY/'.format(tag)), exist_ok=True)
-    figure.savefig(os.path.join(figure_folder, '{}/DENSITY/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
+    os.makedirs(os.path.join(figure_folder, '{}/HISTOGRAM/'.format(tag)), exist_ok=True)
+    figure.savefig(os.path.join(figure_folder, '{}/HISTOGRAM/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
     
     # Duration
     end = time.time()
@@ -85,7 +85,7 @@ def main(tag, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Figure Distribution')
+    PARSE = argparse.ArgumentParser(description='Figure Histogram')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
     PARSE.add_argument('--index', type=int, required=True, help='The index of all the datasets')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of all the datasets')
