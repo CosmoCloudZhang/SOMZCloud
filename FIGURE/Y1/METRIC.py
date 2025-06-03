@@ -58,8 +58,8 @@ def main(tag, index, folder):
         divergence_lens = file['divergence_lens'][...]
         divergence_source = file['divergence_source'][...]
         
-        loss_lens = file['loss_lens'][...]
-        loss_source = file['loss_source'][...]
+        score_lens = file['score_lens'][...]
+        score_source = file['score_source'][...]
     
     # Reference
     with h5py.File(os.path.join(model_folder, '{}/REFERENCE/DATA{}.hdf5'.format(tag, index)), 'r') as file:
@@ -78,8 +78,8 @@ def main(tag, index, folder):
         reference_divergence_lens = file['divergence_lens'][...]
         reference_divergence_source = file['divergence_source'][...]
         
-        reference_loss_lens = file['loss_lens'][...]
-        reference_loss_source = file['loss_source'][...]
+        reference_score_lens = file['score_lens'][...]
+        reference_score_source = file['score_source'][...]
     
     # Comparison
     with h5py.File(os.path.join(comparison_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
@@ -98,8 +98,8 @@ def main(tag, index, folder):
         comparison_divergence_lens = file['divergence_lens'][...]
         comparison_divergence_source = file['divergence_source'][...]
         
-        comparison_loss_lens = file['loss_lens'][...]
-        comparison_loss_source = file['loss_source'][...]
+        comparison_score_lens = file['score_lens'][...]
+        comparison_score_source = file['score_source'][...]
     
     # Plot
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
@@ -108,7 +108,7 @@ def main(tag, index, folder):
     pyplot.rcParams['text.usetex'] = True
     pyplot.rcParams['font.size'] = 30
     
-    figure = pyplot.figure(figsize=(16, 16))
+    figure = pyplot.figure(figsize=(16, 24))
     plot_list = gridspec.GridSpec(nrows=6, ncols=2, figure=figure)
     
     # Plot lens delta 
@@ -119,6 +119,12 @@ def main(tag, index, folder):
     plot.errorbar(x=z_average_lens, y=reference_delta_lens, color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
     
     plot.errorbar(x=z_average_lens, y=comparison_delta_lens, color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    
+    plot.text(x=0.100, y=0.045, s='$\mathrm{Application \, with \, augmentation}$', color='darkorange', fontsize=25)
+    
+    plot.text(x=0.100, y=0.035, s='$\mathrm{Combination \, with \, augmentation}$', color='darkgreen', fontsize=25)
+    
+    plot.text(x=0.100, y=0.025, s='$\mathrm{Application \, without \, augmentation}$', color='darkblue', fontsize=25)
     
     plot.set_ylim(-0.005, +0.050)
     plot.set_xlim(z1_average_lens, z2_average_lens)
@@ -169,8 +175,8 @@ def main(tag, index, folder):
     plot.set_ylim(-0.100, +1.000)
     plot.set_xlim(z1_average_lens, z2_average_lens)
     
+    plot.set_xticklabels([])
     plot.set_ylabel(r'$r_\mathrm{c}$')
-    plot.set_xlabel(r'$z_\mathrm{true}$')
     
     # Plot lens divergence
     plot = figure.add_subplot(plot_list[4, 0])
@@ -185,22 +191,22 @@ def main(tag, index, folder):
     plot.set_xlim(z1_average_lens, z2_average_lens)
     
     plot.set_xticklabels([])
-    plot.set_ylabel(r'$\mathcal{D}_\mathrm{q}$')
+    plot.set_ylabel(r'$\mathcal{D}_q$')
     
-    # Plot lens loss
+    # Plot lens score
     plot = figure.add_subplot(plot_list[5, 0])
     
-    plot.errorbar(x=z_average_lens, y=loss_lens, color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_lens, y=score_lens, color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
     
-    plot.errorbar(x=z_average_lens, y=reference_loss_lens, color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_lens, y=reference_score_lens, color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
     
-    plot.errorbar(x=z_average_lens, y=comparison_loss_lens, color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_lens, y=comparison_score_lens, color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
     
     plot.set_ylim(-0.100, +1.000)
     plot.set_xlim(z1_average_lens, z2_average_lens)
     
     plot.set_xlabel(r'$z_\mathrm{true}$')
-    plot.set_ylabel(r'$\mathcal{L}_\mathrm{q}$')
+    plot.set_ylabel(r'$\mathcal{L}_q$')
     
     # Plot source delta 
     plot = figure.add_subplot(plot_list[0, 1])
@@ -211,7 +217,7 @@ def main(tag, index, folder):
     
     plot.errorbar(x=z_average_source, y=comparison_delta_source, color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
     
-    plot.set_ylim(-0.005, +0.050)
+    plot.set_ylim(-0.100, +1.000)
     plot.set_xlim(z1_average_source, z2_average_source)
     
     plot.set_xticklabels([])
@@ -227,7 +233,7 @@ def main(tag, index, folder):
     
     plot.errorbar(x=z_average_source, y=comparison_sigma_source, color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
     
-    plot.set_ylim(-0.005, +0.050)
+    plot.set_ylim(-0.050, +0.500)
     plot.set_xlim(z1_average_source, z2_average_source)
     
     plot.set_xticklabels([])
@@ -276,22 +282,22 @@ def main(tag, index, folder):
     plot.set_xlim(z1_average_source, z2_average_source)
     
     plot.set_xticklabels([])
-    plot.set_ylabel(r'$\mathcal{D}_\mathrm{q}$')
+    plot.set_ylabel(r'$\mathcal{D}_q$')
     
-    # Plot source loss
+    # Plot source score
     plot = figure.add_subplot(plot_list[5, 1])
     
-    plot.errorbar(x=z_average_source, y=loss_source, color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_source, y=score_source, color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
     
-    plot.errorbar(x=z_average_source, y=reference_loss_source, color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_source, y=reference_score_source, color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
     
-    plot.errorbar(x=z_average_source, y=comparison_loss_source, color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_source, y=comparison_score_source, color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
     
     plot.set_ylim(-0.100, +1.000)
     plot.set_xlim(z1_average_source, z2_average_source)
     
     plot.set_xlabel(r'$z_\mathrm{true}$')
-    plot.set_ylabel(r'$\mathcal{L}_\mathrm{q}$')
+    plot.set_ylabel(r'$\mathcal{L}_q$')
     
     # Save
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)
