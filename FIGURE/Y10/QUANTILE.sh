@@ -6,9 +6,9 @@
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH -J FIGURE_Y10_MAP
 #SBATCH --cpus-per-task=16
 #SBATCH --ntasks-per-node=16
+#SBATCH -J FIGURE_Y10_QUANTILE
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -35,8 +35,8 @@ BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 
 # Run the application
-for INDEX in $(seq 321 $NUMBER); do
-    srun -N 1 -n 1 -c $SLURM_CPUS_PER_TASK --cpu_bind=cores python -u "${BASE_PATH}FIGURE/${TAG}/MAP.py" --tag=$TAG --index=$INDEX --folder=$BASE_FOLDER & 
+for INDEX in $(seq 0 $NUMBER); do
+    srun -N 1 -n 1 -c $SLURM_CPUS_PER_TASK --cpu_bind=cores python -u "${BASE_PATH}FIGURE/${TAG}/QUANTILE.py" --tag=$TAG --index=$INDEX --folder=$BASE_FOLDER & 
     # Control parallel execution
     if (( $INDEX % $SLURM_NTASKS == 0 )); then
         wait
