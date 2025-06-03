@@ -6,13 +6,13 @@ import argparse
 from matplotlib import pyplot, gridspec
 
 
-def main(tag, index, folder):
+def main(tag, number, folder):
     '''
     Plot the figures of the redshift estimation
     
     Arguments:
         tag (str): The tag of the configuration
-        index (int): The index of all the datasets
+        number (int): The number of all the datasets
         folder (str): The base folder of all the datasets
     
     Returns:
@@ -20,7 +20,6 @@ def main(tag, index, folder):
     '''
     # Start
     start = time.time()
-    print('Index:{}'.format(index))
     
     # Path
     model_folder = os.path.join(folder, 'MODEL/')
@@ -41,65 +40,125 @@ def main(tag, index, folder):
     z_average_source = numpy.linspace(z1_average_source + average_delta_source / 2, z2_average_source - average_delta_source / 2, average_size_source)
     
     # Select
-    with h5py.File(os.path.join(model_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        
-        delta_lens = file['delta_lens'][...]
-        delta_source = file['delta_source'][...]
-        
-        sigma_lens = file['sigma_lens'][...]
-        sigma_source = file['sigma_source'][...]
-        
-        fraction_lens = file['fraction_lens'][...]
-        fraction_source = file['fraction_source'][...]
-        
-        rate_lens = file['rate_lens'][...]
-        rate_source = file['rate_source'][...]
-        
-        divergence_lens = file['divergence_lens'][...]
-        divergence_source = file['divergence_source'][...]
-        
-        score_lens = file['score_lens'][...]
-        score_source = file['score_source'][...]
+    delta_lens = numpy.zeros((number + 1, average_size_lens))
+    delta_source = numpy.zeros((number + 1, average_size_source))
+    
+    sigma_lens = numpy.zeros((number + 1, average_size_lens))
+    sigma_source = numpy.zeros((number + 1, average_size_source))
+    
+    fraction_lens = numpy.zeros((number + 1, average_size_lens))
+    fraction_source = numpy.zeros((number + 1, average_size_source))
+    
+    rate_lens = numpy.zeros((number + 1, average_size_lens))
+    rate_source = numpy.zeros((number + 1, average_size_source))
+    
+    divergence_lens = numpy.zeros((number + 1, average_size_lens))
+    divergence_source = numpy.zeros((number + 1, average_size_source))
+    
+    score_lens = numpy.zeros((number + 1, average_size_lens))
+    score_source = numpy.zeros((number + 1, average_size_source))
+    
+    # Loop
+    for index in range(number + 1):
+        with h5py.File(os.path.join(model_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+            
+            delta_lens[index, :] = file['delta_lens'][...]
+            delta_source[index, :] = file['delta_source'][...]
+            
+            sigma_lens[index, :] = file['sigma_lens'][...]
+            sigma_source[index, :] = file['sigma_source'][...]
+            
+            fraction_lens[index, :] = file['fraction_lens'][...]
+            fraction_source[index, :] = file['fraction_source'][...]
+            
+            rate_lens[index, :] = file['rate_lens'][...]
+            rate_source[index, :] = file['rate_source'][...]
+            
+            divergence_lens[index, :] = file['divergence_lens'][...]
+            divergence_source[index, :] = file['divergence_source'][...]
+            
+            score_lens[index, :] = file['score_lens'][...]
+            score_source[index, :] = file['score_source'][...]
     
     # Reference
-    with h5py.File(os.path.join(model_folder, '{}/REFERENCE/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        reference_sigma_lens = file['sigma_lens'][...]
-        reference_sigma_source = file['sigma_source'][...]
-        
-        reference_delta_lens = file['delta_lens'][...]
-        reference_delta_source = file['delta_source'][...]
-        
-        reference_fraction_lens = file['fraction_lens'][...]
-        reference_fraction_source = file['fraction_source'][...]
-        
-        reference_rate_lens = file['rate_lens'][...]
-        reference_rate_source = file['rate_source'][...]
-        
-        reference_divergence_lens = file['divergence_lens'][...]
-        reference_divergence_source = file['divergence_source'][...]
-        
-        reference_score_lens = file['score_lens'][...]
-        reference_score_source = file['score_source'][...]
+    reference_delta_lens = numpy.zeros((number + 1, average_size_lens))
+    reference_delta_source = numpy.zeros((number + 1, average_size_source))
+    
+    reference_sigma_lens = numpy.zeros((number + 1, average_size_lens))
+    reference_sigma_source = numpy.zeros((number + 1, average_size_source))
+    
+    reference_fraction_lens = numpy.zeros((number + 1, average_size_lens))
+    reference_fraction_source = numpy.zeros((number + 1, average_size_source))
+    
+    reference_rate_lens = numpy.zeros((number + 1, average_size_lens))
+    reference_rate_source = numpy.zeros((number + 1, average_size_source))
+    
+    reference_divergence_lens = numpy.zeros((number + 1, average_size_lens))
+    reference_divergence_source = numpy.zeros((number + 1, average_size_source))
+    
+    reference_score_lens = numpy.zeros((number + 1, average_size_lens))
+    reference_score_source = numpy.zeros((number + 1, average_size_source))
+    
+    # Loop
+    for index in range(number + 1):
+        with h5py.File(os.path.join(model_folder, '{}/REFERENCE/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+            reference_delta_lens[index, :] = file['delta_lens'][...]
+            reference_delta_source[index, :] = file['delta_source'][...]
+            
+            reference_sigma_lens[index, :] = file['sigma_lens'][...]
+            reference_sigma_source[index, :] = file['sigma_source'][...]
+            
+            reference_fraction_lens[index, :] = file['fraction_lens'][...]
+            reference_fraction_source[index, :] = file['fraction_source'][...]
+            
+            reference_rate_lens[index, :] = file['rate_lens'][...]
+            reference_rate_source[index, :] = file['rate_source'][...]
+            
+            reference_divergence_lens[index, :] = file['divergence_lens'][...]
+            reference_divergence_source[index, :] = file['divergence_source'][...]
+            
+            reference_score_lens[index, :] = file['score_lens'][...]
+            reference_score_source[index, :] = file['score_source'][...]
     
     # Comparison
-    with h5py.File(os.path.join(comparison_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        comparison_sigma_lens = file['sigma_lens'][...]
-        comparison_sigma_source = file['sigma_source'][...]
-        
-        comparison_delta_lens = file['delta_lens'][...]
-        comparison_delta_source = file['delta_source'][...]
-        
-        comparison_fraction_lens = file['fraction_lens'][...]
-        comparison_fraction_source = file['fraction_source'][...]   
-        
-        comparison_rate_lens = file['rate_lens'][...]
-        comparison_rate_source = file['rate_source'][...]
-        
-        comparison_divergence_lens = file['divergence_lens'][...]
-        comparison_divergence_source = file['divergence_source'][...]
-        
-        comparison_score_lens = file['score_lens'][...]
-        comparison_score_source = file['score_source'][...]
+    comparison_delta_lens = numpy.zeros((number + 1, average_size_lens))
+    comparison_delta_source = numpy.zeros((number + 1, average_size_source))
+    
+    comparison_sigma_lens = numpy.zeros((number + 1, average_size_lens))
+    comparison_sigma_source = numpy.zeros((number + 1, average_size_source))
+    
+    comparison_fraction_lens = numpy.zeros((number + 1, average_size_lens))
+    comparison_fraction_source = numpy.zeros((number + 1, average_size_source))
+    
+    comparison_rate_lens = numpy.zeros((number + 1, average_size_lens))
+    comparison_rate_source = numpy.zeros((number + 1, average_size_source))
+    
+    comparison_divergence_lens = numpy.zeros((number + 1, average_size_lens))
+    comparison_divergence_source = numpy.zeros((number + 1, average_size_source))
+    
+    comparison_score_lens = numpy.zeros((number + 1, average_size_lens))
+    comparison_score_source = numpy.zeros((number + 1, average_size_source))
+    
+    # Loop
+    for index in range(number + 1):
+        with h5py.File(os.path.join(comparison_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+            comparison_delta_lens[index, :] = file['delta_lens'][...]
+            comparison_delta_source[index, :] = file['delta_source'][...]
+            
+            comparison_sigma_lens[index, :] = file['sigma_lens'][...]
+            comparison_sigma_source[index, :] = file['sigma_source'][...]
+            
+            comparison_fraction_lens[index, :] = file['fraction_lens'][...]
+            comparison_fraction_source[index, :] = file['fraction_source'][...]
+            
+            comparison_rate_lens[index, :] = file['rate_lens'][...]
+            comparison_rate_source[index, :] = file['rate_source'][...]
+            
+            comparison_divergence_lens[index, :] = file['divergence_lens'][...]
+            comparison_divergence_source[index, :] = file['divergence_source'][...]
+            
+            comparison_score_lens[index, :] = file['score_lens'][...]
+            comparison_score_source[index, :] = file['score_source'][...]
     
     # Plot
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
@@ -114,19 +173,19 @@ def main(tag, index, folder):
     # Plot lens delta 
     plot = figure.add_subplot(plot_list[0, 0])
     
-    plot.errorbar(x=z_average_lens, y=delta_lens, color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_lens, y=numpy.mean(delta_lens, axis=0), yerr=numpy.std(delta_lens, axis=0), color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
-    plot.errorbar(x=z_average_lens, y=reference_delta_lens, color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_lens, y=numpy.mean(reference_delta_lens, axis=0), yerr=numpy.std(reference_delta_lens, axis=0), color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
-    plot.errorbar(x=z_average_lens, y=comparison_delta_lens, color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_lens, y=numpy.mean(comparison_delta_lens, axis=0), yerr=numpy.std(comparison_delta_lens, axis=0), color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
-    plot.text(x=0.100, y=0.045, s='$\mathrm{Application \, with \, augmentation}$', color='darkorange', fontsize=25)
+    plot.text(x=0.005, y=0.050, s='$\mathrm{Combination \,+\, augmentation}$', color='darkgreen')
     
-    plot.text(x=0.100, y=0.035, s='$\mathrm{Combination \, with \, augmentation}$', color='darkgreen', fontsize=25)
+    plot.text(x=0.005, y=0.040, s='$\mathrm{Application \,+\, augmentation}$', color='darkorange')
     
-    plot.text(x=0.100, y=0.025, s='$\mathrm{Application \, without \, augmentation}$', color='darkblue', fontsize=25)
+    plot.text(x=0.005, y=0.030, s='$\mathrm{Application \,-\, augmentation}$', color='darkblue')
     
-    plot.set_ylim(-0.005, +0.050)
+    plot.set_ylim(-0.006, +0.060)
     plot.set_xlim(z1_average_lens, z2_average_lens)
     
     plot.set_xticklabels([])
@@ -136,13 +195,13 @@ def main(tag, index, folder):
     # Plot lens sigma 
     plot = figure.add_subplot(plot_list[1, 0])
     
-    plot.errorbar(x=z_average_lens, y=sigma_lens, color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_lens, y=numpy.mean(sigma_lens, axis=0), yerr=numpy.std(sigma_lens, axis=0), color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
-    plot.errorbar(x=z_average_lens, y=reference_sigma_lens, color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_lens, y=numpy.mean(reference_sigma_lens, axis=0), yerr=numpy.std(reference_sigma_lens, axis=0), color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
-    plot.errorbar(x=z_average_lens, y=comparison_sigma_lens, color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_lens, y=numpy.mean(comparison_sigma_lens, axis=0), yerr=numpy.std(comparison_sigma_lens, axis=0), color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
-    plot.set_ylim(-0.005, +0.050)
+    plot.set_ylim(-0.006, +0.060)
     plot.set_xlim(z1_average_lens, z2_average_lens)
     
     plot.set_xticklabels([])
@@ -151,11 +210,11 @@ def main(tag, index, folder):
     # Plot lens fraction
     plot = figure.add_subplot(plot_list[2, 0])
     
-    plot.errorbar(x=z_average_lens, y=fraction_lens, color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_lens, y=numpy.mean(fraction_lens, axis=0), yerr=numpy.std(fraction_lens, axis=0), color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
-    plot.errorbar(x=z_average_lens, y=reference_fraction_lens, color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_lens, y=numpy.mean(reference_fraction_lens, axis=0), yerr=numpy.std(reference_fraction_lens, axis=0), color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
-    plot.errorbar(x=z_average_lens, y=comparison_fraction_lens, color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_lens, y=numpy.mean(comparison_fraction_lens, axis=0), yerr=numpy.std(comparison_fraction_lens, axis=0), color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
     plot.set_ylim(-0.100, +1.000)
     plot.set_xlim(z1_average_lens, z2_average_lens)
@@ -166,11 +225,11 @@ def main(tag, index, folder):
     # Plot lens rate
     plot = figure.add_subplot(plot_list[3, 0])
     
-    plot.errorbar(x=z_average_lens, y=rate_lens, color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_lens, y=numpy.mean(rate_lens, axis=0), yerr=numpy.std(rate_lens, axis=0), color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
-    plot.errorbar(x=z_average_lens, y=reference_rate_lens, color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_lens, y=numpy.mean(reference_rate_lens, axis=0), yerr=numpy.std(reference_rate_lens, axis=0), color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
-    plot.errorbar(x=z_average_lens, y=comparison_rate_lens, color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_lens, y=numpy.mean(comparison_rate_lens, axis=0), yerr=numpy.std(comparison_rate_lens, axis=0), color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
     plot.set_ylim(-0.100, +1.000)
     plot.set_xlim(z1_average_lens, z2_average_lens)
@@ -181,11 +240,11 @@ def main(tag, index, folder):
     # Plot lens divergence
     plot = figure.add_subplot(plot_list[4, 0])
     
-    plot.errorbar(x=z_average_lens, y=divergence_lens, color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_lens, y=numpy.mean(divergence_lens, axis=0), yerr=numpy.std(divergence_lens, axis=0), color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
-    plot.errorbar(x=z_average_lens, y=reference_divergence_lens, color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_lens, y=numpy.mean(reference_divergence_lens, axis=0), yerr=numpy.std(reference_divergence_lens, axis=0), color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
-    plot.errorbar(x=z_average_lens, y=comparison_divergence_lens, color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_lens, y=numpy.mean(comparison_divergence_lens, axis=0), yerr=numpy.std(comparison_divergence_lens, axis=0), color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
     plot.set_ylim(-0.500, +5.000)
     plot.set_xlim(z1_average_lens, z2_average_lens)
@@ -196,11 +255,11 @@ def main(tag, index, folder):
     # Plot lens score
     plot = figure.add_subplot(plot_list[5, 0])
     
-    plot.errorbar(x=z_average_lens, y=score_lens, color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_lens, y=numpy.mean(score_lens, axis=0), yerr=numpy.std(score_lens, axis=0), color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
-    plot.errorbar(x=z_average_lens, y=reference_score_lens, color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_lens, y=numpy.mean(reference_score_lens, axis=0), yerr=numpy.std(reference_score_lens, axis=0), color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
-    plot.errorbar(x=z_average_lens, y=comparison_score_lens, color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_lens, y=numpy.mean(comparison_score_lens, axis=0), yerr=numpy.std(comparison_score_lens, axis=0), color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
     plot.set_ylim(-0.100, +1.000)
     plot.set_xlim(z1_average_lens, z2_average_lens)
@@ -211,11 +270,11 @@ def main(tag, index, folder):
     # Plot source delta 
     plot = figure.add_subplot(plot_list[0, 1])
     
-    plot.errorbar(x=z_average_source, y=delta_source, color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_source, y=numpy.mean(delta_source, axis=0), yerr=numpy.std(delta_source, axis=0), color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
-    plot.errorbar(x=z_average_source, y=reference_delta_source, color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_source, y=numpy.mean(reference_delta_source, axis=0), yerr=numpy.std(reference_delta_source, axis=0), color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
-    plot.errorbar(x=z_average_source, y=comparison_delta_source, color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_source, y=numpy.mean(comparison_delta_source, axis=0), yerr=numpy.std(comparison_delta_source, axis=0), color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
     plot.set_ylim(-0.100, +1.000)
     plot.set_xlim(z1_average_source, z2_average_source)
@@ -227,11 +286,11 @@ def main(tag, index, folder):
     # Plot source sigma 
     plot = figure.add_subplot(plot_list[1, 1])
     
-    plot.errorbar(x=z_average_source, y=sigma_source, color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_source, y=numpy.mean(sigma_source, axis=0), yerr=numpy.std(sigma_source, axis=0), color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
-    plot.errorbar(x=z_average_source, y=reference_sigma_source, color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_source, y=numpy.mean(reference_sigma_source, axis=0), yerr=numpy.std(reference_sigma_source, axis=0), color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
-    plot.errorbar(x=z_average_source, y=comparison_sigma_source, color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_source, y=numpy.mean(comparison_sigma_source, axis=0), yerr=numpy.std(comparison_sigma_source, axis=0), color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
     plot.set_ylim(-0.050, +0.500)
     plot.set_xlim(z1_average_source, z2_average_source)
@@ -242,11 +301,11 @@ def main(tag, index, folder):
     # Plot source fraction
     plot = figure.add_subplot(plot_list[2, 1])
     
-    plot.errorbar(x=z_average_source, y=fraction_source, color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_source, y=numpy.mean(fraction_source, axis=0), yerr=numpy.std(fraction_source, axis=0), color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
-    plot.errorbar(x=z_average_source, y=reference_fraction_source, color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_source, y=numpy.mean(reference_fraction_source, axis=0), yerr=numpy.std(reference_fraction_source, axis=0), color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
-    plot.errorbar(x=z_average_source, y=comparison_fraction_source, color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_source, y=numpy.mean(comparison_fraction_source, axis=0), yerr=numpy.std(comparison_fraction_source, axis=0), color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
     plot.set_ylim(-0.100, +1.000)
     plot.set_xlim(z1_average_source, z2_average_source)
@@ -257,11 +316,11 @@ def main(tag, index, folder):
     # Plot source rate
     plot = figure.add_subplot(plot_list[3, 1])
     
-    plot.errorbar(x=z_average_source, y=rate_source, color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_source, y=numpy.mean(rate_source, axis=0), yerr=numpy.std(rate_source, axis=0), color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
-    plot.errorbar(x=z_average_source, y=reference_rate_source, color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_source, y=numpy.mean(reference_rate_source, axis=0), yerr=numpy.std(reference_rate_source, axis=0), color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
-    plot.errorbar(x=z_average_source, y=comparison_rate_source, color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_source, y=numpy.mean(comparison_rate_source, axis=0), yerr=numpy.std(comparison_rate_source, axis=0), color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
     plot.set_ylim(-0.100, +1.000)
     plot.set_xlim(z1_average_source, z2_average_source)
@@ -272,11 +331,11 @@ def main(tag, index, folder):
     # Plot source divergence
     plot = figure.add_subplot(plot_list[4, 1])
     
-    plot.errorbar(x=z_average_source, y=divergence_source, color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_source, y=numpy.mean(divergence_source, axis=0), yerr=numpy.std(divergence_source, axis=0), color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
-    plot.errorbar(x=z_average_source, y=reference_divergence_source, color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_source, y=numpy.mean(reference_divergence_source, axis=0), yerr=numpy.std(reference_divergence_source, axis=0), color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
-    plot.errorbar(x=z_average_source, y=comparison_divergence_source, color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_source, y=numpy.mean(comparison_divergence_source, axis=0), yerr=numpy.std(comparison_divergence_source, axis=0), color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
     plot.set_ylim(-0.500, +5.000)
     plot.set_xlim(z1_average_source, z2_average_source)
@@ -287,11 +346,11 @@ def main(tag, index, folder):
     # Plot source score
     plot = figure.add_subplot(plot_list[5, 1])
     
-    plot.errorbar(x=z_average_source, y=score_source, color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_source, y=numpy.mean(score_source, axis=0), yerr=numpy.std(score_source, axis=0), color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
-    plot.errorbar(x=z_average_source, y=reference_score_source, color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_source, y=numpy.mean(reference_score_source, axis=0), yerr=numpy.std(reference_score_source, axis=0), color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
-    plot.errorbar(x=z_average_source, y=comparison_score_source, color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, alpha=0.8)
+    plot.errorbar(x=z_average_source, y=numpy.mean(comparison_score_source, axis=0), yerr=numpy.std(comparison_score_source, axis=0), color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
     plot.set_ylim(-0.100, +1.000)
     plot.set_xlim(z1_average_source, z2_average_source)
@@ -304,7 +363,7 @@ def main(tag, index, folder):
     os.makedirs(os.path.join(figure_folder, '{}/METRIC/'.format(tag)), exist_ok=True)
     
     figure.subplots_adjust(wspace=0.2, hspace=0.0)
-    figure.savefig(os.path.join(figure_folder, '{}/METRIC/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(figure_folder, '{}/METRIC/FIGURE.pdf'.format(tag)), format='pdf', bbox_inches='tight')
     pyplot.close(figure)
     
     # Return
@@ -319,13 +378,13 @@ if __name__ == '__main__':
     # Input
     PARSE = argparse.ArgumentParser(description='Figure Metric')
     PARSE.add_argument('--tag', type=str, help='The tag of the configuration')
-    PARSE.add_argument('--index', type=int, help='The index of all the datasets')
+    PARSE.add_argument('--number', type=int, help='The number of all the datasets')
     PARSE.add_argument('--folder', type=str, help='The base folder of all the datasets')
     
     # Parse
     TAG = PARSE.parse_args().tag
-    INDEX = PARSE.parse_args().index
+    NUMBER = PARSE.parse_args().number
     FOLDER = PARSE.parse_args().folder
     
     # Output
-    OUTPUT = main(TAG, INDEX, FOLDER)
+    OUTPUT = main(TAG, NUMBER, FOLDER)
