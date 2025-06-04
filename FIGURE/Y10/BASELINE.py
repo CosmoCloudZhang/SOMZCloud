@@ -83,7 +83,7 @@ def main(tag, index, folder):
     pyplot.rcParams['text.usetex'] = True
     pyplot.rcParams['font.size'] = 30
     
-    figure = pyplot.figure(figsize=(15, 12))
+    figure = pyplot.figure(figsize=(15, 10))
     normalize = colors.LogNorm(vmin=1, vmax=1000)
     plot = gridspec.GridSpec(nrows=2, ncols=2, figure=figure, height_ratios=[3, 1], width_ratios=[1, 1])
     
@@ -159,9 +159,9 @@ def main(tag, index, folder):
     plot4.get_xticklabels()[0].set_visible(False)
     
     # Color bar
-    color_bar = figure.colorbar(image, cax=figure.add_axes([0.15, 0.05, 0.70, 0.05]), orientation='horizontal')
-    figure.subplots_adjust(bottom=0.20, wspace=0.00, hspace=0.00)
-    color_bar.set_label(r'$\mathrm{Counts}$')
+    color_bar = figure.colorbar(image, cax=figure.add_axes([0.92, 0.15, 0.03, 0.70]), orientation='vertical')
+    figure.subplots_adjust(right=0.90, wspace=0.00, hspace=0.00)
+    color_bar.set_label(r'$\mathrm{Counts}$', fontsize=25)
     
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)
     os.makedirs(os.path.join(figure_folder, '{}/BASELINE/'.format(tag)), exist_ok=True)
