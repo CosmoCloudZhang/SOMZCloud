@@ -60,7 +60,7 @@ def main(tag, index, folder):
     pyplot.rcParams['font.size'] = 30
     
     # Figure
-    figure, plot = pyplot.subplots(nrows=1, ncols=2, figsize=(16, 8))
+    figure, plot = pyplot.subplots(nrows=1, ncols=2, figsize=(16, 10))
     color_list = ['hotpink', 'darkmagenta', 'darkorchid', 'darkblue', 'deepskyblue', 'darkgreen', 'darkgoldenrod', 'darkorange', 'darksalmon', 'darkred']
     
     # Lens
@@ -121,13 +121,16 @@ def main(tag, index, folder):
     
     plot[1].set_title(r'$\mathrm{Source}$')
     plot[1].set_xlabel(r'$q \left( z_\mathrm{true} \right)$')
-    plot[1].legend(loc='upper left', bbox_to_anchor=(1.0, 1.0), fontsize=25)
     
-    # Color bar
+    # Legend
+    handles, labels = plot[1].get_legend_handles_labels()
+    figure.legend(handles, labels, loc='center', ncol=3, fontsize=25, bbox_to_anchor=(0.5, 0.0), frameon=True)
+    
+    # Save
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)
     os.makedirs(os.path.join(figure_folder, '{}/CONTRAST/'.format(tag)), exist_ok=True)
     
-    figure.subplots_adjust(wspace=0.0, hspace=0.0)
+    figure.subplots_adjust(wspace=0.0, hspace=0.0, bottom=0.225)
     figure.savefig(os.path.join(figure_folder, '{}/CONTRAST/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
     pyplot.close(figure)
     
