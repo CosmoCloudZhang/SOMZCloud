@@ -60,7 +60,6 @@ def main(tag, index, folder):
     chunk_size = 100000
     evaluator = h5py.File(os.path.join(model_folder, '{}/EVALUATE/EVALUATE{}.hdf5'.format(tag, index)), 'r')
     
-    z_loss = numpy.zeros(combination_size, dtype=numpy.float32)
     z_phot = numpy.zeros(combination_size, dtype=numpy.float32)
     z_quantile = numpy.zeros(combination_size, dtype=numpy.float32)
     
@@ -75,7 +74,6 @@ def main(tag, index, folder):
             
             z_cdf = numpy.cumsum(z_pdf, axis=1) * z_delta
             z_quantile[begin: stop] = z_cdf[numpy.arange(stop - begin), numpy.round((combination_redshift_true[begin: stop] - z1) / z_delta).astype(numpy.int32)]
-            z_loss[begin: stop] = numpy.sqrt(numpy.sum(numpy.square(z_cdf - numpy.array(z_mesh[numpy.newaxis, :] >= combination_redshift_true[begin: stop, numpy.newaxis], dtype=numpy.float32)), axis=1) * z_delta / (z2 - z1))
     
     # Select
     slope = 4.0
@@ -100,10 +98,6 @@ def main(tag, index, folder):
     z_phot_source = z_phot[reference_source]
     z_true_source = combination_redshift_true[reference_source]
     
-    # Loss
-    z_loss_lens = z_loss[reference_lens]
-    z_loss_source = z_loss[reference_source]
-    
     # Quantile
     z_quantile_lens = z_quantile[reference_lens]
     z_quantile_source = z_quantile[reference_source]
@@ -126,7 +120,6 @@ def main(tag, index, folder):
     sigma_lens = numpy.zeros(average_size_lens)
     fraction_lens = numpy.zeros(average_size_lens)
     
-    score_lens = numpy.zeros(average_size_lens)
     divergence_lens = numpy.zeros(average_size_lens)
     histogram_lens = numpy.zeros((average_size_lens, histogram_size_lens))
     
@@ -142,9 +135,6 @@ def main(tag, index, folder):
             fraction_lens[m] = numpy.sum(delta_lens_reference > 0.15) / numpy.sum(reference_lens_average)
             rate_lens[m] = numpy.sum(numpy.abs(z_phot_lens_reference - z_true_lens_reference) > 1.0) / numpy.sum(reference_lens_average)
             
-            z_loss_lens_reference = z_loss_lens[reference_lens_average]
-            score_lens[m] = numpy.median(z_loss_lens_reference)
-            
             z_quantile_lens_reference = z_quantile_lens[reference_lens_average]
             histogram_lens[m, :] = numpy.histogram(z_quantile_lens_reference, bins=histogram_bin_lens, range=(0, 1), density=True)[0]
             divergence_lens[m] = numpy.sqrt(numpy.sum(numpy.square(histogram_lens[m, :] - numpy.ones(histogram_size_lens))) / histogram_size_lens)
@@ -154,7 +144,6 @@ def main(tag, index, folder):
             sigma_lens[m] = numpy.nan
             fraction_lens[m] = numpy.nan
             
-            score_lens[m] = numpy.nan
             divergence_lens[m] = numpy.nan
             histogram_lens[m, :] = numpy.nan
     
@@ -169,7 +158,6 @@ def main(tag, index, folder):
     sigma_source = numpy.zeros(average_size_source)
     fraction_source = numpy.zeros(average_size_source)
     
-    score_source = numpy.zeros(average_size_source)
     divergence_source = numpy.zeros(average_size_source)
     histogram_source = numpy.zeros((average_size_source, histogram_size_source))
     
@@ -185,9 +173,6 @@ def main(tag, index, folder):
             fraction_source[m] = numpy.sum(delta_source_reference > 0.15) / numpy.sum(reference_source_average)
             rate_source[m] = numpy.sum(numpy.abs(z_phot_source_reference - z_true_source_reference) > 1.0) / numpy.sum(reference_source_average)
             
-            z_loss_source_reference = z_loss_source[reference_source_average]
-            score_source[m] = numpy.median(z_loss_source_reference)
-            
             z_quantile_source_reference = z_quantile_source[reference_source_average]
             histogram_source[m, :] = numpy.histogram(z_quantile_source_reference, bins=histogram_bin_source, range=(0, 1), density=True)[0]
             divergence_source[m] = numpy.sqrt(numpy.sum(numpy.square(histogram_source[m, :] - numpy.ones(histogram_size_source))) / histogram_size_source)
@@ -197,14 +182,12 @@ def main(tag, index, folder):
             sigma_source[m] = numpy.nan
             fraction_source[m] = numpy.nan
             
-            score_source[m] = numpy.nan
             divergence_source[m] = numpy.nan
             histogram_source[m, :] = numpy.nan
     
     # Save
     with h5py.File(os.path.join(model_folder, '{}/REFERENCE/DATA{}.hdf5'.format(tag, index)), 'w') as file:
         file.create_dataset('z_phot', data=z_phot, dtype=numpy.float32)
-        file.create_dataset('z_loss', data=z_loss, dtype=numpy.float32)
         file.create_dataset('z_quantile', data=z_quantile, dtype=numpy.float32)
         
         # Lens
@@ -216,7 +199,6 @@ def main(tag, index, folder):
         file.create_dataset('sigma_lens', data=sigma_lens, dtype=numpy.float32)
         file.create_dataset('fraction_lens', data=fraction_lens, dtype=numpy.float32)
         
-        file.create_dataset('score_lens', data=score_lens, dtype=numpy.float32)
         file.create_dataset('histogram_lens', data=histogram_lens, dtype=numpy.float32)
         file.create_dataset('divergence_lens', data=divergence_lens, dtype=numpy.float32)   
         
@@ -229,7 +211,6 @@ def main(tag, index, folder):
         file.create_dataset('sigma_source', data=sigma_source, dtype=numpy.float32)
         file.create_dataset('fraction_source', data=fraction_source, dtype=numpy.float32)
         
-        file.create_dataset('score_source', data=score_source, dtype=numpy.float32)
         file.create_dataset('histogram_source', data=histogram_source, dtype=numpy.float32)
         file.create_dataset('divergence_source', data=divergence_source, dtype=numpy.float32)
     
