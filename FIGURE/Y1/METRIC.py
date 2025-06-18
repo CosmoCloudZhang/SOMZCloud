@@ -55,9 +55,6 @@ def main(tag, number, folder):
     divergence_lens = numpy.zeros((number + 1, average_size_lens))
     divergence_source = numpy.zeros((number + 1, average_size_source))
     
-    score_lens = numpy.zeros((number + 1, average_size_lens))
-    score_source = numpy.zeros((number + 1, average_size_source))
-    
     # Loop
     for index in range(number + 1):
         with h5py.File(os.path.join(model_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
@@ -76,9 +73,6 @@ def main(tag, number, folder):
             
             divergence_lens[index, :] = file['divergence_lens'][...]
             divergence_source[index, :] = file['divergence_source'][...]
-            
-            score_lens[index, :] = file['score_lens'][...]
-            score_source[index, :] = file['score_source'][...]
     
     # Reference
     reference_delta_lens = numpy.zeros((number + 1, average_size_lens))
@@ -95,9 +89,6 @@ def main(tag, number, folder):
     
     reference_divergence_lens = numpy.zeros((number + 1, average_size_lens))
     reference_divergence_source = numpy.zeros((number + 1, average_size_source))
-    
-    reference_score_lens = numpy.zeros((number + 1, average_size_lens))
-    reference_score_source = numpy.zeros((number + 1, average_size_source))
     
     # Loop
     for index in range(number + 1):
@@ -116,9 +107,6 @@ def main(tag, number, folder):
             
             reference_divergence_lens[index, :] = file['divergence_lens'][...]
             reference_divergence_source[index, :] = file['divergence_source'][...]
-            
-            reference_score_lens[index, :] = file['score_lens'][...]
-            reference_score_source[index, :] = file['score_source'][...]
     
     # Comparison
     comparison_delta_lens = numpy.zeros((number + 1, average_size_lens))
@@ -135,9 +123,6 @@ def main(tag, number, folder):
     
     comparison_divergence_lens = numpy.zeros((number + 1, average_size_lens))
     comparison_divergence_source = numpy.zeros((number + 1, average_size_source))
-    
-    comparison_score_lens = numpy.zeros((number + 1, average_size_lens))
-    comparison_score_source = numpy.zeros((number + 1, average_size_source))
     
     # Loop
     for index in range(number + 1):
@@ -156,9 +141,6 @@ def main(tag, number, folder):
             
             comparison_divergence_lens[index, :] = file['divergence_lens'][...]
             comparison_divergence_source[index, :] = file['divergence_source'][...]
-            
-            comparison_score_lens[index, :] = file['score_lens'][...]
-            comparison_score_source[index, :] = file['score_source'][...]
     
     # Plot
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
@@ -167,8 +149,8 @@ def main(tag, number, folder):
     pyplot.rcParams['text.usetex'] = True
     pyplot.rcParams['font.size'] = 30
     
-    figure = pyplot.figure(figsize=(16, 24))
-    plot_list = gridspec.GridSpec(nrows=6, ncols=2, figure=figure)
+    figure = pyplot.figure(figsize=(16, 20))
+    plot_list = gridspec.GridSpec(nrows=5, ncols=2, figure=figure)
     
     # Plot lens delta 
     plot = figure.add_subplot(plot_list[0, 0])
@@ -178,12 +160,6 @@ def main(tag, number, folder):
     plot.errorbar(x=z_average_lens, y=numpy.mean(reference_delta_lens, axis=0), yerr=numpy.std(reference_delta_lens, axis=0), color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
     plot.errorbar(x=z_average_lens, y=numpy.mean(comparison_delta_lens, axis=0), yerr=numpy.std(comparison_delta_lens, axis=0), color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
-    
-    plot.text(x=0.005, y=0.050, s='$\mathrm{Combination \,+\, augmentation}$', color='darkgreen')
-    
-    plot.text(x=0.005, y=0.040, s='$\mathrm{Application \,+\, augmentation}$', color='darkorange')
-    
-    plot.text(x=0.005, y=0.030, s='$\mathrm{Application \,-\, augmentation}$', color='darkblue')
     
     plot.set_ylim(-0.006, +0.060)
     plot.set_xlim(z1_average_lens, z2_average_lens)
@@ -251,21 +227,7 @@ def main(tag, number, folder):
     
     plot.set_xticklabels([])
     plot.set_ylabel(r'$\mathcal{D}_q$')
-    
-    # Plot lens score
-    plot = figure.add_subplot(plot_list[5, 0])
-    
-    plot.errorbar(x=z_average_lens, y=numpy.mean(score_lens, axis=0), yerr=numpy.std(score_lens, axis=0), color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
-    
-    plot.errorbar(x=z_average_lens, y=numpy.mean(reference_score_lens, axis=0), yerr=numpy.std(reference_score_lens, axis=0), color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
-    
-    plot.errorbar(x=z_average_lens, y=numpy.mean(comparison_score_lens, axis=0), yerr=numpy.std(comparison_score_lens, axis=0), color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
-    
-    plot.set_ylim(-0.100, +1.000)
-    plot.set_xlim(z1_average_lens, z2_average_lens)
-    
     plot.set_xlabel(r'$z_\mathrm{true}$')
-    plot.set_ylabel(r'$\mathcal{L}_q$')
     
     # Plot source delta 
     plot = figure.add_subplot(plot_list[0, 1])
@@ -342,21 +304,7 @@ def main(tag, number, folder):
     
     plot.set_xticklabels([])
     plot.set_ylabel(r'$\mathcal{D}_q$')
-    
-    # Plot source score
-    plot = figure.add_subplot(plot_list[5, 1])
-    
-    plot.errorbar(x=z_average_source, y=numpy.mean(score_source, axis=0), yerr=numpy.std(score_source, axis=0), color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
-    
-    plot.errorbar(x=z_average_source, y=numpy.mean(reference_score_source, axis=0), yerr=numpy.std(reference_score_source, axis=0), color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
-    
-    plot.errorbar(x=z_average_source, y=numpy.mean(comparison_score_source, axis=0), yerr=numpy.std(comparison_score_source, axis=0), color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
-    
-    plot.set_ylim(-0.100, +1.000)
-    plot.set_xlim(z1_average_source, z2_average_source)
-    
     plot.set_xlabel(r'$z_\mathrm{true}$')
-    plot.set_ylabel(r'$\mathcal{L}_q$')
     
     # Save
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)
