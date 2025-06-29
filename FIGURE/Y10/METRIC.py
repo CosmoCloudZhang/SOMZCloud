@@ -229,7 +229,6 @@ def main(tag, number, folder):
     plot.set_ylim(-0.500, +5.000)
     plot.set_xlim(z1_average_lens, z2_average_lens)
     
-    plot.set_xticklabels([])
     plot.set_ylabel(r'$\mathcal{D}_q$')
     plot.set_xlabel(r'$z_\mathrm{true}$')
     
@@ -310,7 +309,6 @@ def main(tag, number, folder):
     plot.set_ylim(-0.500, +5.000)
     plot.set_xlim(z1_average_source, z2_average_source)
     
-    plot.set_xticklabels([])
     plot.set_ylabel(r'$\mathcal{D}_q$')
     plot.set_xlabel(r'$z_\mathrm{true}$')
     
