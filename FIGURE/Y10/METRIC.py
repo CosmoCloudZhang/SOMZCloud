@@ -35,7 +35,7 @@ def main(tag, number, folder):
     
     z1_average_source = 0.0
     z2_average_source = 3.0
-    average_size_source = 10
+    average_size_source = 6
     average_delta_source = (z2_average_source - z1_average_source) / average_size_source
     z_average_source = numpy.linspace(z1_average_source + average_delta_source / 2, z2_average_source - average_delta_source / 2, average_size_source)
     
@@ -155,6 +155,8 @@ def main(tag, number, folder):
     # Plot lens delta 
     plot = figure.add_subplot(plot_list[0, 0])
     
+    plot.axhline(y=0.02, color='black', linestyle='--', linewidth=2.5)
+    
     plot.errorbar(x=z_average_lens, y=numpy.mean(delta_lens, axis=0), yerr=numpy.std(delta_lens, axis=0), color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
     plot.errorbar(x=z_average_lens, y=numpy.mean(reference_delta_lens, axis=0), yerr=numpy.std(reference_delta_lens, axis=0), color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
@@ -170,6 +172,8 @@ def main(tag, number, folder):
     
     # Plot lens sigma 
     plot = figure.add_subplot(plot_list[1, 0])
+    
+    plot.axhline(y=0.02, color='black', linestyle='--', linewidth=2.5)
     
     plot.errorbar(x=z_average_lens, y=numpy.mean(sigma_lens, axis=0), yerr=numpy.std(sigma_lens, axis=0), color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
@@ -232,6 +236,8 @@ def main(tag, number, folder):
     # Plot source delta 
     plot = figure.add_subplot(plot_list[0, 1])
     
+    plot.axhline(y=0.03, color='black', linestyle='--', linewidth=2.5)
+    
     plot.errorbar(x=z_average_source, y=numpy.mean(delta_source, axis=0), yerr=numpy.std(delta_source, axis=0), color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
     plot.errorbar(x=z_average_source, y=numpy.mean(reference_delta_source, axis=0), yerr=numpy.std(reference_delta_source, axis=0), color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
@@ -247,6 +253,8 @@ def main(tag, number, folder):
     
     # Plot source sigma 
     plot = figure.add_subplot(plot_list[1, 1])
+    
+    plot.axhline(y=0.03, color='black', linestyle='--', linewidth=2.5)
     
     plot.errorbar(x=z_average_source, y=numpy.mean(sigma_source, axis=0), yerr=numpy.std(sigma_source, axis=0), color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     

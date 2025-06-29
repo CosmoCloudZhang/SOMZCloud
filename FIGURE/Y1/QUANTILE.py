@@ -48,9 +48,13 @@ def main(tag, index, folder):
     histogram_bin_source = numpy.linspace(0.0, 1.0, histogram_size_source + 1)
     
     # Average
-    z1 = 0.0
-    z2 = 3.0
-    z_average = numpy.linspace(z1, z2, average_size_source + 1)
+    z1_average_lens = 0.0
+    z2_average_lens = 1.5
+    z_average_lens = numpy.linspace(z1_average_lens, z2_average_lens, average_size_lens + 1)
+    
+    z1_average_source = 0.0
+    z2_average_source = 3.0
+    z_average_source = numpy.linspace(z1_average_source, z2_average_source, average_size_source + 1)
     
     # Plot
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
@@ -61,7 +65,8 @@ def main(tag, index, folder):
     
     # Figure
     figure, plot = pyplot.subplots(nrows=1, ncols=2, figsize=(16, 10))
-    color_list = ['hotpink', 'darkmagenta', 'darkorchid', 'darkblue', 'deepskyblue', 'darkgreen', 'darkgoldenrod', 'darkorange', 'darksalmon', 'darkred']
+    lens_color_list = ['darkmagenta', 'darkblue', 'darkgreen', 'darkorange', 'darkred']
+    source_color_list = ['hotpink', 'darkorchid', 'deepskyblue', 'darkcyan', 'darkgoldenrod', 'darksalmon']
     
     # Lens
     for m in range(average_size_lens):
@@ -71,10 +76,10 @@ def main(tag, index, folder):
             markersize=10,
             linewidth=3.0, 
             linestyle='-', 
-            color=color_list[m], 
             y=histogram_lens[m, :], 
+            color=lens_color_list[m], 
             x=(histogram_bin_lens[+1:] + histogram_bin_lens[:-1]) / 2, 
-            label=r'$z_\mathrm{true} \in ' + r'\left[ {:.1f}, {:.1f} \right]$'.format(z_average[m], z_average[m + 1])
+            label=r'$z_\mathrm{true} \in ' + r'\left[ {:.1f}, {:.1f} \right]$'.format(z_average_lens[m], z_average_lens[m + 1])
         )
     
     plot[0].hist(z_quantile_lens, bins=histogram_bin_lens, density=True, color='black', histtype='step', linewidth=5.0, linestyle='-', label=r'$\mathrm{All}$')
@@ -92,6 +97,10 @@ def main(tag, index, folder):
     plot[0].set_xlabel(r'$q \left( z_\mathrm{true} \right)$')
     plot[0].set_ylabel(r'$\phi \left[ q \left( z_\mathrm{true} \right) \right]$')
     
+    # Legend
+    handles, labels = plot[0].get_legend_handles_labels()
+    figure.legend(handles, labels, loc='center', ncol=2, fontsize=20, bbox_to_anchor=(0.32, 0.0), frameon=True)
+    
     # Source
     for m in range(average_size_source):
         plot[1].errorbar(
@@ -100,10 +109,10 @@ def main(tag, index, folder):
             markersize=10,
             linewidth=3.0, 
             linestyle='-', 
-            color=color_list[m], 
             y=histogram_source[m, :], 
+            color=source_color_list[m], 
             x=(histogram_bin_source[+1:] + histogram_bin_source[:-1]) / 2, 
-            label=r'$z_\mathrm{true} \in ' + r'\left[ {:.1f}, {:.1f} \right]$'.format(z_average[m], z_average[m + 1])
+            label=r'$z_\mathrm{true} \in ' + r'\left[ {:.1f}, {:.1f} \right]$'.format(z_average_source[m], z_average_source[m + 1])
         )
     
     plot[1].hist(z_quantile_source, bins=histogram_bin_source, density=True, color='black', histtype='step', linewidth=5.0, linestyle='-', label=r'$\mathrm{All}$')
@@ -124,7 +133,7 @@ def main(tag, index, folder):
     
     # Legend
     handles, labels = plot[1].get_legend_handles_labels()
-    figure.legend(handles, labels, loc='center', ncol=3, fontsize=25, bbox_to_anchor=(0.5, 0.0), frameon=True)
+    figure.legend(handles, labels, loc='center', ncol=2, fontsize=20, bbox_to_anchor=(0.72, 0.0), frameon=True)
     
     # Save
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)
