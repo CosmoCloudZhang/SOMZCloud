@@ -150,7 +150,7 @@ def main(tag, index, folder):
     # Metric Source
     z1_average_source = 0.0
     z2_average_source = 3.0
-    average_size_source = 10
+    average_size_source = 6
     z_average_source = numpy.linspace(z1_average_source, z2_average_source, average_size_source + 1)
     
     rate_source = numpy.zeros(average_size_source)
