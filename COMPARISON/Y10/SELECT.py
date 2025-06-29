@@ -112,7 +112,7 @@ def main(tag, index, folder):
     # Metric Lens
     z1_average_lens = 0.0
     z2_average_lens = 1.5
-    average_size_lens = 6
+    average_size_lens = 5
     z_average_lens = numpy.linspace(z1_average_lens, z2_average_lens, average_size_lens + 1)
     
     rate_lens = numpy.zeros(average_size_lens)
@@ -150,7 +150,7 @@ def main(tag, index, folder):
     # Metric Source
     z1_average_source = 0.0
     z2_average_source = 3.0
-    average_size_source = 10
+    average_size_source = 6
     z_average_source = numpy.linspace(z1_average_source, z2_average_source, average_size_source + 1)
     
     rate_source = numpy.zeros(average_size_source)
