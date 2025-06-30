@@ -34,14 +34,14 @@ def main(tag, folder):
         simulation_dataset = {key: file[key][...] for key in file.keys()}
     
     # Filter
-    magnitude1 = 16
-    magnitude2 = 25
+    magnitude_lower = 16
+    magnitude_upper = 25
     
-    filter = (magnitude1 < observation_dataset['mag_i_lsst']) & (observation_dataset['mag_i_lsst'] < magnitude2)
+    filter = (magnitude_lower < observation_dataset['mag_i_lsst']) & (observation_dataset['mag_i_lsst'] < magnitude_upper)
     observation_dataset = {key: observation_dataset[key][filter] for key in observation_dataset.keys()}
     
     # Simulation
-    filter = (magnitude1 < simulation_dataset['mag_i_lsst']) & (simulation_dataset['mag_i_lsst'] < magnitude2)
+    filter = (magnitude_lower < simulation_dataset['mag_i_lsst']) & (simulation_dataset['mag_i_lsst'] < magnitude_upper)
     simulation_dataset = {key: simulation_dataset[key][filter] for key in simulation_dataset.keys()}
     
     # Association
@@ -66,7 +66,7 @@ def main(tag, folder):
     magnitude_edge1 = 22.0
     magnitude_edge2 = 23.0
     magnitude_edge3 = 24.0
-    magnitude_edge = [magnitude1, magnitude_edge1, magnitude_edge2, magnitude_edge3, magnitude2]
+    magnitude_edge = [magnitude_lower, magnitude_edge1, magnitude_edge2, magnitude_edge3, magnitude_upper]
     
     # Color
     color1 = [-0.4, -0.4, -0.4, -0.4]
@@ -119,11 +119,11 @@ def main(tag, folder):
                 plot.set_xticklabels([])
             
             if j == 0:
-                plot.set_title(r'${:.0f}'.format(magnitude_edge[i]) + r'\, \mathrm{mag} < i < ' + r'{:.0f}'.format(magnitude_edge[i + 1]) + r'\, \mathrm{mag}$')
+                plot.set_title(r'${:.0f}'.format(magnitude_edge[i]) + r' < i < ' + r'{:.0f}$'.format(magnitude_edge[i + 1]))
             
             if j == 0 and i == 0:
-                plot.text(1.2, 2.0, r'$\mathtt{CosmoDC2}$', color='darkgreen')
-                plot.text(1.2, 1.5, r'$\mathtt{OpenUniverse2024}$', fontsize=20, color='darkorange')
+                plot.text(1.2, 1.5, r'$\mathtt{CosmoDC2}$', color='darkgreen')
+                plot.text(0.8, 2.1, r'$\mathtt{OpenUniverse2024}$', color='darkorange')
     
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)
     os.makedirs(os.path.join(figure_folder, '{}/CATALOG/'.format(tag)), exist_ok=True)

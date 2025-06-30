@@ -21,13 +21,6 @@ module load cray-hdf5-parallel
 source $HOME/.bashrc
 conda activate $RAILENV
 
-# Set environment
-export NUMEXPR_MAX_THREADS=$SLURM_CPUS_PER_TASK
-export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-export HDF5_USE_FILE_LOCKING=FALSE
-export OMP_PROC_BIND=spread
-export OMP_PLACES=threads
-
 # Initialize the process
 TAG="Y1"
 BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
