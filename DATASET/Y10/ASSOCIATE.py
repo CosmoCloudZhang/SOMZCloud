@@ -2,10 +2,8 @@ import os
 import h5py
 import time
 import numpy
-import pandas
 import argparse
 from rail import core
-from photerr import LsstErrorModel
 from rail.estimation.algos import somoclu_som
 
 
@@ -32,7 +30,7 @@ def main(tag, index, folder):
     os.makedirs(os.path.join(dataset_folder, '{}/ASSOCIATION/'.format(tag)), exist_ok=True)
     
     # Load
-    with h5py.File(os.path.join(dataset_folder, '{}/SIMULATION/SIMULATION.hdf5'.format(tag)), 'r') as file:
+    with h5py.File(os.path.join(dataset_folder, '{}/SIMULATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         simulation_dataset = {key: file[key][...] for key in file.keys()}
     
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
@@ -45,40 +43,6 @@ def main(tag, index, folder):
     
     model_name = os.path.join(dataset_folder, '{}/SOM/INFORM.pkl'.format(tag))
     model = data_store.read_file(key='model', path=model_name, handle_class=core.data.ModelHandle)()
-    
-    # Error
-    error_model = LsstErrorModel(
-        sigLim=1.0,
-        absFlux=True,
-        ndMode='sigLim', 
-        majorCol='major', 
-        minorCol='minor', 
-        decorrelate=True,
-        extendedType='auto',
-        nYrObs=int(tag[1:]), 
-        renameDict={
-            'u': 'mag_u_lsst',
-            'g': 'mag_g_lsst',
-            'r': 'mag_r_lsst',
-            'i': 'mag_i_lsst',
-            'z': 'mag_z_lsst',
-            'y': 'mag_y_lsst'
-        }
-    )
-    
-    # Simulation
-    simulation_dataset = error_model(pandas.DataFrame(simulation_dataset), random_state=index)
-    
-    # Filter
-    snr = 15    
-    magnitude1 = 16
-    magnitude2 = error_model.getLimitingMags(nSigma=snr, coadded=True, aperture=0)['mag_i_lsst']
-    filter = (magnitude1 < simulation_dataset['mag_i_lsst'].values) & (simulation_dataset['mag_i_lsst'].values < magnitude2)
-    
-    value_list = numpy.unique(simulation_dataset['value'].values)
-    filter = filter & (numpy.isin(simulation_dataset['value'].values, random_generator.choice(value_list, len(value_list) // 2, replace=False)))
-    
-    simulation_dataset = {key: simulation_dataset[key].values[filter] for key in simulation_dataset.keys()}
     
     chunk = 100000
     simulation_size = len(simulation_dataset['redshift'])
@@ -165,6 +129,7 @@ def main(tag, index, folder):
         file['morphology'].create_dataset('major_disk', data=association_dataset['major_disk'], dtype=numpy.float32)
         file['morphology'].create_dataset('major_bulge', data=association_dataset['major_bulge'], dtype=numpy.float32)
         
+        file['morphology'].create_dataset('radius', data=association_dataset['radius'], dtype=numpy.float32)
         file['morphology'].create_dataset('ellipticity_disk', data=association_dataset['ellipticity_disk'], dtype=numpy.float32)
         file['morphology'].create_dataset('ellipticity_bulge', data=association_dataset['ellipticity_bulge'], dtype=numpy.float32)
         file['morphology'].create_dataset('bulge_to_total_ratio', data=association_dataset['bulge_to_total_ratio'], dtype=numpy.float32)

@@ -6,9 +6,9 @@
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH --cpus-per-task=256
-#SBATCH --ntasks-per-node=1
-#SBATCH -J DATASET_Y10_OBSERVE
+#SBATCH --cpus-per-task=16
+#SBATCH --ntasks-per-node=16
+#SBATCH -J DATASET_Y1_OBSERVE
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -28,8 +28,16 @@ export OMP_PLACES=threads
 
 # Initialize the process
 TAG="Y10"
+NUMBER=500
 BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 
 # Run the application
-srun -N 1 -n 1 -c $SLURM_CPUS_PER_TASK --cpu_bind=cores python -u "${BASE_PATH}DATASET/${TAG}/OBSERVE.py" --tag=$TAG --folder=$BASE_FOLDER
+for INDEX in $(seq 0 $NUMBER); do
+    srun -N 1 -n 1 -c $SLURM_CPUS_PER_TASK --cpu_bind=cores python -u "${BASE_PATH}DATASET/${TAG}/OBSERVE.py" --tag=$TAG --index=$INDEX --folder=$BASE_FOLDER & 
+    # Control parallel execution
+    if (( $INDEX % $SLURM_NTASKS == 0 )); then
+        wait
+    fi
+done
+wait

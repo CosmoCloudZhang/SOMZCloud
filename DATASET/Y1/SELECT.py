@@ -115,6 +115,7 @@ def main(tag, index, folder):
     
     cell_size = model['n_rows'] * model['n_columns']
     selection_cell_count = numpy.bincount(selection_cell_id, minlength=cell_size)
+    
     selection_cell_z_true = numpy.divide(numpy.bincount(selection_cell_id, weights=selection_dataset['photometry']['redshift_true'], minlength=cell_size), selection_cell_count, out=numpy.ones(cell_size) * numpy.nan, where=selection_cell_count != 0)
     
     # Save

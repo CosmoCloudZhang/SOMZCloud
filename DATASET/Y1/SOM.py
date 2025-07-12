@@ -1,11 +1,9 @@
 import os
-import h5py
 import time
+import h5py
 import yaml
 import numpy
-import pandas
 import argparse
-from photerr import LsstErrorModel
 
 
 def main(tag, folder):
@@ -20,8 +18,8 @@ def main(tag, folder):
         duration (float) : the duration of the process
     '''
     # Start
+    index = 0
     start = time.time()
-    random_generator = numpy.random.default_rng(seed=0)
     
     # Path
     dataset_folder = os.path.join(folder, 'DATASET/')
@@ -29,84 +27,50 @@ def main(tag, folder):
     os.makedirs(os.path.join(dataset_folder, '{}/SOM/'.format(tag)), exist_ok=True)
     
     # Load
-    with h5py.File(os.path.join(dataset_folder, '{}/OBSERVATION/OBSERVATION.hdf5'.format(tag)), 'r') as file:
+    with h5py.File(os.path.join(dataset_folder, '{}/OBSERVATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         observation_dataset = {key: file[key][...] for key in file.keys()}
     
-    # Error
-    error_model = LsstErrorModel(
-        sigLim=1.0,
-        absFlux=True,
-        ndMode='sigLim', 
-        majorCol='major', 
-        minorCol='minor', 
-        decorrelate=True,
-        extendedType='auto', 
-        nYrObs=int(tag[1:]), 
-        renameDict={
-            'u': 'mag_u_lsst',
-            'g': 'mag_g_lsst',
-            'r': 'mag_r_lsst',
-            'i': 'mag_i_lsst',
-            'z': 'mag_z_lsst',
-            'y': 'mag_y_lsst'
-        }
-    )
-    
-    # Observation
-    observation_dataset = error_model(pandas.DataFrame(observation_dataset), random_state=0)
-    
-    # Filter
-    snr = 15    
-    magnitude1 = 16
-    magnitude2 = error_model.getLimitingMags(nSigma=snr, coadded=True, aperture=0)['mag_i_lsst']
-    filter = (magnitude1 < observation_dataset['mag_i_lsst'].values) & (observation_dataset['mag_i_lsst'].values < magnitude2)
-    
-    value_list = numpy.unique(observation_dataset['value'].values)
-    filter = filter & (numpy.isin(observation_dataset['value'].values, random_generator.choice(value_list, len(value_list) // 2, replace=False)))
-    
-    # Inform
-    inform_dataset = {key: observation_dataset[key].values[filter] for key in observation_dataset.keys()}
-    
-    # Write
+    # Save
     with h5py.File(os.path.join(dataset_folder, '{}/SOM/INFORM.hdf5'.format(tag)), 'w') as file:
         file.create_group('photometry')
-        file['photometry'].create_dataset('redshift', data=inform_dataset['redshift'], dtype=numpy.float32)
-        file['photometry'].create_dataset('redshift_true', data=inform_dataset['redshift_true'], dtype=numpy.float32)
+        file['photometry'].create_dataset('redshift', data=observation_dataset['redshift'], dtype=numpy.float32)
+        file['photometry'].create_dataset('redshift_true', data=observation_dataset['redshift_true'], dtype=numpy.float32)
         
-        file['photometry'].create_dataset('mag_u_lsst', data=inform_dataset['mag_u_lsst'], dtype=numpy.float32)
-        file['photometry'].create_dataset('mag_g_lsst', data=inform_dataset['mag_g_lsst'], dtype=numpy.float32)
-        file['photometry'].create_dataset('mag_r_lsst', data=inform_dataset['mag_r_lsst'], dtype=numpy.float32)
-        file['photometry'].create_dataset('mag_i_lsst', data=inform_dataset['mag_i_lsst'], dtype=numpy.float32)
-        file['photometry'].create_dataset('mag_z_lsst', data=inform_dataset['mag_z_lsst'], dtype=numpy.float32)
-        file['photometry'].create_dataset('mag_y_lsst', data=inform_dataset['mag_y_lsst'], dtype=numpy.float32)
+        file['photometry'].create_dataset('mag_u_lsst', data=observation_dataset['mag_u_lsst'], dtype=numpy.float32)
+        file['photometry'].create_dataset('mag_g_lsst', data=observation_dataset['mag_g_lsst'], dtype=numpy.float32)
+        file['photometry'].create_dataset('mag_r_lsst', data=observation_dataset['mag_r_lsst'], dtype=numpy.float32)
+        file['photometry'].create_dataset('mag_i_lsst', data=observation_dataset['mag_i_lsst'], dtype=numpy.float32)
+        file['photometry'].create_dataset('mag_z_lsst', data=observation_dataset['mag_z_lsst'], dtype=numpy.float32)
+        file['photometry'].create_dataset('mag_y_lsst', data=observation_dataset['mag_y_lsst'], dtype=numpy.float32)
         
-        file['photometry'].create_dataset('mag_u_lsst_err', data=inform_dataset['mag_u_lsst_err'], dtype=numpy.float32)
-        file['photometry'].create_dataset('mag_g_lsst_err', data=inform_dataset['mag_g_lsst_err'], dtype=numpy.float32)
-        file['photometry'].create_dataset('mag_r_lsst_err', data=inform_dataset['mag_r_lsst_err'], dtype=numpy.float32)
-        file['photometry'].create_dataset('mag_i_lsst_err', data=inform_dataset['mag_i_lsst_err'], dtype=numpy.float32)
-        file['photometry'].create_dataset('mag_z_lsst_err', data=inform_dataset['mag_z_lsst_err'], dtype=numpy.float32)
-        file['photometry'].create_dataset('mag_y_lsst_err', data=inform_dataset['mag_y_lsst_err'], dtype=numpy.float32)
+        file['photometry'].create_dataset('mag_u_lsst_err', data=observation_dataset['mag_u_lsst_err'], dtype=numpy.float32)
+        file['photometry'].create_dataset('mag_g_lsst_err', data=observation_dataset['mag_g_lsst_err'], dtype=numpy.float32)
+        file['photometry'].create_dataset('mag_r_lsst_err', data=observation_dataset['mag_r_lsst_err'], dtype=numpy.float32)
+        file['photometry'].create_dataset('mag_i_lsst_err', data=observation_dataset['mag_i_lsst_err'], dtype=numpy.float32)
+        file['photometry'].create_dataset('mag_z_lsst_err', data=observation_dataset['mag_z_lsst_err'], dtype=numpy.float32)
+        file['photometry'].create_dataset('mag_y_lsst_err', data=observation_dataset['mag_y_lsst_err'], dtype=numpy.float32)
         
         file.create_group('morphology')
-        file['morphology'].create_dataset('id', data=inform_dataset['id'], dtype=numpy.int32)
-        file['morphology'].create_dataset('value', data=inform_dataset['value'], dtype=numpy.int32)
+        file['morphology'].create_dataset('ra', data=observation_dataset['ra'], dtype=numpy.float32)
+        file['morphology'].create_dataset('dec', data=observation_dataset['dec'], dtype=numpy.float32)
         
-        file['morphology'].create_dataset('ra', data=inform_dataset['ra'], dtype=numpy.float32)
-        file['morphology'].create_dataset('dec', data=inform_dataset['dec'], dtype=numpy.float32)
+        file['morphology'].create_dataset('id', data=observation_dataset['id'], dtype=numpy.int32)
+        file['morphology'].create_dataset('value', data=observation_dataset['value'], dtype=numpy.int32)
         
-        file['morphology'].create_dataset('mu', data=inform_dataset['mu'], dtype=numpy.float32)
-        file['morphology'].create_dataset('eta', data=inform_dataset['eta'], dtype=numpy.float32)
-        file['morphology'].create_dataset('sigma', data=inform_dataset['sigma'], dtype=numpy.float32)
+        file['morphology'].create_dataset('mu', data=observation_dataset['mu'], dtype=numpy.float32)
+        file['morphology'].create_dataset('eta', data=observation_dataset['eta'], dtype=numpy.float32)
+        file['morphology'].create_dataset('sigma', data=observation_dataset['sigma'], dtype=numpy.float32)
         
-        file['morphology'].create_dataset('major', data=inform_dataset['major'], dtype=numpy.float32)
-        file['morphology'].create_dataset('minor', data=inform_dataset['minor'], dtype=numpy.float32)
+        file['morphology'].create_dataset('major', data=observation_dataset['major'], dtype=numpy.float32)
+        file['morphology'].create_dataset('minor', data=observation_dataset['minor'], dtype=numpy.float32)
         
-        file['morphology'].create_dataset('major_disk', data=inform_dataset['major_disk'], dtype=numpy.float32)
-        file['morphology'].create_dataset('major_bulge', data=inform_dataset['major_bulge'], dtype=numpy.float32)
+        file['morphology'].create_dataset('major_disk', data=observation_dataset['major_disk'], dtype=numpy.float32)
+        file['morphology'].create_dataset('major_bulge', data=observation_dataset['major_bulge'], dtype=numpy.float32)
         
-        file['morphology'].create_dataset('ellipticity_disk', data=inform_dataset['ellipticity_disk'], dtype=numpy.float32)
-        file['morphology'].create_dataset('ellipticity_bulge', data=inform_dataset['ellipticity_bulge'], dtype=numpy.float32)
-        file['morphology'].create_dataset('bulge_to_total_ratio', data=inform_dataset['bulge_to_total_ratio'], dtype=numpy.float32)
+        file['morphology'].create_dataset('radius', data=observation_dataset['radius'], dtype=numpy.float32)
+        file['morphology'].create_dataset('ellipticity_disk', data=observation_dataset['ellipticity_disk'], dtype=numpy.float32)
+        file['morphology'].create_dataset('ellipticity_bulge', data=observation_dataset['ellipticity_bulge'], dtype=numpy.float32)
+        file['morphology'].create_dataset('bulge_to_total_ratio', data=observation_dataset['bulge_to_total_ratio'], dtype=numpy.float32)
     
     # Config
     config = {
