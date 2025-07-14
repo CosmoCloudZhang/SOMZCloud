@@ -23,8 +23,16 @@ conda activate $RAILENV
 
 # Initialize the process
 TAG="Y1"
+NUMBER=500
 BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 
 # Run the application
-python -u "${BASE_PATH}FIGURE/${TAG}/CATALOG.py" --tag=$TAG --folder=$BASE_FOLDER
+for INDEX in $(seq 0 $NUMBER); do
+    srun -N 1 -n 1 -c $SLURM_CPUS_PER_TASK --cpu_bind=cores python -u "${BASE_PATH}FIGURE/${TAG}/CATALOG.py" --tag=$TAG --index=$INDEX --folder=$BASE_FOLDER & 
+    # Control parallel execution
+    if (( $INDEX % $SLURM_NTASKS == 0 )); then
+        wait
+    fi
+done
+wait

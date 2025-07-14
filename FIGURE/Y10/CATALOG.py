@@ -7,19 +7,21 @@ from matplotlib import pyplot
 from matplotlib.gridspec import GridSpec
 
 
-def main(tag, folder):
+def main(tag, index, folder):
     '''
     Plot the figure of the color-redshift diagram
     
     Arguments:
         tag (str): The tag of the configuration
-        folder (str): The base folder of all the datasets
+        index (int): The index of the observation dataset
+        folder (str): The base folder of all the observation datasets
     
     Returns:
         duration (float): The duration of the process
     '''
     # Start
     start = time.time()
+    print('Index: {}'.format(index))
     random_generator = numpy.random.default_rng(seed=0)
     
     # Path
@@ -27,10 +29,10 @@ def main(tag, folder):
     dataset_folder = os.path.join(folder, 'DATASET/')
     
     # Load
-    with h5py.File(os.path.join(dataset_folder, '{}/OBSERVATION/OBSERVATION.hdf5'.format(tag)), 'r') as file:
+    with h5py.File(os.path.join(dataset_folder, '{}/OBSERVATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         observation_dataset = {key: file[key][...] for key in file.keys()}
     
-    with h5py.File(os.path.join(dataset_folder, '{}/SIMULATION/SIMULATION.hdf5'.format(tag)), 'r') as file:
+    with h5py.File(os.path.join(dataset_folder, '{}/SIMULATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         simulation_dataset = {key: file[key][...] for key in file.keys()}
     
     # Filter
@@ -96,8 +98,8 @@ def main(tag, folder):
             observation_select = (magnitude_edge[i] < observation_dataset['mag_i_lsst']) & (observation_dataset['mag_i_lsst'] < magnitude_edge[i + 1])
             simulation_select = (magnitude_edge[i] < simulation_dataset['mag_i_lsst']) & (simulation_dataset['mag_i_lsst'] < magnitude_edge[i + 1])
             
-            plot.scatter(simulation_redshift[simulation_select], simulation_color[j][simulation_select], s=0.05, c='darkgreen', marker='o', label=r'$\mathtt{CosmoDC2}$', alpha=0.05)
-            plot.scatter(observation_redshift[observation_select], observation_color[j][observation_select], s=0.05, c='darkorange', marker='o', label=r'$\mathtt{OpenUniverse2024}$', alpha=0.05)
+            plot.scatter(simulation_redshift[simulation_select], simulation_color[j][simulation_select], s=0.10, c='darkgreen', marker='o', label=r'$\mathtt{CosmoDC2}$', alpha=0.05)
+            plot.scatter(observation_redshift[observation_select], observation_color[j][observation_select], s=0.10, c='darkorange', marker='o', label=r'$\mathtt{OpenUniverse2024}$', alpha=0.05)
             
             plot.set_xticks([0.5, 1.0, 1.5, 2.0, 2.5])
             plot.set_yticks([0.0, 0.5, 1.0, 1.5, 2.0, 2.5])
@@ -128,7 +130,7 @@ def main(tag, folder):
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)
     os.makedirs(os.path.join(figure_folder, '{}/CATALOG/'.format(tag)), exist_ok=True)
     
-    figure.savefig(os.path.join(figure_folder, '{}/CATALOG/FIGURE.pdf'.format(tag)), format='pdf', bbox_inches='tight', dpi=256)
+    figure.savefig(os.path.join(figure_folder, '{}/CATALOG/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight', dpi=256)
     pyplot.close(figure)
     
     # Duration
@@ -143,11 +145,13 @@ if __name__ == '__main__':
     # Input
     PARSE = argparse.ArgumentParser(description='Figure Catalog')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
-    PARSE.add_argument('--folder', type=str, required=True, help='The base folder of all the datasets')
+    PARSE.add_argument('--index', type=int, required=True, help='The index of the observation dataset')
+    PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the observation datasets')
     
     # Parse
     TAG = PARSE.parse_args().tag
+    INDEX = PARSE.parse_args().index
     FOLDER = PARSE.parse_args().folder
     
     # Output
-    OUTPUT = main(TAG, FOLDER)
+    OUTPUT = main(TAG, INDEX, FOLDER)
