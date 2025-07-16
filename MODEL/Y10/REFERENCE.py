@@ -52,6 +52,7 @@ def main(tag, index, folder):
     
     # Combination
     with h5py.File(os.path.join(dataset_folder, '{}/COMBINATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+        combination_sigma = file['morphology']['sigma'][...]
         combination_magnitude = file['photometry']['mag_i_lsst'][...]
         combination_redshift_true = file['photometry']['redshift_true'][...]
     combination_size = len(combination_magnitude)
@@ -75,10 +76,13 @@ def main(tag, index, folder):
             z_cdf = numpy.cumsum(z_pdf, axis=1) * z_delta
             z_quantile[begin: stop] = z_cdf[numpy.arange(stop - begin), numpy.round((combination_redshift_true[begin: stop] - z1) / z_delta).astype(numpy.int32)]
     
-    # Select
+    # Reference Source
+    sigma0 = 0.26
+    reference_source = (z1_source <= z_phot) & (z_phot < z2_source) & (combination_sigma < sigma0)
+    
+    # Reference Lens
     slope = 4.0
     intercept = 18.0
-    reference_source = (z1_source <= z_phot) & (z_phot < z2_source)
     reference_lens = (z1_lens <= z_phot) & (z_phot < z2_lens) & (combination_magnitude < slope * z_phot + intercept)
     
     # Bin
