@@ -196,7 +196,7 @@ def main(tag, number, folder):
     
     plot.errorbar(x=z_average_lens, y=numpy.mean(comparison_fraction_lens, axis=0), yerr=numpy.std(comparison_fraction_lens, axis=0), color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
-    plot.set_ylim(-0.100, +1.000)
+    plot.set_ylim(-0.004, +0.040)
     plot.set_xlim(z1_average_lens, z2_average_lens)
     
     plot.set_xticklabels([])
@@ -211,7 +211,7 @@ def main(tag, number, folder):
     
     plot.errorbar(x=z_average_lens, y=numpy.mean(comparison_rate_lens, axis=0), yerr=numpy.std(comparison_rate_lens, axis=0), color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8)
     
-    plot.set_ylim(-0.100, +1.000)
+    plot.set_ylim(-0.004, +0.040)
     plot.set_xlim(z1_average_lens, z2_average_lens)
     
     plot.set_xticklabels([])
