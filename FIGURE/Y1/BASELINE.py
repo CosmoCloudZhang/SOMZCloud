@@ -138,8 +138,8 @@ def main(tag, index, folder):
     plot3.set_ylim(delta1, delta2)
     
     plot3.set_yscale('log')
-    plot3.set_ylabel(r'$\delta_z$')
     plot3.set_xlabel(r'$z_\mathrm{true}$')
+    plot3.set_ylabel(r'$\left| \delta_z \right|$')
     
     # Plot 4
     plot4 = figure.add_subplot(plot[1, 1])
