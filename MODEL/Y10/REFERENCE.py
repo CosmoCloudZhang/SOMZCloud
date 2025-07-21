@@ -132,7 +132,7 @@ def main(tag, index, folder):
             bias_lens_reference = (z_phot_lens_reference - z_true_lens_reference) / (1 + z_true_lens_reference)
             
             bias_lens[m] = numpy.median(bias_lens_reference)
-            sigma_lens[m] = numpy.median(numpy.abs(bias_lens_reference)) / scipy.stats.norm.ppf(3 / 4)
+            sigma_lens[m] = scipy.stats.median_abs_deviation(bias_lens_reference)
             fraction_lens[m] = numpy.sum(numpy.abs(bias_lens_reference) > 0.15) / numpy.sum(reference_lens_average)
             rate_lens[m] = numpy.sum(numpy.abs(z_phot_lens_reference - z_true_lens_reference) > 1.0) / numpy.sum(reference_lens_average)
             
@@ -170,7 +170,7 @@ def main(tag, index, folder):
             bias_source_reference = (z_phot_source_reference - z_true_source_reference) / (1 + z_true_source_reference)
             
             bias_source[m] = numpy.median(bias_source_reference)
-            sigma_source[m] = numpy.median(numpy.abs(bias_source_reference)) / scipy.stats.norm.ppf(3 / 4)
+            sigma_source[m] = scipy.stats.median_abs_deviation(bias_source_reference)
             fraction_source[m] = numpy.sum(numpy.abs(bias_source_reference) > 0.15) / numpy.sum(reference_source_average)
             rate_source[m] = numpy.sum(numpy.abs(z_phot_source_reference - z_true_source_reference) > 1.0) / numpy.sum(reference_source_average)
             
