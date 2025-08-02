@@ -157,11 +157,11 @@ def main(tag, number, folder):
     
     plot.fill_between(x=numpy.linspace(z1_average_lens, z2_average_lens, average_size_lens + 1), y1=numpy.ones(average_size_lens + 1) * -0.02, y2=numpy.ones(average_size_lens + 1) * +0.02, color='grey', alpha=0.5)
     
-    plot.errorbar(x=z_average_lens, y=numpy.mean(bias_lens, axis=0), yerr=numpy.std(bias_lens, axis=0), color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
+    plot.errorbar(x=z_average_lens, y=numpy.median(bias_lens, axis=0), yerr=[numpy.median(bias_lens, axis=0) - numpy.quantile(bias_lens, 0.16, axis=0), numpy.quantile(bias_lens, 0.84, axis=0) - numpy.median(bias_lens, axis=0)], color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
     
-    plot.errorbar(x=z_average_lens, y=numpy.mean(reference_bias_lens, axis=0), yerr=numpy.std(reference_bias_lens, axis=0), color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Combination} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
+    plot.errorbar(x=z_average_lens, y=numpy.median(reference_bias_lens, axis=0), yerr=[numpy.median(reference_bias_lens, axis=0) - numpy.quantile(reference_bias_lens, 0.16, axis=0), numpy.quantile(reference_bias_lens, 0.84, axis=0) - numpy.median(reference_bias_lens, axis=0)], color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Combination} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
     
-    plot.errorbar(x=z_average_lens, y=numpy.mean(comparison_bias_lens, axis=0), yerr=numpy.std(comparison_bias_lens, axis=0), color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Degradation}$')
+    plot.errorbar(x=z_average_lens, y=numpy.median(comparison_bias_lens, axis=0), yerr=[numpy.median(comparison_bias_lens, axis=0) - numpy.quantile(comparison_bias_lens, 0.16, axis=0), numpy.quantile(comparison_bias_lens, 0.84, axis=0) - numpy.median(comparison_bias_lens, axis=0)], color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Degradation}$')
     
     plot.set_ylim(-0.060, +0.060)
     plot.set_xlim(z1_average_lens, z2_average_lens)
@@ -175,11 +175,11 @@ def main(tag, number, folder):
     
     plot.fill_between(x=numpy.linspace(z1_average_lens, z2_average_lens, average_size_lens + 1), y1=numpy.zeros(average_size_lens + 1), y2=numpy.ones(average_size_lens + 1) * 0.02, color='grey', alpha=0.5)
     
-    plot.errorbar(x=z_average_lens, y=numpy.mean(sigma_lens, axis=0), yerr=numpy.std(sigma_lens, axis=0), color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
+    plot.errorbar(x=z_average_lens, y=numpy.median(sigma_lens, axis=0), yerr=[numpy.median(sigma_lens, axis=0) - numpy.quantile(sigma_lens, 0.16, axis=0), numpy.quantile(sigma_lens, 0.84, axis=0) - numpy.median(sigma_lens, axis=0)], color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
     
-    plot.errorbar(x=z_average_lens, y=numpy.mean(reference_sigma_lens, axis=0), yerr=numpy.std(reference_sigma_lens, axis=0), color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Combination} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
+    plot.errorbar(x=z_average_lens, y=numpy.median(reference_sigma_lens, axis=0), yerr=[numpy.median(reference_sigma_lens, axis=0) - numpy.quantile(reference_sigma_lens, 0.16, axis=0), numpy.quantile(reference_sigma_lens, 0.84, axis=0) - numpy.median(reference_sigma_lens, axis=0)], color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Combination} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
     
-    plot.errorbar(x=z_average_lens, y=numpy.mean(comparison_sigma_lens, axis=0), yerr=numpy.std(comparison_sigma_lens, axis=0), color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Degradation}$')
+    plot.errorbar(x=z_average_lens, y=numpy.median(comparison_sigma_lens, axis=0), yerr=[numpy.median(comparison_sigma_lens, axis=0) - numpy.quantile(comparison_sigma_lens, 0.16, axis=0), numpy.quantile(comparison_sigma_lens, 0.84, axis=0) - numpy.median(comparison_sigma_lens, axis=0)], color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Degradation}$')
     
     plot.set_ylim(-0.006, +0.060)
     plot.set_xlim(z1_average_lens, z2_average_lens)
@@ -190,11 +190,11 @@ def main(tag, number, folder):
     # Plot lens fraction
     plot = figure.add_subplot(plot_list[2, 0])
     
-    plot.errorbar(x=z_average_lens, y=numpy.mean(fraction_lens, axis=0), yerr=numpy.std(fraction_lens, axis=0), color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
+    plot.errorbar(x=z_average_lens, y=numpy.median(fraction_lens, axis=0), yerr=[numpy.median(fraction_lens, axis=0) - numpy.quantile(fraction_lens, 0.16, axis=0), numpy.quantile(fraction_lens, 0.84, axis=0) - numpy.median(fraction_lens, axis=0)], color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
     
-    plot.errorbar(x=z_average_lens, y=numpy.mean(reference_fraction_lens, axis=0), yerr=numpy.std(reference_fraction_lens, axis=0), color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Combination} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
+    plot.errorbar(x=z_average_lens, y=numpy.median(reference_fraction_lens, axis=0), yerr=[numpy.median(reference_fraction_lens, axis=0) - numpy.quantile(reference_fraction_lens, 0.16, axis=0), numpy.quantile(reference_fraction_lens, 0.84, axis=0) - numpy.median(reference_fraction_lens, axis=0)], color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Combination} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
     
-    plot.errorbar(x=z_average_lens, y=numpy.mean(comparison_fraction_lens, axis=0), yerr=numpy.std(comparison_fraction_lens, axis=0), color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Degradation}$')
+    plot.errorbar(x=z_average_lens, y=numpy.median(comparison_fraction_lens, axis=0), yerr=[numpy.median(comparison_fraction_lens, axis=0) - numpy.quantile(comparison_fraction_lens, 0.16, axis=0), numpy.quantile(comparison_fraction_lens, 0.84, axis=0) - numpy.median(comparison_fraction_lens, axis=0)], color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Degradation}$')
     
     plot.set_ylim(-0.003, +0.030)
     plot.set_xlim(z1_average_lens, z2_average_lens)
@@ -205,11 +205,11 @@ def main(tag, number, folder):
     # Plot lens rate
     plot = figure.add_subplot(plot_list[3, 0])
     
-    plot.errorbar(x=z_average_lens, y=numpy.mean(rate_lens, axis=0), yerr=numpy.std(rate_lens, axis=0), color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
+    plot.errorbar(x=z_average_lens, y=numpy.median(rate_lens, axis=0), yerr=[numpy.median(rate_lens, axis=0) - numpy.quantile(rate_lens, 0.16, axis=0), numpy.quantile(rate_lens, 0.84, axis=0) - numpy.median(rate_lens, axis=0)], color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
     
-    plot.errorbar(x=z_average_lens, y=numpy.mean(reference_rate_lens, axis=0), yerr=numpy.std(reference_rate_lens, axis=0), color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Combination} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
+    plot.errorbar(x=z_average_lens, y=numpy.median(reference_rate_lens, axis=0), yerr=[numpy.median(reference_rate_lens, axis=0) - numpy.quantile(reference_rate_lens, 0.16, axis=0), numpy.quantile(reference_rate_lens, 0.84, axis=0) - numpy.median(reference_rate_lens, axis=0)], color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Combination} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
     
-    plot.errorbar(x=z_average_lens, y=numpy.mean(comparison_rate_lens, axis=0), yerr=numpy.std(comparison_rate_lens, axis=0), color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Degradation}$')
+    plot.errorbar(x=z_average_lens, y=numpy.median(comparison_rate_lens, axis=0), yerr=[numpy.median(comparison_rate_lens, axis=0) - numpy.quantile(comparison_rate_lens, 0.16, axis=0), numpy.quantile(comparison_rate_lens, 0.84, axis=0) - numpy.median(comparison_rate_lens, axis=0)], color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Degradation}$')
     
     plot.set_ylim(-0.002, +0.020)
     plot.set_xlim(z1_average_lens, z2_average_lens)
@@ -220,11 +220,11 @@ def main(tag, number, folder):
     # Plot lens divergence
     plot = figure.add_subplot(plot_list[4, 0])
     
-    plot.errorbar(x=z_average_lens, y=numpy.mean(divergence_lens, axis=0), yerr=numpy.std(divergence_lens, axis=0), color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
+    plot.errorbar(x=z_average_lens, y=numpy.median(divergence_lens, axis=0), yerr=[numpy.median(divergence_lens, axis=0) - numpy.quantile(divergence_lens, 0.16, axis=0), numpy.quantile(divergence_lens, 0.84, axis=0) - numpy.median(divergence_lens, axis=0)], color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
     
-    plot.errorbar(x=z_average_lens, y=numpy.mean(reference_divergence_lens, axis=0), yerr=numpy.std(reference_divergence_lens, axis=0), color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Combination} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
+    plot.errorbar(x=z_average_lens, y=numpy.median(reference_divergence_lens, axis=0), yerr=[numpy.median(reference_divergence_lens, axis=0) - numpy.quantile(reference_divergence_lens, 0.16, axis=0), numpy.quantile(reference_divergence_lens, 0.84, axis=0) - numpy.median(reference_divergence_lens, axis=0)], color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Combination} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
     
-    plot.errorbar(x=z_average_lens, y=numpy.mean(comparison_divergence_lens, axis=0), yerr=numpy.std(comparison_divergence_lens, axis=0), color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Degradation}$')
+    plot.errorbar(x=z_average_lens, y=numpy.median(comparison_divergence_lens, axis=0), yerr=[numpy.median(comparison_divergence_lens, axis=0) - numpy.quantile(comparison_divergence_lens, 0.16, axis=0), numpy.quantile(comparison_divergence_lens, 0.84, axis=0) - numpy.median(comparison_divergence_lens, axis=0)], color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Degradation}$')
     
     plot.set_ylim(-0.400, +4.000)
     plot.set_xlim(z1_average_lens, z2_average_lens)
@@ -237,11 +237,11 @@ def main(tag, number, folder):
     
     plot.fill_between(x=numpy.linspace(z1_average_source, z2_average_source, average_size_source + 1), y1=numpy.ones(average_size_source + 1) * -0.03, y2=numpy.ones(average_size_source + 1) * +0.03, color='grey', alpha=0.5)
     
-    plot.errorbar(x=z_average_source, y=numpy.mean(bias_source, axis=0), yerr=numpy.std(bias_source, axis=0), color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
+    plot.errorbar(x=z_average_source, y=numpy.median(bias_source, axis=0), yerr=[numpy.median(bias_source, axis=0) - numpy.quantile(bias_source, 0.16, axis=0), numpy.quantile(bias_source, 0.84, axis=0) - numpy.median(bias_source, axis=0)], color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
     
-    plot.errorbar(x=z_average_source, y=numpy.mean(reference_bias_source, axis=0), yerr=numpy.std(reference_bias_source, axis=0), color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Combination} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
+    plot.errorbar(x=z_average_source, y=numpy.median(reference_bias_source, axis=0), yerr=[numpy.median(reference_bias_source, axis=0) - numpy.quantile(reference_bias_source, 0.16, axis=0), numpy.quantile(reference_bias_source, 0.84, axis=0) - numpy.median(reference_bias_source, axis=0)], color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Combination} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
     
-    plot.errorbar(x=z_average_source, y=numpy.mean(comparison_bias_source, axis=0), yerr=numpy.std(comparison_bias_source, axis=0), color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Degradation}$')
+    plot.errorbar(x=z_average_source, y=numpy.median(comparison_bias_source, axis=0), yerr=[numpy.median(comparison_bias_source, axis=0) - numpy.quantile(comparison_bias_source, 0.16, axis=0), numpy.quantile(comparison_bias_source, 0.84, axis=0) - numpy.median(comparison_bias_source, axis=0)], color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Degradation}$')
     
     plot.set_ylim(-1.000, +1.000)
     plot.set_xlim(z1_average_source, z2_average_source)
@@ -255,11 +255,11 @@ def main(tag, number, folder):
     
     plot.fill_between(x=numpy.linspace(z1_average_source, z2_average_source, average_size_source + 1), y1=numpy.zeros(average_size_source + 1), y2=numpy.ones(average_size_source + 1) * 0.03, color='grey', alpha=0.5)
     
-    plot.errorbar(x=z_average_source, y=numpy.mean(sigma_source, axis=0), yerr=numpy.std(sigma_source, axis=0), color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
+    plot.errorbar(x=z_average_source, y=numpy.median(sigma_source, axis=0), yerr=[numpy.median(sigma_source, axis=0) - numpy.quantile(sigma_source, 0.16, axis=0), numpy.quantile(sigma_source, 0.84, axis=0) - numpy.median(sigma_source, axis=0)], color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
     
-    plot.errorbar(x=z_average_source, y=numpy.mean(reference_sigma_source, axis=0), yerr=numpy.std(reference_sigma_source, axis=0), color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Combination} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
+    plot.errorbar(x=z_average_source, y=numpy.median(reference_sigma_source, axis=0), yerr=[numpy.median(reference_sigma_source, axis=0) - numpy.quantile(reference_sigma_source, 0.16, axis=0), numpy.quantile(reference_sigma_source, 0.84, axis=0) - numpy.median(reference_sigma_source, axis=0)], color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Combination} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
     
-    plot.errorbar(x=z_average_source, y=numpy.mean(comparison_sigma_source, axis=0), yerr=numpy.std(comparison_sigma_source, axis=0), color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Degradation}$')
+    plot.errorbar(x=z_average_source, y=numpy.median(comparison_sigma_source, axis=0), yerr=[numpy.median(comparison_sigma_source, axis=0) - numpy.quantile(comparison_sigma_source, 0.16, axis=0), numpy.quantile(comparison_sigma_source, 0.84, axis=0) - numpy.median(comparison_sigma_source, axis=0)], color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Degradation}$')
     
     plot.set_ylim(-0.036, +0.360)
     plot.set_xlim(z1_average_source, z2_average_source)
@@ -270,11 +270,11 @@ def main(tag, number, folder):
     # Plot source fraction
     plot = figure.add_subplot(plot_list[2, 1])
     
-    plot.errorbar(x=z_average_source, y=numpy.mean(fraction_source, axis=0), yerr=numpy.std(fraction_source, axis=0), color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
+    plot.errorbar(x=z_average_source, y=numpy.median(fraction_source, axis=0), yerr=[numpy.median(fraction_source, axis=0) - numpy.quantile(fraction_source, 0.16, axis=0), numpy.quantile(fraction_source, 0.84, axis=0) - numpy.median(fraction_source, axis=0)], color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
     
-    plot.errorbar(x=z_average_source, y=numpy.mean(reference_fraction_source, axis=0), yerr=numpy.std(reference_fraction_source, axis=0), color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Combination} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
+    plot.errorbar(x=z_average_source, y=numpy.median(reference_fraction_source, axis=0), yerr=[numpy.median(reference_fraction_source, axis=0) - numpy.quantile(reference_fraction_source, 0.16, axis=0), numpy.quantile(reference_fraction_source, 0.84, axis=0) - numpy.median(reference_fraction_source, axis=0)], color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Combination} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
     
-    plot.errorbar(x=z_average_source, y=numpy.mean(comparison_fraction_source, axis=0), yerr=numpy.std(comparison_fraction_source, axis=0), color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Degradation}$')
+    plot.errorbar(x=z_average_source, y=numpy.median(comparison_fraction_source, axis=0), yerr=[numpy.median(comparison_fraction_source, axis=0) - numpy.quantile(comparison_fraction_source, 0.16, axis=0), numpy.quantile(comparison_fraction_source, 0.84, axis=0) - numpy.median(comparison_fraction_source, axis=0)], color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Degradation}$')
     
     plot.set_ylim(-0.120, +1.200)
     plot.set_xlim(z1_average_source, z2_average_source)
@@ -285,11 +285,11 @@ def main(tag, number, folder):
     # Plot source rate
     plot = figure.add_subplot(plot_list[3, 1])
     
-    plot.errorbar(x=z_average_source, y=numpy.mean(rate_source, axis=0), yerr=numpy.std(rate_source, axis=0), color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
+    plot.errorbar(x=z_average_source, y=numpy.median(rate_source, axis=0), yerr=[numpy.median(rate_source, axis=0) - numpy.quantile(rate_source, 0.16, axis=0), numpy.quantile(rate_source, 0.84, axis=0) - numpy.median(rate_source, axis=0)], color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
     
-    plot.errorbar(x=z_average_source, y=numpy.mean(reference_rate_source, axis=0), yerr=numpy.std(reference_rate_source, axis=0), color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Combination} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
+    plot.errorbar(x=z_average_source, y=numpy.median(reference_rate_source, axis=0), yerr=[numpy.median(reference_rate_source, axis=0) - numpy.quantile(reference_rate_source, 0.16, axis=0), numpy.quantile(reference_rate_source, 0.84, axis=0) - numpy.median(reference_rate_source, axis=0)], color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Combination} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
     
-    plot.errorbar(x=z_average_source, y=numpy.mean(comparison_rate_source, axis=0), yerr=numpy.std(comparison_rate_source, axis=0), color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Degradation}$')
+    plot.errorbar(x=z_average_source, y=numpy.median(comparison_rate_source, axis=0), yerr=[numpy.median(comparison_rate_source, axis=0) - numpy.quantile(comparison_rate_source, 0.16, axis=0), numpy.quantile(comparison_rate_source, 0.84, axis=0) - numpy.median(comparison_rate_source, axis=0)], color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Degradation}$')
     
     plot.set_ylim(-0.120, +1.200)
     plot.set_xlim(z1_average_source, z2_average_source)
@@ -300,11 +300,11 @@ def main(tag, number, folder):
     # Plot source divergence
     plot = figure.add_subplot(plot_list[4, 1])
     
-    plot.errorbar(x=z_average_source, y=numpy.mean(divergence_source, axis=0), yerr=numpy.std(divergence_source, axis=0), color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
+    plot.errorbar(x=z_average_source, y=numpy.median(divergence_source, axis=0), yerr=[numpy.median(divergence_source, axis=0) - numpy.quantile(divergence_source, 0.16, axis=0), numpy.quantile(divergence_source, 0.84, axis=0) - numpy.median(divergence_source, axis=0)], color='darkorange', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
     
-    plot.errorbar(x=z_average_source, y=numpy.mean(reference_divergence_source, axis=0), yerr=numpy.std(reference_divergence_source, axis=0), color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Combination} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
+    plot.errorbar(x=z_average_source, y=numpy.median(reference_divergence_source, axis=0), yerr=[numpy.median(reference_divergence_source, axis=0) - numpy.quantile(reference_divergence_source, 0.16, axis=0), numpy.quantile(reference_divergence_source, 0.84, axis=0) - numpy.median(reference_divergence_source, axis=0)], color='darkgreen', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Combination} \, \mathrm{trained \, on} \, \mathtt{Combination}$')
     
-    plot.errorbar(x=z_average_source, y=numpy.mean(comparison_divergence_source, axis=0), yerr=numpy.std(comparison_divergence_source, axis=0), color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Degradation}$')
+    plot.errorbar(x=z_average_source, y=numpy.median(comparison_divergence_source, axis=0), yerr=[numpy.median(comparison_divergence_source, axis=0) - numpy.quantile(comparison_divergence_source, 0.16, axis=0), numpy.quantile(comparison_divergence_source, 0.84, axis=0) - numpy.median(comparison_divergence_source, axis=0)], color='darkblue', linestyle='-', linewidth=2.5, marker='s', markersize=10, capsize=5, capthick=2.5, alpha=0.8, label=r'$\mathtt{Application} \, \mathrm{trained \, on} \, \mathtt{Degradation}$')
     
     plot.set_ylim(-0.500, +5.000)
     plot.set_xlim(z1_average_source, z2_average_source)

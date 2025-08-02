@@ -36,8 +36,8 @@ def main(tag, index, folder):
         simulation_dataset = {key: file[key][...] for key in file.keys()}
     
     # Filter
-    magnitude_lower = 16
-    magnitude_upper = 25
+    magnitude_lower = 16.0
+    magnitude_upper = 25.3
     
     filter = (magnitude_lower < observation_dataset['mag_i_lsst']) & (observation_dataset['mag_i_lsst'] < magnitude_upper)
     observation_dataset = {key: observation_dataset[key][filter] for key in observation_dataset.keys()}
@@ -65,8 +65,8 @@ def main(tag, index, folder):
     simulation_redshift = simulation_dataset['redshift_true']
     
     # Magnitude
-    magnitude_edge1 = 22.0
-    magnitude_edge2 = 23.0
+    magnitude_edge1 = 21.0
+    magnitude_edge2 = 22.5
     magnitude_edge3 = 24.0
     magnitude_edge = [magnitude_lower, magnitude_edge1, magnitude_edge2, magnitude_edge3, magnitude_upper]
     
@@ -121,7 +121,7 @@ def main(tag, index, folder):
                 plot.set_xticklabels([])
             
             if j == 0:
-                plot.set_title(r'${:.0f}'.format(magnitude_edge[i]) + r' < i < ' + r'{:.0f}$'.format(magnitude_edge[i + 1]))
+                plot.set_title(r'${:.1f}'.format(magnitude_edge[i]) + r' < i < ' + r'{:.1f}$'.format(magnitude_edge[i + 1]))
             
             if j == 0 and i == 0:
                 plot.text(1.2, 1.5, r'$\mathtt{CosmoDC2}$', color='darkgreen')
