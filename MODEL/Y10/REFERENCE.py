@@ -77,7 +77,7 @@ def main(tag, index, folder):
             z_quantile[begin: stop] = z_cdf[numpy.arange(stop - begin), numpy.round((combination_redshift_true[begin: stop] - z1) / z_delta).astype(numpy.int32)]
     
     # Reference Source
-    sigma0 = 0.25
+    sigma0 = 0.26
     reference_source = (z1_source <= z_phot) & (z_phot < z2_source) & (combination_sigma < sigma0)
     
     # Reference Lens
@@ -109,6 +109,17 @@ def main(tag, index, folder):
     # Histogram
     histogram_size = 10
     histogram_bin = numpy.linspace(0, 1, histogram_size + 1)
+    
+    # Metric
+    delta = (z_phot - combination_redshift_true) / (1 + combination_redshift_true)
+    
+    bias = numpy.median(delta)
+    sigma = scipy.stats.median_abs_deviation(delta)
+    fraction = numpy.sum(numpy.abs(delta) > 0.15) / combination_size
+    rate = numpy.sum(numpy.abs(z_phot - combination_redshift_true) > 1.0) / combination_size
+    
+    histogram = numpy.histogram(z_quantile, bins=histogram_bin, range=(0, 1), density=True)[0]
+    divergence = numpy.sqrt(numpy.sum(numpy.square(histogram - numpy.ones(histogram_size))) / histogram_size)
     
     # Metric Lens
     z1_average_lens = 0.0
@@ -188,6 +199,14 @@ def main(tag, index, folder):
     
     # Save
     with h5py.File(os.path.join(model_folder, '{}/REFERENCE/DATA{}.hdf5'.format(tag, index)), 'w') as file:
+        file.create_dataset('bias', data=bias, dtype=numpy.float32)
+        file.create_dataset('rate', data=rate, dtype=numpy.float32)
+        file.create_dataset('sigma', data=sigma, dtype=numpy.float32)
+        file.create_dataset('fraction', data=fraction, dtype=numpy.float32)
+        
+        file.create_dataset('histogram', data=histogram, dtype=numpy.float32)
+        file.create_dataset('divergence', data=divergence, dtype=numpy.float32)
+        
         file.create_dataset('z_phot', data=z_phot, dtype=numpy.float32)
         file.create_dataset('z_quantile', data=z_quantile, dtype=numpy.float32)
         
