@@ -71,7 +71,7 @@ def main(tag, index, folder):
     fraction = numpy.sum(application_cell_count[degradation_cell_count == 0]) / application_size
     
     # Size
-    size = int(degradation_size * fraction / (1 - fraction))
+    size = int(degradation_size * fraction * (1 + fraction))
     indices = random_generator.choice(numpy.arange(association_size)[filter], size=size, replace=True)
     
     # Augmentation

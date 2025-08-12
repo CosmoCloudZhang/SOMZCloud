@@ -42,7 +42,7 @@ def main(tag, index, folder):
         application_dataset['photometry'] = {key: file['photometry'][key][...] for key in file['photometry'].keys()}
     
     # Magnitude
-    magnitude1 = {'Y1': 21.0, 'Y10': 21.0}
+    magnitude1 = {'Y1': 20.0, 'Y10': 20.0}
     magnitude2 = {'Y1': 24.0, 'Y10': 25.0}
     magnitude = random_generator.uniform(low=magnitude1[tag], high=magnitude2[tag])
     
@@ -115,6 +115,7 @@ def main(tag, index, folder):
     
     cell_size = model['n_rows'] * model['n_columns']
     selection_cell_count = numpy.bincount(selection_cell_id, minlength=cell_size)
+    
     selection_cell_z_true = numpy.divide(numpy.bincount(selection_cell_id, weights=selection_dataset['photometry']['redshift_true'], minlength=cell_size), selection_cell_count, out=numpy.ones(cell_size) * numpy.nan, where=selection_cell_count != 0)
     
     # Save
