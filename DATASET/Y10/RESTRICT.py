@@ -54,8 +54,8 @@ def main(tag, index, folder):
     
     # Restriction
     restriction_dataset = {
-        'morphology': {association_dataset['morphology'][key][indices] for key in association_dataset['morphology'].keys()},
-        'photometry': {association_dataset['photometry'][key][indices] for key in association_dataset['photometry'].keys()}
+        'morphology': {key: association_dataset['morphology'][key][indices] for key in association_dataset['morphology'].keys()},
+        'photometry': {key: association_dataset['photometry'][key][indices] for key in association_dataset['photometry'].keys()}
     }
     
     # SOM
