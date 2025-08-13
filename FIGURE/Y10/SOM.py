@@ -37,7 +37,6 @@ def main(tag, index, folder):
     with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         cell_size1 = file['meta']['cell_size1'][...]
         cell_size2 = file['meta']['cell_size2'][...]
-        application_cell_count = file['meta']['cell_count'][...]
         application_cell_z_true = file['meta']['cell_z_true'][...]
     application_map = application_cell_z_true.reshape((cell_size1, cell_size2))
     
@@ -45,35 +44,43 @@ def main(tag, index, folder):
     with h5py.File(os.path.join(dataset_folder, '{}/ASSOCIATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         cell_size1 = file['meta']['cell_size1'][...]
         cell_size2 = file['meta']['cell_size2'][...]
-        association_cell_count = file['meta']['cell_count'][...]
         association_cell_z_true = file['meta']['cell_z_true'][...]
     association_map = association_cell_z_true.reshape((cell_size1, cell_size2))
     
-    # Metric
-    cell_ratio = numpy.divide(association_cell_count / numpy.sum(association_cell_count), application_cell_count / numpy.sum(application_cell_count), out=numpy.zeros(cell_size1 * cell_size2), where=application_cell_count > 0)
-    cell_metric = numpy.sqrt(numpy.mean(numpy.square(cell_ratio - 1)))
-    print('Metric: {:.3f}'.format(cell_metric))
+    # Combination
+    with h5py.File(os.path.join(dataset_folder, '{}/COMBINATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+        cell_size1 = file['meta']['cell_size1'][...]
+        cell_size2 = file['meta']['cell_size2'][...]
+        combination_cell_z_true = file['meta']['cell_z_true'][...]
+    combination_map = combination_cell_z_true.reshape((cell_size1, cell_size2))
     
     # Plot
-    normalize = colors.Normalize(vmin=0.0, vmax=2.0)
-    figure, plot = pyplot.subplots(nrows=1, ncols=2, figsize=(12, 8))
+    normalize = colors.Normalize(vmin=-0.15, vmax=+0.15)
+    figure, plot = pyplot.subplots(nrows=2, ncols=1, figsize=(8, 12))
+    figure.subplots_adjust(right=0.90, bottom=0.0, hspace=0.15, wspace=0.0)
     
-    mesh = plot[0].imshow(application_map, norm=normalize, cmap='coolwarm')
-    plot[0].set_title(r'$\mathtt{Application}$')
+    # Association
+    mesh1 = plot[0].imshow((association_map - application_map) / (1 + application_map), norm=normalize, cmap='coolwarm')
+    plot[0].set_title(r'$\mathrm{Association}$')
     plot[0].axis('off')
     
-    mesh = plot[1].imshow(association_map, norm=normalize, cmap='coolwarm')
-    plot[1].set_title(r'$\mathtt{Association}$')
+    colorbar1 = figure.add_axes([0.90, 0.50, 0.05, 0.35])
+    colorbar1 = figure.colorbar(mesh1, cax=colorbar1, orientation='vertical')
+    colorbar1.set_label(r'$\delta_{\langle z_\mathrm{true} \rangle}$')
+    
+    # Combination
+    mesh2 = plot[1].imshow((combination_map - application_map) / (1 + application_map), norm=normalize, cmap='coolwarm')
+    plot[1].set_title(r'$\mathrm{Combination}$')
     plot[1].axis('off')
     
-    color_bar = figure.colorbar(mesh, cax=figure.add_axes([0.15, 0.05, 0.70, 0.05]), orientation='horizontal')
-    figure.subplots_adjust(bottom=0.0, hspace=0.00, wspace=0.05)
-    color_bar.set_label(r'$\langle z_\mathrm{true} \rangle$')
+    colorbar2 = figure.add_axes([0.90, 0.02, 0.05, 0.35])
+    colorbar2 = figure.colorbar(mesh2, cax=colorbar2, orientation='vertical')
+    colorbar2.set_label(r'$\delta_{\langle z_\mathrm{true} \rangle}$')
     
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)
     os.makedirs(os.path.join(figure_folder, '{}/SOM/'.format(tag)), exist_ok=True)
     
-    figure.savefig(os.path.join(figure_folder, '{}/SOM/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(figure_folder, '{}/SOM/FIGURE{}.pdf'.format(tag, index)), dpi=512,format='pdf', bbox_inches='tight')
     pyplot.close(figure)
     
     # Duration
