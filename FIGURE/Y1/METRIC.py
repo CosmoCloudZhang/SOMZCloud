@@ -24,7 +24,7 @@ def main(tag, number, folder):
     # Path
     model_folder = os.path.join(folder, 'MODEL/')
     figure_folder = os.path.join(folder, 'FIGURE/')
-    comparison_folder = os.path.join(folder, 'COMPARISON/')
+    comparison_folder = os.path.join(folder, 'COMPARE/')
     
     # Redshift
     z1_average_lens = 0.0
@@ -318,10 +318,10 @@ def main(tag, number, folder):
     
     # Save
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(figure_folder, '{}/METRIC/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(figure_folder, '{}/COMPARE/'.format(tag)), exist_ok=True)
     
     figure.subplots_adjust(wspace=0.24, hspace=0.0)
-    figure.savefig(os.path.join(figure_folder, '{}/METRIC/FIGURE.pdf'.format(tag)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(figure_folder, '{}/COMPARE/FIGURE.pdf'.format(tag)), format='pdf', bbox_inches='tight')
     pyplot.close(figure)
     
     # Return

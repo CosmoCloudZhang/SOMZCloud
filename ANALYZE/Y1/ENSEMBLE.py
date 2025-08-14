@@ -61,13 +61,13 @@ def plot_ensemble(z_grid, select_lens, select_source, bin_lens_size, bin_source_
     return figure
 
 
-def main(tag, type, label, folder):
+def main(tag, rank, label, folder):
     '''
     Plot the ensemble of the lens and source redshift distributions
     
     Arguments:
         tag (str): The tag of the configuration
-        type (str): The type of the configuration
+        rank (str): The rank of the configuration
         label (str): The label of the configuration
         folder (str): The base folder of the figure
     
@@ -75,7 +75,7 @@ def main(tag, type, label, folder):
         duration (float): The duration of the process
     '''
     start = time.time()
-    print('Type: {}, Label: {}'.format(type, label))
+    print('Rank: {}, Label: {}'.format(rank, label))
     
     # Path
     analyze_folder = os.path.join(folder, 'ANALYZE/')
@@ -132,15 +132,15 @@ if __name__ == '__main__':
     # Input
     PARSE = argparse.ArgumentParser(description='Analysis Ensemble')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
-    PARSE.add_argument('--type', type=str, required=True, help='The type of the configuration')
+    PARSE.add_argument('--rank', type=str, required=True, help='The rank of the configuration')
     PARSE.add_argument('--label', type=str, required=True, help='The label of the configuration')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the figure')
     
     # Parse
     TAG = PARSE.parse_args().tag
-    TYPE = PARSE.parse_args().type
+    RANK = PARSE.parse_args().rank
     LABEL = PARSE.parse_args().label
     FOLDER = PARSE.parse_args().folder
     
     # Output
-    OUTPUT = main(TAG, TYPE, LABEL, FOLDER)
+    OUTPUT = main(TAG, RANK, LABEL, FOLDER)

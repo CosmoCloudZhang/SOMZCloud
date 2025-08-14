@@ -31,13 +31,13 @@ def main(tag, label, folder):
     os.makedirs(os.path.join(cell_folder, '{}/COVARIANCE/'.format(tag)), exist_ok = True)
     
     # Load
-    with h5py.File(os.path.join(synthesize_folder, '{}/HISTOGRAM_{}.hdf5'.format(tag, label)), 'r') as file:
-        histogram_average_lens = file['lens']['average'][...]
-        histogram_average_source = file['source']['average'][...]
+    with h5py.File(os.path.join(synthesize_folder, '{}/TRUTH_{}.hdf5'.format(tag, label)), 'r') as file:
+        truth_average_lens = file['lens']['average'][...]
+        truth_average_source = file['source']['average'][...]
     
     # Size
-    bin_lens_size, z_size = histogram_average_lens.shape
-    bin_source_size, z_size = histogram_average_source.shape
+    bin_lens_size, z_size = truth_average_lens.shape
+    bin_source_size, z_size = truth_average_source.shape
     
     # Redshift
     z1 = 0.0
@@ -47,13 +47,13 @@ def main(tag, label, folder):
     table_lens = table.Table()
     table_lens['redshift'] = z_grid
     for m in range(bin_lens_size):
-        table_lens['n_{}(z)'.format(m + 1)] = histogram_average_lens[m, :]
+        table_lens['n_{}(z)'.format(m + 1)] = truth_average_lens[m, :]
     table_lens.write(os.path.join(cell_folder, '{}/COVARIANCE/LENS_{}.ascii'.format(tag, label)), overwrite = True, format = 'ascii')
     
     table_source = table.Table()
     table_source['redshift'] = z_grid
     for m in range(bin_source_size):
-        table_source['n_{}(z)'.format(m + 1)] = histogram_average_source[m, :]
+        table_source['n_{}(z)'.format(m + 1)] = truth_average_source[m, :]
     table_source.write(os.path.join(cell_folder, '{}/COVARIANCE/SOURCE_{}.ascii'.format(tag, label)), overwrite = True, format = 'ascii')
     
     # Galaxy

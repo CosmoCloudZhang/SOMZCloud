@@ -22,8 +22,8 @@ def plot_ensemble(z_grid, select_lens, select_source, bin_lens_size, bin_source_
     '''
     # Figure
     figure, plot = pyplot.subplots(nrows = 2, ncols = 1, figsize = (12, 12))
+    color_lens_list = ['darkmagenta', 'darkblue', 'darkgreen', 'darkorange', 'darkred']
     color_source_list = ['darkmagenta', 'darkblue', 'darkgreen', 'darkorange', 'darkred']
-    color_lens_list = ['hotpink', 'darkmagenta', 'darkorchid', 'darkblue', 'deepskyblue', 'darkgreen', 'darkgoldenrod', 'darkorange', 'darksalmon', 'darkred']
     
     for m in range(bin_lens_size):
         
@@ -31,15 +31,15 @@ def plot_ensemble(z_grid, select_lens, select_source, bin_lens_size, bin_source_
         
         plot[0].plot(z_grid, numpy.mean(select_lens[:, m, :], axis=0), color = color_lens_list[m], linewidth = 5.0, label=r'$\mathrm{Bin} \,' + r'{:.0f}$'.format(m + 1))
     
-    plot[0].set_xlim(0.0, 2.5)
-    plot[0].set_ylim(0.0, 12.0)
+    plot[0].set_xlim(0.0, 2.0)
+    plot[0].set_ylim(0.0, 8.0)
     
     plot[0].set_xticklabels([])
-    plot[0].set_yticks([2.0, 4.0, 6.0, 8.0, 10.0, 12.0])
-    
+    plot[0].set_yticks([2.0, 4.0, 6.0, 8.0])
     plot[0].legend(loc='upper right', fontsize=20)
+    
     plot[0].set_ylabel(r'$\phi \left( z \right)$')
-    plot[0].text(x=1.5625, y=9.0, s=r'$\mathtt{Lens}$', fontsize=25)
+    plot[0].text(x=1.25, y=6.0, s=r'$\mathtt{Lens}$', fontsize=25)
     
     for m in range(bin_source_size):
         
@@ -47,27 +47,27 @@ def plot_ensemble(z_grid, select_lens, select_source, bin_lens_size, bin_source_
         
         plot[1].plot(z_grid, numpy.mean(select_source[:, m, :], axis=0), color = color_source_list[m], linewidth = 5.0, label=r'$\mathrm{Bin} \,' + r'{:.0f}$'.format(m + 1))
     
-    plot[1].set_xlim(0.0, 2.5)
-    plot[1].set_ylim(0.0, 6.0)
+    plot[1].set_xlim(0.0, 2.0)
+    plot[1].set_ylim(0.0, 8.0)
     
-    plot[1].set_yticks([0.0, 2.0, 4.0, 6.0])
+    plot[1].set_yticks([0.0, 2.0, 4.0, 6.0, 8.0])
     plot[1].legend(loc='upper right', fontsize=20)
     
     plot[1].set_xlabel(r'$z$')
     plot[1].set_ylabel(r'$\phi \left( z \right)$')
-    plot[1].text(x=1.5625, y=4.5, s=r'$\mathtt{Source}$', fontsize=25)
+    plot[1].text(x=1.25, y=6.0, s=r'$\mathtt{Source}$', fontsize=25)
     
     figure.subplots_adjust(hspace=0.0)
     return figure
 
 
-def main(tag, type, label, folder):
+def main(tag, rank, label, folder):
     '''
     Plot the ensemble of the lens and source redshift distributions
     
     Arguments:
         tag (str): The tag of the configuration
-        type (str): The type of the configuration
+        rank (str): The rank of the configuration
         label (str): The label of the configuration
         folder (str): The base folder of the figure
     
@@ -75,7 +75,7 @@ def main(tag, type, label, folder):
         duration (float): The duration of the process
     '''
     start = time.time()
-    print('Type: {}, Label: {}'.format(type, label))
+    print('Rank: {}, Label: {}'.format(rank, label))
     
     # Path
     analyze_folder = os.path.join(folder, 'ANALYZE/')
@@ -132,15 +132,15 @@ if __name__ == '__main__':
     # Input
     PARSE = argparse.ArgumentParser(description='Analysis Ensemble')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
-    PARSE.add_argument('--type', type=str, required=True, help='The type of the configuration')
+    PARSE.add_argument('--rank', type=str, required=True, help='The rank of the configuration')
     PARSE.add_argument('--label', type=str, required=True, help='The label of the configuration')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the figure')
     
     # Parse
     TAG = PARSE.parse_args().tag
-    TYPE = PARSE.parse_args().type
+    RANK = PARSE.parse_args().rank
     LABEL = PARSE.parse_args().label
     FOLDER = PARSE.parse_args().folder
     
     # Output
-    OUTPUT = main(TAG, TYPE, LABEL, FOLDER)
+    OUTPUT = main(TAG, RANK, LABEL, FOLDER)

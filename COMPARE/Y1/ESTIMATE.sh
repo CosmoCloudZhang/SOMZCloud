@@ -34,7 +34,7 @@ NUMBER=500
 BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 
-for INDEX in $(seq 0 $NUMBER); do
+for INDEX in $(seq 1 $NUMBER); do
     # Set variables
     NAME="ESTIMATE${INDEX}"
     MODEL_PATH="${BASE_FOLDER}COMPARE/${TAG}/INFORM/INFORM${INDEX}.pkl"

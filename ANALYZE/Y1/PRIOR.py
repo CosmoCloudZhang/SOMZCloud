@@ -12,7 +12,7 @@ def plot_expectation(sigma, correlation):
     Plot the prior correlation matrix
     
     Arguments:
-        scatter (numpy.ndarray): The standard deviation of the prior
+        sigma (numpy.ndarray): The standard deviation of the prior
         correlation (numpy.ndarray): The correlation matrix of the prior
     '''
     figure, plot = pyplot.subplots(nrows = 1, ncols = 1, figsize = (3 * len(sigma), 3 * len(sigma)))
@@ -39,12 +39,13 @@ def plot_expectation(sigma, correlation):
     figure.subplots_adjust(wspace = 0.02, hspace = 0.02)
     return figure
 
+
 def plot_deviation(sigma, correlation):
     '''
     Plot the prior correlation matrix
     
     Arguments:
-        scatter (numpy.ndarray): The standard deviation of the prior
+        sigma (numpy.ndarray): The standard deviation of the prior
         correlation (numpy.ndarray): The correlation matrix of the prior
     '''
     figure, plot = pyplot.subplots(nrows = 1, ncols = 1, figsize = (3 * len(sigma), 3 * len(sigma)))
@@ -72,13 +73,13 @@ def plot_deviation(sigma, correlation):
     return figure
 
 
-def main(tag, type, label, folder):
+def main(tag, rank, label, folder):
     '''
     Plot the prior correlation matrix
     
     Arguments:
         tag (str): The tag of the configuration
-        type (str): The type of the configuration
+        rank (str): The rank of the configuration
         label (str): The label of the configuration
         folder (str): The base folder of the figure
     
@@ -89,7 +90,7 @@ def main(tag, type, label, folder):
         figure (matplotlib.figure.Figure): The figure
     '''
     start = time.time()
-    print('Type: {}, Label: {}'.format(type, label))
+    print('Rank: {}, Label: {}'.format(rank, label))
     
     # Path
     analyze_folder = os.path.join(folder, 'ANALYZE/')
@@ -97,7 +98,7 @@ def main(tag, type, label, folder):
     os.makedirs(os.path.join(analyze_folder, '{}/PRIOR/{}'.format(tag, label)), exist_ok=True)
     
     # Info
-    with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/{}_{}.hdf5'.format(tag, type, label)), 'r') as file:
+    with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/{}_{}.hdf5'.format(tag, rank, label)), 'r') as file:
         
         scatter_lens = file['lens']['scatter'][...]
         scatter_source = file['source']['scatter'][...]
@@ -120,20 +121,20 @@ def main(tag, type, label, folder):
     
     # Plot Expectation
     figure = plot_expectation(scatter_lens, correlation_expectation_lens)
-    figure.savefig(os.path.join(analyze_folder, '{}/PRIOR/{}/FIGURE_{}_EXPECTATION_LENS.pdf'.format(tag, label, type)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(analyze_folder, '{}/PRIOR/{}/FIGURE_{}_EXPECTATION_LENS.pdf'.format(tag, label, rank)), format='pdf', bbox_inches='tight')
     pyplot.close(figure)
     
     figure = plot_expectation(scatter_source, correlation_expectation_source)
-    figure.savefig(os.path.join(analyze_folder, '{}/PRIOR/{}/FIGURE_{}_EXPECTATION_SOURCE.pdf'.format(tag, label, type)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(analyze_folder, '{}/PRIOR/{}/FIGURE_{}_EXPECTATION_SOURCE.pdf'.format(tag, label, rank)), format='pdf', bbox_inches='tight')
     pyplot.close(figure)
     
     # Plot Deviation
     figure = plot_deviation(variation_lens, correlation_deviation_lens)
-    figure.savefig(os.path.join(analyze_folder, '{}/PRIOR/{}/FIGURE_{}_DEVIATION_LENS.pdf'.format(tag, label, type)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(analyze_folder, '{}/PRIOR/{}/FIGURE_{}_DEVIATION_LENS.pdf'.format(tag, label, rank)), format='pdf', bbox_inches='tight')
     pyplot.close(figure)
     
     figure = plot_deviation(variation_source, correlation_deviation_source)
-    figure.savefig(os.path.join(analyze_folder, '{}/PRIOR/{}/FIGURE_{}_DEVIATION_SOURCE.pdf'.format(tag, label, type)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(analyze_folder, '{}/PRIOR/{}/FIGURE_{}_DEVIATION_SOURCE.pdf'.format(tag, label, rank)), format='pdf', bbox_inches='tight')
     pyplot.close(figure)
     
     # Duration
@@ -149,15 +150,15 @@ if __name__ == '__main__':
     # Input
     PARSE = argparse.ArgumentParser(description='Analysis Prior')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
-    PARSE.add_argument('--type', type=str, required=True, help='The type of the configuration')
+    PARSE.add_argument('--rank', type=str, required=True, help='The rank of the configuration')
     PARSE.add_argument('--label', type=str, required=True, help='The label of the configuration')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the figure')
     
     # Parse
     TAG = PARSE.parse_args().tag
-    TYPE = PARSE.parse_args().type
+    RANK = PARSE.parse_args().rank
     LABEL = PARSE.parse_args().label
     FOLDER = PARSE.parse_args().folder
     
     # Output
-    OUTPUT = main(TAG, TYPE, LABEL, FOLDER)
+    OUTPUT = main(TAG, RANK, LABEL, FOLDER)

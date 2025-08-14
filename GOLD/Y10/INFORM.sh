@@ -1,14 +1,14 @@
 #!/bin/bash
 #SBATCH -A m1727
-#SBATCH --nodes=4
+#SBATCH --nodes=1
 #SBATCH -q regular
 #SBATCH --time=24:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH --cpus-per-task=4
-#SBATCH -J MODEL_Y10_INFORM
-#SBATCH --ntasks-per-node=64
+#SBATCH -J DATASET_Y1_SOM
+#SBATCH --cpus-per-task=256
+#SBATCH --ntasks-per-node=1
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -29,23 +29,17 @@ export OMP_PROC_BIND=spread
 export OMP_PLACES=threads
 
 # Initialize the process
-TAG="Y10"
-NUMBER=500
+TAG="Y1"
 BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 
-for INDEX in $(seq 0 $NUMBER); do
-    # Set variables
-    NAME="INFORM${INDEX}"
-    MODEL_PATH="${BASE_FOLDER}MODEL/${TAG}/INFORM/INFORM${INDEX}.pkl"
-    CONFIG_PATH="${BASE_FOLDER}MODEL/${TAG}/INFORM/INFORM${INDEX}.yaml"
-    INPUT_PATH="${BASE_FOLDER}DATASET/${TAG}/COMBINATION/DATA${INDEX}.hdf5"
-    # Run applications
-    python -u "${BASE_PATH}MODEL/${TAG}/INFORM.py" --tag=$TAG --index=$INDEX --folder=$BASE_FOLDER &&
-    srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -m ceci rail.estimation.algos.flexzboost.FlexZBoostInformer --mpi --name=$NAME --input=$INPUT_PATH --model=$MODEL_PATH --config=$CONFIG_PATH &
-    # Control parallel execution
-    if (( $INDEX % $SLURM_NTASKS == 0 )); then
-        wait
-    fi
-done
+# Set variables
+NAME="INFORM"
+MODEL_NAME="${BASE_FOLDER}DATASET/${TAG}/SOM/INFORM.pkl"
+INPUT_NAME="${BASE_FOLDER}DATASET/${TAG}/SOM/INFORM.hdf5"
+CONFIG_NAME="${BASE_FOLDER}DATASET/${TAG}/SOM/INFORM.yaml"
+
+# Run applications
+python -u "${BASE_PATH}DATASET/${TAG}/SOM.py" --tag=$TAG --folder=$BASE_FOLDER &&
+srun -u -N 1 -n $SLURM_NTASKS_PER_NODE -c $SLURM_CPUS_PER_TASK --cpu_bind=cores python -m ceci rail.estimation.algos.somoclu_som.SOMocluInformer --mpi --name=$NAME --input=$INPUT_NAME --model=$MODEL_NAME --config=$CONFIG_NAME & 
 wait

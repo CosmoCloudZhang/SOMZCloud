@@ -6,7 +6,7 @@ import argparse
 
 def main(tag, index, folder):
     '''
-    Main function to create the comparison estimator configuration file.
+    Main function to create the compare estimator configuration file.
     
     Arguments:
         tag (str): The tag of the configuration
@@ -21,7 +21,7 @@ def main(tag, index, folder):
     print('Index: {}'.format(index))
     
     # Path
-    comparison_folder = os.path.join(folder, 'COMPARISON/')
+    compare_folder = os.path.join(folder, 'COMPARE/')
     
     # Config
     config = {
@@ -58,10 +58,10 @@ def main(tag, index, folder):
         }
     }
     
-    os.makedirs(os.path.join(comparison_folder, '{}/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(comparison_folder, '{}/ESTIMATE/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(compare_folder, '{}/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(compare_folder, '{}/ESTIMATE/'.format(tag)), exist_ok=True)
     
-    config_name = os.path.join(comparison_folder, '{}/ESTIMATE/ESTIMATE{}.yaml'.format(tag, index))
+    config_name = os.path.join(compare_folder, '{}/ESTIMATE/ESTIMATE{}.yaml'.format(tag, index))
     with open(config_name, 'w') as config_file:
         yaml.dump(config, config_file, default_flow_style=False)
     
@@ -76,7 +76,7 @@ def main(tag, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Comparison Estimator')
+    PARSE = argparse.ArgumentParser(description='Compare Estimator')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
     PARSE.add_argument('--index', type=int, required=True, help='The index of all the datasets')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of all the datasets')

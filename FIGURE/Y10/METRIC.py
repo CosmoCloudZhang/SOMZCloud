@@ -24,7 +24,7 @@ def main(tag, number, folder):
     # Path
     model_folder = os.path.join(folder, 'MODEL/')
     figure_folder = os.path.join(folder, 'FIGURE/')
-    comparison_folder = os.path.join(folder, 'COMPARISON/')
+    comparison_folder = os.path.join(folder, 'COMPARE/')
     
     # Redshift
     z1_average_lens = 0.0
@@ -108,7 +108,7 @@ def main(tag, number, folder):
             reference_divergence_lens[index, :] = file['divergence_lens'][...]
             reference_divergence_source[index, :] = file['divergence_source'][...]
     
-    # Comparison
+    # Compare
     comparison_bias_lens = numpy.zeros((number + 1, average_size_lens))
     comparison_bias_source = numpy.zeros((number + 1, average_size_source))
     
@@ -124,23 +124,22 @@ def main(tag, number, folder):
     comparison_divergence_lens = numpy.zeros((number + 1, average_size_lens))
     comparison_divergence_source = numpy.zeros((number + 1, average_size_source))
     
-    # Loop
-    for index in range(number + 1):
-        with h5py.File(os.path.join(comparison_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-            comparison_bias_lens[index, :] = file['bias_lens'][...]
-            comparison_bias_source[index, :] = file['bias_source'][...]
-            
-            comparison_sigma_lens[index, :] = file['sigma_lens'][...]
-            comparison_sigma_source[index, :] = file['sigma_source'][...]
-            
-            comparison_fraction_lens[index, :] = file['fraction_lens'][...]
-            comparison_fraction_source[index, :] = file['fraction_source'][...]
-            
-            comparison_rate_lens[index, :] = file['rate_lens'][...]
-            comparison_rate_source[index, :] = file['rate_source'][...]
-            
-            comparison_divergence_lens[index, :] = file['divergence_lens'][...]
-            comparison_divergence_source[index, :] = file['divergence_source'][...]
+    # Load
+    with h5py.File(os.path.join(comparison_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+        comparison_bias_lens[index, :] = file['bias_lens'][...]
+        comparison_bias_source[index, :] = file['bias_source'][...]
+        
+        comparison_sigma_lens[index, :] = file['sigma_lens'][...]
+        comparison_sigma_source[index, :] = file['sigma_source'][...]
+        
+        comparison_fraction_lens[index, :] = file['fraction_lens'][...]
+        comparison_fraction_source[index, :] = file['fraction_source'][...]
+        
+        comparison_rate_lens[index, :] = file['rate_lens'][...]
+        comparison_rate_source[index, :] = file['rate_source'][...]
+        
+        comparison_divergence_lens[index, :] = file['divergence_lens'][...]
+        comparison_divergence_source[index, :] = file['divergence_source'][...]
     
     # Plot
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
@@ -318,10 +317,10 @@ def main(tag, number, folder):
     
     # Save
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(figure_folder, '{}/METRIC/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(figure_folder, '{}/COMPARE/'.format(tag)), exist_ok=True)
     
     figure.subplots_adjust(wspace=0.24, hspace=0.0)
-    figure.savefig(os.path.join(figure_folder, '{}/METRIC/FIGURE.pdf'.format(tag)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(figure_folder, '{}/COMPARE/FIGURE.pdf'.format(tag)), format='pdf', bbox_inches='tight')
     pyplot.close(figure)
     
     # Return

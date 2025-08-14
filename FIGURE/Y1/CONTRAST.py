@@ -24,7 +24,8 @@ def main(tag, index, folder):
     
     # Path
     figure_folder = os.path.join(folder, 'FIGURE/')
-    comparison_folder = os.path.join(folder, 'COMPARISON/')
+    dataset_folder = os.path.join(folder, 'DATASET/')
+    comparison_folder = os.path.join(folder, 'COMPARE/')
     
     # Select
     with h5py.File(os.path.join(comparison_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
@@ -137,10 +138,10 @@ def main(tag, index, folder):
     
     # Save
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(figure_folder, '{}/CONTRAST/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(figure_folder, '{}/COMPARE/'.format(tag)), exist_ok=True)
     
     figure.subplots_adjust(wspace=0.0, hspace=0.0, bottom=0.225)
-    figure.savefig(os.path.join(figure_folder, '{}/CONTRAST/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(figure_folder, '{}/COMPARE/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
     pyplot.close(figure)
     
     # Return

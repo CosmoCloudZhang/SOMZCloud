@@ -24,14 +24,14 @@ def main(tag, index, folder):
     
     # Path
     dataset_folder = os.path.join(folder, 'DATASET/')
-    comparison_folder = os.path.join(folder, 'COMPARISON/')
-    os.makedirs(os.path.join(comparison_folder, '{}/SELECT/'.format(tag)), exist_ok=True)
+    compare_folder = os.path.join(folder, 'COMPARE/')
+    os.makedirs(os.path.join(compare_folder, '{}/SELECT/'.format(tag)), exist_ok=True)
     
-    os.makedirs(os.path.join(comparison_folder, '{}/LENS/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(comparison_folder, '{}/LENS/LENS{}/'.format(tag, index)), exist_ok=True)
+    os.makedirs(os.path.join(compare_folder, '{}/LENS/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(compare_folder, '{}/LENS/LENS{}/'.format(tag, index)), exist_ok=True)
     
-    os.makedirs(os.path.join(comparison_folder, '{}/SOURCE/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(comparison_folder, '{}/SOURCE/SOURCE{}/'.format(tag, index)), exist_ok=True)
+    os.makedirs(os.path.join(compare_folder, '{}/SOURCE/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(compare_folder, '{}/SOURCE/SOURCE{}/'.format(tag, index)), exist_ok=True)
     
     # Redshift
     z1_lens = 0.2
@@ -59,7 +59,7 @@ def main(tag, index, folder):
     
     # Estimate
     chunk_size = 100000
-    estimator = h5py.File(os.path.join(comparison_folder, '{}/ESTIMATE/ESTIMATE{}.hdf5'.format(tag, index)), 'r')
+    estimator = h5py.File(os.path.join(compare_folder, '{}/ESTIMATE/ESTIMATE{}.hdf5'.format(tag, index)), 'r')
     
     z_phot = numpy.zeros(application_size, dtype=numpy.float32)
     z_quantile = numpy.zeros(application_size, dtype=numpy.float32)
@@ -198,7 +198,7 @@ def main(tag, index, folder):
             histogram_source[m, :] = numpy.nan
     
     # Save
-    with h5py.File(os.path.join(comparison_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'w') as file:
+    with h5py.File(os.path.join(compare_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'w') as file:
         file.create_dataset('bias', data=bias, dtype=numpy.float32)
         file.create_dataset('rate', data=rate, dtype=numpy.float32)
         file.create_dataset('sigma', data=sigma, dtype=numpy.float32)
@@ -239,7 +239,7 @@ def main(tag, index, folder):
     for m in range(len(bin_lens) - 1):
         select_lens_bin[m, :] = select_lens & (bin_lens[m] <= z_phot) & (z_phot < bin_lens[m + 1])
     
-    with h5py.File(os.path.join(comparison_folder, '{}/LENS/LENS{}/SELECT.hdf5'.format(tag, index)), 'w') as file:    
+    with h5py.File(os.path.join(compare_folder, '{}/LENS/LENS{}/SELECT.hdf5'.format(tag, index)), 'w') as file:    
         file.create_dataset('select', data=select_lens_bin, dtype=bool)
     
     # Source bin
@@ -247,7 +247,7 @@ def main(tag, index, folder):
     for m in range(len(bin_source) - 1):
         select_source_bin[m, :] = select_source & (bin_source[m] <= z_phot) & (z_phot < bin_source[m + 1])
     
-    with h5py.File(os.path.join(comparison_folder, '{}/SOURCE/SOURCE{}/SELECT.hdf5'.format(tag, index)), 'w') as file:
+    with h5py.File(os.path.join(compare_folder, '{}/SOURCE/SOURCE{}/SELECT.hdf5'.format(tag, index)), 'w') as file:
         file.create_dataset('select', data=select_source_bin, dtype=bool)
     
     # Duration
@@ -261,7 +261,7 @@ def main(tag, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Comparison Select')
+    PARSE = argparse.ArgumentParser(description='Compare Select')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
     PARSE.add_argument('--index', type=int, required=True, help='The index of all the datasets')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of all the datasets')

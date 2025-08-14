@@ -2,7 +2,7 @@
 #SBATCH -A m1727
 #SBATCH --nodes=1
 #SBATCH -q regular
-#SBATCH --time=12:00:00
+#SBATCH --time=24:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
@@ -36,11 +36,11 @@ BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 
 # Run applications
 LABEL_LIST=("ZERO" "HALF" "UNITY" "DOUBLE")
-TYPE_LIST=("TARGET" "MODEL" "PRODUCT" "FIDUCIAL" "HISTOGRAM")
+RANK_LIST=("DIR" "FIDUCIAL" "STACK" "PRODUCT" "TRUTH")
 
 for LABEL in "${LABEL_LIST[@]}"; do
-    for TYPE in "${TYPE_LIST[@]}"; do
-        srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}CELL/${TAG}/${NAME}/SHIFT.py" --tag=$TAG --name=$NAME --type=$TYPE --label=$LABEL --folder=$BASE_FOLDER &
+    for RANK in "${RANK_LIST[@]}"; do
+        srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}CELL/${TAG}/${NAME}/SHIFT.py" --tag=$TAG --name=$NAME --rank=$RANK --label=$LABEL --folder=$BASE_FOLDER &
     done
 done
 wait
