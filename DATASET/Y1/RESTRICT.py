@@ -6,6 +6,7 @@ import argparse
 from rail import core
 from rail.estimation.algos import somoclu_som
 
+
 def main(tag, index, folder):
     '''
     Combine the datasets
