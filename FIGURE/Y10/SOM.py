@@ -1,7 +1,6 @@
 import os
 import h5py
 import time
-import numpy
 import argparse
 from matplotlib import colors
 from matplotlib import pyplot

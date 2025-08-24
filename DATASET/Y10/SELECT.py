@@ -57,7 +57,7 @@ def main(tag, index, folder):
     
     # Color
     color1 = {'Y1': 0.5, 'Y10': 0.5}
-    color2 = {'Y1': 2.0, 'Y10': 2.0}
+    color2 = {'Y1': 2.5, 'Y10': 2.5}
     color = random_generator.uniform(low=color1[tag], high=color2[tag])
     
     # Angle
@@ -68,11 +68,23 @@ def main(tag, index, folder):
     application_color = application_dataset['photometry']['mag_g_lsst'] - application_dataset['photometry']['mag_z_lsst']
     filter = filter & (application_dataset['photometry']['mag_i_lsst'] - magnitude  - numpy.tan(angle) * (application_color - color) < 0)
     
+    # Fraction
+    fraction1 = {'Y1': 0.2, 'Y10': 0.2}
+    fraction2 = {'Y1': 0.8, 'Y10': 0.8}
+    fraction = random_generator.uniform(low=fraction1[tag], high=fraction2[tag])
+    
+    # Cell
+    application_cell_id = application_dataset['meta']['cell_id']
+    application_cell_size = application_dataset['meta']['cell_size']
+    application_cell_id_select = random_generator.choice(numpy.arange(application_cell_size), size=int(application_cell_size * fraction), replace=False)
+    
+    filter = filter & numpy.isin(application_cell_id, application_cell_id_select)
+    
     # Factor
-    factor1 = {'Y1': 0.5, 'Y10': 1.5}
-    factor2 = {'Y1': 1.5, 'Y10': 3.0}
+    factor1 = {'Y1': 0.5, 'Y10': 0.5}
+    factor2 = {'Y1': 5.0, 'Y10': 5.0}
     factor = random_generator.uniform(low=factor1[tag], high=factor2[tag])
-    rate = 1 / (1 + factor * numpy.exp(application_dataset['photometry']['mag_i_lsst'] - application_dataset['photometry']['mag_i_lsst'].max()))
+    rate = 1 / (1 + factor * numpy.exp(application_dataset['photometry']['mag_i_lsst'] - magnitude))
     
     # Size
     size1 = {'Y1': 100000, 'Y10': 250000}
@@ -115,7 +127,6 @@ def main(tag, index, folder):
     
     cell_size = model['n_rows'] * model['n_columns']
     selection_cell_count = numpy.bincount(selection_cell_id, minlength=cell_size)
-    
     selection_cell_z_true = numpy.divide(numpy.bincount(selection_cell_id, weights=selection_dataset['photometry']['redshift_true'], minlength=cell_size), selection_cell_count, out=numpy.ones(cell_size) * numpy.nan, where=selection_cell_count != 0)
     
     # Save
@@ -126,6 +137,7 @@ def main(tag, index, folder):
         file['meta'].create_dataset('angle', data=angle, dtype=numpy.float32)
         file['meta'].create_dataset('color', data=color, dtype=numpy.float32)
         file['meta'].create_dataset('factor', data=factor, dtype=numpy.float32)
+        file['meta'].create_dataset('fraction', data=fraction, dtype=numpy.float32)
         file['meta'].create_dataset('redshift', data=redshift, dtype=numpy.float32)
         file['meta'].create_dataset('magnitude', data=magnitude, dtype=numpy.float32)
         

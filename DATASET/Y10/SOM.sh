@@ -22,11 +22,11 @@ source $HOME/.bashrc
 conda activate $RAILENV
 
 # Set environment
-export NUMEXPR_MAX_THREADS=$SLURM_CPUS_PER_TASK
-export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-export HDF5_USE_FILE_LOCKING=FALSE
-export OMP_PROC_BIND=spread
-export OMP_PLACES=threads
+#export NUMEXPR_MAX_THREADS=$SLURM_CPUS_PER_TASK
+#export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+#export HDF5_USE_FILE_LOCKING=FALSE
+#export OMP_PROC_BIND=spread
+#export OMP_PLACES=threads
 
 # Initialize the process
 TAG="Y10"
@@ -41,5 +41,5 @@ CONFIG_NAME="${BASE_FOLDER}DATASET/${TAG}/SOM/INFORM.yaml"
 
 # Run applications
 python -u "${BASE_PATH}DATASET/${TAG}/SOM.py" --tag=$TAG --folder=$BASE_FOLDER &&
-srun -u -N 1 -n $SLURM_NTASKS_PER_NODE -c $SLURM_CPUS_PER_TASK --cpu_bind=cores python -m ceci rail.estimation.algos.somoclu_som.SOMocluInformer --mpi --name=$NAME --input=$INPUT_NAME --model=$MODEL_NAME --config=$CONFIG_NAME & 
+python -m ceci rail.estimation.algos.somoclu_som.SOMocluInformer --mpi --name=$NAME --input=$INPUT_NAME --model=$MODEL_NAME --config=$CONFIG_NAME & 
 wait
