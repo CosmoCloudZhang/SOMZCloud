@@ -25,7 +25,7 @@ def main(tag, index, folder):
     # Path
     figure_folder = os.path.join(folder, 'FIGURE/')
     dataset_folder = os.path.join(folder, 'DATASET/')
-    comparison_folder = os.path.join(folder, 'COMPARE/')
+    constrain_folder = os.path.join(folder, 'CONSTRAIN/')
     
     # Redshift
     z1 = 0.0
@@ -38,7 +38,7 @@ def main(tag, index, folder):
         application_redshift_true = file['photometry']['redshift_true'][...]
     
     # Select
-    with h5py.File(os.path.join(comparison_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+    with h5py.File(os.path.join(constrain_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         z_phot = file['z_phot'][...]
         select_lens = file['select_lens'][...]
         select_source = file['select_source'][...]
@@ -164,9 +164,9 @@ def main(tag, index, folder):
     color_bar.set_label(r'$\mathrm{Counts}$', fontsize=25)
     
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(figure_folder, '{}/COMPARE/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(figure_folder, '{}/RESTRAIN/'.format(tag)), exist_ok=True)
     
-    figure.savefig(os.path.join(figure_folder, '{}/COMPARE/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(figure_folder, '{}/RESTRAIN/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
     pyplot.close(figure)
     
     # Return
@@ -179,7 +179,7 @@ def main(tag, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Figure Compare')
+    PARSE = argparse.ArgumentParser(description='Figure Restrain')
     PARSE.add_argument('--tag', type=str, help='The tag of the configuration')
     PARSE.add_argument('--index', type=int, help='The index of all the datasets')
     PARSE.add_argument('--folder', type=str, help='The base folder of all the datasets')

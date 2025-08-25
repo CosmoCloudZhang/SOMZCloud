@@ -8,7 +8,7 @@ from matplotlib import pyplot
 
 def main(tag, index, folder):
     '''
-    Plot the figures of the contrast quantiles
+    Plot the figures of the quantiles
     
     Arguments:
         tag (str): The tag of the configuration
@@ -24,10 +24,10 @@ def main(tag, index, folder):
     
     # Path
     figure_folder = os.path.join(folder, 'FIGURE/')
-    comparison_folder = os.path.join(folder, 'COMPARE/')
+    constrain_folder = os.path.join(folder, 'CONSTRAIN/')
     
     # Select
-    with h5py.File(os.path.join(comparison_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+    with h5py.File(os.path.join(constrain_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         z_quantile = file['z_quantile'][...]
         
         select_lens = file['select_lens'][...]
@@ -137,10 +137,10 @@ def main(tag, index, folder):
     
     # Save
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(figure_folder, '{}/CONTRAST/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(figure_folder, '{}/REGULATE/'.format(tag)), exist_ok=True)
     
     figure.subplots_adjust(wspace=0.0, hspace=0.0, bottom=0.225)
-    figure.savefig(os.path.join(figure_folder, '{}/CONTRAST/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(figure_folder, '{}/REGULATE/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
     pyplot.close(figure)
     
     # Return
@@ -153,7 +153,7 @@ def main(tag, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Figure Contrast')
+    PARSE = argparse.ArgumentParser(description='Figure Regulate')
     PARSE.add_argument('--tag', type=str, help='The tag of the configuration')
     PARSE.add_argument('--index', type=int, help='The index of all the datasets')
     PARSE.add_argument('--folder', type=str, help='The base folder of all the datasets')

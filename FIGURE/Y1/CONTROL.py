@@ -8,7 +8,7 @@ from matplotlib import pyplot, colors, gridspec
 
 def main(tag, index, folder):
     '''
-    Plot the figures of the benchmark redshift estimation
+    Plot the figures of the redshift estimation
     
     Arguments:
         tag (str): The tag of the configuration
@@ -23,9 +23,9 @@ def main(tag, index, folder):
     print('Index:{}'.format(index))
     
     # Path
-    model_folder = os.path.join(folder, 'MODEL/')
     figure_folder = os.path.join(folder, 'FIGURE/')
     dataset_folder = os.path.join(folder, 'DATASET/')
+    comparison_folder = os.path.join(folder, 'COMPARE/')
     
     # Redshift
     z1 = 0.0
@@ -34,22 +34,22 @@ def main(tag, index, folder):
     z_bin = numpy.linspace(z1, z2, bin_size + 1)
     
     # Application
-    with h5py.File(os.path.join(dataset_folder, '{}/COMBINATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        combination_redshift_true = file['photometry']['redshift_true'][...]
+    with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+        application_redshift_true = file['photometry']['redshift_true'][...]
     
-    # Reference
-    with h5py.File(os.path.join(model_folder, '{}/REFERENCE/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+    # Select
+    with h5py.File(os.path.join(comparison_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         z_phot = file['z_phot'][...]
-        reference_lens = file['reference_lens'][...]
-        reference_source = file['reference_source'][...]
+        select_lens = file['select_lens'][...]
+        select_source = file['select_source'][...]
     
     # Lens
-    z_phot_lens = z_phot[reference_lens]
-    z_true_lens = combination_redshift_true[reference_lens]
+    z_phot_lens = z_phot[select_lens]
+    z_true_lens = application_redshift_true[select_lens]
     
     # Source
-    z_phot_source = z_phot[reference_source]
-    z_true_source = combination_redshift_true[reference_source]
+    z_phot_source = z_phot[select_source]
+    z_true_source = application_redshift_true[select_source]
     
     # Delta
     delta1 = 1e-4
@@ -68,13 +68,13 @@ def main(tag, index, folder):
     delta_mean_source = numpy.zeros(mean_size)
     
     for m in range(mean_size):
-        reference_lens = (z_mean[m] <= z_true_lens) & (z_true_lens < z_mean[m + 1])
-        if numpy.sum(reference_lens) > 0:
-            delta_mean_lens[m] = numpy.median(delta_lens[reference_lens])
+        select_lens = (z_mean[m] <= z_true_lens) & (z_true_lens < z_mean[m + 1])
+        if numpy.sum(select_lens) > 0:
+            delta_mean_lens[m] = numpy.median(delta_lens[select_lens])
         
-        reference_source = (z_mean[m] <= z_true_source) & (z_true_source < z_mean[m + 1])
-        if numpy.sum(reference_source) > 0:
-            delta_mean_source[m] = numpy.median(delta_source[reference_source])
+        select_source = (z_mean[m] <= z_true_source) & (z_true_source < z_mean[m + 1])
+        if numpy.sum(select_source) > 0:
+            delta_mean_source[m] = numpy.median(delta_source[select_source])
     
     # Plot
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
@@ -84,7 +84,7 @@ def main(tag, index, folder):
     pyplot.rcParams['font.size'] = 30
     
     figure = pyplot.figure(figsize=(15, 10))
-    normalize = colors.LogNorm(vmin=1, vmax=1000)
+    normalize = colors.LogNorm(vmin=1, vmax=10000)
     plot = gridspec.GridSpec(nrows=2, ncols=2, figure=figure, height_ratios=[3, 1], width_ratios=[1, 1])
     
     # Plot 1
@@ -164,9 +164,9 @@ def main(tag, index, folder):
     color_bar.set_label(r'$\mathrm{Counts}$', fontsize=25)
     
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(figure_folder, '{}/BENCHMARK/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(figure_folder, '{}/CONTROL/'.format(tag)), exist_ok=True)
     
-    figure.savefig(os.path.join(figure_folder, '{}/BENCHMARK/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(figure_folder, '{}/CONTROL/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
     pyplot.close(figure)
     
     # Return
@@ -179,7 +179,7 @@ def main(tag, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Figure Benchmark')
+    PARSE = argparse.ArgumentParser(description='Figure Control')
     PARSE.add_argument('--tag', type=str, help='The tag of the configuration')
     PARSE.add_argument('--index', type=int, help='The index of all the datasets')
     PARSE.add_argument('--folder', type=str, help='The base folder of all the datasets')

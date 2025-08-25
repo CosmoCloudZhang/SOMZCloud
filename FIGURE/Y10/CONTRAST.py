@@ -24,7 +24,6 @@ def main(tag, index, folder):
     
     # Path
     figure_folder = os.path.join(folder, 'FIGURE/')
-    dataset_folder = os.path.join(folder, 'DATASET/')
     comparison_folder = os.path.join(folder, 'COMPARE/')
     
     # Select
@@ -138,10 +137,10 @@ def main(tag, index, folder):
     
     # Save
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(figure_folder, '{}/COMPARE/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(figure_folder, '{}/CONTRAST/'.format(tag)), exist_ok=True)
     
     figure.subplots_adjust(wspace=0.0, hspace=0.0, bottom=0.225)
-    figure.savefig(os.path.join(figure_folder, '{}/COMPARE/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(figure_folder, '{}/CONTRAST/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
     pyplot.close(figure)
     
     # Return
@@ -154,7 +153,7 @@ def main(tag, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Figure Compare')
+    PARSE = argparse.ArgumentParser(description='Figure Contrast')
     PARSE.add_argument('--tag', type=str, help='The tag of the configuration')
     PARSE.add_argument('--index', type=int, help='The index of all the datasets')
     PARSE.add_argument('--folder', type=str, help='The base folder of all the datasets')
