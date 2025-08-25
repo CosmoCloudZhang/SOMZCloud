@@ -39,7 +39,7 @@ for INDEX in $(seq 0 $NUMBER); do
     NAME="INFORM${INDEX}"
     MODEL_PATH="${BASE_FOLDER}CONSTRAIN/${TAG}/INFORM/INFORM${INDEX}.pkl"
     CONFIG_PATH="${BASE_FOLDER}CONSTRAIN/${TAG}/INFORM/INFORM${INDEX}.yaml"
-    INPUT_PATH="${BASE_FOLDER}DATASET/${TAG}/DEGRADATION/DATA${INDEX}.hdf5"
+    INPUT_PATH="${BASE_FOLDER}DATASET/${TAG}/RESTRICTION/DATA${INDEX}.hdf5"
     # Run applications
     python -u "${BASE_PATH}CONSTRAIN/${TAG}/INFORM.py" --tag=$TAG --index=$INDEX --folder=$BASE_FOLDER &&
     srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -m ceci rail.estimation.algos.flexzboost.FlexZBoostInformer --mpi --name=$NAME --input=$INPUT_PATH --model=$MODEL_PATH --config=$CONFIG_PATH &
