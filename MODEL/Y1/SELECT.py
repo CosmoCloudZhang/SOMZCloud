@@ -153,13 +153,13 @@ def main(tag, index, folder):
             histogram_lens[m, :] = numpy.histogram(z_quantile_lens_select, bins=histogram_bin, range=(0, 1), density=True)[0]
             divergence_lens[m] = numpy.sqrt(numpy.sum(numpy.square(histogram_lens[m, :] - numpy.ones(histogram_size))) / histogram_size)
         else:
-            bias_lens[m] = numpy.nan
-            rate_lens[m] = numpy.nan
-            sigma_lens[m] = numpy.nan
-            fraction_lens[m] = numpy.nan
+            bias_lens[m] = 0.0
+            rate_lens[m] = 0.0
+            sigma_lens[m] = 0.0
+            fraction_lens[m] = 0.0
             
-            divergence_lens[m] = numpy.nan
-            histogram_lens[m, :] = numpy.nan
+            divergence_lens[m] = 0.0
+            histogram_lens[m, :] = 0.0
     
     # Metric Source
     z1_average_source = 0.0
@@ -191,13 +191,13 @@ def main(tag, index, folder):
             histogram_source[m, :] = numpy.histogram(z_quantile_source_select, bins=histogram_bin, range=(0, 1), density=True)[0]
             divergence_source[m] = numpy.sqrt(numpy.sum(numpy.square(histogram_source[m, :] - numpy.ones(histogram_size))) / histogram_size)
         else:
-            bias_source[m] = numpy.nan
-            rate_source[m] = numpy.nan
-            sigma_source[m] = numpy.nan
-            fraction_source[m] = numpy.nan
+            bias_source[m] = 0.0
+            rate_source[m] = 0.0
+            sigma_source[m] = 0.0
+            fraction_source[m] = 0.0
             
-            divergence_source[m] = numpy.nan
-            histogram_source[m, :] = numpy.nan
+            divergence_source[m] = 0.0
+            histogram_source[m, :] = 0.0
     
     # Save
     with h5py.File(os.path.join(model_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'w') as file:
