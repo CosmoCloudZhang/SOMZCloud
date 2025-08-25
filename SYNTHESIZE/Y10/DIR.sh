@@ -12,7 +12,7 @@
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
-module load python
+module load conda
 module load PrgEnv-gnu
 module load cray-mpich/8.1.30
 module load cray-hdf5-parallel
