@@ -136,7 +136,7 @@ def main(tag, index, folder):
     os.makedirs(os.path.join(figure_folder, '{}/'.format(tag)), exist_ok=True)
     os.makedirs(os.path.join(figure_folder, '{}/DIAGRAM/'.format(tag)), exist_ok=True)
     
-    figure.savefig(os.path.join(figure_folder, '{}/DIAGRAM/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(figure_folder, '{}/DIAGRAM/FIGURE{}.pdf'.format(tag, index)), dpi=512, format='pdf', bbox_inches='tight')
     pyplot.close(figure)
     
     # Duration
