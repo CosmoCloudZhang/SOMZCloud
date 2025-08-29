@@ -8,12 +8,13 @@ from rail import core
 from sklearn import cluster
 
 
-def main(tag, index, folder):
+def main(tag, label, index, folder):
     '''
     DIR summarization of the lens samples
     
     Arguments:
-        tag (str): The tag of the configuration
+        tag (str): The tag of configuration
+        label (str): The label of configuration
         index (int): The index of all the datasets
         folder (str): The base folder of all the datasets
     
@@ -30,8 +31,8 @@ def main(tag, index, folder):
     dataset_folder = os.path.join(folder, 'DATASET/')
     summarize_folder = os.path.join(folder, 'SUMMARIZE/')
     
-    os.makedirs(os.path.join(summarize_folder, '{}/LENS/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(summarize_folder, '{}/LENS/LENS{}'.format(tag, index)), exist_ok=True)
+    os.makedirs(os.path.join(summarize_folder, '{}/{}/LENS/'.format(label, tag)), exist_ok=True)
+    os.makedirs(os.path.join(summarize_folder, '{}/{}/LENS/LENS{}'.format(label, tag, index)), exist_ok=True)
     
     # SOM
     data_store = core.stage.RailStage.data_store
@@ -158,7 +159,7 @@ def main(tag, index, folder):
     average_lens = average_lens / scipy.integrate.trapezoid(x=z_grid, y=average_lens, axis=1)[:, numpy.newaxis]
     
     # Save
-    with h5py.File(os.path.join(summarize_folder, '{}/LENS/LENS{}/DIR.hdf5'.format(tag, index)), 'w') as file:
+    with h5py.File(os.path.join(summarize_folder, '{}/{}/LENS/LENS{}/DIR.hdf5'.format(label, tag, index)), 'w') as file:
         file.create_dataset('data', data=data_lens, dtype=numpy.float32)
         file.create_dataset('average', data=average_lens, dtype=numpy.float32)
     
@@ -172,15 +173,17 @@ def main(tag, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Summarize DIR')
-    PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
+    PARSE = argparse.ArgumentParser(description='Summarize Fiducial DIR Lens')
+    PARSE.add_argument('--tag', type=str, required=True, help='The tag of configuration')
+    PARSE.add_argument('--label', type=str, required=True, help='The label of configuration')
     PARSE.add_argument('--index', type=int, required=True, help='The index of all the datasets')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of all the datasets')
     
     # Parse
     TAG = PARSE.parse_args().tag
+    LABEL = PARSE.parse_args().label
     INDEX = PARSE.parse_args().index
     FOLDER = PARSE.parse_args().folder
     
     # Output
-    OUTPUT = main(TAG, INDEX, FOLDER)
+    OUTPUT = main(TAG, LABEL, INDEX, FOLDER)

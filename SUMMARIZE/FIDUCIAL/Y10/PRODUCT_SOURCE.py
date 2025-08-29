@@ -6,12 +6,13 @@ import scipy
 import argparse
 
 
-def main(tag, index, folder):
+def main(tag, label, index, folder):
     '''
     Product summarization of the source samples
     
     Arguments:
-        tag (str): The tag of the configuration
+        tag (str): The tag of configuration
+        label (str): The label of configuration
         index (int): The index of all the datasets
         folder (str): The base folder of all the datasets
     
@@ -26,8 +27,8 @@ def main(tag, index, folder):
     # Path
     summarization_folder = os.path.join(folder, 'SUMMARIZE/')
     
-    os.makedirs(os.path.join(summarization_folder, '{}/SOURCE/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(summarization_folder, '{}/SOURCE/SOURCE{}'.format(tag, index)), exist_ok=True)
+    os.makedirs(os.path.join(summarization_folder, '{}/{}/SOURCE/'.format(label, tag)), exist_ok=True)
+    os.makedirs(os.path.join(summarization_folder, '{}/{}/SOURCE/SOURCE{}'.format(label, tag, index)), exist_ok=True)
     
     # Redshift
     z1 = 0.0
@@ -36,11 +37,11 @@ def main(tag, index, folder):
     z_grid = numpy.linspace(z1, z2, grid_size + 1)
     
     # DIR
-    with h5py.File(os.path.join(summarization_folder, '{}/SOURCE/SOURCE{}/DIR.hdf5'.format(tag, index)), 'r') as file:
+    with h5py.File(os.path.join(summarization_folder, '{}/{}/SOURCE/SOURCE{}/DIR.hdf5'.format(label, tag, index)), 'r') as file:
         data_source_dir = file['data'][...]
     
     # Stack
-    with h5py.File(os.path.join(summarization_folder, '{}/SOURCE/SOURCE{}/STACK.hdf5'.format(tag, index)), 'r') as file:
+    with h5py.File(os.path.join(summarization_folder, '{}/{}/SOURCE/SOURCE{}/STACK.hdf5'.format(label, tag, index)), 'r') as file:
         data_source_stack = file['data'][...]
     
     data_source = numpy.sqrt(numpy.maximum(data_source_dir * data_source_stack, 0.0))
@@ -51,7 +52,7 @@ def main(tag, index, folder):
     average_source = average_source / scipy.integrate.trapezoid(x=z_grid, y=average_source, axis=1)[:, numpy.newaxis]
     
     # Save
-    with h5py.File(os.path.join(summarization_folder, '{}/SOURCE/SOURCE{}/PRODUCT.hdf5'.format(tag, index)), 'w') as file:
+    with h5py.File(os.path.join(summarization_folder, '{}/{}/SOURCE/SOURCE{}/PRODUCT.hdf5'.format(label, tag, index)), 'w') as file:
         file.create_dataset('data', data=data_source, dtype=numpy.float32)
         file.create_dataset('average', data=average_source, dtype=numpy.float32)
     
@@ -65,15 +66,17 @@ def main(tag, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Summarize Product')
-    PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
+    PARSE = argparse.ArgumentParser(description='Summarize Fiducial Product Source')
+    PARSE.add_argument('--tag', type=str, required=True, help='The tag of configuration')
+    PARSE.add_argument('--label', type=str, required=True, help='The label of configuration')
     PARSE.add_argument('--index', type=int, required=True, help='The index of all the datasets')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of all the datasets')
     
     # Parse
     TAG = PARSE.parse_args().tag
+    LABEL = PARSE.parse_args().label
     INDEX = PARSE.parse_args().index
     FOLDER = PARSE.parse_args().folder
     
     # Output
-    OUTPUT = main(TAG, INDEX, FOLDER)
+    OUTPUT = main(TAG, LABEL, INDEX, FOLDER)
