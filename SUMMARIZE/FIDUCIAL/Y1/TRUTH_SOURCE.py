@@ -79,10 +79,6 @@ def main(tag, label, index, folder):
     # Size
     data_size = 100
     bin_source_size = len(bin_source) - 1
-    
-    pi_data_source = numpy.zeros((bin_source_size, data_size))
-    xi_data_source = numpy.zeros((bin_source_size, data_size))
-    gamma_data_source = numpy.zeros((bin_source_size, data_size))
     data_source = numpy.zeros((bin_source_size, data_size, grid_size + 1))
     
     # Cluster
@@ -147,7 +143,6 @@ def main(tag, label, index, folder):
             
             # Filter
             filter_data = (application_cluster_count_data > 0) & (combination_cluster_count_data > 0)
-            cluster_mean_delta_data = application_cluster_z_phot_data - combination_cluster_z_spec_data
             
             # Application Mask
             application_cluster_mask = filter_data[application_cluster_id_data]
@@ -164,14 +159,6 @@ def main(tag, label, index, folder):
             # Ensemble
             ensemble = numpy.average(ensemble_cluster, axis=0, weights=application_cluster_count_data)
             data_source[m, n, :] = ensemble / scipy.integrate.trapezoid(x=z_grid, y=ensemble, axis=0)
-            
-            # Metrics
-            gamma_data_source[m, n] = numpy.sum(application_cluster_mask) / select_size  
-            
-            pi_data_source[m, n] = scipy.stats.median_abs_deviation(cluster_mean_delta_data[filter_data], scale='normal')
-            
-            cluster_ratio_data = numpy.divide(combination_cluster_count_data / reference_size, application_cluster_count_data / select_size, out=numpy.zeros(cluster_size, dtype=numpy.float32), where=application_cluster_count_data > 0)
-            xi_data_source[m, n] = numpy.sqrt(numpy.mean(numpy.square(1 - cluster_ratio_data[filter_data])))
     
     # Average
     average_source = numpy.mean(data_source, axis=1)
@@ -181,10 +168,6 @@ def main(tag, label, index, folder):
     with h5py.File(os.path.join(summarize_folder, '{}/{}/SOURCE/SOURCE{}/TRUTH.hdf5'.format(label, tag, index)), 'w') as file:
         file.create_dataset('data', data=data_source, dtype=numpy.float32)
         file.create_dataset('average', data=average_source, dtype=numpy.float32)
-        
-        file.create_dataset('pi', data=pi_data_source, dtype=numpy.float32)
-        file.create_dataset('xi', data=xi_data_source, dtype=numpy.float32)
-        file.create_dataset('gamma', data=gamma_data_source, dtype=numpy.float32)
     
     # Duration
     end = time.time()
