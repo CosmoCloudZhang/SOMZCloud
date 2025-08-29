@@ -43,7 +43,7 @@ for INDEX in $(seq 0 $NUMBER); do
     OUTPUT_PATH="${BASE_FOLDER}CONSTRAIN/${TAG}/EVALUATE/EVALUATE${INDEX}.hdf5"
     # Run applications
     python -u "${BASE_PATH}CONSTRAIN/${TAG}/EVALUATE.py" --tag=$TAG --index=$INDEX --folder=$BASE_FOLDER &&
-    srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -m ceci rail.estimation.algos.flexzboost.FlexZBoostEstimator --mpi --name=$NAME --input=$INPUT_PATH --CONSTRAIN=$CONSTRAIN_PATH --config=$CONFIG_PATH --output=$OUTPUT_PATH &
+    srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -m ceci rail.estimation.algos.flexzboost.FlexZBoostEstimator --mpi --name=$NAME --input=$INPUT_PATH --model=$CONSTRAIN_PATH --config=$CONFIG_PATH --output=$OUTPUT_PATH &
     # Control parallel execution
     if (( $INDEX % $SLURM_NTASKS == 0 )); then
         wait
