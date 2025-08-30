@@ -24,14 +24,14 @@ def main(tag, index, folder):
     
     # Path
     dataset_folder = os.path.join(folder, 'DATASET/')
-    constrain_folder = os.path.join(folder, 'CONSTRAIN/')
-    os.makedirs(os.path.join(constrain_folder, '{}/REFERENCE/'.format(tag)), exist_ok=True)
+    compare_folder = os.path.join(folder, 'COMPARE/')
+    os.makedirs(os.path.join(compare_folder, '{}/REFERENCE/'.format(tag)), exist_ok=True)
     
-    os.makedirs(os.path.join(constrain_folder, '{}/LENS/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(constrain_folder, '{}/LENS/LENS{}/'.format(tag, index)), exist_ok=True)
+    os.makedirs(os.path.join(compare_folder, '{}/LENS/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(compare_folder, '{}/LENS/LENS{}/'.format(tag, index)), exist_ok=True)
     
-    os.makedirs(os.path.join(constrain_folder, '{}/SOURCE/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(constrain_folder, '{}/SOURCE/SOURCE{}/'.format(tag, index)), exist_ok=True)
+    os.makedirs(os.path.join(compare_folder, '{}/SOURCE/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(compare_folder, '{}/SOURCE/SOURCE{}/'.format(tag, index)), exist_ok=True)
     
     # Redshift
     z1_lens = 0.2
@@ -50,23 +50,23 @@ def main(tag, index, folder):
     z_delta = (z2 - z1) / mesh_size
     z_mesh = numpy.linspace(z1, z2, mesh_size + 1)
     
-    # Restriction
-    with h5py.File(os.path.join(dataset_folder, '{}/RESTRICTION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        restriction_sigma = file['morphology']['sigma'][...]
-        restriction_magnitude = file['photometry']['mag_i_lsst'][...]
-        restriction_redshift_true = file['photometry']['redshift_true'][...]
-    restriction_size = len(restriction_magnitude)
+    # Degradation
+    with h5py.File(os.path.join(dataset_folder, '{}/DEGRADATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+        degradation_sigma = file['morphology']['sigma'][...]
+        degradation_magnitude = file['photometry']['mag_i_lsst'][...]
+        degradation_redshift_true = file['photometry']['redshift_true'][...]
+    degradation_size = len(degradation_magnitude)
     
     # Evaluate
     chunk_size = 100000
-    evaluator = h5py.File(os.path.join(constrain_folder, '{}/EVALUATE/EVALUATE{}.hdf5'.format(tag, index)), 'r')
+    evaluator = h5py.File(os.path.join(compare_folder, '{}/EVALUATE/EVALUATE{}.hdf5'.format(tag, index)), 'r')
     
-    z_phot = numpy.zeros(restriction_size, dtype=numpy.float32)
-    z_quantile = numpy.zeros(restriction_size, dtype=numpy.float32)
+    z_phot = numpy.zeros(degradation_size, dtype=numpy.float32)
+    z_quantile = numpy.zeros(degradation_size, dtype=numpy.float32)
     
-    for m in range(restriction_size // chunk_size + 1):
+    for m in range(degradation_size // chunk_size + 1):
         begin = m * chunk_size
-        stop = min((m + 1) * chunk_size, restriction_size)
+        stop = min((m + 1) * chunk_size, degradation_size)
         
         if begin < stop:
             z_pdf = numpy.maximum(scipy.interpolate.CubicSpline(x=z_grid, y=evaluator['data']['yvals'][begin: stop].astype(numpy.float32), axis=1, bc_type='natural', extrapolate=False)(z_mesh), 0.0)
@@ -74,16 +74,16 @@ def main(tag, index, folder):
             z_phot[begin: stop] = z_mesh[numpy.argmax(z_pdf, axis=1)]
             
             z_cdf = numpy.cumsum(z_pdf, axis=1) * z_delta
-            z_quantile[begin: stop] = z_cdf[numpy.arange(stop - begin), numpy.round((restriction_redshift_true[begin: stop] - z1) / z_delta).astype(numpy.int32)]
+            z_quantile[begin: stop] = z_cdf[numpy.arange(stop - begin), numpy.round((degradation_redshift_true[begin: stop] - z1) / z_delta).astype(numpy.int32)]
     
     # Reference Source
     sigma0 = 0.26
-    reference_source = (z1_source <= z_phot) & (z_phot < z2_source) & (restriction_sigma < sigma0)
+    reference_source = (z1_source <= z_phot) & (z_phot < z2_source) & (degradation_sigma < sigma0)
     
     # Reference Lens
     slope = 4.0
     intercept = 18.0
-    reference_lens = (z1_lens <= z_phot) & (z_phot < z2_lens) & (restriction_magnitude < slope * z_phot + intercept)
+    reference_lens = (z1_lens <= z_phot) & (z_phot < z2_lens) & (degradation_magnitude < slope * z_phot + intercept)
     
     # Bin
     bin_size_lens = 5
@@ -97,10 +97,10 @@ def main(tag, index, folder):
     
     # Point
     z_phot_lens = z_phot[reference_lens]
-    z_true_lens = restriction_redshift_true[reference_lens]
+    z_true_lens = degradation_redshift_true[reference_lens]
     
     z_phot_source = z_phot[reference_source]
-    z_true_source = restriction_redshift_true[reference_source]
+    z_true_source = degradation_redshift_true[reference_source]
     
     # Quantile
     z_quantile_lens = z_quantile[reference_lens]
@@ -111,12 +111,12 @@ def main(tag, index, folder):
     histogram_bin = numpy.linspace(0, 1, histogram_size + 1)
     
     # Metric
-    delta = (z_phot - restriction_redshift_true) / (1 + restriction_redshift_true)
+    delta = (z_phot - degradation_redshift_true) / (1 + degradation_redshift_true)
     
     bias = numpy.median(delta)
     sigma = scipy.stats.median_abs_deviation(delta)
-    fraction = numpy.sum(numpy.abs(delta) > 0.15) / restriction_size
-    rate = numpy.sum(numpy.abs(z_phot - restriction_redshift_true) > 1.0) / restriction_size
+    fraction = numpy.sum(numpy.abs(delta) > 0.15) / degradation_size
+    rate = numpy.sum(numpy.abs(z_phot - degradation_redshift_true) > 1.0) / degradation_size
     
     histogram = numpy.histogram(z_quantile, bins=histogram_bin, range=(0, 1), density=True)[0]
     divergence = numpy.sqrt(numpy.sum(numpy.square(histogram - numpy.ones(histogram_size))) / histogram_size)
@@ -198,7 +198,7 @@ def main(tag, index, folder):
             histogram_source[m, :] = 0.0
     
     # Save
-    with h5py.File(os.path.join(constrain_folder, '{}/REFERENCE/DATA{}.hdf5'.format(tag, index)), 'w') as file:
+    with h5py.File(os.path.join(compare_folder, '{}/REFERENCE/DATA{}.hdf5'.format(tag, index)), 'w') as file:
         file.create_dataset('bias', data=bias, dtype=numpy.float32)
         file.create_dataset('rate', data=rate, dtype=numpy.float32)
         file.create_dataset('sigma', data=sigma, dtype=numpy.float32)
@@ -235,19 +235,19 @@ def main(tag, index, folder):
         file.create_dataset('divergence_source', data=divergence_source, dtype=numpy.float32)
     
     # Lens bin
-    reference_lens_bin = numpy.ones((bin_size_lens, restriction_size), dtype=bool)
+    reference_lens_bin = numpy.ones((bin_size_lens, degradation_size), dtype=bool)
     for m in range(len(bin_lens) - 1):
         reference_lens_bin[m, :] = reference_lens & (bin_lens[m] <= z_phot) & (z_phot < bin_lens[m + 1])
     
-    with h5py.File(os.path.join(constrain_folder, '{}/LENS/LENS{}/REFERENCE.hdf5'.format(tag, index)), 'w') as file:    
+    with h5py.File(os.path.join(compare_folder, '{}/LENS/LENS{}/REFERENCE.hdf5'.format(tag, index)), 'w') as file:    
         file.create_dataset('reference', data=reference_lens_bin, dtype=bool)
     
     # Source bin
-    reference_source_bin = numpy.ones((bin_size_source, restriction_size), dtype=bool)
+    reference_source_bin = numpy.ones((bin_size_source, degradation_size), dtype=bool)
     for m in range(len(bin_source) - 1):
         reference_source_bin[m, :] = reference_source & (bin_source[m] <= z_phot) & (z_phot < bin_source[m + 1])
     
-    with h5py.File(os.path.join(constrain_folder, '{}/SOURCE/SOURCE{}/REFERENCE.hdf5'.format(tag, index)), 'w') as file:
+    with h5py.File(os.path.join(compare_folder, '{}/SOURCE/SOURCE{}/REFERENCE.hdf5'.format(tag, index)), 'w') as file:
         file.create_dataset('reference', data=reference_source_bin, dtype=bool)
     
     # Duration
@@ -261,7 +261,7 @@ def main(tag, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Constrain Reference')
+    PARSE = argparse.ArgumentParser(description='Compare Reference')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
     PARSE.add_argument('--index', type=int, required=True, help='The index of all the datasets')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of all the datasets')

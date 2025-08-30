@@ -6,7 +6,7 @@ import argparse
 
 def main(tag, index, folder):
     '''
-    Main function to create the constrain evaluator configuration file.
+    Main function to create the compare evaluator configuration file.
     
     Arguments:
         tag (str): The tag of the configuration
@@ -21,7 +21,7 @@ def main(tag, index, folder):
     print('Index: {}'.format(index))
     
     # Path
-    constrain_folder = os.path.join(folder, 'CONSTRAIN/')
+    compare_folder = os.path.join(folder, 'COMPARE/')
     
     # Config
     config = {
@@ -58,10 +58,10 @@ def main(tag, index, folder):
         }
     }
     
-    os.makedirs(os.path.join(constrain_folder, '{}/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(constrain_folder, '{}/EVALUATE/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(compare_folder, '{}/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(compare_folder, '{}/EVALUATE/'.format(tag)), exist_ok=True)
     
-    config_name = os.path.join(constrain_folder, '{}/EVALUATE/EVALUATE{}.yaml'.format(tag, index))
+    config_name = os.path.join(compare_folder, '{}/EVALUATE/EVALUATE{}.yaml'.format(tag, index))
     with open(config_name, 'w') as config_file:
         yaml.dump(config, config_file, default_flow_style=False)
     
@@ -76,7 +76,7 @@ def main(tag, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Constrain Evaluator')
+    PARSE = argparse.ArgumentParser(description='Compare Evaluator')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
     PARSE.add_argument('--index', type=int, required=True, help='The index of all the datasets')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of all the datasets')
