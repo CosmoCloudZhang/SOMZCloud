@@ -29,6 +29,7 @@ def main(tag, label, index, folder):
     # Path
     model_folder = os.path.join(folder, 'MODEL/')
     dataset_folder = os.path.join(folder, 'DATASET/')
+    constrain_folder = os.path.join(folder, 'CONSTRAIN/')
     summarize_folder = os.path.join(folder, 'SUMMARIZE/')
     
     os.makedirs(os.path.join(summarize_folder, '{}/{}/SOURCE/'.format(label, tag)), exist_ok=True)
@@ -62,27 +63,23 @@ def main(tag, label, index, folder):
     with h5py.File(os.path.join(model_folder, '{}/SOURCE/SOURCE{}/SELECT.hdf5'.format(tag, index)), 'r') as file:
         select_source = file['select'][...]
     
-    # Combination
-    with h5py.File(os.path.join(dataset_folder, '{}/COMBINATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+    # Restriction
+    with h5py.File(os.path.join(dataset_folder, '{}/RESTRICTION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         cell_size = file['meta']['cell_size'][...]
-        combination_cell_id = file['meta']['cell_id'][...]
-        combination_redshift = file['photometry']['redshift'][...]
+        restriction_cell_id = file['meta']['cell_id'][...]
+        restriction_redshift = file['photometry']['redshift'][...]
     
     # Reference
-    with h5py.File(os.path.join(model_folder, '{}/REFERENCE/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+    with h5py.File(os.path.join(constrain_folder, '{}/REFERENCE/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         bin_source = file['bin_source'][...]
-        combination_z_phot = file['z_phot'][...]
+        restriction_z_phot = file['z_phot'][...]
     
-    with h5py.File(os.path.join(model_folder, '{}/SOURCE/SOURCE{}/REFERENCE.hdf5'.format(tag, index)), 'r') as file:
+    with h5py.File(os.path.join(constrain_folder, '{}/SOURCE/SOURCE{}/REFERENCE.hdf5'.format(tag, index)), 'r') as file:
         reference_source = file['reference'][...]
     
     # Size
     data_size = 100
     bin_source_size = len(bin_source) - 1
-    
-    pi_data_source = numpy.zeros((bin_source_size, data_size))
-    xi_data_source = numpy.zeros((bin_source_size, data_size))
-    gamma_data_source = numpy.zeros((bin_source_size, data_size))
     data_source = numpy.zeros((bin_source_size, data_size, grid_size + 1))
     
     # Cluster
@@ -108,10 +105,10 @@ def main(tag, label, index, folder):
         reference = reference_source[m, :]
         reference_size = numpy.sum(reference)
         
-        # Combination
-        combination_z_phot_reference = combination_z_phot[reference]
-        combination_z_spec_reference = combination_redshift[reference]
-        combination_cell_id_reference = combination_cell_id[reference]
+        # Restriction
+        restriction_z_phot_reference = restriction_z_phot[reference]
+        restriction_z_spec_reference = restriction_redshift[reference]
+        restriction_cell_id_reference = restriction_cell_id[reference]
         
         # Bootstrap
         for n in range(data_size):
@@ -129,25 +126,24 @@ def main(tag, label, index, folder):
             application_cluster_z_phot_data = numpy.bincount(application_cluster_id_data, weights=application_z_phot_data / numpy.square(application_sigma_data), minlength=cluster_size)
             application_cluster_z_phot_data = numpy.divide(application_cluster_z_phot_data, application_cluster_count_data, out=numpy.zeros(cluster_size, dtype=numpy.float32), where=application_cluster_count_data > 0)
             
-            # Combination
-            combination_indices = random_generator.choice(numpy.arange(reference_size), size=reference_size, replace=True)
+            # Restriction
+            restriction_indices = random_generator.choice(numpy.arange(reference_size), size=reference_size, replace=True)
             
-            combination_z_phot_data = combination_z_phot_reference[combination_indices]
-            combination_z_spec_data = combination_z_spec_reference[combination_indices]
-            combination_cell_id_data = combination_cell_id_reference[combination_indices]
+            restriction_z_phot_data = restriction_z_phot_reference[restriction_indices]
+            restriction_z_spec_data = restriction_z_spec_reference[restriction_indices]
+            restriction_cell_id_data = restriction_cell_id_reference[restriction_indices]
             
-            combination_cluster_id_data = cluster_id[combination_cell_id_data]
-            combination_cluster_count_data = numpy.bincount(combination_cluster_id_data, minlength=cluster_size)
+            restriction_cluster_id_data = cluster_id[restriction_cell_id_data]
+            restriction_cluster_count_data = numpy.bincount(restriction_cluster_id_data, minlength=cluster_size)
             
-            combination_cluster_z_phot_data = numpy.bincount(combination_cluster_id_data, weights=combination_z_phot_data, minlength=cluster_size)
-            combination_cluster_z_phot_data = numpy.divide(combination_cluster_z_phot_data, combination_cluster_count_data, out=numpy.zeros(cluster_size, dtype=numpy.float32), where=combination_cluster_count_data > 0)
+            restriction_cluster_z_phot_data = numpy.bincount(restriction_cluster_id_data, weights=restriction_z_phot_data, minlength=cluster_size)
+            restriction_cluster_z_phot_data = numpy.divide(restriction_cluster_z_phot_data, restriction_cluster_count_data, out=numpy.zeros(cluster_size, dtype=numpy.float32), where=restriction_cluster_count_data > 0)
             
-            combination_cluster_z_spec_data = numpy.bincount(combination_cluster_id_data, weights=combination_z_spec_data, minlength=cluster_size)
-            combination_cluster_z_spec_data = numpy.divide(combination_cluster_z_spec_data, combination_cluster_count_data, out=numpy.zeros(cluster_size, dtype=numpy.float32), where=combination_cluster_count_data > 0)
+            restriction_cluster_z_spec_data = numpy.bincount(restriction_cluster_id_data, weights=restriction_z_spec_data, minlength=cluster_size)
+            restriction_cluster_z_spec_data = numpy.divide(restriction_cluster_z_spec_data, restriction_cluster_count_data, out=numpy.zeros(cluster_size, dtype=numpy.float32), where=restriction_cluster_count_data > 0)
             
             # Filter
-            filter_data = (application_cluster_count_data > 0) & (combination_cluster_count_data > 0)
-            cluster_mean_delta_data = application_cluster_z_phot_data - combination_cluster_z_spec_data
+            filter_data = (application_cluster_count_data > 0) & (restriction_cluster_count_data > 0)
             
             # Application Mask
             application_cluster_mask = filter_data[application_cluster_id_data]
@@ -164,14 +160,6 @@ def main(tag, label, index, folder):
             # Ensemble
             ensemble = numpy.average(ensemble_cluster, axis=0, weights=application_cluster_count_data)
             data_source[m, n, :] = ensemble / scipy.integrate.trapezoid(x=z_grid, y=ensemble, axis=0)
-            
-            # Metrics
-            gamma_data_source[m, n] = numpy.sum(application_cluster_mask) / select_size  
-            
-            pi_data_source[m, n] = scipy.stats.median_abs_deviation(cluster_mean_delta_data[filter_data], scale='normal')
-            
-            cluster_ratio_data = numpy.divide(combination_cluster_count_data / reference_size, application_cluster_count_data / select_size, out=numpy.zeros(cluster_size, dtype=numpy.float32), where=application_cluster_count_data > 0)
-            xi_data_source[m, n] = numpy.sqrt(numpy.mean(numpy.square(1 - cluster_ratio_data[filter_data])))
     
     # Average
     average_source = numpy.mean(data_source, axis=1)
@@ -181,10 +169,6 @@ def main(tag, label, index, folder):
     with h5py.File(os.path.join(summarize_folder, '{}/{}/SOURCE/SOURCE{}/TRUTH.hdf5'.format(label, tag, index)), 'w') as file:
         file.create_dataset('data', data=data_source, dtype=numpy.float32)
         file.create_dataset('average', data=average_source, dtype=numpy.float32)
-        
-        file.create_dataset('pi', data=pi_data_source, dtype=numpy.float32)
-        file.create_dataset('xi', data=xi_data_source, dtype=numpy.float32)
-        file.create_dataset('gamma', data=gamma_data_source, dtype=numpy.float32)
     
     # Duration
     end = time.time()

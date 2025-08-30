@@ -26,7 +26,6 @@ def main(tag, label, index, folder):
     
     # Path
     summarization_folder = os.path.join(folder, 'SUMMARIZE/')
-    
     os.makedirs(os.path.join(summarization_folder, '{}/{}/SOURCE/'.format(label, tag)), exist_ok=True)
     os.makedirs(os.path.join(summarization_folder, '{}/{}/SOURCE/SOURCE{}'.format(label, tag, index)), exist_ok=True)
     
@@ -66,7 +65,7 @@ def main(tag, label, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Summarize Fiducial Product Source')
+    PARSE = argparse.ArgumentParser(description='Summarize Copper Product Source')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of configuration')
     PARSE.add_argument('--label', type=str, required=True, help='The label of configuration')
     PARSE.add_argument('--index', type=int, required=True, help='The index of all the datasets')
