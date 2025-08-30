@@ -37,13 +37,13 @@ BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 for INDEX in $(seq 0 $NUMBER); do
     # Set variables
     NAME="EVALUATE${INDEX}"
+    MODEL_PATH="${BASE_FOLDER}CONSTRAIN/${TAG}/INFORM/INFORM${INDEX}.pkl"
     INPUT_PATH="${BASE_FOLDER}DATASET/${TAG}/RESTRICTION/DATA${INDEX}.hdf5"
-    CONSTRAIN_PATH="${BASE_FOLDER}CONSTRAIN/${TAG}/INFORM/INFORM${INDEX}.pkl"
     CONFIG_PATH="${BASE_FOLDER}CONSTRAIN/${TAG}/EVALUATE/EVALUATE${INDEX}.yaml"
     OUTPUT_PATH="${BASE_FOLDER}CONSTRAIN/${TAG}/EVALUATE/EVALUATE${INDEX}.hdf5"
     # Run applications
     python -u "${BASE_PATH}CONSTRAIN/${TAG}/EVALUATE.py" --tag=$TAG --index=$INDEX --folder=$BASE_FOLDER &&
-    srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -m ceci rail.estimation.algos.flexzboost.FlexZBoostEstimator --mpi --name=$NAME --input=$INPUT_PATH --model=$CONSTRAIN_PATH --config=$CONFIG_PATH --output=$OUTPUT_PATH &
+    srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -m ceci rail.estimation.algos.flexzboost.FlexZBoostEstimator --mpi --name=$NAME --input=$INPUT_PATH --model=$MODEL_PATH --config=$CONFIG_PATH --output=$OUTPUT_PATH &
     # Control parallel execution
     if (( $INDEX % $SLURM_NTASKS == 0 )); then
         wait
