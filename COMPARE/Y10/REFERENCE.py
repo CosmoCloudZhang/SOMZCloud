@@ -86,7 +86,7 @@ def main(tag, index, folder):
     reference_lens = (z1_lens <= z_phot) & (z_phot < z2_lens) & (degradation_magnitude < slope * z_phot + intercept)
     
     # Bin
-    bin_size_lens = 5
+    bin_size_lens = 10
     bin_lens = numpy.linspace(z1_lens, z2_lens, bin_size_lens + 1)
     
     bin_size_source = 5
