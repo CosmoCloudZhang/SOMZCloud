@@ -27,7 +27,6 @@ def main(tag, label, index, folder):
     random_generator = numpy.random.default_rng(index)
     
     # Path
-    model_folder = os.path.join(folder, 'MODEL/')
     dataset_folder = os.path.join(folder, 'DATASET/')
     constrain_folder = os.path.join(folder, 'CONSTRAIN/')
     summarize_folder = os.path.join(folder, 'SUMMARIZE/')
@@ -55,11 +54,11 @@ def main(tag, label, index, folder):
         application_redshift_true = file['photometry']['redshift_true'][...]
     
     # Select
-    with h5py.File(os.path.join(model_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+    with h5py.File(os.path.join(constrain_folder, '{}/SELECT/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         bin_lens = file['bin_lens'][...]
         application_z_phot = file['z_phot'][...]
     
-    with h5py.File(os.path.join(model_folder, '{}/LENS/LENS{}/SELECT.hdf5'.format(tag, index)), 'r') as file:
+    with h5py.File(os.path.join(constrain_folder, '{}/LENS/LENS{}/SELECT.hdf5'.format(tag, index)), 'r') as file:
         select_lens = file['select'][...]
     
     # Restriction
