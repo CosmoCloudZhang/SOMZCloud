@@ -2,7 +2,7 @@
 #SBATCH -A m1727
 #SBATCH --nodes=4
 #SBATCH -q regular
-#SBATCH --time=04:00:00
+#SBATCH --time=06:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
@@ -31,7 +31,7 @@ export OMP_PLACES=threads
 # Initialize the process
 TAG="Y1"
 NUMBER=500
-NAME="FIDUCIAL"
+NAME="IRON"
 BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 
