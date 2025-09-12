@@ -31,7 +31,7 @@ export OMP_PLACES=threads
 # Initialize the process
 TAG="Y10"
 NUMBER=500
-LABEL="ZINC"
+NAME="ZINC"
 BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 
