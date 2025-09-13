@@ -37,6 +37,6 @@ BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 # Run applications
 NAME_LIST=("COPPER" "GOLD" "IRON" "SILVER" "TITANIUM" "ZINC")
 for NAME in "${NAME_LIST[@]}"; do
-    srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}SYNTHESIZE/${TAG}/PRODUCT.py" --tag=$TAG --name=$NAME --number=$NUMBER --folder=$BASE_FOLDER &
+    srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}SYNTHESIZE/${TAG}/HYBRID.py" --tag=$TAG --name=$NAME --number=$NUMBER --folder=$BASE_FOLDER &
 done
 wait
