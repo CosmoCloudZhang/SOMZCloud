@@ -62,57 +62,22 @@ def main(tag, name, number, folder):
     sample_size = 100
     synthesize_size = 500000
     
-    # Summarize
+    # Summarize Lens
     summarize_lens = numpy.zeros((number + 1, bin_lens_size, sample_size, grid_size + 1))
-    summarize_source = numpy.zeros((number + 1, bin_source_size, sample_size, grid_size + 1))
-    
-    # Factor Lens
-    nu_lens = numpy.zeros((number + 1, bin_lens_size, sample_size))
-    gamma_lens = numpy.zeros((number + 1, bin_lens_size, sample_size))
-    kappa_lens = numpy.zeros((number + 1, bin_lens_size, sample_size))
-    lambda_lens = numpy.zeros((number + 1, bin_lens_size, sample_size))
-    
     for n in range(number + 1):
         
         with h5py.File(os.path.join(summarize_folder, '{}/{}/LENS/LENS{}/DIR.hdf5'.format(tag, name, n)), 'r') as file:
             summarize_lens[n, :, :, :] = file['data'][...]
-        
-        with h5py.File(os.path.join(summarize_folder, '{}/{}/LENS/LENS{}/TRUTH.hdf5'.format(tag, name, n)), 'r') as file:
-            nu_lens[n, :, :] = file['nu'][...]
-            gamma_lens[n, :, :] = file['gamma'][...]
-            kappa_lens[n, :, :] = file['kappa'][...]
-            lambda_lens[n, :, :] = file['lambda'][...]
     
-    numerator_lens = nu_lens * lambda_lens
-    denominator_lens = numpy.square(gamma_lens) + numpy.square(kappa_lens)
-    weight_lens = numpy.divide(numerator_lens, denominator_lens, out=numpy.zeros((number + 1, bin_lens_size, sample_size)), where=denominator_lens != 0)
-    
-    weight_lens = numpy.mean(numpy.mean(weight_lens, axis=2), axis=1)
-    
-    # Factor Source
-    nu_source = numpy.zeros((number + 1, bin_source_size, sample_size))
-    gamma_source = numpy.zeros((number + 1, bin_source_size, sample_size))
-    kappa_source = numpy.zeros((number + 1, bin_source_size, sample_size))
-    lambda_source = numpy.zeros((number + 1, bin_source_size, sample_size))
-    
+    # Summarize Source
+    summarize_source = numpy.zeros((number + 1, bin_source_size, sample_size, grid_size + 1))
     for n in range(number + 1):
         
         with h5py.File(os.path.join(summarize_folder, '{}/{}/SOURCE/SOURCE{}/DIR.hdf5'.format(tag, name, n)), 'r') as file:
             summarize_source[n, :, :, :] = file['data'][...]
-        
-        with h5py.File(os.path.join(summarize_folder, '{}/{}/SOURCE/SOURCE{}/TRUTH.hdf5'.format(tag, name, n)), 'r') as file:
-            nu_source[n, :, :] = file['nu'][...]
-            gamma_source[n, :, :] = file['gamma'][...]
-            kappa_source[n, :, :] = file['kappa'][...]
-            lambda_source[n, :, :] = file['lambda'][...]
-    
-    numerator_source = nu_source * lambda_source
-    denominator_source = numpy.square(gamma_source) + numpy.square(kappa_source)
-    weight_source = numpy.divide(numerator_source, denominator_source, out=numpy.zeros((number + 1, bin_source_size, sample_size)), where=denominator_source != 0)
-    
-    weight_source = numpy.mean(numpy.mean(weight_source, axis=2), axis=1)
     
     # Synthesize Lens
+    weight_lens = numpy.ones(number + 1)
     with multiprocessing.Pool(processes=size) as pool:
         data_lens = numpy.stack(pool.starmap(synthesize, [(summarize_lens, weight_lens, z_grid, number, sample_size, random_generator) for _ in range(synthesize_size)]), axis=0)
     
@@ -121,6 +86,7 @@ def main(tag, name, number, folder):
     average_lens = numpy.divide(average_lens, factor_lens, out=numpy.zeros((bin_lens_size, grid_size + 1)), where=factor_lens != 0)
     
     # Synthesize Source
+    weight_source = numpy.ones(number + 1)
     with multiprocessing.Pool(processes=size) as pool:
         data_source = numpy.stack(pool.starmap(synthesize, [(summarize_source, weight_source, z_grid, number, sample_size, random_generator) for _ in range(synthesize_size)]), axis=0)
     

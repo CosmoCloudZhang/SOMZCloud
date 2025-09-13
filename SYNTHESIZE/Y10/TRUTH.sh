@@ -35,7 +35,7 @@ BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 
 # Run applications
-NAME_LIST=("BRONZE" "FIDUCIAL" "GOLD" "SILVER" "IRON")
+NAME_LIST=("COPPER" "GOLD" "IRON" "SILVER" "TITANIUM" "ZINC")
 for NAME in "${NAME_LIST[@]}"; do
     srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}SYNTHESIZE/${TAG}/TRUTH.py" --tag=$TAG --name=$NAME --number=$NUMBER --folder=$BASE_FOLDER &
 done
