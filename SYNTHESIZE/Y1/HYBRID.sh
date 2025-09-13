@@ -8,7 +8,7 @@
 #SBATCH -o LOG/%x_%j.out
 #SBATCH --cpus-per-task=32
 #SBATCH --ntasks-per-node=8
-#SBATCH -J SYNTHESIZE_Y1_PRODUCT
+#SBATCH -J SYNTHESIZE_Y1_HYBRID
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -37,6 +37,6 @@ BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 # Run applications
 NAME_LIST=("COPPER" "GOLD" "IRON" "SILVER" "TITANIUM" "ZINC")
 for NAME in "${NAME_LIST[@]}"; do
-    srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}SYNTHESIZE/${TAG}/PRODUCT.py" --tag=$TAG --name=$NAME --number=$NUMBER --folder=$BASE_FOLDER &
+    srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}SYNTHESIZE/${TAG}/HYBRID.py" --tag=$TAG --name=$NAME --number=$NUMBER --folder=$BASE_FOLDER &
 done
 wait

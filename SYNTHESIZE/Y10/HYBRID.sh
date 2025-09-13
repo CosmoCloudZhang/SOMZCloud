@@ -8,7 +8,7 @@
 #SBATCH -o LOG/%x_%j.out
 #SBATCH --cpus-per-task=32
 #SBATCH --ntasks-per-node=8
-#SBATCH -J SYNTHESIZE_Y10_PRODUCT
+#SBATCH -J SYNTHESIZE_Y10_HYBRID
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules

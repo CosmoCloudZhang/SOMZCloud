@@ -23,7 +23,7 @@ def synthesize(data, weight, z_grid, number, sample_size, random_generator):
 
 def main(tag, name, number, folder):
     '''
-    Product of the spectroscopic redshift distributions of the lens and source samples
+    Hybrid of the spectroscopic redshift distributions of the lens and source samples
     
     Arguments:
         tag (str): The tag of the configuration
@@ -66,14 +66,14 @@ def main(tag, name, number, folder):
     summarize_lens = numpy.zeros((number + 1, bin_lens_size, sample_size, grid_size + 1))
     for n in range(number + 1):
         
-        with h5py.File(os.path.join(summarize_folder, '{}/{}/LENS/LENS{}/PRODUCT.hdf5'.format(tag, name, n)), 'r') as file:
+        with h5py.File(os.path.join(summarize_folder, '{}/{}/LENS/LENS{}/HYBRID.hdf5'.format(tag, name, n)), 'r') as file:
             summarize_lens[n, :, :, :] = file['data'][...]
     
     # Summarize Source
     summarize_source = numpy.zeros((number + 1, bin_source_size, sample_size, grid_size + 1))
     for n in range(number + 1):
         
-        with h5py.File(os.path.join(summarize_folder, '{}/{}/SOURCE/SOURCE{}/PRODUCT.hdf5'.format(tag, name, n)), 'r') as file:
+        with h5py.File(os.path.join(summarize_folder, '{}/{}/SOURCE/SOURCE{}/HYBRID.hdf5'.format(tag, name, n)), 'r') as file:
             summarize_source[n, :, :, :] = file['data'][...]
     
     # Synthesize Lens
@@ -94,7 +94,7 @@ def main(tag, name, number, folder):
     factor_source = scipy.integrate.trapezoid(x=z_grid, y=average_source, axis=1)[:, numpy.newaxis]
     average_source = numpy.divide(average_source, factor_source, out=numpy.zeros((bin_source_size, grid_size + 1)), where=factor_source != 0)
     
-    with h5py.File(os.path.join(synthesize_folder, '{}/{}/PRODUCT.hdf5'.format(tag, name)), 'w') as file:
+    with h5py.File(os.path.join(synthesize_folder, '{}/{}/HYBRID.hdf5'.format(tag, name)), 'w') as file:
         file.create_group('meta')
         file['meta'].create_dataset('z1', data=z1, dtype=numpy.float32)
         file['meta'].create_dataset('z2', data=z2, dtype=numpy.float32)
@@ -122,7 +122,7 @@ def main(tag, name, number, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Synthesize Product')
+    PARSE = argparse.ArgumentParser(description='Synthesize Hybrid')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
     PARSE.add_argument('--name', type=str, required=True, help='The name of the configuration')
     PARSE.add_argument('--number', type=int, required=True, help='The number of all the datasets')
