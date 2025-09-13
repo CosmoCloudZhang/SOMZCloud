@@ -2,13 +2,13 @@
 #SBATCH -A m1727
 #SBATCH --nodes=1
 #SBATCH -q regular
-#SBATCH --time=16:00:00
+#SBATCH --time=24:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
 #SBATCH --cpus-per-task=16
 #SBATCH --ntasks-per-node=16
-#SBATCH -J ANALYZE_Y10_CONDITIONAL
+#SBATCH -J ASSESS_Y10_CONDITIONAL
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -38,7 +38,7 @@ NAME_LIST=("COPPER" "GOLD" "IRON" "SILVER" "TITANIUM" "ZINC")
 for NAME in "${NAME_LIST[@]}"; do
     # Run the application
     for INDEX in $(seq 0 $NUMBER); do
-        srun -N 1 -n 1 -c $SLURM_CPUS_PER_TASK --cpu_bind=cores python -u "${BASE_PATH}ANALYZE/${TAG}/CONDITIONAL.py" --tag=$TAG --name=$NAME --index=$INDEX --folder=$BASE_FOLDER & 
+        srun -N 1 -n 1 -c $SLURM_CPUS_PER_TASK --cpu_bind=cores python -u "${BASE_PATH}ASSESS/${TAG}/CONDITIONAL.py" --tag=$TAG --name=$NAME --index=$INDEX --folder=$BASE_FOLDER & 
         # Control parallel execution
         if (( $INDEX % $SLURM_NTASKS == 0 )); then
             wait

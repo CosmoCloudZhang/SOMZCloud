@@ -6,7 +6,7 @@ import scipy
 import argparse
 
 
-def main(tag, name, label, folder):
+def main(tag, name, label, index, folder):
     '''
     This function is used to analyze the information of the dataset
     
@@ -14,6 +14,7 @@ def main(tag, name, label, folder):
         tag (str): The tag of the configuration
         name (str): The name of the configuration
         label (str): The label of the configuration
+        index (int): The index of the configuration
         folder (str): The base folder of the dataset
     
     Returns:
@@ -23,24 +24,31 @@ def main(tag, name, label, folder):
     print('Name: {}, Label: {}'.format(name, label))
     
     # Path
-    analyze_folder = os.path.join(folder, 'ANALYZE/')
-    synthesize_folder = os.path.join(folder, 'SYNTHESIZE/')
-    os.makedirs(os.path.join(analyze_folder, '{}/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(analyze_folder, '{}/{}/'.format(tag, name)), exist_ok=True)
-    os.makedirs(os.path.join(analyze_folder, '{}/{}/VALUE/'.format(tag, name)), exist_ok=True)
+    assess_folder = os.path.join(folder, 'ASSESS/')
+    summarize_folder = os.path.join(folder, 'SUMMARIZE/')
+    os.makedirs(os.path.join(assess_folder, '{}/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(assess_folder, '{}/{}/'.format(tag, name)), exist_ok=True)
+    os.makedirs(os.path.join(assess_folder, '{}/{}/VALUE/'.format(tag, name)), exist_ok=True)
+    os.makedirs(os.path.join(assess_folder, '{}/{}/VALUE/{}/'.format(tag, name, label)), exist_ok=True)
     
-    # Summarize
-    with h5py.File(os.path.join(synthesize_folder, '{}/{}/{}.hdf5'.format(tag, name, label)), 'r') as file:
-        meta = {key: file['meta'][key][...] for key in file['meta'].keys()}
-        
-        data_lens = file['lens']['data'][...]
-        data_source = file['source']['data'][...]
-        
-        average_lens = file['lens']['average'][...]
-        average_source = file['source']['average'][...]
+    # Summarize Lens
+    with h5py.File(os.path.join(summarize_folder, '{}/{}/LENS/LENS{}/{}.hdf5'.format(tag, name, index, label)), 'r') as file:
+        data_lens = file['data'][...]
+        average_lens = file['average'][...]
+    bin_lens_size, z_size = average_lens.shape
+    data_lens = numpy.transpose(data_lens, (1, 0, 2))
+    
+    # Summarize Source
+    with h5py.File(os.path.join(summarize_folder, '{}/{}/SOURCE/SOURCE{}/{}.hdf5'.format(tag, name, index, label)), 'r') as file:
+        data_source = file['data'][...]
+        average_source = file['average'][...]
+    bin_source_size, z_size = average_source.shape
+    data_source = numpy.transpose(data_source, (1, 0, 2))
     
     # Redshift
-    z_grid = meta['z_grid']
+    z1 = 0.0
+    z2 = 3.0
+    z_grid = numpy.linspace(z1, z2, z_size)
     
     # Mu
     mu_lens = scipy.integrate.trapezoid(x=z_grid, y=z_grid[numpy.newaxis, numpy.newaxis, :] * data_lens, axis=2)
@@ -64,18 +72,15 @@ def main(tag, name, label, folder):
     sigma_eta_lens = numpy.std(eta_lens, axis=0) / (1 + average_mu_lens)
     sigma_eta_source = numpy.std(eta_source, axis=0) / (1 + average_mu_source)
     
-    # Rho
-    rho_mu_lens = numpy.corrcoef(mu_lens, rowvar=False)
-    rho_mu_source = numpy.corrcoef(mu_source, rowvar=False)
-    
-    rho_eta_lens = numpy.corrcoef(eta_lens, rowvar=False)
-    rho_eta_source = numpy.corrcoef(eta_source, rowvar=False)
-    
     # Save
-    with h5py.File(os.path.join(analyze_folder, '{}/{}/VALUE/{}.hdf5'.format(tag, name, label)), 'w') as file:
+    with h5py.File(os.path.join(assess_folder, '{}/{}/VALUE/{}/DATA{}.hdf5'.format(tag, name, label, index)), 'w') as file:
         file.create_group('meta')
-        for key in meta.keys():
-            file['meta'].create_dataset(key, data=meta[key], dtype=meta[key].dtype)
+        file['meta'].create_dataset('z1', data=z1, dtype=numpy.float32)
+        file['meta'].create_dataset('z2', data=z2, dtype=numpy.float32)
+        file['meta'].create_dataset('z_size', data=z_size, dtype=numpy.int32)
+        file['meta'].create_dataset('z_grid', data=z_grid, dtype=numpy.float32)
+        file['meta'].create_dataset('bin_lens_size', data=bin_lens_size, dtype=numpy.int32)
+        file['meta'].create_dataset('bin_source_size', data=bin_source_size, dtype=numpy.int32)
         
         file.create_group('lens')
         file['lens'].create_dataset('mu', data=mu_lens)
@@ -87,9 +92,6 @@ def main(tag, name, label, folder):
         file['lens'].create_dataset('sigma_mu', data=sigma_mu_lens)
         file['lens'].create_dataset('sigma_eta', data=sigma_eta_lens)
         
-        file['lens'].create_dataset('rho_mu', data=rho_mu_lens)
-        file['lens'].create_dataset('rho_eta', data=rho_eta_lens)
-        
         file.create_group('source')
         file['source'].create_dataset('mu', data=mu_source)
         file['source'].create_dataset('eta', data=eta_source)
@@ -99,9 +101,6 @@ def main(tag, name, label, folder):
         
         file['source'].create_dataset('sigma_mu', data=sigma_mu_source)
         file['source'].create_dataset('sigma_eta', data=sigma_eta_source)
-        
-        file['source'].create_dataset('rho_mu', data=rho_mu_source)
-        file['source'].create_dataset('rho_eta', data=rho_eta_source)
     
     # Duration
     end = time.time()
@@ -114,17 +113,19 @@ def main(tag, name, label, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Calibrate Value')
+    PARSE = argparse.ArgumentParser(description='Assess Value')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
     PARSE.add_argument('--name', type=str, required=True, help='The name of the configuration')
     PARSE.add_argument('--label', type=str, required=True, help='The label of the configuration')
+    PARSE.add_argument('--index', type=int, required=True, help='The index of the configuration')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the dataset')
     
     # Parse
     TAG = PARSE.parse_args().tag
     NAME = PARSE.parse_args().name
     LABEL = PARSE.parse_args().label
+    INDEX = PARSE.parse_args().index
     FOLDER = PARSE.parse_args().folder
     
     # Output
-    OUTPUT = main(TAG, NAME, LABEL, FOLDER)
+    OUTPUT = main(TAG, NAME, LABEL, INDEX, FOLDER)
