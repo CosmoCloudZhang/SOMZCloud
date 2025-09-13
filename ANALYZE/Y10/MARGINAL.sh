@@ -12,7 +12,7 @@
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
-module load python
+module load conda
 module load PrgEnv-gnu
 module load cray-mpich/8.1.30
 module load cray-hdf5-parallel
@@ -34,9 +34,8 @@ BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 
 # Run the application
-LABEL_LIST=("ZERO" "HALF" "UNITY" "DOUBLE")
-
-for LABEL in "${LABEL_LIST[@]}"; do
-    srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}ANALYZE/${TAG}/MARGINAL.py" --tag=$TAG --label=$LABEL --folder=$BASE_FOLDER &
+NAME_LIST=("COPPER" "GOLD" "IRON" "SILVER" "TITANIUM" "ZINC")
+for NAME in "${NAME_LIST[@]}"; do
+    srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}ANALYZE/${TAG}/MARGINAL.py" --tag=$TAG --name=$NAME --folder=$BASE_FOLDER &
 done
 wait
