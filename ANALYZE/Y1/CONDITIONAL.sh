@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -A m1727
-#SBATCH --nodes=1
+#SBATCH --nodes=4
 #SBATCH -q regular
 #SBATCH --time=08:00:00
 #SBATCH --mail-type=END
@@ -34,12 +34,16 @@ NUMBER=500
 BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 
-# Run the application
-for INDEX in $(seq 0 $NUMBER); do
-    srun -N 1 -n 1 -c $SLURM_CPUS_PER_TASK --cpu_bind=cores python -u "${BASE_PATH}ANALYZE/${TAG}/CONDITIONAL.py" --tag=$TAG --index=$INDEX --folder=$BASE_FOLDER & 
-    # Control parallel execution
-    if (( $INDEX % $SLURM_NTASKS == 0 )); then
-        wait
-    fi
+NAME_LIST=("COPPER" "GOLD" "IRON" "SILVER" "TITANIUM" "ZINC")
+for NAME in "${NAME_LIST[@]}"; do
+    # Run the application
+    for INDEX in $(seq 0 $NUMBER); do
+        srun -N 1 -n 1 -c $SLURM_CPUS_PER_TASK --cpu_bind=cores python -u "${BASE_PATH}ANALYZE/${TAG}/CONDITIONAL.py" --tag=$TAG --name=$NAME --index=$INDEX --folder=$BASE_FOLDER & 
+        # Control parallel execution
+        if (( $INDEX % $SLURM_NTASKS == 0 )); then
+            wait
+        fi
+    done
+    wait
 done
 wait

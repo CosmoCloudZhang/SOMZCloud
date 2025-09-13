@@ -7,12 +7,13 @@ import argparse
 from matplotlib import pyplot
 
 
-def main(tag, index, folder):
+def main(tag, name, index, folder):
     '''
     Plot the average conditional ensemble redshift distribution
     
     Arguments:
         tag (str): The tag of the configuration
+        name (str): The name of the configuration
         index (int): The index of the configuration
         folder (str): The base folder of the figure
     
@@ -21,42 +22,44 @@ def main(tag, index, folder):
     '''
     # Start
     start = time.time()
-    print('Index: {}'.format(index))
+    print('Name: {} Index: {}'.format(name, index))
     
     # Path
     model_folder = os.path.join(folder, 'MODEL/')
     analyze_folder = os.path.join(folder, 'ANALYZE/')
     summarize_folder = os.path.join(folder, 'SUMMARIZE/')
+    os.makedirs(os.path.join(analyze_folder, '{}/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(analyze_folder, '{}/{}/CONDITIONAL/'.format(tag, name)), exist_ok=True)
     
     # Bin
-    with h5py.File(os.path.join(model_folder, '{}/SELECT/DATA0.hdf5'.format(tag)), 'r') as file:
+    with h5py.File(os.path.join(model_folder, '{}/TARGET/DATA0.hdf5'.format(tag)), 'r') as file:
         bin_lens = file['bin_lens'][...]
         bin_source = file['bin_source'][...]
     
     # Summarize Lens
-    with h5py.File(os.path.join(summarize_folder, '{}/LENS/LENS{}/DIR.hdf5'.format(tag, index)), 'r') as file:
+    with h5py.File(os.path.join(summarize_folder, '{}/{}/LENS/LENS{}/DIR.hdf5'.format(tag, name, index)), 'r') as file:
         dir_lens = file['average'][...]
     
-    with h5py.File(os.path.join(summarize_folder, '{}/LENS/LENS{}/STACK.hdf5'.format(tag, index)), 'r') as file:
+    with h5py.File(os.path.join(summarize_folder, '{}/{}/LENS/LENS{}/STACK.hdf5'.format(tag, name, index)), 'r') as file:
         stack_lens = file['average'][...]
     
-    with h5py.File(os.path.join(summarize_folder, '{}/LENS/LENS{}/PRODUCT.hdf5'.format(tag, index)), 'r') as file:
+    with h5py.File(os.path.join(summarize_folder, '{}/{}/LENS/LENS{}/PRODUCT.hdf5'.format(tag, name, index)), 'r') as file:
         product_lens = file['average'][...]
     
-    with h5py.File(os.path.join(summarize_folder, '{}/LENS/LENS{}/TRUTH.hdf5'.format(tag, index)), 'r') as file:
+    with h5py.File(os.path.join(summarize_folder, '{}/{}/LENS/LENS{}/TRUTH.hdf5'.format(tag, name, index)), 'r') as file:
         truth_lens = file['average'][...]
     
     # Summarize Source
-    with h5py.File(os.path.join(summarize_folder, '{}/SOURCE/SOURCE{}/DIR.hdf5'.format(tag, index)), 'r') as file:
+    with h5py.File(os.path.join(summarize_folder, '{}/{}/SOURCE/SOURCE{}/DIR.hdf5'.format(tag, name, index)), 'r') as file:
         dir_source = file['average'][...]
     
-    with h5py.File(os.path.join(summarize_folder, '{}/SOURCE/SOURCE{}/STACK.hdf5'.format(tag, index)), 'r') as file:
+    with h5py.File(os.path.join(summarize_folder, '{}/{}/SOURCE/SOURCE{}/STACK.hdf5'.format(tag, name, index)), 'r') as file:
         stack_source = file['average'][...]
     
-    with h5py.File(os.path.join(summarize_folder, '{}/SOURCE/SOURCE{}/PRODUCT.hdf5'.format(tag, index)), 'r') as file:
+    with h5py.File(os.path.join(summarize_folder, '{}/{}/SOURCE/SOURCE{}/PRODUCT.hdf5'.format(tag, name, index)), 'r') as file:
         product_source = file['average'][...]
     
-    with h5py.File(os.path.join(summarize_folder, '{}/SOURCE/SOURCE{}/TRUTH.hdf5'.format(tag, index)), 'r') as file:
+    with h5py.File(os.path.join(summarize_folder, '{}/{}/SOURCE/SOURCE{}/TRUTH.hdf5'.format(tag, name, index)), 'r') as file:
         truth_source = file['average'][...]
     
     # Redshift
@@ -150,12 +153,9 @@ def main(tag, index, folder):
         
         if m == bin_size - 1:
             plot[m, 2].set_xlabel(r'$z$')
-    
-    os.makedirs(analyze_folder, exist_ok=True)
-    os.makedirs(os.path.join(analyze_folder, '{}/CONDITIONAL/'.format(tag)), exist_ok=True)
-    
+        
     figure.subplots_adjust(wspace=0.2, hspace=0.2)
-    figure.savefig(os.path.join(analyze_folder, '{}/CONDITIONAL/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(analyze_folder, '{}/{}/CONDITIONAL/FIGURE{}.pdf'.format(tag, name, index)), format='pdf', bbox_inches='tight')
     
     # Return
     end = time.time()
@@ -169,13 +169,15 @@ if __name__ == '__main__':
     # Input
     PARSE = argparse.ArgumentParser(description='Figure Condition')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
+    PARSE.add_argument('--name', type=str, required=True, help='The name of the configuration')
     PARSE.add_argument('--index', type=int, required=True, help='The index of the configuration')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the figure')
     
     # Parse
     TAG = PARSE.parse_args().tag
+    NAME = PARSE.parse_args().name
     INDEX = PARSE.parse_args().index
     FOLDER = PARSE.parse_args().folder
     
     # Output
-    OUTPUT = main(TAG, INDEX, FOLDER)
+    OUTPUT = main(TAG, NAME, INDEX, FOLDER)

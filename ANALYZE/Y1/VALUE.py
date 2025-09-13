@@ -23,11 +23,11 @@ def main(tag, name, label, folder):
     print('Name: {}, Label: {}'.format(name, label))
     
     # Path
-    calibrate_folder = os.path.join(folder, 'CALIBRATE/')
+    analyze_folder = os.path.join(folder, 'ANALYZE/')
     synthesize_folder = os.path.join(folder, 'SYNTHESIZE/')
-    os.makedirs(os.path.join(calibrate_folder, '{}/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(calibrate_folder, '{}/{}/'.format(tag, name)), exist_ok=True)
-    os.makedirs(os.path.join(calibrate_folder, '{}/{}/VALUE/'.format(tag, name)), exist_ok=True)
+    os.makedirs(os.path.join(analyze_folder, '{}/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(analyze_folder, '{}/{}/'.format(tag, name)), exist_ok=True)
+    os.makedirs(os.path.join(analyze_folder, '{}/{}/VALUE/'.format(tag, name)), exist_ok=True)
     
     # Summarize
     with h5py.File(os.path.join(synthesize_folder, '{}/{}/{}.hdf5'.format(tag, name, label)), 'r') as file:
@@ -72,7 +72,7 @@ def main(tag, name, label, folder):
     rho_eta_source = numpy.corrcoef(eta_source, rowvar=False)
     
     # Save
-    with h5py.File(os.path.join(calibrate_folder, '{}/{}/VALUE/{}.hdf5'.format(tag, name, label)), 'w') as file:
+    with h5py.File(os.path.join(analyze_folder, '{}/{}/VALUE/{}.hdf5'.format(tag, name, label)), 'w') as file:
         file.create_group('meta')
         for key in meta.keys():
             file['meta'].create_dataset(key, data=meta[key], dtype=meta[key].dtype)
