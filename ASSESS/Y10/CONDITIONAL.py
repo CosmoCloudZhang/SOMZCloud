@@ -29,11 +29,11 @@ def main(tag, name, index, folder):
     assess_folder = os.path.join(folder, 'ASSESS/')
     summarize_folder = os.path.join(folder, 'SUMMARIZE/')
     os.makedirs(os.path.join(assess_folder, '{}/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(assess_folder, '{}/{}/'.format(tag, name)), exist_ok=True)
-    os.makedirs(os.path.join(assess_folder, '{}/{}/CONDITIONAL/'.format(tag, name)), exist_ok=True)
+    os.makedirs(os.path.join(assess_folder, '{}/CONDITIONAL/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(assess_folder, '{}/CONDITIONAL/{}/'.format(tag, name)), exist_ok=True)
     
     # Bin
-    with h5py.File(os.path.join(model_folder, '{}/TARGET/DATA0.hdf5'.format(tag)), 'r') as file:
+    with h5py.File(os.path.join(model_folder, '{}/TARGET/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         bin_lens = file['bin_lens'][...]
         bin_source = file['bin_source'][...]
     
@@ -156,12 +156,13 @@ def main(tag, name, index, folder):
             plot[m, 2].set_xlabel(r'$z$')
         
     figure.subplots_adjust(wspace=0.2, hspace=0.2)
-    figure.savefig(os.path.join(assess_folder, '{}/{}/CONDITIONAL/FIGURE{}.pdf'.format(tag, name, index)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(assess_folder, '{}/CONDITIONAL/{}/FIGURE{}.pdf'.format(tag, name, index)), format='pdf', bbox_inches='tight')
     
-    # Return
+    # Duration
     end = time.time()
     duration = (end - start) / 60
     
+    # Return
     print('Time: {:.2f} minutes'.format(duration))
     return duration
 

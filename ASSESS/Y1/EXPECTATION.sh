@@ -2,13 +2,13 @@
 #SBATCH -A m1727
 #SBATCH --nodes=1
 #SBATCH -q regular
-#SBATCH --time=24:00:00
+#SBATCH --time=04:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH -J ASSESS_Y1_VALUE
-#SBATCH --cpus-per-task=16
-#SBATCH --ntasks-per-node=16
+#SBATCH --cpus-per-task=32
+#SBATCH --ntasks-per-node=8
+#SBATCH -J ASSESS_Y1_EXPECTATION
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -34,18 +34,11 @@ NUMBER=500
 BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 
-# Run applications
-LABEL_LIST=("DIR"  "STACK" "PRODUCT" "TRUTH")
+# Run the application
 NAME_LIST=("COPPER" "GOLD" "IRON" "SILVER" "TITANIUM" "ZINC")
 
 for NAME in "${NAME_LIST[@]}"; do
-    for LABEL in "${LABEL_LIST[@]}"; do
-            srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}ASSESS/${TAG}/VALUE.py" --tag=$TAG --name=$NAME --label=$LABEL --index=$INDEX --folder=$BASE_FOLDER &
-            # Control parallel execution
-            if (( $INDEX % $SLURM_NTASKS == 0 )); then
-                wait
-            fi
-        done
-    done
+    # Run the application
+    srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}ASSESS/${TAG}/EXPECTATION.py" --tag=$TAG --name=$NAME --number=$NUMBER --folder=$BASE_FOLDER &
 done
 wait

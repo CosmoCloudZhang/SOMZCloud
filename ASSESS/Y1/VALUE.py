@@ -27,9 +27,9 @@ def main(tag, name, label, index, folder):
     assess_folder = os.path.join(folder, 'ASSESS/')
     summarize_folder = os.path.join(folder, 'SUMMARIZE/')
     os.makedirs(os.path.join(assess_folder, '{}/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(assess_folder, '{}/{}/'.format(tag, name)), exist_ok=True)
-    os.makedirs(os.path.join(assess_folder, '{}/{}/VALUE/'.format(tag, name)), exist_ok=True)
-    os.makedirs(os.path.join(assess_folder, '{}/{}/VALUE/{}/'.format(tag, name, label)), exist_ok=True)
+    os.makedirs(os.path.join(assess_folder, '{}/VALUE/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(assess_folder, '{}/VALUE/{}/'.format(tag, name)), exist_ok=True)
+    os.makedirs(os.path.join(assess_folder, '{}/VALUE/{}/{}/'.format(tag, name, label)), exist_ok=True)
     
     # Summarize Lens
     with h5py.File(os.path.join(summarize_folder, '{}/{}/LENS/LENS{}/{}.hdf5'.format(tag, name, index, label)), 'r') as file:
@@ -73,7 +73,7 @@ def main(tag, name, label, index, folder):
     sigma_eta_source = numpy.std(eta_source, axis=0) / (1 + average_mu_source)
     
     # Save
-    with h5py.File(os.path.join(assess_folder, '{}/{}/VALUE/{}/DATA{}.hdf5'.format(tag, name, label, index)), 'w') as file:
+    with h5py.File(os.path.join(assess_folder, '{}/VALUE/{}/{}/DATA{}.hdf5'.format(tag, name, label, index)), 'w') as file:
         file.create_group('meta')
         file['meta'].create_dataset('z1', data=z1, dtype=numpy.float32)
         file['meta'].create_dataset('z2', data=z2, dtype=numpy.float32)
