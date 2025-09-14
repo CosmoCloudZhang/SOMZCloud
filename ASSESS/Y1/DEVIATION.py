@@ -29,58 +29,61 @@ def main(tag, name, number, folder):
     os.makedirs(os.path.join(assess_folder, '{}/DEVIATION/{}/'.format(tag, name)), exist_ok=True)
     
     # Data
-    dir_eta_lens = []
-    dir_eta_source = []
+    dir_delta_lens = []
+    dir_delta_source = []
     
-    hybrid_eta_lens = []
-    hybrid_eta_source = []
+    hybrid_delta_lens = []
+    hybrid_delta_source = []
     
-    stack_eta_lens = []
-    stack_eta_source = []
-    
-    truth_eta_lens = []
-    truth_eta_source = []
-    
-    truth_mu_lens = []
-    truth_mu_source = []
+    stack_delta_lens = []
+    stack_delta_source = []
     
     # Value
     for index in range(number + 1):
         with h5py.File(os.path.join(assess_folder, '{}/VALUE/{}/DIR/DATA{}.hdf5'.format(tag, name, index)), 'r') as file:
-            dir_eta_lens.append(file['lens']['average_eta'][...])
-            dir_eta_source.append(file['source']['average_eta'][...])
+            dir_eta_lens = file['lens']['average_eta'][...]
+            dir_eta_source = file['source']['average_eta'][...]
         
         with h5py.File(os.path.join(assess_folder, '{}/VALUE/{}/HYBRID/DATA{}.hdf5'.format(tag, name, index)), 'r') as file:
-            hybrid_eta_lens.append(file['lens']['average_eta'][...])
-            hybrid_eta_source.append(file['source']['average_eta'][...])
+            hybrid_eta_lens = file['lens']['average_eta'][...]
+            hybrid_eta_source = file['source']['average_eta'][...]
         
         with h5py.File(os.path.join(assess_folder, '{}/VALUE/{}/STACK/DATA{}.hdf5'.format(tag, name, index)), 'r') as file:
-            stack_eta_lens.append(file['lens']['average_eta'][...])
-            stack_eta_source.append(file['source']['average_eta'][...])
+            stack_eta_lens = file['lens']['average_eta'][...]
+            stack_eta_source = file['source']['average_eta'][...]
         
         with h5py.File(os.path.join(assess_folder, '{}/VALUE/{}/TRUTH/DATA{}.hdf5'.format(tag, name, index)), 'r') as file:
-            truth_eta_lens.append(file['lens']['average_eta'][...])
-            truth_eta_source.append(file['source']['average_eta'][...])
+            truth_eta_lens = file['lens']['average_eta'][...]
+            truth_eta_source = file['source']['average_eta'][...]
             
-            truth_mu_lens.append(file['lens']['average_mu'][...])
-            truth_mu_source.append(file['source']['average_mu'][...])
+            truth_mu_lens = file['lens']['average_mu'][...]
+            truth_mu_source = file['source']['average_mu'][...]
+        
+        dir_delta_lens.append((dir_eta_lens - truth_eta_lens) / (1 + truth_mu_lens))
+        dir_delta_source.append((dir_eta_source - truth_eta_source) / (1 + truth_mu_source))
+        
+        hybrid_delta_lens.append((hybrid_eta_lens - truth_eta_lens) / (1 + truth_mu_lens))
+        hybrid_delta_source.append((hybrid_eta_source - truth_eta_source) / (1 + truth_mu_source))
+        
+        stack_delta_lens.append((stack_eta_lens - truth_eta_lens) / (1 + truth_mu_lens))
+        stack_delta_source.append((stack_eta_source - truth_eta_source) / (1 + truth_mu_source))
     
     # Delta
-    dir_delta_lens = (numpy.array(dir_eta_lens) - numpy.array(truth_eta_lens)) / (1 + numpy.array(truth_mu_lens))
-    dir_delta_source = (numpy.array(dir_eta_source) - numpy.array(truth_eta_source)) / (1 + numpy.array(truth_mu_source)) 
+    dir_delta_lens = numpy.array(dir_delta_lens)
+    dir_delta_source = numpy.array(dir_delta_source)
     
-    hybrid_delta_lens = (numpy.array(hybrid_eta_lens) - numpy.array(truth_eta_lens)) / (1 + numpy.array(truth_mu_lens))
-    hybrid_delta_source = (numpy.array(hybrid_eta_source) - numpy.array(truth_eta_source)) / (1 + numpy.array(truth_mu_source))
+    hybrid_delta_lens = numpy.array(hybrid_delta_lens)
+    hybrid_delta_source = numpy.array(hybrid_delta_source)
     
-    stack_delta_lens = (numpy.array(stack_eta_lens) - numpy.array(truth_eta_lens)) / (1 + numpy.array(truth_mu_lens))
-    stack_delta_source = (numpy.array(stack_eta_source) - numpy.array(truth_eta_source)) / (1 + numpy.array(truth_mu_source))
+    stack_delta_lens = numpy.array(stack_delta_lens)
+    stack_delta_source = numpy.array(stack_delta_source)
     
     # Variable
     factor_lens = 0.005
-    range_lens = [0.020, 0.025, 0.030, 0.035, 0.040]
+    range_lens = [0.030, 0.035, 0.040, 0.045, 0.050]
     
     factor_source = 0.002
-    range_source = [0.040, 0.045, 0.050, 0.055, 0.060]
+    range_source = [0.050, 0.055, 0.060, 0.065, 0.070]
     
     # Configuration
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
@@ -90,10 +93,9 @@ def main(tag, name, number, folder):
     pyplot.rcParams['font.size'] = 30
     
     # Figure
-    colors = {'DIR': 'darkmagenta', 'Stack': 'darkgreen', 'Hybrid': 'darkorange'}
-    label_list = list(colors.keys())
     bin_size = 5
-    
+    label_list = ['DIR', 'Stack', 'Hybrid']
+    colors = {'DIR': 'darkmagenta', 'Stack': 'darkgreen', 'Hybrid': 'darkorange'}
     figure, plot = pyplot.subplots(nrows=bin_size, ncols=2, figsize=(12, 5 * bin_size))
     
     # Plot Lens
@@ -112,12 +114,13 @@ def main(tag, name, number, folder):
             violin['bodies'][n].set_alpha(0.60)
             violin['bodies'][n].set_facecolor(color)
         
+        violin['cbars'].set_color('black')
         violin['cmins'].set_color('black')
         violin['cmaxes'].set_color('black')
         violin['cmedians'].set_color('black')
         
         plot[m, 0].axvspan(-factor_lens, factor_lens, alpha=0.3, color='gray')
-        plot[m, 0].text(x=range_lens[m] / 3 * 2, y=2.5, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
+        plot[m, 0].text(x=range_lens[m] / 3 * 2, y=2.1, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
         
         plot[m, 0].set_ylim(0.5, 3.5)
         plot[m, 0].set_xlim(-range_lens[m], +range_lens[m])
@@ -147,13 +150,13 @@ def main(tag, name, number, folder):
             violin['bodies'][n].set_alpha(0.60)
             violin['bodies'][n].set_facecolor(color)
         
+        violin['cbars'].set_color('black')
         violin['cmins'].set_color('black')
         violin['cmaxes'].set_color('black')
         violin['cmedians'].set_color('black')
         
-        
         plot[m, 1].axvspan(-factor_source, factor_source, alpha=0.3, color='gray')
-        plot[m, 1].text(x=range_source[m] / 3 * 2, y=2.5, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
+        plot[m, 1].text(x=range_source[m] / 3 * 2, y=2.1, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
         
         plot[m, 1].set_ylim(0.5, 3.5)
         plot[m, 1].set_xlim(-range_source[m], +range_source[m])

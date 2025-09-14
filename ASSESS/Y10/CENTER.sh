@@ -6,9 +6,9 @@
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH --cpus-per-task=32
-#SBATCH --ntasks-per-node=8
-#SBATCH -J ASSESS_Y10_EXPECTATION
+#SBATCH --cpus-per-task=64
+#SBATCH --ntasks-per-node=4
+#SBATCH -J ASSESS_Y10_CENTER
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -35,10 +35,10 @@ BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 
 # Run the application
-NAME_LIST=("COPPER" "GOLD" "IRON" "SILVER" "TITANIUM" "ZINC")
+LABEL_LIST=("DIR"  "STACK" "HYBRID")
 
-for NAME in "${NAME_LIST[@]}"; do
+for LABEL in "${LABEL_LIST[@]}"; do
     # Run the application
-    srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}ASSESS/${TAG}/EXPECTATION.py" --tag=$TAG --name=$NAME --number=$NUMBER --folder=$BASE_FOLDER &
+    srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}ASSESS/${TAG}/CENTER.py" --tag=$TAG --label=$LABEL --number=$NUMBER --folder=$BASE_FOLDER &
 done
 wait

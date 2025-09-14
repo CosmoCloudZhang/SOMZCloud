@@ -6,13 +6,13 @@ import argparse
 from matplotlib import pyplot
 
 
-def main(tag, name, number, folder):
+def main(tag, label, number, folder):
     '''
-    Plot the expectation of the lens and source redshift distributions
+    Plot the center of the lens and source redshift distributions
     
     Arguments:
         tag (str): The tag of the configuration
-        name (str): The name of the configuration
+        label (str): The label of the configuration
         number (int): The number of configurations
         folder (str): The base folder of the figure
     
@@ -20,54 +20,119 @@ def main(tag, name, number, folder):
         duration (float): The duration of the process
     '''
     start = time.time()
-    print('Name: {}'.format(name))
+    print('Label: {}'.format(label))
     
     # Path
     assess_folder = os.path.join(folder, 'ASSESS/')
     os.makedirs(os.path.join(assess_folder, '{}/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(assess_folder, '{}/EXPECTATION/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(assess_folder, '{}/EXPECTATION/{}/'.format(tag, name)), exist_ok=True)
+    os.makedirs(os.path.join(assess_folder, '{}/CENTER/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(assess_folder, '{}/CENTER/{}/'.format(tag, label)), exist_ok=True)
     
     # Data
-    dir_mu_lens = []
-    dir_mu_source = []
+    gold_delta_lens = []
+    gold_delta_source = []
     
-    hybrid_mu_lens = []
-    hybrid_mu_source = []
+    silver_delta_lens = []
+    silver_delta_source = []
     
-    stack_mu_lens = []
-    stack_mu_source = []
+    copper_delta_lens = []
+    copper_delta_source = []
     
-    truth_mu_lens = []
-    truth_mu_source = []
+    iron_delta_lens = []
+    iron_delta_source = []
+    
+    titanium_delta_lens = []
+    titanium_delta_source = []
+    
+    zinc_delta_lens = []
+    zinc_delta_source = []
     
     # Value
     for index in range(number + 1):
-        with h5py.File(os.path.join(assess_folder, '{}/VALUE/{}/DIR/DATA{}.hdf5'.format(tag, name, index)), 'r') as file:
-            dir_mu_lens.append(file['lens']['average_mu'][...])
-            dir_mu_source.append(file['source']['average_mu'][...])
+        with h5py.File(os.path.join(assess_folder, '{}/VALUE/GOLD/{}/DATA{}.hdf5'.format(tag, label, index)), 'r') as file:
+            gold_mu_lens = file['lens']['average_mu'][...]
+            gold_mu_source = file['source']['average_mu'][...]
         
-        with h5py.File(os.path.join(assess_folder, '{}/VALUE/{}/HYBRID/DATA{}.hdf5'.format(tag, name, index)), 'r') as file:
-            hybrid_mu_lens.append(file['lens']['average_mu'][...])
-            hybrid_mu_source.append(file['source']['average_mu'][...])
+        with h5py.File(os.path.join(assess_folder, '{}/VALUE/GOLD/TRUTH/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+            truth_mu_lens = file['lens']['average_mu'][...]
+            truth_mu_source = file['source']['average_mu'][...]
         
-        with h5py.File(os.path.join(assess_folder, '{}/VALUE/{}/STACK/DATA{}.hdf5'.format(tag, name, index)), 'r') as file:
-            stack_mu_lens.append(file['lens']['average_mu'][...])
-            stack_mu_source.append(file['source']['average_mu'][...])
+        gold_delta_lens.append((gold_mu_lens - truth_mu_lens) / (1 + truth_mu_lens))
+        gold_delta_source.append((gold_mu_source - truth_mu_source) / (1 + truth_mu_source))
         
-        with h5py.File(os.path.join(assess_folder, '{}/VALUE/{}/TRUTH/DATA{}.hdf5'.format(tag, name, index)), 'r') as file:
-            truth_mu_lens.append(file['lens']['average_mu'][...])
-            truth_mu_source.append(file['source']['average_mu'][...])
+        with h5py.File(os.path.join(assess_folder, '{}/VALUE/SILVER/{}/DATA{}.hdf5'.format(tag, label, index)), 'r') as file:
+            silver_mu_lens = file['lens']['average_mu'][...]
+            silver_mu_source = file['source']['average_mu'][...]
+        
+        with h5py.File(os.path.join(assess_folder, '{}/VALUE/SILVER/TRUTH/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+            truth_mu_lens = file['lens']['average_mu'][...]
+            truth_mu_source = file['source']['average_mu'][...]
+        
+        silver_delta_lens.append((silver_mu_lens - truth_mu_lens) / (1 + truth_mu_lens))
+        silver_delta_source.append((silver_mu_source - truth_mu_source) / (1 + truth_mu_source))
+        
+        with h5py.File(os.path.join(assess_folder, '{}/VALUE/COPPER/{}/DATA{}.hdf5'.format(tag, label, index)), 'r') as file:
+            copper_mu_lens = file['lens']['average_mu'][...]
+            copper_mu_source = file['source']['average_mu'][...]
+        
+        with h5py.File(os.path.join(assess_folder, '{}/VALUE/COPPER/TRUTH/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+            truth_mu_lens = file['lens']['average_mu'][...]
+            truth_mu_source = file['source']['average_mu'][...]
+        
+        copper_delta_lens.append((copper_mu_lens - truth_mu_lens) / (1 + truth_mu_lens))
+        copper_delta_source.append((copper_mu_source - truth_mu_source) / (1 + truth_mu_source))
+        
+        with h5py.File(os.path.join(assess_folder, '{}/VALUE/IRON/{}/DATA{}.hdf5'.format(tag, label, index)), 'r') as file:
+            iron_mu_lens = file['lens']['average_mu'][...]
+            iron_mu_source = file['source']['average_mu'][...]
+        
+        with h5py.File(os.path.join(assess_folder, '{}/VALUE/IRON/TRUTH/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+            truth_mu_lens = file['lens']['average_mu'][...]
+            truth_mu_source = file['source']['average_mu'][...]
+        
+        iron_delta_lens.append((iron_mu_lens - truth_mu_lens) / (1 + truth_mu_lens))
+        iron_delta_source.append((iron_mu_source - truth_mu_source) / (1 + truth_mu_source))
+        
+        with h5py.File(os.path.join(assess_folder, '{}/VALUE/TITANIUM/{}/DATA{}.hdf5'.format(tag, label, index)), 'r') as file:
+            titanium_mu_lens = file['lens']['average_mu'][...]
+            titanium_mu_source = file['source']['average_mu'][...]
+        
+        with h5py.File(os.path.join(assess_folder, '{}/VALUE/TITANIUM/TRUTH/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+            truth_mu_lens = file['lens']['average_mu'][...]
+            truth_mu_source = file['source']['average_mu'][...]
+        
+        titanium_delta_lens.append((titanium_mu_lens - truth_mu_lens) / (1 + truth_mu_lens))
+        titanium_delta_source.append((titanium_mu_source - truth_mu_source) / (1 + truth_mu_source))
+        
+        with h5py.File(os.path.join(assess_folder, '{}/VALUE/ZINC/{}/DATA{}.hdf5'.format(tag, label, index)), 'r') as file:
+            zinc_mu_lens = file['lens']['average_mu'][...]
+            zinc_mu_source = file['source']['average_mu'][...]
+        
+        with h5py.File(os.path.join(assess_folder, '{}/VALUE/ZINC/TRUTH/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+            truth_mu_lens = file['lens']['average_mu'][...]
+            truth_mu_source = file['source']['average_mu'][...]
+        
+        zinc_delta_lens.append((zinc_mu_lens - truth_mu_lens) / (1 + truth_mu_lens))
+        zinc_delta_source.append((zinc_mu_source - truth_mu_source) / (1 + truth_mu_source))
     
     # Delta
-    dir_delta_lens = (numpy.array(dir_mu_lens) - numpy.array(truth_mu_lens)) / (1 + numpy.array(truth_mu_lens))
-    dir_delta_source = (numpy.array(dir_mu_source) - numpy.array(truth_mu_source)) / (1 + numpy.array(truth_mu_source)) 
+    gold_delta_lens = numpy.array(gold_delta_lens)
+    gold_delta_source = numpy.array(gold_delta_source)
     
-    hybrid_delta_lens = (numpy.array(hybrid_mu_lens) - numpy.array(truth_mu_lens)) / (1 + numpy.array(truth_mu_lens))
-    hybrid_delta_source = (numpy.array(hybrid_mu_source) - numpy.array(truth_mu_source)) / (1 + numpy.array(truth_mu_source))
+    silver_delta_lens = numpy.array(silver_delta_lens)
+    silver_delta_source = numpy.array(silver_delta_source)
     
-    stack_delta_lens = (numpy.array(stack_mu_lens) - numpy.array(truth_mu_lens)) / (1 + numpy.array(truth_mu_lens))
-    stack_delta_source = (numpy.array(stack_mu_source) - numpy.array(truth_mu_source)) / (1 + numpy.array(truth_mu_source))
+    copper_delta_lens = numpy.array(copper_delta_lens)
+    copper_delta_source = numpy.array(copper_delta_source)
+    
+    iron_delta_lens = numpy.array(iron_delta_lens)
+    iron_delta_source = numpy.array(iron_delta_source)
+    
+    titanium_delta_lens = numpy.array(titanium_delta_lens)
+    titanium_delta_source = numpy.array(titanium_delta_source)
+    
+    zinc_delta_lens = numpy.array(zinc_delta_lens)
+    zinc_delta_source = numpy.array(zinc_delta_source)
     
     # Variable
     factor_lens = 0.005
@@ -84,85 +149,90 @@ def main(tag, name, number, folder):
     pyplot.rcParams['font.size'] = 30
     
     # Figure
-    colors = {'DIR': 'darkmagenta', 'Stack': 'darkgreen', 'Hybrid': 'darkorange'}
-    label_list = list(colors.keys())
     bin_size = 5
-    
+    name_list = ['Gold', 'Silver', 'Copper', 'Iron', 'Titanium', 'Zinc']
+    colors = {'DIR': 'darkmagenta', 'STACK': 'darkgreen', 'HYBRID': 'darkorange'}
     figure, plot = pyplot.subplots(nrows=bin_size, ncols=2, figsize=(12, 5 * bin_size))
     
     # Plot Lens
     for m in range(bin_size):
         violin = plot[m, 0].violinplot(
+            vert=True, 
             widths=0.8,
-            vert=False, 
-            showmeans=False, 
+            showmeans=False,
             showmedians=True,
             showextrema=True,
-            positions=[3, 2, 1], 
-            dataset=[dir_delta_lens[:, m], stack_delta_lens[:, m], hybrid_delta_lens[:, m]]
+            positions=[1, 2, 3, 4, 5, 6],
+            dataset=[gold_delta_lens[:, m], silver_delta_lens[:, m], copper_delta_lens[:, m], iron_delta_lens[:, m], titanium_delta_lens[:, m], zinc_delta_lens[:, m]]
         )
         
-        for n, color in enumerate(colors[label] for label in label_list):
+        for n in range(len(name_list)):
             violin['bodies'][n].set_alpha(0.60)
-            violin['bodies'][n].set_facecolor(color)
+            violin['bodies'][n].set_facecolor(colors[label])
         
+        violin['cbars'].set_color('black')
         violin['cmins'].set_color('black')
         violin['cmaxes'].set_color('black')
         violin['cmedians'].set_color('black')
         
-        plot[m, 0].axvspan(-factor_lens, factor_lens, alpha=0.3, color='gray')
-        plot[m, 0].text(x=range_lens[m] / 3 * 2, y=2.5, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
+        plot[m, 0].axhspan(-factor_lens, factor_lens, alpha=0.3, color='gray')
+        plot[m, 0].text(x=5.5, y=range_lens[m] / 3 * 2, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
         
-        plot[m, 0].set_ylim(0.5, 3.5)
-        plot[m, 0].set_xlim(-range_lens[m], +range_lens[m])
+        plot[m, 0].set_xlim(0.5, 6.5)
+        plot[m, 0].set_ylim(-range_lens[m], +range_lens[m])
         
-        plot[m, 0].set_yticks([3, 2, 1])
-        plot[m, 0].set_yticklabels([r'$\mathrm{' + label + '}$' for label in label_list])
+        plot[m, 0].set_ylabel(r'$\delta_\mu$')
+        plot[m, 0].set_xticks([1, 2, 3, 4, 5, 6])
+        plot[m, 0].tick_params(axis='y', labelsize=20)
         
         if m == 0:
             plot[m, 0].set_title(r'$\mathrm{Lens}$')
         
         if m == bin_size - 1:
-            plot[m, 0].set_xlabel(r'$\delta_\mu$')
+            plot[m, 0].set_xticklabels([r'$\mathrm{' + name + '}$' for name in name_list], rotation=45, ha='right', fontsize=20)
+        else:
+            plot[m, 0].set_xticklabels([])
     
     # Plot Source
     for m in range(bin_size):
         violin = plot[m, 1].violinplot(
+            vert=True, 
             widths=0.8,
-            vert=False, 
             showmeans=False,
             showmedians=True,
             showextrema=True,
-            positions=[3, 2, 1],
-            dataset=[dir_delta_source[:, m], stack_delta_source[:, m], hybrid_delta_source[:, m]]
+            positions=[1, 2, 3, 4, 5, 6],
+            dataset=[gold_delta_source[:, m], silver_delta_source[:, m], copper_delta_source[:, m], iron_delta_source[:, m], titanium_delta_source[:, m], zinc_delta_source[:, m]]
         )
         
-        for n, color in enumerate(colors[label] for label in label_list):
+        for n in range(len(name_list)):
             violin['bodies'][n].set_alpha(0.60)
-            violin['bodies'][n].set_facecolor(color)
+            violin['bodies'][n].set_facecolor(colors[label])
         
+        violin['cbars'].set_color('black')
         violin['cmins'].set_color('black')
         violin['cmaxes'].set_color('black')
         violin['cmedians'].set_color('black')
         
+        plot[m, 1].axhspan(-factor_source, factor_source, alpha=0.3, color='gray')
+        plot[m, 1].text(x=5.5, y=range_source[m] / 3 * 2, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
         
-        plot[m, 1].axvspan(-factor_source, factor_source, alpha=0.3, color='gray')
-        plot[m, 1].text(x=range_source[m] / 3 * 2, y=2.5, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
+        plot[m, 1].set_xlim(0.5, 6.5)
+        plot[m, 1].set_ylim(-range_source[m], +range_source[m])
         
-        plot[m, 1].set_ylim(0.5, 3.5)
-        plot[m, 1].set_xlim(-range_source[m], +range_source[m])
-        
-        plot[m, 1].set_yticklabels([])
-        plot[m, 1].set_yticks([3, 2, 1])
+        plot[m, 1].set_xticks([1, 2, 3, 4, 5, 6])
+        plot[m, 1].tick_params(axis='y', labelsize=20)
         
         if m == 0:
             plot[m, 1].set_title(r'$\mathrm{Source}$')
         
         if m == bin_size - 1:
-            plot[m, 1].set_xlabel(r'$\delta_\mu$')
+            plot[m, 1].set_xticklabels([r'$\mathrm{' + name + '}$' for name in name_list], rotation=45, ha='right', fontsize=20)
+        else:
+            plot[m, 1].set_xticklabels([])
     
-    figure.subplots_adjust(wspace=0.1, hspace=0.2)
-    figure.savefig(os.path.join(assess_folder, '{}/EXPECTATION/{}/FIGURE.pdf'.format(tag, name)), format='pdf', bbox_inches='tight')
+    figure.subplots_adjust(wspace=0.20, hspace=0.05)
+    figure.savefig(os.path.join(assess_folder, '{}/CENTER/{}/FIGURE.pdf'.format(tag, label)), format='pdf', bbox_inches='tight')
     pyplot.close(figure)
     
     # Duration
@@ -176,17 +246,17 @@ def main(tag, name, number, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Assess Expectation')
+    PARSE = argparse.ArgumentParser(description='Assess Center')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
-    PARSE.add_argument('--name', type=str, required=True, help='The name of the configuration')
+    PARSE.add_argument('--label', type=str, required=True, help='The label of the configuration')
     PARSE.add_argument('--number', type=int, required=True, help='The number of configurations')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the figure')
     
     # Parse
     TAG = PARSE.parse_args().tag
-    NAME = PARSE.parse_args().name
+    LABEL = PARSE.parse_args().label
     NUMBER = PARSE.parse_args().number
     FOLDER = PARSE.parse_args().folder
     
     # Output
-    OUTPUT = main(TAG, NAME, NUMBER, FOLDER)
+    OUTPUT = main(TAG, LABEL, NUMBER, FOLDER)
