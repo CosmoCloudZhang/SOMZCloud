@@ -7,13 +7,14 @@ import argparse
 from matplotlib import pyplot
 
 
-def main(tag, name, folder):
+def main(tag, name, number, folder):
     '''
     Plot the marginal distribution of the lens and source galaxies
     
     Arguments:
         tag (str): The tag of the configuration
         name (str): The name of the configuration
+        number (int): The number of configurations
         folder (str): The base folder of the figure
     
     Returns:
@@ -27,13 +28,20 @@ def main(tag, name, folder):
     analyze_folder = os.path.join(folder, 'ANALYZE/')
     synthesize_folder = os.path.join(folder, 'SYNTHESIZE/')
     os.makedirs(os.path.join(analyze_folder, '{}/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(analyze_folder, '{}/{}/'.format(tag, name)), exist_ok=True)
-    os.makedirs(os.path.join(analyze_folder, '{}/{}/MARGINAL/'.format(tag, name)), exist_ok=True)
+    os.makedirs(os.path.join(analyze_folder, '{}/MARGINAL/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(analyze_folder, '{}/MARGINAL/{}/'.format(tag, name)), exist_ok=True)
     
     # Bin
-    with h5py.File(os.path.join(model_folder, '{}/TARGET/DATA0.hdf5'.format(tag)), 'r') as file:
-        bin_lens = file['bin_lens'][...]
-        bin_source = file['bin_source'][...]
+    bin_lens = []
+    bin_source = []
+    
+    for index in range(number + 1):
+        with h5py.File(os.path.join(model_folder, '{}/TARGET/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+            bin_lens.append(file['bin_lens'][...])
+            bin_source.append(file['bin_source'][...])
+    
+    average_bin_lens = numpy.average(numpy.vstack(bin_lens), axis=0)
+    average_bin_source = numpy.average(numpy.vstack(bin_source), axis=0)
     
     # Summarize
     with h5py.File(os.path.join(synthesize_folder, '{}/{}/DIR.hdf5'.format(tag, name)), 'r') as file:
@@ -44,9 +52,9 @@ def main(tag, name, folder):
         stack_average_lens = file['lens']['average'][...]
         stack_average_source = file['source']['average'][...]
     
-    with h5py.File(os.path.join(synthesize_folder, '{}/{}/PRODUCT.hdf5'.format(tag, name)), 'r') as file:
-        product_average_lens = file['lens']['average'][...]
-        product_average_source = file['source']['average'][...]
+    with h5py.File(os.path.join(synthesize_folder, '{}/{}/HYBRID.hdf5'.format(tag, name)), 'r') as file:
+        hybrid_average_lens = file['lens']['average'][...]
+        hybrid_average_source = file['source']['average'][...]
     
     with h5py.File(os.path.join(synthesize_folder, '{}/{}/TRUTH.hdf5'.format(tag, name)), 'r') as file:
         truth_average_lens = file['lens']['average'][...]
@@ -72,18 +80,18 @@ def main(tag, name, folder):
     bin_size = 5
     range_lens = 0.6
     range_source = [2.0, 2.1, 2.2, 2.3, 2.4]
-    figure, plot = pyplot.subplots(nrows=bin_size, ncols=3, figsize=(18, 5 * bin_size))
+    figure, plot = pyplot.subplots(nrows=bin_size, ncols=3, figsize=(20, 5 * bin_size))
     
     for m in range(bin_size):
-        plot[m, 0].plot(z_grid, dir_average_lens[m, :], color='darkblue', linewidth=2.0, linestyle='-')
+        plot[m, 0].plot(z_grid, dir_average_lens[m, :], color='darkmagenta', linewidth=2.0, linestyle='-')
         
         plot[m, 0].plot(z_grid, stack_average_lens[m, :], color='darkgreen', linewidth=2.0, linestyle='-')
         
-        plot[m, 0].plot(z_grid, product_average_lens[m, :], color='darkorange', linewidth=2.0, linestyle='-')
+        plot[m, 0].plot(z_grid, hybrid_average_lens[m, :], color='darkorange', linewidth=2.0, linestyle='-')
         
         plot[m, 0].plot(z_grid, truth_average_lens[m, :], color='black', linewidth=2.0, linestyle='-')
         
-        plot[m, 0].fill_betweenx(y=[0, 12], x1=bin_lens[m], x2=bin_lens[m + 1], color='gray', alpha=0.5)
+        plot[m, 0].fill_betweenx(y=[0, 12], x1=average_bin_lens[m], x2=average_bin_lens[m + 1], color='gray', alpha=0.5)
         
         plot[m, 0].set_ylim(0, 12)
         plot[m, 0].set_xlim(numpy.maximum(z1, center_lens[m] - range_lens / 2), numpy.minimum(numpy.maximum(z1, center_lens[m] - range_lens / 2) + range_lens, z2))
@@ -99,15 +107,15 @@ def main(tag, name, folder):
             plot[m, 0].set_xlabel(r'$z$')
     
     for m in range(bin_size):
-        plot[m, 1].plot(z_grid, dir_average_lens[m + bin_size, :], color='darkblue', linewidth=2.0, linestyle='-')
+        plot[m, 1].plot(z_grid, dir_average_lens[m + bin_size, :], color='darkmagenta', linewidth=2.0, linestyle='-')
         
         plot[m, 1].plot(z_grid, stack_average_lens[m + bin_size, :], color='darkgreen', linewidth=2.0, linestyle='-')
         
-        plot[m, 1].plot(z_grid, product_average_lens[m + bin_size, :], color='darkorange', linewidth=2.0, linestyle='-')
+        plot[m, 1].plot(z_grid, hybrid_average_lens[m + bin_size, :], color='darkorange', linewidth=2.0, linestyle='-')
         
         plot[m, 1].plot(z_grid, truth_average_lens[m + bin_size, :], color='black', linewidth=2.0, linestyle='-')
         
-        plot[m, 1].fill_betweenx(y=[0, 12], x1=bin_lens[m + bin_size], x2=bin_lens[m + bin_size + 1], color='gray', alpha=0.5)
+        plot[m, 1].fill_betweenx(y=[0, 12], x1=average_bin_lens[m + bin_size], x2=average_bin_lens[m + bin_size + 1], color='gray', alpha=0.5)
         
         plot[m, 1].set_ylim(0, 12)
         plot[m, 1].set_xlim(numpy.maximum(z1, center_lens[m + bin_size] - range_lens / 2), numpy.minimum(numpy.maximum(z1, center_lens[m + bin_size] - range_lens / 2) + range_lens, z2))
@@ -122,15 +130,15 @@ def main(tag, name, folder):
             plot[m, 1].set_xlabel(r'$z$')
     
     for m in range(bin_size):
-        plot[m, 2].plot(z_grid, dir_average_source[m, :], color='darkblue', linewidth=2.0, linestyle='-')
+        plot[m, 2].plot(z_grid, dir_average_source[m, :], color='darkmagenta', linewidth=2.0, linestyle='-')
         
         plot[m, 2].plot(z_grid, stack_average_source[m, :], color='darkgreen', linewidth=2.0, linestyle='-')
         
-        plot[m, 2].plot(z_grid, product_average_source[m, :], color='darkorange', linewidth=2.0, linestyle='-')
+        plot[m, 2].plot(z_grid, hybrid_average_source[m, :], color='darkorange', linewidth=2.0, linestyle='-')
         
         plot[m, 2].plot(z_grid, truth_average_source[m, :], color='black', linewidth=2.0, linestyle='-')
         
-        plot[m, 2].fill_betweenx(y=[0, 6], x1=bin_source[m], x2=bin_source[m + 1], color='gray', alpha=0.5)
+        plot[m, 2].fill_betweenx(y=[0, 6], x1=average_bin_source[m], x2=average_bin_source[m + 1], color='gray', alpha=0.5)
         
         plot[m, 2].set_ylim(0, 6)
         plot[m, 2].set_xlim(numpy.maximum(z1, center_source[m] - range_source[m] / 2), numpy.minimum(numpy.maximum(z1, center_source[m] - range_source[m] / 2) + range_source[m], z2))
@@ -145,7 +153,7 @@ def main(tag, name, folder):
             plot[m, 2].set_xlabel(r'$z$')
     
     figure.subplots_adjust(wspace=0.2, hspace=0.2)
-    figure.savefig(os.path.join(analyze_folder, '{}/{}/MARGINAL/FIGURE.pdf'.format(tag, name)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(analyze_folder, '{}/MARGINAL/{}/FIGURE.pdf'.format(tag, name)), format='pdf', bbox_inches='tight')
     pyplot.close(figure)
     
     # Duration
@@ -162,12 +170,14 @@ if __name__ == '__main__':
     PARSE = argparse.ArgumentParser(description='Analysis Marginal')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
     PARSE.add_argument('--name', type=str, required=True, help='The name of the configuration')
+    PARSE.add_argument('--number', type=int, required=True, help='The number of configurations')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the figure')
     
     # Parse
     TAG = PARSE.parse_args().tag
     NAME = PARSE.parse_args().name
+    NUMBER = PARSE.parse_args().number
     FOLDER = PARSE.parse_args().folder
     
     # Output
-    OUTPUT = main(TAG, NAME, FOLDER)
+    OUTPUT = main(TAG, NAME, NUMBER, FOLDER)

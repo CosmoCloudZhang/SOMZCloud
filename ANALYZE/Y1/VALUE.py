@@ -26,8 +26,8 @@ def main(tag, name, label, folder):
     analyze_folder = os.path.join(folder, 'ANALYZE/')
     synthesize_folder = os.path.join(folder, 'SYNTHESIZE/')
     os.makedirs(os.path.join(analyze_folder, '{}/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(analyze_folder, '{}/{}/'.format(tag, name)), exist_ok=True)
-    os.makedirs(os.path.join(analyze_folder, '{}/{}/VALUE/'.format(tag, name)), exist_ok=True)
+    os.makedirs(os.path.join(analyze_folder, '{}/VALUE/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(analyze_folder, '{}/VALUE/{}/'.format(tag, name)), exist_ok=True)
     
     # Summarize
     with h5py.File(os.path.join(synthesize_folder, '{}/{}/{}.hdf5'.format(tag, name, label)), 'r') as file:
@@ -72,7 +72,7 @@ def main(tag, name, label, folder):
     rho_eta_source = numpy.corrcoef(eta_source, rowvar=False)
     
     # Save
-    with h5py.File(os.path.join(analyze_folder, '{}/{}/VALUE/{}.hdf5'.format(tag, name, label)), 'w') as file:
+    with h5py.File(os.path.join(analyze_folder, '{}/VALUE/{}/{}.hdf5'.format(tag, name, label)), 'w') as file:
         file.create_group('meta')
         for key in meta.keys():
             file['meta'].create_dataset(key, data=meta[key], dtype=meta[key].dtype)
@@ -114,7 +114,7 @@ def main(tag, name, label, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Calibrate Value')
+    PARSE = argparse.ArgumentParser(description='Analyze Value')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
     PARSE.add_argument('--name', type=str, required=True, help='The name of the configuration')
     PARSE.add_argument('--label', type=str, required=True, help='The label of the configuration')
