@@ -83,7 +83,7 @@ def main(tag, name, index, folder):
     bin_size = 5
     range_lens = 0.6
     range_source = [2.0, 2.1, 2.2, 2.3, 2.4]
-    figure, plot = pyplot.subplots(nrows=bin_size, ncols=3, figsize=(18, 5 * bin_size))
+    figure, plot = pyplot.subplots(nrows=bin_size, ncols=3, figsize=(20, 5 * bin_size))
     
     for m in range(bin_size):
         plot[m, 0].plot(z_grid, dir_lens[m, :], color='darkmagenta', linewidth=1.5, linestyle='-')
