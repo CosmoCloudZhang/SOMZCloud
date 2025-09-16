@@ -83,7 +83,7 @@ def main(tag, name, number, folder):
     range_lens = [0.030, 0.030, 0.035, 0.035, 0.040, 0.040, 0.045, 0.045, 0.050, 0.050]
     
     factor_source = 0.002
-    range_source = [0.050, 0.055, 0.060, 0.065, 0.070]
+    range_source = [0.055, 0.060, 0.065, 0.070, 0.075]
     
     # Configuration
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
@@ -96,7 +96,7 @@ def main(tag, name, number, folder):
     bin_size = 5
     label_list = ['DIR', 'Stack', 'Hybrid']
     colors = {'DIR': 'darkmagenta', 'Stack': 'darkgreen', 'Hybrid': 'darkorange'}
-    figure, plot = pyplot.subplots(nrows=bin_size, ncols=3, figsize=(18, 5 * bin_size))
+    figure, plot = pyplot.subplots(nrows=bin_size, ncols=3, figsize=(20, 5 * bin_size))
     
     # Plot Lens
     for m in range(bin_size):
@@ -120,9 +120,10 @@ def main(tag, name, number, folder):
         violin['cmedians'].set_color('black')
         
         plot[m, 0].axvspan(-factor_lens, factor_lens, alpha=0.3, color='gray')
-        plot[m, 0].text(x=range_lens[m] / 3 * 2, y=2.1, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
+        plot[m, 0].text(x=range_lens[m] / 3 * 2, y=2.25, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
         
         plot[m, 0].set_ylim(0.5, 3.5)
+        plot[m, 0].tick_params(axis='x', labelsize=25)
         plot[m, 0].set_xlim(-range_lens[m], +range_lens[m])
         
         plot[m, 0].set_yticks([3, 2, 1])
@@ -156,9 +157,10 @@ def main(tag, name, number, folder):
         violin['cmedians'].set_color('black')
         
         plot[m, 1].axvspan(-factor_lens, factor_lens, alpha=0.3, color='gray')
-        plot[m, 1].text(x=range_lens[m + bin_size] / 3 * 2, y=2.1, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + bin_size + 1), color='black', ha='center')
+        plot[m, 1].text(x=range_lens[m + bin_size] / 3 * 2, y=2.25, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + bin_size + 1), color='black', ha='center')
         
         plot[m, 1].set_ylim(0.5, 3.5)
+        plot[m, 1].tick_params(axis='x', labelsize=25)
         plot[m, 1].set_xlim(-range_lens[m + bin_size], +range_lens[m + bin_size])
         
         plot[m, 1].set_yticks([3, 2, 1])
@@ -192,9 +194,10 @@ def main(tag, name, number, folder):
         violin['cmedians'].set_color('black')
         
         plot[m, 2].axvspan(-factor_source, factor_source, alpha=0.3, color='gray')
-        plot[m, 2].text(x=range_source[m] / 3 * 2, y=2.1, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
+        plot[m, 2].text(x=range_source[m] / 3 * 2, y=2.25, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
         
         plot[m, 2].set_ylim(0.5, 3.5)
+        plot[m, 2].tick_params(axis='x', labelsize=25)
         plot[m, 2].set_xlim(-range_source[m], +range_source[m])
         
         plot[m, 2].set_yticklabels([])
@@ -206,7 +209,7 @@ def main(tag, name, number, folder):
         if m == bin_size - 1:
             plot[m, 2].set_xlabel(r'$\delta_\eta$')
     
-    figure.subplots_adjust(wspace=0.1, hspace=0.2)
+    figure.subplots_adjust(wspace=0.12, hspace=0.12)
     figure.savefig(os.path.join(assess_folder, '{}/DEVIATION/{}/FIGURE.pdf'.format(tag, name)), format='pdf', bbox_inches='tight')
     pyplot.close(figure)
     

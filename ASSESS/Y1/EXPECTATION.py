@@ -80,7 +80,7 @@ def main(tag, name, number, folder):
     range_lens = [0.020, 0.025, 0.030, 0.035, 0.040]
     
     factor_source = 0.002
-    range_source = [0.040, 0.045, 0.050, 0.055, 0.060]
+    range_source = [0.045, 0.050, 0.055, 0.060, 0.065]
     
     # Configuration
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
@@ -117,9 +117,10 @@ def main(tag, name, number, folder):
         violin['cmedians'].set_color('black')
         
         plot[m, 0].axvspan(-factor_lens, factor_lens, alpha=0.3, color='gray')
-        plot[m, 0].text(x=range_lens[m] / 3 * 2, y=2.1, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
+        plot[m, 0].text(x=range_lens[m] / 3 * 2, y=2.25, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
         
         plot[m, 0].set_ylim(0.5, 3.5)
+        plot[m, 0].tick_params(axis='x', labelsize=25)
         plot[m, 0].set_xlim(-range_lens[m], +range_lens[m])
         
         plot[m, 0].set_yticks([3, 2, 1])
@@ -153,9 +154,10 @@ def main(tag, name, number, folder):
         violin['cmedians'].set_color('black')
         
         plot[m, 1].axvspan(-factor_source, factor_source, alpha=0.3, color='gray')
-        plot[m, 1].text(x=range_source[m] / 3 * 2, y=2.1, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
+        plot[m, 1].text(x=range_source[m] / 3 * 2, y=2.25, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
         
         plot[m, 1].set_ylim(0.5, 3.5)
+        plot[m, 1].tick_params(axis='x', labelsize=25)
         plot[m, 1].set_xlim(-range_source[m], +range_source[m])
         
         plot[m, 1].set_yticklabels([])
@@ -167,7 +169,7 @@ def main(tag, name, number, folder):
         if m == bin_size - 1:
             plot[m, 1].set_xlabel(r'$\delta_\mu$')
     
-    figure.subplots_adjust(wspace=0.1, hspace=0.2)
+    figure.subplots_adjust(wspace=0.12, hspace=0.12)
     figure.savefig(os.path.join(assess_folder, '{}/EXPECTATION/{}/FIGURE.pdf'.format(tag, name)), format='pdf', bbox_inches='tight')
     pyplot.close(figure)
     

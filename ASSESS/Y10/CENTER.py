@@ -139,7 +139,7 @@ def main(tag, label, number, folder):
     range_lens = [0.020, 0.020, 0.025, 0.025, 0.030, 0.030, 0.035, 0.035, 0.040, 0.040]
     
     factor_source = 0.002
-    range_source = [0.040, 0.045, 0.050, 0.055, 0.060]
+    range_source = [0.045, 0.050, 0.055, 0.060, 0.065]
     
     # Configuration
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
@@ -152,7 +152,7 @@ def main(tag, label, number, folder):
     bin_size = 5
     name_list = ['Gold', 'Silver', 'Copper', 'Iron', 'Titanium', 'Zinc']
     colors = {'DIR': 'darkmagenta', 'STACK': 'darkgreen', 'HYBRID': 'darkorange'}
-    figure, plot = pyplot.subplots(nrows=bin_size, ncols=2, figsize=(18, 5 * bin_size))
+    figure, plot = pyplot.subplots(nrows=bin_size, ncols=3, figsize=(20, 5 * bin_size))
     
     # Plot Lens
     for m in range(bin_size):
@@ -189,7 +189,7 @@ def main(tag, label, number, folder):
             plot[m, 0].set_title(r'$\mathrm{Lens}$')
         
         if m == bin_size - 1:
-            plot[m, 0].set_xticklabels([r'$\mathrm{' + name + '}$' for name in name_list], rotation=45, ha='right', fontsize=20)
+            plot[m, 0].set_xticklabels([r'$\mathrm{' + name + '}$' for name in name_list], rotation=45, ha='right', fontsize=25)
         else:
             plot[m, 0].set_xticklabels([])
     
@@ -220,7 +220,6 @@ def main(tag, label, number, folder):
         plot[m, 1].set_xlim(0.5, 6.5)
         plot[m, 1].set_ylim(-range_lens[m + bin_size], +range_lens[m + bin_size])
         
-        plot[m, 1].set_ylabel(r'$\delta_\mu$')
         plot[m, 1].set_xticks([1, 2, 3, 4, 5, 6])
         plot[m, 1].tick_params(axis='y', labelsize=20)
         
@@ -228,7 +227,7 @@ def main(tag, label, number, folder):
             plot[m, 1].set_title(r'$\mathrm{Lens}$')
         
         if m == bin_size - 1:
-            plot[m, 1].set_xticklabels([r'$\mathrm{' + name + '}$' for name in name_list], rotation=45, ha='right', fontsize=20)
+            plot[m, 1].set_xticklabels([r'$\mathrm{' + name + '}$' for name in name_list], rotation=45, ha='right', fontsize=25)
         else:
             plot[m, 1].set_xticklabels([])
     
@@ -266,11 +265,11 @@ def main(tag, label, number, folder):
             plot[m, 2].set_title(r'$\mathrm{Source}$')
         
         if m == bin_size - 1:
-            plot[m, 2].set_xticklabels([r'$\mathrm{' + name + '}$' for name in name_list], rotation=45, ha='right', fontsize=20)
+            plot[m, 2].set_xticklabels([r'$\mathrm{' + name + '}$' for name in name_list], rotation=45, ha='right', fontsize=25)
         else:
             plot[m, 2].set_xticklabels([])
     
-    figure.subplots_adjust(wspace=0.20, hspace=0.05)
+    figure.subplots_adjust(wspace=0.24, hspace=0.08)
     figure.savefig(os.path.join(assess_folder, '{}/CENTER/{}/FIGURE.pdf'.format(tag, label)), format='pdf', bbox_inches='tight')
     pyplot.close(figure)
     
