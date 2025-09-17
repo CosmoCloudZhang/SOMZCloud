@@ -21,13 +21,6 @@ module load cray-hdf5-parallel
 source $HOME/.bashrc
 conda activate $RAILENV
 
-# Set environment
-export NUMEXPR_MAX_THREADS=$SLURM_CPUS_PER_TASK
-export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-export HDF5_USE_FILE_LOCKING=FALSE
-export OMP_PROC_BIND=spread
-export OMP_PLACES=threads
-
 # Initialize the process
 TAG="Y1"
 NUMBER=500
@@ -35,10 +28,10 @@ BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 
 # Run the application
-LABEL_LIST=("DIR"  "STACK" "HYBRID")
+LABEL_LIST=("DIR"  "STACK" "HYBRID" "TRUTH")
 
 for LABEL in "${LABEL_LIST[@]}"; do
     # Run the application
-    srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}ANALYZE/${TAG}/CENTER.py" --tag=$TAG --label=$LABEL --number=$NUMBER --folder=$BASE_FOLDER &
+    python -u "${BASE_PATH}ANALYZE/${TAG}/CENTER.py" --tag=$TAG --label=$LABEL --folder=$BASE_FOLDER &
 done
 wait
