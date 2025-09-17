@@ -5,47 +5,56 @@ import argparse
 from matplotlib import pyplot
 
 
-def main(tag, label, folder):
+def main(tag, name, folder):
     '''
-    Plot the standard deviation of the lens and source redshift distributions
+    Plot the expectation of the lens and source redshift distributions
     
     Arguments:
         tag (str): The tag of the configuration
-        label (str): The label of the configuration
+        name (str): The name of the configuration
         folder (str): The base folder of the figure
     
     Returns:
         duration (float): The duration of the process
     '''
     start = time.time()
-    print('Label: {}'.format(label))
+    print('Name: {}'.format(name))
     
     # Path
     analyze_folder = os.path.join(folder, 'ANALYZE/')
+    os.makedirs(os.path.join(analyze_folder, '{}/'.format(tag)), exist_ok=True)
     os.makedirs(os.path.join(analyze_folder, '{}/DEVIATION/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(analyze_folder, '{}/DEVIATION/{}/'.format(tag, name)), exist_ok=True)
     
     # Info
-    with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/DIR_{}.hdf5'.format(tag, label)), 'r') as file:
-        dir_deviation_lens = file['lens']['deviation'][...]
-        dir_deviation_source = file['source']['deviation'][...]
+    with h5py.File(os.path.join(analyze_folder, '{}/VALUE/{}/DIR.hdf5'.format(tag, name)), 'r') as file:
+        dir_eta_lens = file['lens']['eta'][...]
+        dir_eta_source = file['source']['eta'][...]
     
-    with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/STACK_{}.hdf5'.format(tag, label)), 'r') as file:
-        stack_deviation_lens = file['lens']['deviation'][...]
-        stack_deviation_source = file['source']['deviation'][...]
+    with h5py.File(os.path.join(analyze_folder, '{}/VALUE/{}/STACK.hdf5'.format(tag, name)), 'r') as file:
+        stack_eta_lens = file['lens']['eta'][...]
+        stack_eta_source = file['source']['eta'][...]
     
-    with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/PRODUCT_{}.hdf5'.format(tag, label)), 'r') as file:
-        product_deviation_lens = file['lens']['deviation'][...]
-        product_deviation_source = file['source']['deviation'][...]
+    with h5py.File(os.path.join(analyze_folder, '{}/VALUE/{}/HYBRID.hdf5'.format(tag, name)), 'r') as file:
+        hybrid_eta_lens = file['lens']['eta'][...]
+        hybrid_eta_source = file['source']['eta'][...]
     
-    with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/TRUTH_{}.hdf5'.format(tag, label)), 'r') as file:
-        truth_width_lens = file['lens']['width'][...]
-        truth_width_source = file['source']['width'][...]
+    with h5py.File(os.path.join(analyze_folder, '{}/VALUE/{}/TRUTH.hdf5'.format(tag, name)), 'r') as file:
+        truth_eta_lens = file['lens']['eta'][...]
+        truth_eta_source = file['source']['eta'][...]
         
-        truth_deviation_lens = file['lens']['deviation'][...]
-        truth_deviation_source = file['source']['deviation'][...]
+        average_mu_lens = file['lens']['average_mu'][...]
+        average_mu_source = file['source']['average_mu'][...]
         
-        truth_middle_lens = file['lens']['middle'][...]
-        truth_middle_source = file['source']['middle'][...]
+        average_eta_lens = file['lens']['average_eta'][...]
+        average_eta_source = file['source']['average_eta'][...]
+    
+    # Variable
+    factor_lens = 0.005 * (1 + average_mu_lens)
+    range_lens = [0.020, 0.025, 0.030, 0.035, 0.040]
+    
+    factor_source = 0.002 * (1 + average_mu_source)
+    range_source = [0.080, 0.100, 0.120, 0.140, 0.160]
     
     # Configuration
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
@@ -54,72 +63,88 @@ def main(tag, label, folder):
     pyplot.rcParams['text.usetex'] = True
     pyplot.rcParams['font.size'] = 30
     
-    # Variable
-    size = 100
+    # Figure
     bin_size = 5
-    
-    range_lens = 0.5 * truth_width_lens
-    range_source = 1.0 * truth_width_source
-    
-    factor_lens = 0.005 * (1 + truth_middle_lens)
-    factor_source = 0.002 * (1 + truth_middle_source)
-    
-    # Plot
+    label_list = ['DIR', 'Stack', 'Hybrid', 'Truth']
+    colors = {'DIR': 'darkmagenta', 'Stack': 'darkgreen', 'Hybrid': 'darkorange', 'Truth': 'black'}
     figure, plot = pyplot.subplots(nrows=bin_size, ncols=2, figsize=(12, 5 * bin_size))
     
+    # Plot Lens
     for m in range(bin_size):
+        violin = plot[m, 0].violinplot(
+            widths=0.8,
+            vert=False, 
+            showmeans=False, 
+            showmedians=True,
+            showextrema=True,
+            positions=[4, 3, 2, 1],
+            dataset=[dir_eta_lens[:, m], stack_eta_lens[:, m], hybrid_eta_lens[:, m], truth_eta_lens[:, m]]
+        )
         
-        plot[m, 0].hist(dir_deviation_lens[:, m], bins=size, range=(truth_width_lens[m] - range_lens[m], truth_width_lens[m] + range_lens[m]), color='darkblue', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        for n, color in enumerate(colors[label] for label in label_list):
+            violin['bodies'][n].set_alpha(0.60)
+            violin['bodies'][n].set_facecolor(color)
         
-        plot[m, 0].hist(stack_deviation_lens[:, m], bins=size, range=(truth_width_lens[m] - range_lens[m], truth_width_lens[m] + range_lens[m]), color='darkgreen', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        violin['cbars'].set_color('black')
+        violin['cmins'].set_color('black')
+        violin['cmaxes'].set_color('black')
+        violin['cmedians'].set_color('black')
         
-        plot[m, 0].hist(product_deviation_lens[:, m], bins=size, range=(truth_width_lens[m] - range_lens[m], truth_width_lens[m] + range_lens[m]), color='darkorange', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 0].axvspan(average_eta_lens[m] - factor_lens[m], average_eta_lens[m] + factor_lens[m], alpha=0.3, color='gray')
+        plot[m, 0].text(x=average_eta_lens[m] + range_lens[m] / 3 * 2 * (1 + average_eta_lens[m]), y=2.25, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
         
-        plot[m, 0].hist(truth_deviation_lens[:, m], bins=size, range=(truth_width_lens[m] - range_lens[m], truth_width_lens[m] + range_lens[m]), color='black', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 0].set_ylim(0.5, 4.5)
+        plot[m, 0].tick_params(axis='x', labelsize=25)
+        plot[m, 0].set_xlim(average_eta_lens[m] - range_lens[m] * (1 + average_eta_lens[m]), average_eta_lens[m] + range_lens[m] * (1 + average_eta_lens[m]))
         
-        plot[m, 0].fill_betweenx(y=[8, 800], x1=truth_width_lens[m] - factor_lens[m], x2=truth_width_lens[m] + factor_lens[m], color='gray', alpha=0.5)
-        
-        plot[m, 0].text(x=truth_width_lens[m] + range_lens[m] / 3, y=400, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black')
-        
-        plot[m, 0].set_ylim(8, 800)
-        plot[m, 0].set_xlim(truth_width_lens[m] - range_lens[m], truth_width_lens[m] + range_lens[m])
-        
-        plot[m, 0].set_yscale('log')
-        plot[m, 0].set_ylabel(r'$\psi ( \eta )$')
+        plot[m, 0].set_yticks([4, 3, 2, 1])
+        plot[m, 0].set_yticklabels([r'$\mathrm{' + label + '}$' for label in label_list])
         
         if m == 0:
-            plot[m, 0].set_title(r'$\mathtt{Lens}$')
+            plot[m, 0].set_title(r'$\mathrm{Lens}$')
         
         if m == bin_size - 1:
             plot[m, 0].set_xlabel(r'$\eta$')
     
+    # Plot Source
     for m in range(bin_size):
-        plot[m, 1].hist(dir_deviation_source[:, m], bins=size, range=(truth_width_source[m] - range_source[m], truth_width_source[m] + range_source[m]), color='darkblue', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        violin = plot[m, 1].violinplot(
+            widths=0.8,
+            vert=False, 
+            showmeans=False,
+            showmedians=True,
+            showextrema=True,
+            positions=[4, 3, 2, 1],
+            dataset=[dir_eta_source[:, m], stack_eta_source[:, m], hybrid_eta_source[:, m], truth_eta_source[:, m]]
+        )
         
-        plot[m, 1].hist(stack_deviation_source[:, m], bins=size, range=(truth_width_source[m] - range_source[m], truth_width_source[m] + range_source[m]), color='darkgreen', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        for n, color in enumerate(colors[label] for label in label_list):
+            violin['bodies'][n].set_alpha(0.60)
+            violin['bodies'][n].set_facecolor(color)
         
-        plot[m, 1].hist(product_deviation_source[:, m], bins=size, range=(truth_width_source[m] - range_source[m], truth_width_source[m] + range_source[m]), color='darkorange', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        violin['cbars'].set_color('black')
+        violin['cmins'].set_color('black')
+        violin['cmaxes'].set_color('black')
+        violin['cmedians'].set_color('black')
         
-        plot[m, 1].hist(truth_deviation_source[:, m], bins=size, range=(truth_width_source[m] - range_source[m], truth_width_source[m] + range_source[m]), color='black', density=True, histtype='step', linewidth=2.0, linestyle='-')
+        plot[m, 1].axvspan(average_eta_source[m] - factor_source[m], average_eta_source[m] + factor_source[m], alpha=0.3, color='gray')
+        plot[m, 1].text(x=average_eta_source[m] + range_source[m] / 3 * 2 * (1 + average_eta_source[m]), y=2.25, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
         
-        plot[m, 1].fill_betweenx(y=[4, 400], x1=truth_width_source[m] - factor_source[m], x2=truth_width_source[m] + factor_source[m], color='gray', alpha=0.5)
+        plot[m, 1].set_ylim(0.5, 4.5)
+        plot[m, 1].tick_params(axis='x', labelsize=25)
+        plot[m, 1].set_xlim(average_eta_source[m] - range_source[m] * (1 + average_eta_source[m]), average_eta_source[m] + range_source[m] * (1 + average_eta_source[m]))
         
-        plot[m, 1].text(x=truth_width_source[m] + range_source[m] / 3, y=200, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black')
-        
-        plot[m, 1].set_ylim(4, 400)
-        plot[m, 1].set_xlim(truth_width_source[m] - range_source[m], truth_width_source[m] + range_source[m])
-        
-        plot[m, 1].set_yscale('log')
-        plot[m, 1].set_ylabel('')
+        plot[m, 1].set_yticklabels([])
+        plot[m, 1].set_yticks([4, 3, 2, 1])
         
         if m == 0:
-            plot[m, 1].set_title(r'$\mathtt{Source}$')
+            plot[m, 1].set_title(r'$\mathrm{Source}$')
         
         if m == bin_size - 1:
             plot[m, 1].set_xlabel(r'$\eta$')
     
-    figure.subplots_adjust(wspace=0.2, hspace=0.2)
-    figure.savefig(os.path.join(analyze_folder, '{}/DEVIATION/FIGURE_{}.pdf'.format(tag, label)), format='pdf', bbox_inches='tight')
+    figure.subplots_adjust(wspace=0.12, hspace=0.12)
+    figure.savefig(os.path.join(analyze_folder, '{}/DEVIATION/{}/FIGURE.pdf'.format(tag, name)), format='pdf', bbox_inches='tight')
     pyplot.close(figure)
     
     # Duration
@@ -133,15 +158,15 @@ def main(tag, label, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Analyze Deviation')
+    PARSE = argparse.ArgumentParser(description='Analyze Expectation')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
-    PARSE.add_argument('--label', type=str, required=True, help='The label of the configuration')
+    PARSE.add_argument('--name', type=str, required=True, help='The name of the configuration')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the figure')
     
     # Parse
     TAG = PARSE.parse_args().tag
-    LABEL = PARSE.parse_args().label
+    NAME = PARSE.parse_args().name
     FOLDER = PARSE.parse_args().folder
     
     # Output
-    OUTPUT = main(TAG, LABEL, FOLDER)
+    OUTPUT = main(TAG, NAME, FOLDER)
