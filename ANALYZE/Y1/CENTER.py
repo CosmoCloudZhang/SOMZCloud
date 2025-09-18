@@ -27,39 +27,77 @@ def main(tag, label, folder):
     os.makedirs(os.path.join(analyze_folder, '{}/CENTER/{}/'.format(tag, label)), exist_ok=True)
     
     # Data
-    with h5py.File(os.path.join(analyze_folder, '{}/VALUE/GOLD/TRUTH.hdf5'.format(tag)), 'r') as file:
-        average_mu_lens = file['lens']['average_mu'][...]
-        average_mu_source = file['source']['average_mu'][...]
-    
     with h5py.File(os.path.join(analyze_folder, '{}/VALUE/GOLD/{}.hdf5'.format(tag, label)), 'r') as file:
         gold_mu_lens = file['lens']['mu'][...]
         gold_mu_source = file['source']['mu'][...]
+    
+    with h5py.File(os.path.join(analyze_folder, '{}/VALUE/GOLD/TRUTH.hdf5'.format(tag)), 'r') as file:
+        truth_mu_lens = file['lens']['average_mu'][...]
+        truth_mu_source = file['source']['average_mu'][...]
+    
+    gold_delta_lens = (gold_mu_lens - truth_mu_lens) / (1 + truth_mu_lens)
+    gold_delta_source = (gold_mu_source - truth_mu_source) / (1 + truth_mu_source)
     
     with h5py.File(os.path.join(analyze_folder, '{}/VALUE/SILVER/{}.hdf5'.format(tag, label)), 'r') as file:
         silver_mu_lens = file['lens']['mu'][...]
         silver_mu_source = file['source']['mu'][...]
     
+    with h5py.File(os.path.join(analyze_folder, '{}/VALUE/SILVER/TRUTH.hdf5'.format(tag)), 'r') as file:
+        truth_mu_lens = file['lens']['average_mu'][...]
+        truth_mu_source = file['source']['average_mu'][...]
+    
+    silver_delta_lens = (silver_mu_lens - truth_mu_lens) / (1 + truth_mu_lens)
+    silver_delta_source = (silver_mu_source - truth_mu_source) / (1 + truth_mu_source)
+    
     with h5py.File(os.path.join(analyze_folder, '{}/VALUE/COPPER/{}.hdf5'.format(tag, label)), 'r') as file:
         copper_mu_lens = file['lens']['mu'][...]
         copper_mu_source = file['source']['mu'][...]
+    
+    with h5py.File(os.path.join(analyze_folder, '{}/VALUE/COPPER/TRUTH.hdf5'.format(tag)), 'r') as file:
+        truth_mu_lens = file['lens']['average_mu'][...]
+        truth_mu_source = file['source']['average_mu'][...]
+    
+    copper_delta_lens = (copper_mu_lens - truth_mu_lens) / (1 + truth_mu_lens)
+    copper_delta_source = (copper_mu_source - truth_mu_source) / (1 + truth_mu_source)
     
     with h5py.File(os.path.join(analyze_folder, '{}/VALUE/IRON/{}.hdf5'.format(tag, label)), 'r') as file:
         iron_mu_lens = file['lens']['mu'][...]
         iron_mu_source = file['source']['mu'][...]
     
+    with h5py.File(os.path.join(analyze_folder, '{}/VALUE/IRON/TRUTH.hdf5'.format(tag)), 'r') as file:
+        truth_mu_lens = file['lens']['average_mu'][...]
+        truth_mu_source = file['source']['average_mu'][...]
+    
+    iron_delta_lens = (iron_mu_lens - truth_mu_lens) / (1 + truth_mu_lens)
+    iron_delta_source = (iron_mu_source - truth_mu_source) / (1 + truth_mu_source)
+    
     with h5py.File(os.path.join(analyze_folder, '{}/VALUE/TITANIUM/{}.hdf5'.format(tag, label)), 'r') as file:
         titanium_mu_lens = file['lens']['mu'][...]
         titanium_mu_source = file['source']['mu'][...]
+    
+    with h5py.File(os.path.join(analyze_folder, '{}/VALUE/TITANIUM/TRUTH.hdf5'.format(tag)), 'r') as file:
+        truth_mu_lens = file['lens']['average_mu'][...]
+        truth_mu_source = file['source']['average_mu'][...]
+    
+    titanium_delta_lens = (titanium_mu_lens - truth_mu_lens) / (1 + truth_mu_lens)
+    titanium_delta_source = (titanium_mu_source - truth_mu_source) / (1 + truth_mu_source)
     
     with h5py.File(os.path.join(analyze_folder, '{}/VALUE/ZINC/{}.hdf5'.format(tag, label)), 'r') as file:
         zinc_mu_lens = file['lens']['mu'][...]
         zinc_mu_source = file['source']['mu'][...]
     
+    with h5py.File(os.path.join(analyze_folder, '{}/VALUE/ZINC/TRUTH.hdf5'.format(tag)), 'r') as file:
+        truth_mu_lens = file['lens']['average_mu'][...]
+        truth_mu_source = file['source']['average_mu'][...]
+    
+    zinc_delta_lens = (zinc_mu_lens - truth_mu_lens) / (1 + truth_mu_lens)
+    zinc_delta_source = (zinc_mu_source - truth_mu_source) / (1 + truth_mu_source)
+    
     # Variable
-    factor_lens = 0.005 * (1 + average_mu_lens)
+    factor_lens = 0.005
     range_lens = [0.020, 0.025, 0.030, 0.035, 0.040]
     
-    factor_source = 0.002 * (1 + average_mu_source)
+    factor_source = 0.002
     range_source = [0.045, 0.050, 0.055, 0.060, 0.065]
     
     # Configuration
@@ -72,7 +110,7 @@ def main(tag, label, folder):
     # Figure
     bin_size = 5
     name_list = ['Gold', 'Silver', 'Copper', 'Iron', 'Titanium', 'Zinc']
-    colors = {'DIR': 'darkmagenta', 'STACK': 'darkgreen', 'HYBRID': 'darkorange', 'TRUTH': 'black'}
+    colors = {'DIR': 'darkmagenta', 'STACK': 'darkgreen', 'HYBRID': 'darkorange'}
     figure, plot = pyplot.subplots(nrows=bin_size, ncols=2, figsize=(12, 5 * bin_size))
     
     # Plot Lens
@@ -84,7 +122,7 @@ def main(tag, label, folder):
             showmedians=True,
             showextrema=True,
             positions=[1, 2, 3, 4, 5, 6],
-            dataset=[gold_mu_lens[:, m], silver_mu_lens[:, m], copper_mu_lens[:, m], iron_mu_lens[:, m], titanium_mu_lens[:, m], zinc_mu_lens[:, m]]
+            dataset=[gold_delta_lens[:, m], silver_delta_lens[:, m], copper_delta_lens[:, m], iron_delta_lens[:, m], titanium_delta_lens[:, m], zinc_delta_lens[:, m]]
         )
         
         for n in range(len(name_list)):
@@ -96,11 +134,11 @@ def main(tag, label, folder):
         violin['cmaxes'].set_color('black')
         violin['cmedians'].set_color('black')
         
-        plot[m, 0].axhspan(average_mu_lens[m] - factor_lens[m], average_mu_lens[m] + factor_lens[m], alpha=0.3, color='gray')
-        plot[m, 0].text(x=5.5, y=average_mu_lens[m] + range_lens[m] / 3 * 2, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
+        plot[m, 0].axhspan(-factor_lens, +factor_lens, alpha=0.3, color='gray')
+        plot[m, 0].text(x=5.5, y=range_lens[m] / 3 * 2, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
         
         plot[m, 0].set_xlim(0.5, 6.5)
-        plot[m, 0].set_ylim(average_mu_lens[m] - range_lens[m], average_mu_lens[m] + range_lens[m])
+        plot[m, 0].set_ylim(-range_lens[m], +range_lens[m])
         
         plot[m, 0].set_ylabel(r'$\delta_\mu$')
         plot[m, 0].set_xticks([1, 2, 3, 4, 5, 6])
@@ -123,7 +161,7 @@ def main(tag, label, folder):
             showmedians=True,
             showextrema=True,
             positions=[1, 2, 3, 4, 5, 6],
-            dataset=[gold_mu_source[:, m], silver_mu_source[:, m], copper_mu_source[:, m], iron_mu_source[:, m], titanium_mu_source[:, m], zinc_mu_source[:, m]]
+            dataset=[gold_delta_source[:, m], silver_delta_source[:, m], copper_delta_source[:, m], iron_delta_source[:, m], titanium_delta_source[:, m], zinc_delta_source[:, m]]
         )
         
         for n in range(len(name_list)):
@@ -135,11 +173,11 @@ def main(tag, label, folder):
         violin['cmaxes'].set_color('black')
         violin['cmedians'].set_color('black')
         
-        plot[m, 1].axhspan(average_mu_source[m] - factor_source[m], average_mu_source[m] + factor_source[m], alpha=0.3, color='gray')
-        plot[m, 1].text(x=5.5, y=average_mu_source[m] + range_source[m] / 3 * 2, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
+        plot[m, 1].axhspan(-factor_source, +factor_source, alpha=0.3, color='gray')
+        plot[m, 1].text(x=5.5, y=range_source[m] / 3 * 2, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
         
         plot[m, 1].set_xlim(0.5, 6.5)
-        plot[m, 1].set_ylim(average_mu_source[m] - range_source[m], average_mu_source[m] + range_source[m])
+        plot[m, 1].set_ylim(-range_source[m], +range_source[m])
         
         plot[m, 1].set_xticks([1, 2, 3, 4, 5, 6])
         plot[m, 1].tick_params(axis='y', labelsize=20)

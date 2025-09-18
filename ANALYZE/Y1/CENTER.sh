@@ -23,15 +23,21 @@ conda activate $RAILENV
 
 # Initialize the process
 TAG="Y1"
-NUMBER=500
 BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 
+# Set environment
+export NUMEXPR_MAX_THREADS=$SLURM_CPUS_PER_TASK
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+export HDF5_USE_FILE_LOCKING=FALSE
+export OMP_PROC_BIND=spread
+export OMP_PLACES=threads
+
 # Run the application
-LABEL_LIST=("DIR"  "STACK" "HYBRID" "TRUTH")
+LABEL_LIST=("DIR"  "STACK" "HYBRID")
 
 for LABEL in "${LABEL_LIST[@]}"; do
     # Run the application
-    python -u "${BASE_PATH}ANALYZE/${TAG}/CENTER.py" --tag=$TAG --label=$LABEL --folder=$BASE_FOLDER &
+    srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}ANALYZE/${TAG}/CENTER.py" --tag=$TAG --label=$LABEL --folder=$BASE_FOLDER &
 done
 wait
