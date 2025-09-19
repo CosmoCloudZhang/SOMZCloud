@@ -24,20 +24,21 @@ def main(tag, name, label, folder):
     print('Name: {}, Label: {}'.format(name, label))
     
     # Path
+    analyze_folder = os.path.join(folder, 'ANALYZE/')
     calibrate_folder = os.path.join(folder, 'CALIBRATE/')
     synthesize_folder = os.path.join(folder, 'SYNTHESIZE/')
     os.makedirs(os.path.join(calibrate_folder, '{}/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(calibrate_folder, '{}/{}/'.format(tag, name)), exist_ok=True)
-    os.makedirs(os.path.join(calibrate_folder, '{}/{}/SHIFT/'.format(tag, name)), exist_ok=True)
+    os.makedirs(os.path.join(calibrate_folder, '{}/SHIFT/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(calibrate_folder, '{}/SHIFT/{}/'.format(tag, name)), exist_ok=True)
     
     # Value
-    with h5py.File(os.path.join(calibrate_folder, '{}/{}/VALUE/TRUTH.hdf5'.format(tag, name)), 'r') as file:
+    with h5py.File(os.path.join(analyze_folder, '{}/VALUE/{}/TRUTH.hdf5'.format(tag, name)), 'r') as file:
         meta = {key: file['meta'][key][...] for key in file['meta'].keys()}
         
         truth_average_mu_lens = file['lens']['average_mu'][...]
         truth_average_mu_source = file['source']['average_mu'][...]
     
-    with h5py.File(os.path.join(calibrate_folder, '{}/{}/VALUE/{}.hdf5'.format(tag, name, label)), 'r') as file:
+    with h5py.File(os.path.join(analyze_folder, '{}/VALUE/{}/{}.hdf5'.format(tag, name, label)), 'r') as file:
         meta = {key: file['meta'][key][...] for key in file['meta'].keys()}
         
         mu_lens = file['lens']['mu'][...]
@@ -64,7 +65,6 @@ def main(tag, name, label, folder):
     shift_lens = numpy.zeros((data_size, bin_lens_size, z_size))
     
     difference_mu_lens = truth_average_mu_lens - average_mu_lens
-    print(numpy.sum(numpy.isnan(mu_lens)))
     zeta_lens = numpy.random.multivariate_normal(mean=difference_mu_lens, cov=numpy.cov(mu_lens, rowvar=False), size=data_size)
     
     for m in range(bin_lens_size):
@@ -79,7 +79,6 @@ def main(tag, name, label, folder):
     shift_source = numpy.zeros((data_size, bin_source_size, z_size))
     
     difference_mu_source = truth_average_mu_source - average_mu_source
-    print(numpy.sum(numpy.isnan(mu_source)))
     zeta_source = numpy.random.multivariate_normal(mean=difference_mu_source, cov=numpy.cov(mu_source, rowvar=False), size=data_size)
     
     for m in range(bin_source_size):
@@ -90,7 +89,7 @@ def main(tag, name, label, folder):
     shift_source = numpy.divide(shift_source, factor_source, out=numpy.zeros((data_size, bin_source_size, z_size)), where=factor_source > 0)
     
     # Save
-    with h5py.File(os.path.join(calibrate_folder, '{}/{}/SHIFT/{}.hdf5'.format(tag, name, label)), 'w') as file:
+    with h5py.File(os.path.join(calibrate_folder, '{}/SHIFT/{}/{}.hdf5'.format(tag, name, label)), 'w') as file:
         file.create_group('meta')
         for key in meta.keys():
             file['meta'].create_dataset(key, data=meta[key], dtype=meta[key].dtype)

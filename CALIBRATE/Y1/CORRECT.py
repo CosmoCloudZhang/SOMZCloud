@@ -27,8 +27,8 @@ def main(tag, name, label, folder):
     calibrate_folder = os.path.join(folder, 'CALIBRATE/')
     synthesize_folder = os.path.join(folder, 'SYNTHESIZE/')
     os.makedirs(os.path.join(calibrate_folder, '{}/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(calibrate_folder, '{}/{}/'.format(tag, name)), exist_ok=True)
-    os.makedirs(os.path.join(calibrate_folder, '{}/{}/CORRECT/'.format(tag, name)), exist_ok=True)
+    os.makedirs(os.path.join(calibrate_folder, '{}/CORRECT/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(calibrate_folder, '{}/CORRECT/{}/'.format(tag, name)), exist_ok=True)
     
     # Truth
     with h5py.File(os.path.join(synthesize_folder, '{}/{}/TRUTH.hdf5'.format(tag, name)), 'r') as file:
@@ -74,7 +74,7 @@ def main(tag, name, label, folder):
     average_factor_source = scipy.integrate.trapezoid(x=z_grid, y=correct_average_source, axis=1)[:, numpy.newaxis]
     correct_average_source = numpy.divide(correct_average_source, average_factor_source, out=numpy.zeros((bin_source_size, z_size)), where=average_factor_source > 0)
     
-    with h5py.File(os.path.join(calibrate_folder, '{}/{}/CORRECT/{}.hdf5'.format(tag, name, label)), 'w') as file:
+    with h5py.File(os.path.join(calibrate_folder, '{}/CORRECT/{}/{}.hdf5'.format(tag, name, label)), 'w') as file:
         file.create_group('meta')
         for key in meta.keys():
             file['meta'].create_dataset(key, data=meta[key], dtype=meta[key].dtype)

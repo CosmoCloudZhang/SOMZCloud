@@ -24,14 +24,15 @@ def main(tag, name, label, folder):
     print('Name: {}, Label: {}'.format(name, label))
     
     # Path
+    analyze_folder = os.path.join(folder, 'ANALYZE/')
     calibrate_folder = os.path.join(folder, 'CALIBRATE/')
     synthesize_folder = os.path.join(folder, 'SYNTHESIZE/')
     os.makedirs(os.path.join(calibrate_folder, '{}/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(calibrate_folder, '{}/{}/'.format(tag, name)), exist_ok=True)
-    os.makedirs(os.path.join(calibrate_folder, '{}/{}/SHIFT/'.format(tag, name)), exist_ok=True)
+    os.makedirs(os.path.join(calibrate_folder, '{}/SCALE/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(calibrate_folder, '{}/SCALE/{}/'.format(tag, name)), exist_ok=True)
     
     # Value
-    with h5py.File(os.path.join(calibrate_folder, '{}/{}/VALUE/TRUTH.hdf5'.format(tag, name)), 'r') as file:
+    with h5py.File(os.path.join(analyze_folder, '{}/VALUE/{}/TRUTH.hdf5'.format(tag, name)), 'r') as file:
         meta = {key: file['meta'][key][...] for key in file['meta'].keys()}
         
         truth_average_mu_lens = file['lens']['average_mu'][...]
@@ -40,7 +41,7 @@ def main(tag, name, label, folder):
         truth_average_eta_lens = file['lens']['average_eta'][...]
         truth_average_eta_source = file['source']['average_eta'][...]
     
-    with h5py.File(os.path.join(calibrate_folder, '{}/{}/VALUE/{}.hdf5'.format(tag, name, label)), 'r') as file:
+    with h5py.File(os.path.join(analyze_folder, '{}/VALUE/{}/{}.hdf5'.format(tag, name, label)), 'r') as file:
         meta = {key: file['meta'][key][...] for key in file['meta'].keys()}
         
         mu_lens = file['lens']['mu'][...]
@@ -100,25 +101,40 @@ def main(tag, name, label, folder):
     factor_source = scipy.integrate.trapezoid(x=z_grid, y=scale_source, axis=2)[:, :, numpy.newaxis]
     scale_source = numpy.divide(scale_source, factor_source, out=numpy.zeros((data_size, bin_source_size, z_size)), where=factor_source > 0)
     
-    # Return
+    # Save
+    with h5py.File(os.path.join(calibrate_folder, '{}/SCALE/{}/{}.hdf5'.format(tag, name, label)), 'w') as file:
+        file.create_group('meta')
+        for key in meta.keys():
+            file['meta'].create_dataset(key, data=meta[key], dtype=meta[key].dtype)
+        
+        file.create_group('lens')
+        file['lens'].create_dataset('scale', data=scale_lens)
+        
+        file.create_group('source')
+        file['source'].create_dataset('scale', data=scale_source)
+    
+    # Duration
     end = time.time()
     duration = (end - start) / 60
     
+    # Return
     print('Time: {:.2f} minutes'.format(duration))
     return duration
 
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Synthesize Fiducial')
+    PARSE = argparse.ArgumentParser(description='Calibrate Scale')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
+    PARSE.add_argument('--name', type=str, required=True, help='The name of the configuration')
     PARSE.add_argument('--label', type=str, required=True, help='The label of the configuration')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of all the datasets')
     
     # Parse
     TAG = PARSE.parse_args().tag
+    NAME = PARSE.parse_args().name
     LABEL = PARSE.parse_args().label
     FOLDER = PARSE.parse_args().folder
     
     # Output
-    OUTPUT = main(TAG, LABEL, FOLDER)
+    OUTPUT = main(TAG, NAME, LABEL, FOLDER)

@@ -6,8 +6,8 @@
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH --cpus-per-task=32
-#SBATCH --ntasks-per-node=8
+#SBATCH --cpus-per-task=64
+#SBATCH --ntasks-per-node=4
 #SBATCH -J CALIBRATE_Y1_SHIFT
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
@@ -34,8 +34,8 @@ BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 
 # Run applications
-LABEL_LIST=("DIR"  "STACK" "PRODUCT" "TRUTH")
-NAME_LIST="SILVER" #("BRONZE" "FIDUCIAL" "GOLD" "SILVER" "IRON")
+LABEL_LIST=("DIR"  "STACK" "HYBRID" "TRUTH")
+NAME_LIST=("COPPER" "GOLD" "IRON" "SILVER" "TITANIUM" "ZINC")
 
 for NAME in "${NAME_LIST[@]}"; do
     for LABEL in "${LABEL_LIST[@]}"; do
