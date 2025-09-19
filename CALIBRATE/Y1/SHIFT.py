@@ -62,31 +62,39 @@ def main(tag, name, label, folder):
     
     # Lens
     data_size, bin_lens_size, z_size = data_lens.shape
-    shift_lens = numpy.zeros((data_size, bin_lens_size, z_size))
+    shift_data_lens = numpy.zeros((data_size, bin_lens_size, z_size))
     
     difference_mu_lens = truth_average_mu_lens - average_mu_lens
     zeta_lens = numpy.random.multivariate_normal(mean=difference_mu_lens, cov=numpy.cov(mu_lens, rowvar=False), size=data_size)
     
     for m in range(bin_lens_size):
         z_shift = z_grid[numpy.newaxis, :] - zeta_lens[:, m, numpy.newaxis]
-        shift_lens[:, m, :] = numpy.maximum(scipy.interpolate.CubicSpline(z_grid, average_lens[m, :], extrapolate=True)(z_shift), 0)
+        shift_data_lens[:, m, :] = numpy.maximum(scipy.interpolate.CubicSpline(z_grid, average_lens[m, :], extrapolate=True)(z_shift), 0)
     
-    factor_lens = scipy.integrate.trapezoid(x=z_grid, y=shift_lens, axis=2)[:, :, numpy.newaxis]
-    shift_lens = numpy.divide(shift_lens, factor_lens, out=numpy.zeros((data_size, bin_lens_size, z_size)), where=factor_lens > 0)
+    factor_lens = scipy.integrate.trapezoid(x=z_grid, y=shift_data_lens, axis=2)[:, :, numpy.newaxis]
+    shift_data_lens = numpy.divide(shift_data_lens, factor_lens, out=numpy.zeros((data_size, bin_lens_size, z_size)), where=factor_lens > 0)
+    
+    shift_average_lens = numpy.mean(shift_data_lens, axis=0)
+    average_factor_lens = scipy.integrate.trapezoid(x=z_grid, y=shift_average_lens, axis=1)[:, numpy.newaxis]
+    shift_average_lens = numpy.divide(shift_average_lens, average_factor_lens, out=numpy.zeros((bin_lens_size, z_size)), where=average_factor_lens > 0)
     
     # Source
     data_size, bin_source_size, z_size = data_source.shape
-    shift_source = numpy.zeros((data_size, bin_source_size, z_size))
+    shift_data_source = numpy.zeros((data_size, bin_source_size, z_size))
     
     difference_mu_source = truth_average_mu_source - average_mu_source
     zeta_source = numpy.random.multivariate_normal(mean=difference_mu_source, cov=numpy.cov(mu_source, rowvar=False), size=data_size)
     
     for m in range(bin_source_size):
         z_shift = z_grid[numpy.newaxis, :] - zeta_source[:, m, numpy.newaxis]
-        shift_source[:, m, :] = numpy.maximum(scipy.interpolate.CubicSpline(z_grid, average_source[m, :], extrapolate=True)(z_shift), 0)
+        shift_data_source[:, m, :] = numpy.maximum(scipy.interpolate.CubicSpline(z_grid, average_source[m, :], extrapolate=True)(z_shift), 0)
     
-    factor_source = scipy.integrate.trapezoid(x=z_grid, y=shift_source, axis=2)[:, :, numpy.newaxis]
-    shift_source = numpy.divide(shift_source, factor_source, out=numpy.zeros((data_size, bin_source_size, z_size)), where=factor_source > 0)
+    factor_source = scipy.integrate.trapezoid(x=z_grid, y=shift_data_source, axis=2)[:, :, numpy.newaxis]
+    shift_data_source = numpy.divide(shift_data_source, factor_source, out=numpy.zeros((data_size, bin_source_size, z_size)), where=factor_source > 0)
+    
+    shift_average_source = numpy.mean(shift_data_source, axis=0)
+    average_factor_source = scipy.integrate.trapezoid(x=z_grid, y=shift_average_source, axis=1)[:, numpy.newaxis]
+    shift_average_source = numpy.divide(shift_average_source, average_factor_source, out=numpy.zeros((bin_source_size, z_size)), where=average_factor_source > 0)
     
     # Save
     with h5py.File(os.path.join(calibrate_folder, '{}/SHIFT/{}/{}.hdf5'.format(tag, name, label)), 'w') as file:
@@ -95,10 +103,12 @@ def main(tag, name, label, folder):
             file['meta'].create_dataset(key, data=meta[key], dtype=meta[key].dtype)
         
         file.create_group('lens')
-        file['lens'].create_dataset('shift', data=shift_lens)
+        file['lens'].create_dataset('data', data=shift_data_lens, dtype=numpy.float32)
+        file['lens'].create_dataset('average', data=shift_average_lens, dtype=numpy.float32)
         
         file.create_group('source')
-        file['source'].create_dataset('shift', data=shift_source)
+        file['source'].create_dataset('data', data=shift_data_source, dtype=numpy.float32)
+        file['source'].create_dataset('average', data=shift_average_source, dtype=numpy.float32)
     
     # Duration
     end = time.time()
