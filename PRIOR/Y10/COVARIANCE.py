@@ -19,7 +19,7 @@ def plot_covariance(bin_size, map_size, covariance):
     Returns:
         figure (matplotlib.figure.Figure): The figure
     '''
-    norm = colors.Normalize(vmin = -0.5, vmax = +0.5)
+    norm = colors.Normalize(vmin = -0.3, vmax = +0.3)
     figure, plot = pyplot.subplots(nrows = bin_size, ncols = bin_size, figsize = (3 * bin_size, 3 * bin_size))
     
     for m in range(bin_size):
@@ -38,58 +38,69 @@ def plot_covariance(bin_size, map_size, covariance):
     return figure
 
 
-def main(tag, rank, label, folder):
+def main(tag, name, label, number, folder):
     '''
     Plot the covariance matrix
     
     Arguments:
         tag (str): The tag of the configuration
-        rank (str): The rank of the configuration
+        name (str): The name of the configuration
         label (str): The label of the configuration
-        folder (str): The base folder of the figure
+        number (int): The number of the configuration
+        folder (str): The base folder of the configuration
     
     Returns:
         duration (float): The duration of the process
     '''
     start = time.time()
-    print('Rank: {}, Label: {}'.format(rank, label))
+    print('Name: {}, Label: {}'.format(name, label))
     
     # Path
+    prior_folder = os.path.join(folder, 'PRIOR/')
     model_folder = os.path.join(folder, 'MODEL/')
-    analyze_folder = os.path.join(folder, 'ANALYZE/')
     synthesize_folder = os.path.join(folder, 'SYNTHESIZE/')
-    
-    os.makedirs(os.path.join(analyze_folder, '{}/COVARIANCE/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(analyze_folder, '{}/COVARIANCE/{}'.format(tag, label)), exist_ok=True)
-    
-    # Bin
-    with h5py.File(os.path.join(model_folder, '{}/SELECT/DATA0.hdf5'.format(tag)), 'r') as file:
-        bin_lens = file['bin_lens'][...]
-        bin_source = file['bin_source'][...]
-    
-    # Redshift
-    z1 = 0.0
-    z2 = 3.0
-    grid_size = 300
-    z_delta = (z2 - z1) / grid_size
-    
-    # Index
-    map_lens_size = 40
-    map_source_size = 100
-    
-    index_lower_lens = numpy.maximum(0, numpy.array(numpy.round(bin_lens[:-1] / z_delta, decimals=0), dtype='int32') - map_lens_size // 4)
-    index_upper_lens = index_lower_lens + map_lens_size
-    
-    index_lower_source = numpy.maximum(0, numpy.array(numpy.round(bin_source[:-1] / z_delta, decimals=0), dtype='int32') - map_source_size // 4)
-    index_upper_source = index_lower_source + map_source_size
+    os.makedirs(os.path.join(prior_folder, '{}/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(prior_folder, '{}/COVARIANCE/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(prior_folder, '{}/COVARIANCE/{}'.format(tag, name)), exist_ok=True)
+    os.makedirs(os.path.join(prior_folder, '{}/COVARIANCE/{}/{}'.format(tag, name, label)), exist_ok=True)
     
     # Synthesize Data
-    with h5py.File(os.path.join(synthesize_folder, '{}/{}_{}.hdf5'.format(tag, rank, label)), 'r') as file:
+    with h5py.File(os.path.join(synthesize_folder, '{}/{}/{}.hdf5'.format(tag, name, label)), 'r') as file:
+        meta = {key: file['meta'][key][...] for key in file['meta'].keys()}
+        
         data_lens = file['lens']['data'][...]
         data_source = file['source']['data'][...]
     
+    # Redshift
+    z1 = meta['z1']
+    z2 = meta['z2']
+    grid_size = meta['grid_size']
+    z_delta = (z2 - z1) / grid_size
+    
     data_size, bin_lens_size, z_size = data_lens.shape
     data_size, bin_source_size, z_size = data_source.shape
+    
+    # Bin
+    bin_lens = []
+    bin_source = []
+    
+    for index in range(number + 1):
+        with h5py.File(os.path.join(model_folder, '{}/TARGET/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+            bin_lens.append(file['bin_lens'][...])
+            bin_source.append(file['bin_source'][...])
+    
+    average_bin_lens = numpy.average(numpy.vstack(bin_lens), axis=0)
+    average_bin_source = numpy.average(numpy.vstack(bin_source), axis=0)
+    
+    # Index
+    map_lens_size = 20
+    map_source_size = 100
+    
+    index_lower_lens = numpy.maximum(0, numpy.array(numpy.round(average_bin_lens[:-1] / z_delta, decimals=0), dtype='int32') - map_lens_size // 4)
+    index_upper_lens = index_lower_lens + map_lens_size
+    
+    index_lower_source = numpy.maximum(0, numpy.array(numpy.round(average_bin_source[:-1] / z_delta, decimals=0), dtype='int32') - map_source_size // 4)
+    index_upper_source = index_lower_source + map_source_size
     
     # Select
     select_lens = numpy.zeros((data_size, bin_lens_size, map_lens_size))
@@ -104,48 +115,6 @@ def main(tag, rank, label, folder):
     covariance_lens = numpy.cov(numpy.reshape(select_lens, (data_size, bin_lens_size * map_lens_size)), rowvar=False)
     covariance_source = numpy.cov(numpy.reshape(select_source, (data_size, bin_source_size * map_source_size)), rowvar=False)
     
-    # Synthesize Shift
-    with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/{}_{}.hdf5'.format(tag, rank, label)), 'r') as file:
-        shift_lens = file['lens']['shift'][...]
-        shift_source = file['source']['shift'][...]
-    
-    data_size, bin_lens_size, z_size = shift_lens.shape
-    data_size, bin_source_size, z_size = shift_source.shape
-    
-    # Select
-    select_shift_lens = numpy.zeros((data_size, bin_lens_size, map_lens_size))
-    select_shift_source = numpy.zeros((data_size, bin_source_size, map_source_size))
-    
-    for m in range(bin_lens_size):
-        select_shift_lens[:, m, :numpy.minimum(map_lens_size, z_size - index_lower_lens[m])] = shift_lens[:, m, index_lower_lens[m]: numpy.minimum(z_size, index_upper_lens[m])]
-    
-    for m in range(bin_source_size):
-        select_shift_source[:, m, :numpy.minimum(map_source_size, z_size - index_lower_source[m])] = shift_source[:, m, index_lower_source[m]: numpy.minimum(z_size, index_upper_source[m])]
-    
-    covariance_shift_lens = numpy.cov(numpy.reshape(select_shift_lens, (data_size, bin_lens_size * map_lens_size)), rowvar=False)
-    covariance_shift_source = numpy.cov(numpy.reshape(select_shift_source, (data_size, bin_source_size * map_source_size)), rowvar=False)
-    
-    # Synthesize Scale
-    with h5py.File(os.path.join(analyze_folder, '{}/STATISTICS/{}_{}.hdf5'.format(tag, rank, label)), 'r') as file:
-        scale_lens = file['lens']['scale'][...]
-        scale_source = file['source']['scale'][...]
-    
-    data_size, bin_lens_size, z_size = scale_lens.shape
-    data_size, bin_source_size, z_size = scale_source.shape
-    
-    # Select
-    select_scale_lens = numpy.zeros((data_size, bin_lens_size, map_lens_size))
-    select_scale_source = numpy.zeros((data_size, bin_source_size, map_source_size))
-    
-    for m in range(bin_lens_size):
-        select_scale_lens[:, m, :numpy.minimum(map_lens_size, z_size - index_lower_lens[m])] = scale_lens[:, m, index_lower_lens[m]: numpy.minimum(z_size, index_upper_lens[m])]
-    
-    for m in range(bin_source_size):
-        select_scale_source[:, m, :numpy.minimum(map_source_size, z_size - index_lower_source[m])] = scale_source[:, m, index_lower_source[m]: numpy.minimum(z_size, index_upper_source[m])]
-    
-    covariance_scale_lens = numpy.cov(numpy.reshape(select_scale_lens, (data_size, bin_lens_size * map_lens_size)), rowvar=False)
-    covariance_scale_source = numpy.cov(numpy.reshape(select_scale_source, (data_size, bin_source_size * map_source_size)), rowvar=False)
-    
     # Configuration
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
     pyplot.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
@@ -155,29 +124,11 @@ def main(tag, rank, label, folder):
     
     # Plot Data
     figure = plot_covariance(bin_lens_size, map_lens_size, covariance_lens)
-    figure.savefig(os.path.join(analyze_folder, '{}/COVARIANCE/{}/FIGURE_{}_LENS.pdf'.format(tag, label, rank)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(prior_folder, '{}/COVARIANCE/{}/{}/FIGURE_LENS.pdf'.format(tag, name, label)), format='pdf', bbox_inches='tight')
     pyplot.close(figure)
     
     figure = plot_covariance(bin_source_size, map_source_size, covariance_source)
-    figure.savefig(os.path.join(analyze_folder, '{}/COVARIANCE/{}/FIGURE_{}_SOURCE.pdf'.format(tag, label, rank)), format='pdf', bbox_inches='tight')
-    pyplot.close(figure)
-    
-    # Plot Shift
-    figure = plot_covariance(bin_lens_size, map_lens_size, covariance_shift_lens)
-    figure.savefig(os.path.join(analyze_folder, '{}/COVARIANCE/{}/FIGURE_{}_SHIFT_LENS.pdf'.format(tag, label, rank)), format='pdf', bbox_inches='tight')
-    pyplot.close(figure)
-    
-    figure = plot_covariance(bin_source_size, map_source_size, covariance_shift_source)
-    figure.savefig(os.path.join(analyze_folder, '{}/COVARIANCE/{}/FIGURE_{}_SHIFT_SOURCE.pdf'.format(tag, label, rank)), format='pdf', bbox_inches='tight')
-    pyplot.close(figure)
-    
-    # Plot Scale
-    figure = plot_covariance(bin_lens_size, map_lens_size, covariance_scale_lens)
-    figure.savefig(os.path.join(analyze_folder, '{}/COVARIANCE/{}/FIGURE_{}_SCALE_LENS.pdf'.format(tag, label, rank)), format='pdf', bbox_inches='tight')
-    pyplot.close(figure)
-    
-    figure = plot_covariance(bin_source_size, map_source_size, covariance_scale_source)
-    figure.savefig(os.path.join(analyze_folder, '{}/COVARIANCE/{}/FIGURE_{}_SCALE_SOURCE.pdf'.format(tag, label, rank)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(prior_folder, '{}/COVARIANCE/{}/{}/FIGURE_SOURCE.pdf'.format(tag, name, label)), format='pdf', bbox_inches='tight')
     pyplot.close(figure)
     
     # Duration
@@ -191,17 +142,19 @@ def main(tag, rank, label, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Analysis Covariance')
+    PARSE = argparse.ArgumentParser(description='Prior Covariance')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
-    PARSE.add_argument('--rank', type=str, required=True, help='The rank of the configuration')
+    PARSE.add_argument('--name', type=str, required=True, help='The name of the configuration')
     PARSE.add_argument('--label', type=str, required=True, help='The label of the configuration')
-    PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the figure')
+    PARSE.add_argument('--number', type=int, required=True, help='The number of the configuration')
+    PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the configuration')
     
     # Parse
     TAG = PARSE.parse_args().tag
-    RANK = PARSE.parse_args().rank
+    NAME = PARSE.parse_args().name
     LABEL = PARSE.parse_args().label
+    NUMBER = PARSE.parse_args().number
     FOLDER = PARSE.parse_args().folder
     
     # Output
-    OUTPUT = main(TAG, RANK, LABEL, FOLDER)
+    OUTPUT = main(TAG, NAME, LABEL, NUMBER, FOLDER)

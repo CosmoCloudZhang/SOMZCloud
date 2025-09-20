@@ -8,7 +8,7 @@
 #SBATCH -o LOG/%x_%j.out
 #SBATCH --cpus-per-task=64
 #SBATCH --ntasks-per-node=4
-#SBATCH -J ANALYZE_Y1_COVARIANCE
+#SBATCH -J PRIOR_Y1_COVARIANCE
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -30,16 +30,18 @@ export OMP_PLACES=threads
 
 # Initialize the process
 TAG="Y1"
+NUMBER=500
 BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 
 # Run applications
-LABEL_LIST=("ZERO" "HALF" "UNITY" "DOUBLE")
-RANK_LIST=("DIR" "FIDUCIAL" "STACK" "PRODUCT" "TRUTH")
+LABEL_LIST=("DIR"  "STACK" "HYBRID" "TRUTH")
+NAME_LIST=("COPPER" "GOLD" "IRON" "SILVER" "TITANIUM" "ZINC")
 
-for LABEL in "${LABEL_LIST[@]}"; do
-    for RANK in "${RANK_LIST[@]}"; do
-        srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}ANALYZE/${TAG}/COVARIANCE.py" --tag=$TAG --rank=$RANK --label=$LABEL --folder=$BASE_FOLDER &
+for NAME in "${NAME_LIST[@]}"; do
+    for LABEL in "${LABEL_LIST[@]}"; do
+        srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}PRIOR/${TAG}/COVARIANCE.py" --tag=$TAG --name=$NAME --label=$LABEL --number=$NUMBER --folder=$BASE_FOLDER &
     done
+    wait
 done
 wait
