@@ -24,10 +24,10 @@ def main(folder):
     # Survey
     survey = {
         'Y1': {
-            'AREA': 17936, 
+            'AREA': 18000, 
         }, 
         'Y10': {
-            'AREA': 17760,
+            'AREA': 18000,
         }
     }
     

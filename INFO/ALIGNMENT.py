@@ -54,8 +54,8 @@ def main(folder):
     
     a_pivot = 0.5
     z_pivot = 0.5
-    eta_pivot = 0.0
-    a_grid = - constant * rho_m / growth_factor * a_pivot * numpy.power((1 + z_grid) / (1 + z_pivot), eta_pivot)
+    xi_pivot = 0.0
+    a_grid = - constant * rho_m / growth_factor * a_pivot * numpy.power((1 + z_grid) / (1 + z_pivot), xi_pivot)
     
     alignment_info = {
         'A': a_grid.tolist(),

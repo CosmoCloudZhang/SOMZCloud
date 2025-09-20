@@ -9,7 +9,7 @@ import argparse
 
 def main(number, folder):
     '''
-    Store the fiducial values of density configuration
+    Store the fiducial values of sample configuration
     
     Arguments:
         number (int): The number of the datasets
@@ -25,7 +25,6 @@ def main(number, folder):
     info_folder = os.path.join(folder, 'INFO/')
     model_folder = os.path.join(folder, 'MODEL/')
     dataset_folder = os.path.join(folder, 'DATASET/')
-    summarize_folder = os.path.join(folder, 'SUMMARIZE/')
     
     # Load
     with open(os.path.join(dataset_folder, 'CATALOG/OBSERVE.yaml'), 'r') as file:
@@ -35,19 +34,19 @@ def main(number, folder):
     
     # Definition
     sigma0 = 0.26
-    density = {'Y1': {}, 'Y10': {}}
+    sample = {'Y1': {}, 'Y10': {}}
     name_list = ['COPPER', 'GOLD', 'IRON', 'SILVER', 'TITANIUM', 'ZINC']
     
     # Loop
-    for tag in density.keys():
+    for tag in sample.keys():
         print('Tag: {}'.format(tag))
         
         for name in name_list:
             print('Name: {}'.format(name))
             
-            # Density
-            density_lens = []
-            density_source = []
+            # Sample
+            sample_lens = []
+            sample_source = []
             
             for index in range(number + 1):
                 print('Index: {}'.format(index))
@@ -60,13 +59,6 @@ def main(number, folder):
                 bin_lens_size = len(bin_lens) - 1
                 bin_source_size = len(bin_source) - 1
                 
-                # Lambda
-                with h5py.File(os.path.join(summarize_folder, '{}/{}/LENS/LENS{}/TRUTH.hdf5'.format(tag, name, index)), 'r') as file:
-                    lambda_lens = numpy.mean(file['lambda'][...], axis=1)
-                
-                with h5py.File(os.path.join(summarize_folder, '{}/{}/SOURCE/SOURCE{}/TRUTH.hdf5'.format(tag, name, index)), 'r') as file:
-                    lambda_source = numpy.mean(file['lambda'][...], axis=1)
-                
                 # Application
                 with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
                     application_sigma = file['morphology']['sigma'][...]
@@ -78,7 +70,7 @@ def main(number, folder):
                 value = numpy.zeros(bin_lens_size, dtype=numpy.float32)
                 for m in range(bin_lens_size):
                     value[m] = numpy.sum(target_lens[m, :]) / area / 3600
-                density_lens.append(value * lambda_lens)
+                sample_lens.append(value)
                 
                 # Source
                 with h5py.File(os.path.join(model_folder, '{}/SOURCE/SOURCE{}/TARGET.hdf5'.format(tag, index)), 'r') as file:
@@ -87,16 +79,16 @@ def main(number, folder):
                 value = numpy.zeros(bin_source_size, dtype=numpy.float32)
                 for m in range(bin_source_size):
                     value[m] = numpy.sum(numpy.square(sigma0) / (numpy.square(sigma0) + numpy.square(application_sigma[target_source[m, :]]))) / area / 3600
-                density_source.append(value * lambda_source)
+                sample_source.append(value)
             
-            # Density
-            density[tag][name] = {}
-            density[tag][name]['LENS'] = list(numpy.mean(numpy.vstack(density_lens), axis=0))
-            density[tag][name]['SOURCE'] = list(numpy.mean(numpy.vstack(density_source), axis=0))
+            # Sample
+            sample[tag][name] = {}
+            sample[tag][name]['LENS'] = list(numpy.mean(numpy.vstack(sample_lens), axis=0))
+            sample[tag][name]['SOURCE'] = list(numpy.mean(numpy.vstack(sample_source), axis=0))
         
     # Save
-    with open(os.path.join(info_folder, 'DENSITY.json'), 'w') as file:
-        json.dump(density, file, indent=4)
+    with open(os.path.join(info_folder, 'SAMPLE.json'), 'w') as file:
+        json.dump(sample, file, indent=4)
     
     # Duration
     end = time.time()
@@ -109,7 +101,7 @@ def main(number, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Info density')
+    PARSE = argparse.ArgumentParser(description='Info Sample')
     PARSE.add_argument('--number', type=int, required=True, help='The number of the datasets')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the datasets')
     

@@ -34,19 +34,19 @@ def main(number, folder):
     # Definition
     metric = []
     sigma0 = 0.26
-    for n in range(number):
-        print('Index: {}'.format(n + 1))
+    for index in range(number + 1):
+        print('Index: {}'.format(index))
         
         metric.append({'Y1': {}, 'Y10': {}})
-        for tag in metric[n].keys():
+        for tag in metric[index].keys():
             
             # Application
-            with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, n + 1)), 'r') as file:
+            with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
                 application_sigma = file['morphology']['sigma'][...]
             
-            metric[n][tag]['NUMBER'] = len(application_sigma)
-            metric[n][tag]['NUMBER_DENSITY'] = len(application_sigma) / area / 3600
-            metric[n][tag]['EFFECTIVE_NUMBER_DENSITY'] = numpy.sum(numpy.square(sigma0) / (numpy.square(sigma0) + numpy.square(application_sigma))) / area / 3600
+            metric[index][tag]['NUMBER'] = len(application_sigma)
+            metric[index][tag]['NUMBER_DENSITY'] = len(application_sigma) / area / 3600
+            metric[index][tag]['EFFECTIVE_NUMBER_DENSITY'] = numpy.sum(numpy.square(sigma0) / (numpy.square(sigma0) + numpy.square(application_sigma))) / area / 3600
     
     # Save
     with open(os.path.join(info_folder, 'METRIC.json'), 'w') as file:
