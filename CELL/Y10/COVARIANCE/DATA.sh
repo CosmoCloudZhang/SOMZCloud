@@ -34,9 +34,9 @@ BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 
 # Run applications
-LABEL_LIST=("ZERO" "HALF" "UNITY" "DOUBLE")
-for LABEL in "${LABEL_LIST[@]}"; do
-    python -u "${BASE_PATH}CELL/${TAG}/COVARIANCE/DATA.py" --tag=$TAG --label=$LABEL --folder=$BASE_FOLDER &&
-    srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python /global/homes/y/yhzhang/opt/OneCovariance/covariance.py "${BASE_FOLDER}/CELL/${TAG}/COVARIANCE/CONFIG_${LABEL}.ini" &
+NAME_LIST=("COPPER" "GOLD" "IRON" "SILVER" "TITANIUM" "ZINC")
+for NAME in "${NAME_LIST[@]}"; do
+    python -u "${BASE_PATH}CELL/${TAG}/COVARIANCE/DATA.py" --tag=$TAG --name=$NAME --folder=$BASE_FOLDER &
+    srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python /global/homes/y/yhzhang/opt/OneCovariance/covariance.py "${BASE_FOLDER}/CELL/${TAG}/COVARIANCE/${NAME}/CONFIG.ini" &
 done
 wait

@@ -2,13 +2,13 @@
 #SBATCH -A m1727
 #SBATCH --nodes=1
 #SBATCH -q regular
-#SBATCH --time=24:00:00
+#SBATCH --time=04:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH --cpus-per-task=8
-#SBATCH -J CELL_Y1_NS_SCALE
-#SBATCH --ntasks-per-node=32
+#SBATCH --cpus-per-task=64
+#SBATCH --ntasks-per-node=4
+#SBATCH -J CELL_Y1_NN_CORRECT
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -19,7 +19,7 @@ module load cray-hdf5-parallel
 
 # Activate the conda environment
 source $HOME/.bashrc
-conda activate $CosmoENV
+conda activate $RAILENV
 
 # Set environment
 export NUMEXPR_MAX_THREADS=$SLURM_CPUS_PER_TASK
@@ -30,17 +30,17 @@ export OMP_PLACES=threads
 
 # Initialize the process
 TAG="Y1"
-NAME="NS"
 BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 
 # Run applications
-LABEL_LIST=("ZERO" "HALF" "UNITY" "DOUBLE")
-RANK_LIST=("DIR" "FIDUCIAL" "STACK" "PRODUCT" "TRUTH")
+LABEL_LIST=("DIR"  "STACK" "HYBRID" "TRUTH")
+NAME_LIST=("COPPER" "GOLD" "IRON" "SILVER" "TITANIUM" "ZINC")
 
-for LABEL in "${LABEL_LIST[@]}"; do
-    for RANK in "${RANK_LIST[@]}"; do
-        srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}CELL/${TAG}/${NAME}/SCALE.py" --tag=$TAG --name=$NAME --rank=$RANK --label=$LABEL --folder=$BASE_FOLDER &
+for NAME in "${NAME_LIST[@]}"; do
+    for LABEL in "${LABEL_LIST[@]}"; do
+        srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}CELL/${TAG}/NN/CORRECT.py" --tag=$TAG --name=$NAME --label=$LABEL --folder=$BASE_FOLDER &
     done
+    wait
 done
 wait
