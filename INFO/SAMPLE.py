@@ -83,9 +83,9 @@ def main(number, folder):
             
             # Sample
             sample[tag][name] = {}
-            sample[tag][name]['LENS'] = list(numpy.mean(numpy.vstack(sample_lens), axis=0))
-            sample[tag][name]['SOURCE'] = list(numpy.mean(numpy.vstack(sample_source), axis=0))
-        
+            sample[tag][name]['LENS'] = numpy.mean(numpy.vstack(sample_lens), axis=0).astype(float).tolist()
+            sample[tag][name]['SOURCE'] = numpy.mean(numpy.vstack(sample_source), axis=0).astype(float).tolist()
+    
     # Save
     with open(os.path.join(info_folder, 'SAMPLE.json'), 'w') as file:
         json.dump(sample, file, indent=4)

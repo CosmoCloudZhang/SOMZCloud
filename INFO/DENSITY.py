@@ -91,9 +91,9 @@ def main(number, folder):
             
             # Density
             density[tag][name] = {}
-            density[tag][name]['LENS'] = list(numpy.mean(numpy.vstack(density_lens), axis=0))
-            density[tag][name]['SOURCE'] = list(numpy.mean(numpy.vstack(density_source), axis=0))
-        
+            density[tag][name]['LENS'] = numpy.mean(numpy.vstack(density_lens), axis=0).astype(float).tolist()
+            density[tag][name]['SOURCE'] = numpy.mean(numpy.vstack(density_source), axis=0).astype(float).tolist()
+    
     # Save
     with open(os.path.join(info_folder, 'DENSITY.json'), 'w') as file:
         json.dump(density, file, indent=4)
