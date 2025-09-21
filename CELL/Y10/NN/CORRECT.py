@@ -9,14 +9,13 @@ import argparse
 from itertools import product
 
 
-def main(tag, name, type, label, folder):
+def main(tag, name, label, folder):
     '''
     Calculate the position-position angular power spectra
     
     Arguments:
         tag (str): The tag of the configuration
         name (str): The name of the power spectra
-        type (str): The type of the configuration
         label (str): The label of the configuration
         folder (str): The base folder of the dataset
     
@@ -25,25 +24,30 @@ def main(tag, name, type, label, folder):
     '''
     # Start
     start = time.time()
-    print('Type: {}, Label: {}'.format(type, label))
+    print('Name: {}, Label: {}'.format(name, label))
     
     # Path
     cell_folder = os.path.join(folder, 'CELL/')
     info_folder = os.path.join(folder, 'INFO/')
-    synthesize_folder = os.path.join(folder, 'SYNTHESIZE/')
-    
+    calibrate_folder = os.path.join(folder, 'CALIBRATE/')
     os.makedirs(os.path.join(cell_folder, '{}/'.format(tag)), exist_ok = True)
-    os.makedirs(os.path.join(cell_folder, '{}/{}'.format(tag, name)), exist_ok = True)
+    os.makedirs(os.path.join(cell_folder, '{}/NN/'.format(tag)), exist_ok = True)
+    os.makedirs(os.path.join(cell_folder, '{}/NN/CORRECT/'.format(tag)), exist_ok = True)
+    os.makedirs(os.path.join(cell_folder, '{}/NN/CORRECT/{}/'.format(tag, name)), exist_ok = True)
     
     # Load
-    with h5py.File(os.path.join(synthesize_folder, '{}/{}_{}.hdf5'.format(tag, type, label)), 'r') as file:
+    with h5py.File(os.path.join(calibrate_folder, '{}/CORRECT/{}/{}.hdf5'.format(tag, name, label)), 'r') as file:
+        meta = {key: file['meta'][key][...] for key in file['meta'].keys()}
+        average_lens = file['lens']['average'][...]
         data_lens = file['lens']['data'][...]
     data_size, bin_lens_size, z_size = data_lens.shape
     
-    # Redshift
-    z1 = 0.0
-    z2 = 3.0
-    z_grid = numpy.linspace(z1, z2, z_size)
+    # Select
+    select_size = data_size // 10
+    select_indices = numpy.random.choice(data_size, size = select_size, replace = False)
+    
+    z_grid = meta['z_grid']
+    data_lens = data_lens[select_indices, :, :]
     
     # Cosmology
     with open(os.path.join(info_folder, 'COSMOLOGY.json'), 'r') as file:
@@ -78,8 +82,8 @@ def main(tag, name, type, label, folder):
     with open(os.path.join(info_folder, 'GALAXY.json'), 'r') as file:
         galaxy_info = json.load(file)
     
-    cell_data = numpy.zeros((data_size, bin_lens_size, bin_lens_size, ell_size))
-    for n in range(data_size):
+    cell_data = numpy.zeros((select_size, bin_lens_size, bin_lens_size, ell_size))
+    for n in range(select_size):
         for (i, j) in product(range(bin_lens_size), range(bin_lens_size)):
             tracer1 = pyccl.tracers.NumberCountsTracer(cosmo=cosmology, dndz=[z_grid, data_lens[n, i, :]], bias=[z_grid, galaxy_info[tag]], mag_bias=None, has_rsd=False, n_samples=z_size)
             tracer2 = pyccl.tracers.NumberCountsTracer(cosmo=cosmology, dndz=[z_grid, data_lens[n, j, :]], bias=[z_grid, galaxy_info[tag]], mag_bias=None, has_rsd=False, n_samples=z_size)
@@ -88,10 +92,19 @@ def main(tag, name, type, label, folder):
             cell_value = scipy.interpolate.CubicSpline(x=numpy.log(ell_grid), y=ell_grid * cell_grid, bc_type='natural', extrapolate=True)
             for k in range(ell_size):
                 cell_data[n, i, j, k] = cell_value.integrate(numpy.log(ell_grid[k]), numpy.log(ell_grid[k + 1])) / (ell_grid[k + 1] - ell_grid[k])
-    cell_average = numpy.median(cell_data, axis = 0)
+    
+    cell_average = numpy.zeros((bin_lens_size, bin_lens_size, ell_size))
+    for (i, j) in product(range(bin_lens_size), range(bin_lens_size)):
+        tracer1 = pyccl.tracers.NumberCountsTracer(cosmo=cosmology, dndz=[z_grid, average_lens[i, :]], bias=[z_grid, galaxy_info[tag]], mag_bias=None, has_rsd=False, n_samples=z_size)
+        tracer2 = pyccl.tracers.NumberCountsTracer(cosmo=cosmology, dndz=[z_grid, average_lens[j, :]], bias=[z_grid, galaxy_info[tag]], mag_bias=None, has_rsd=False, n_samples=z_size)
+        cell_grid = pyccl.cells.angular_cl(cosmo=cosmology, tracer1=tracer1, tracer2=tracer2, ell=ell_grid, p_of_k_a='delta_matter:delta_matter', l_limber=-1, limber_max_error=0.01, limber_integration_method='qag_quad', non_limber_integration_method='FKEM', fkem_chi_min=0, fkem_Nchi=z_size, p_of_k_a_lin='delta_matter:delta_matter', return_meta=False)
+        
+        cell_value = scipy.interpolate.CubicSpline(x=numpy.log(ell_grid), y=ell_grid * cell_grid, bc_type='natural', extrapolate=True)
+        for k in range(ell_size):
+            cell_average[i, j, k] = cell_value.integrate(numpy.log(ell_grid[k]), numpy.log(ell_grid[k + 1])) / (ell_grid[k + 1] - ell_grid[k])
     
     # Save
-    with h5py.File(os.path.join(cell_folder, '{}/{}/{}_DATA_{}.hdf5'.format(tag, name, type, label)), 'w') as file:
+    with h5py.File(os.path.join(cell_folder, '{}/NN/CORRECT/{}/{}.hdf5'.format(tag, name, label)), 'w') as file:
         file.create_dataset('data', data = cell_data)
         file.create_dataset('average', data = cell_average)
     
@@ -106,19 +119,17 @@ def main(tag, name, type, label, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Cell Data')
+    PARSE = argparse.ArgumentParser(description='Cell NN Correct')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
     PARSE.add_argument('--name', type=str, required=True, help='The name of the power spectra')
-    PARSE.add_argument('--type', type=str, required=True, help='The type of the configuration')
     PARSE.add_argument('--label', type=str, required=True, help='The label of the configuration')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the dataset')
     
     # Parse
     TAG = PARSE.parse_args().tag
     NAME = PARSE.parse_args().name
-    TYPE = PARSE.parse_args().type
     LABEL = PARSE.parse_args().label
     FOLDER = PARSE.parse_args().folder
     
     # Output
-    OUTPUT = main(TAG, NAME, TYPE, LABEL, FOLDER)
+    OUTPUT = main(TAG, NAME, LABEL, FOLDER)
