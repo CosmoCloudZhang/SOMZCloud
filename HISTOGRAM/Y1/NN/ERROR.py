@@ -8,15 +8,15 @@ import argparse
 from matplotlib import pyplot
 
 
-def main(tag, name, type, label, folder):
+def main(tag, name, label, number, folder):
     '''
     Calculate the position-shape angular power spectra
     
     Arguments:
         tag (str): The tag of the configuration
         name (str): The name of the power spectra
-        type (str): The type of the configuration
         label (str): The label of the configuration
+        number (int): Total number of configurations
         folder (str): The base folder of the dataset
     
     Returns:
@@ -24,7 +24,7 @@ def main(tag, name, type, label, folder):
     '''
     # Start
     start = time.time()
-    print('Type: {}, Label: {}'.format(type, label))
+    print('Name: {}, Label: {}'.format(name, label))
     
     # Path
     info_folder = os.path.join(folder, 'INFO/')
@@ -35,22 +35,20 @@ def main(tag, name, type, label, folder):
     os.makedirs(os.path.join(cell_folder, '{}/{}'.format(tag, name)), exist_ok = True)
     
     # Load
-    with h5py.File(os.path.join(cell_folder, '{}/{}/{}_DATA_{}.hdf5'.format(tag, name, type, label)), 'r') as file:
-        cell_data = file['data'][...]
-    cell_data_error = numpy.std(cell_data, axis = 0)
+    with h5py.File(os.path.join(cell_folder, '{}/NN/CORRECT/{}/{}.hdf5'.format(tag, name, label)), 'r') as file:
+        cell_correct_data = file['data'][...]
+        cell_correct_average = file['average'][...]
+    bin_lens_size, bin_lens_size, ell_size = cell_correct_average.shape
     
-    with h5py.File(os.path.join(cell_folder, '{}/{}/{}_SHIFT_{}.hdf5'.format(tag, name, type, label)), 'r') as file:
-        cell_shift = file['data'][...]
-    cell_shift_error = numpy.std(cell_shift, axis = 0)
+    with h5py.File(os.path.join(cell_folder, '{}/NN/SCALE/{}/{}.hdf5'.format(tag, name, label)), 'r') as file:
+        cell_scale_data = file['data'][...]
     
-    with h5py.File(os.path.join(cell_folder, '{}/{}/{}_SCALE_{}.hdf5'.format(tag, name, type, label)), 'r') as file:
-        cell_scale = file['data'][...]
-    cell_scale_error = numpy.std(cell_scale, axis = 0)
+    with h5py.File(os.path.join(cell_folder, '{}/NN/SHIFT/{}/{}.hdf5'.format(tag, name, label)), 'r') as file:
+        cell_shift_data = file['data'][...]
     
     # Multipole
     ell1 = 20
     ell2 = 2000
-    ell_size = 20
     ell_grid = numpy.geomspace(ell1, ell2, ell_size + 1)
     ell_data = numpy.sqrt(ell_grid[+1:] * ell_grid[:-1])
     
@@ -75,24 +73,31 @@ def main(tag, name, type, label, folder):
     )
     
     # Bin
-    with h5py.File(os.path.join(model_folder, '{}/SELECT/DATA0.hdf5'.format(tag)), 'r') as file:
-        bin_lens = file['bin_lens'][...]
-        bin_source = file['bin_source'][...]
+    bin_lens = []
+    for index in range(number + 1):
+        with h5py.File(os.path.join(model_folder, '{}/TARGET/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+            bin_lens.append(file['bin_lens'][...])
+    average_bin_lens = numpy.average(numpy.vstack(bin_lens), axis=0)
     
-    bin_lens_size = len(bin_lens) - 1
-    bin_source_size = len(bin_source) - 1
-    
+    # Maximum
     k_maximal_lens = 0.1 * cosmology_info['H']
-    ell_maximal_lens = k_maximal_lens * pyccl.comoving_radial_distance(cosmo=cosmology, a=1 / (1 + bin_lens)) - 1 / 2
+    ell_maximal_lens = k_maximal_lens * pyccl.comoving_radial_distance(cosmo=cosmology, a=1 / (1 + average_bin_lens)) - 1 / 2
+    
+    # Delta
+    cell_correct_delta = numpy.zeros((bin_lens_size, bin_lens_size, ell_size))
+    cell_scale_delta = numpy.zeros((bin_lens_size, bin_lens_size, ell_size))
+    cell_shift_delta = numpy.zeros((bin_lens_size, bin_lens_size, ell_size))
     
     # Covariance
-    cell_range1 = bin_lens_size * (bin_lens_size + 1) // 2 * ell_size
-    cell_range2 = cell_range1 + bin_lens_size * bin_source_size * ell_size
+    cell_range1 = 0
+    cell_range2 = bin_lens_size * (bin_lens_size + 1) // 2 * ell_size
+    matrix = numpy.loadtxt(os.path.join(cell_folder, '{}/COVARIANCE/MATRIX_{}.ascii'.format(tag, label)), dtype=numpy.float32)
     
-    covariance = numpy.loadtxt(os.path.join(cell_folder, '{}/COVARIANCE/COVARIANCE_MATRIX_{}.ascii'.format(tag, label)), dtype=numpy.float32)
-    variance = numpy.diagonal(covariance, axis1=0, axis2=1)
-    sigma = numpy.sqrt(variance)[cell_range1: cell_range2]
+    for m in range(bin_lens_size):
+        for n in range(m, bin_lens_size):
+            cell_correct_delta[m, n, :] = cell_correct_data[m, n, :] - cell_correct_average[m, n, :]
     
+    covariance
     # Configuration
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
     pyplot.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
@@ -101,18 +106,18 @@ def main(tag, name, type, label, folder):
     pyplot.rcParams['font.size'] = 25
     
     # Figure
-    zeta1 = 5e-4
-    zeta2 = 5e-1
+    zeta1 = 2e-3
+    zeta2 = 2e+1
     figure, plot = pyplot.subplots(nrows=bin_lens_size, ncols=1, figsize=(12, 30))
-    color_list = ['darkmagenta', 'darkblue', 'darkgreen', 'darkorange', 'darkred']
+    color_list = ['hotpink', 'darkmagenta', 'darkorchid', 'darkblue', 'deepskyblue', 'darkgreen', 'darkgoldenrod', 'darkorange', 'darksalmon', 'darkred']
     
     index = 0
     for m in range(bin_lens_size):
-        for n in range(bin_source_size):
+        for n in range(m, bin_lens_size):
             cell_sigma = sigma[index * ell_size: (index + 1) * ell_size]
             index = index + 1
             
-            if bin_lens[m + 1] < (bin_source[n] + bin_source[n + 1]) / 2:
+            if m == n:
                 cell_shift_zeta = numpy.divide(numpy.abs(cell_shift_error[m, n, :] - cell_data_error[m, n, :]), cell_sigma, out=numpy.zeros(ell_size), where=cell_sigma != 0)
                 cell_scale_zeta = numpy.divide(numpy.abs(cell_scale_error[m, n, :] - cell_data_error[m, n, :]), cell_sigma, out=numpy.zeros(ell_size), where=cell_sigma != 0)
                 
@@ -133,7 +138,7 @@ def main(tag, name, type, label, folder):
         
         plot[m].set_xlim(ell1, ell2)
         plot[m].set_ylim(zeta1, zeta2)
-        plot[m].set_ylabel(r'$\zeta_{\theta \epsilon}^{ab} (\ell)$')
+        plot[m].set_ylabel(r'$\zeta_{\theta \theta}^{ab} (\ell)$')
         
         if m == bin_lens_size - 1:
             plot[m].set_xlabel(r'$\ell$')
