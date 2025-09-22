@@ -30,7 +30,7 @@ def main(tag, index, number, folder):
     os.makedirs(os.path.join(dataset_folder, '{}/DEGRADATION/'.format(tag)), exist_ok=True)
     
     # Amount
-    amount1 = {'Y1': 4, 'Y10': 8}
+    amount1 = {'Y1': 4, 'Y10': 7}
     amount2 = {'Y1': 6, 'Y10': 12}
     amount = random_generator.integers(low=amount1[tag], high=amount2[tag], endpoint=True)
     

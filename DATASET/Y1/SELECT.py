@@ -42,7 +42,7 @@ def main(tag, index, folder):
         application_dataset['photometry'] = {key: file['photometry'][key][...] for key in file['photometry'].keys()}
     
     # Magnitude
-    magnitude1 = {'Y1': 20.0, 'Y10': 20.0}
+    magnitude1 = {'Y1': 21.0, 'Y10': 21.0}
     magnitude2 = {'Y1': 24.0, 'Y10': 25.0}
     magnitude = random_generator.uniform(low=magnitude1[tag], high=magnitude2[tag])
     
@@ -56,13 +56,13 @@ def main(tag, index, folder):
     filter = filter & (application_dataset['photometry']['redshift'] < redshift)
     
     # Color
-    color1 = {'Y1': 0.5, 'Y10': 0.5}
-    color2 = {'Y1': 2.5, 'Y10': 2.5}
+    color1 = {'Y1': 1.0, 'Y10': 1.0}
+    color2 = {'Y1': 3.0, 'Y10': 3.0}
     color = random_generator.uniform(low=color1[tag], high=color2[tag])
     
     # Angle
     angle1 = {'Y1': 0.0, 'Y10': 0.0}
-    angle2 = {'Y1': numpy.pi / 2, 'Y10': numpy.pi / 2}
+    angle2 = {'Y1': numpy.pi, 'Y10': numpy.pi}
     angle = random_generator.uniform(low=angle1[tag], high=angle2[tag])
     
     application_color = application_dataset['photometry']['mag_g_lsst'] - application_dataset['photometry']['mag_z_lsst']
