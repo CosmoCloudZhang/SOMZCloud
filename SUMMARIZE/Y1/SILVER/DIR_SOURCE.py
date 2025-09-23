@@ -175,8 +175,19 @@ def main(tag, name, index, folder):
     
     # Save
     with h5py.File(os.path.join(summarize_folder, '{}/{}/SOURCE/SOURCE{}/DIR.hdf5'.format(tag, name, index)), 'w') as file:
-        file.create_dataset('data', data=data_source, dtype=numpy.float32)
-        file.create_dataset('average', data=average_source, dtype=numpy.float32)
+        file.create_group('meta')
+        file['meta'].create_dataset('z1', data=z1, dtype=numpy.float32)
+        file['meta'].create_dataset('z2', data=z2, dtype=numpy.float32)
+        file['meta'].create_dataset('z_grid', data=z_grid, dtype=numpy.float32)
+        file['meta'].create_dataset('grid_size', data=grid_size, dtype=numpy.int32)
+        file['meta'].create_dataset('data_size', data=data_size, dtype=numpy.int32)
+        
+        file['meta'].create_dataset('bin', data=bin_source, dtype=numpy.float32)
+        file['meta'].create_dataset('bin_size', data=bin_source_size, dtype=numpy.int32)
+        
+        file.create_group('ensemble')
+        file['ensemble'].create_dataset('data', data=data_source, dtype=numpy.float32)
+        file['ensemble'].create_dataset('average', data=average_source, dtype=numpy.float32)
     
     # Duration
     end = time.time()

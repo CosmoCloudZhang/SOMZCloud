@@ -197,14 +197,26 @@ def main(tag, name, index, folder):
     
     # Save
     with h5py.File(os.path.join(summarize_folder, '{}/{}/LENS/LENS{}/TRUTH.hdf5'.format(tag, name, index)), 'w') as file:
-        file.create_dataset('data', data=data_lens, dtype=numpy.float32)
-        file.create_dataset('average', data=average_lens, dtype=numpy.float32)
+        file.create_group('meta')
+        file['meta'].create_dataset('z1', data=z1, dtype=numpy.float32)
+        file['meta'].create_dataset('z2', data=z2, dtype=numpy.float32)
+        file['meta'].create_dataset('z_grid', data=z_grid, dtype=numpy.float32)
+        file['meta'].create_dataset('grid_size', data=grid_size, dtype=numpy.int32)
+        file['meta'].create_dataset('data_size', data=data_size, dtype=numpy.int32)
         
-        file.create_dataset('nu', data=nu_lens, dtype=numpy.float32)
-        file.create_dataset('gamma', data=gamma_lens, dtype=numpy.float32)
-        file.create_dataset('kappa', data=kappa_lens, dtype=numpy.float32)
-        file.create_dataset('lambda', data=lambda_lens, dtype=numpy.float32)
+        file['meta'].create_dataset('bin', data=bin_lens, dtype=numpy.float32)
+        file['meta'].create_dataset('bin_size', data=bin_lens_size, dtype=numpy.int32)
         
+        file.create_group('ensemble')
+        file['ensemble'].create_dataset('data', data=data_lens, dtype=numpy.float32)
+        file['ensemble'].create_dataset('average', data=average_lens, dtype=numpy.float32)
+        
+        file.create_group('value')
+        file['value'].create_dataset('nu', data=nu_lens, dtype=numpy.float32)
+        file['value'].create_dataset('gamma', data=gamma_lens, dtype=numpy.float32)
+        file['value'].create_dataset('kappa', data=kappa_lens, dtype=numpy.float32)
+        file['value'].create_dataset('lambda', data=lambda_lens, dtype=numpy.float32)
+    
     # Duration
     end = time.time()
     duration = (end - start) / 60
