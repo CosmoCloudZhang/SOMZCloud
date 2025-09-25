@@ -45,11 +45,11 @@ def main(tag, name, index, folder):
     
     # DIR
     with h5py.File(os.path.join(summarize_folder, '{}/{}/LENS/LENS{}/DIR.hdf5'.format(tag, name, index)), 'r') as file:
-        data_lens_dir = file['data'][...]
+        data_lens_dir = file['ensemble']['data'][...]
     
     # Stack
     with h5py.File(os.path.join(summarize_folder, '{}/{}/LENS/LENS{}/STACK.hdf5'.format(tag, name, index)), 'r') as file:
-        data_lens_stack = file['data'][...]
+        data_lens_stack = file['ensemble']['data'][...]
     
     data_lens = numpy.sqrt(numpy.maximum(data_lens_dir * data_lens_stack, 0.0))
     data_factor = scipy.integrate.trapezoid(x=z_grid, y=data_lens, axis=2)[:, :, numpy.newaxis]

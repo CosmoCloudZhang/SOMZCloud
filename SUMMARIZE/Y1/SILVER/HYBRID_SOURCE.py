@@ -45,11 +45,11 @@ def main(tag, name, index, folder):
     
     # DIR
     with h5py.File(os.path.join(summarize_folder, '{}/{}/SOURCE/SOURCE{}/DIR.hdf5'.format(tag, name, index)), 'r') as file:
-        data_source_dir = file['data'][...]
+        data_source_dir = file['ensemble']['data'][...]
     
     # Stack
     with h5py.File(os.path.join(summarize_folder, '{}/{}/SOURCE/SOURCE{}/STACK.hdf5'.format(tag, name, index)), 'r') as file:
-        data_source_stack = file['data'][...]
+        data_source_stack = file['ensemble']['data'][...]
     
     data_source = numpy.sqrt(numpy.maximum(data_source_dir * data_source_stack, 0.0))
     data_factor = scipy.integrate.trapezoid(x=z_grid, y=data_source, axis=2)[:, :, numpy.newaxis]
@@ -76,7 +76,7 @@ def main(tag, name, index, folder):
         file['ensemble'].create_dataset('data', data=data_source, dtype=numpy.float32)
         file['ensemble'].create_dataset('average', data=average_source, dtype=numpy.float32)
     
-    # Duration
+    # Duration  
     end = time.time()
     duration = (end - start) / 60
     
