@@ -151,8 +151,8 @@ def main(tag, name, index, folder):
                 
                 # Application Mask
                 application_cluster_mask = filter_data[application_cluster_id_data]
+                application_weight_data = numpy.array(application_cluster_mask, dtype=numpy.float32)
                 application_ensemble_indices = numpy.digitize(application_z_true_data, bins=z_grid, right=False) - 1
-                application_weight_data = numpy.array(application_cluster_mask, dtype=numpy.float32) / numpy.square(application_sigma_data)
                 
                 # Ensemble Cluster
                 ensemble_cluster = numpy.zeros((cluster_size, grid_size + 1))
