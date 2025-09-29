@@ -38,14 +38,10 @@ def main(tag, name, folder):
         truth_average_lens = file['lens']['average'][...]
         truth_average_source = file['source']['average'][...]
     
-    # Size
-    bin_lens_size, z_size = truth_average_lens.shape
-    bin_source_size, z_size = truth_average_source.shape
-    
-    # Redshift
-    z1 = meta['z1']
-    z2 = meta['z2']
-    z_grid = numpy.linspace(z1, z2, z_size)
+    # Meta
+    z_grid = meta['z_grid']
+    bin_lens_size = meta['lens_bin_size'][...]
+    bin_source_size = meta['source_bin_size'][...]
     
     # Galaxy
     with open(os.path.join(info_folder, 'GALAXY.json'), 'r') as file:
