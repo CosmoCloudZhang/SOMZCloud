@@ -48,11 +48,11 @@ def main(number, folder):
             sample_lens = []
             sample_source = []
             
-            for index in range(number + 1):
-                print('Index: {}'.format(index))
+            for n in range(number):
+                print('Index: {}'.format(n + 1))
                 
                 # Bin
-                with h5py.File(os.path.join(model_folder, '{}/TARGET/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+                with h5py.File(os.path.join(model_folder, '{}/TARGET/DATA{}.hdf5'.format(tag, n + 1)), 'r') as file:
                     bin_lens = file['bin_lens'][...]
                     bin_source = file['bin_source'][...]
                 
@@ -60,11 +60,11 @@ def main(number, folder):
                 bin_source_size = len(bin_source) - 1
                 
                 # Application
-                with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+                with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, n + 1)), 'r') as file:
                     application_sigma = file['morphology']['sigma'][...]
                 
                 # Lens
-                with h5py.File(os.path.join(model_folder, '{}/LENS/LENS{}/TARGET.hdf5'.format(tag, index)), 'r') as file:
+                with h5py.File(os.path.join(model_folder, '{}/LENS/LENS{}/TARGET.hdf5'.format(tag, n + 1)), 'r') as file:
                     target_lens = file['target'][...]
                 
                 value = numpy.zeros(bin_lens_size, dtype=numpy.float32)
@@ -73,7 +73,7 @@ def main(number, folder):
                 sample_lens.append(value)
                 
                 # Source
-                with h5py.File(os.path.join(model_folder, '{}/SOURCE/SOURCE{}/TARGET.hdf5'.format(tag, index)), 'r') as file:
+                with h5py.File(os.path.join(model_folder, '{}/SOURCE/SOURCE{}/TARGET.hdf5'.format(tag, n + 1)), 'r') as file:
                     target_source = file['target'][...]
                 
                 value = numpy.zeros(bin_source_size, dtype=numpy.float32)

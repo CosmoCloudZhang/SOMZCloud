@@ -49,24 +49,24 @@ def main(number, folder):
             density_lens = []
             density_source = []
             
-            for index in range(number + 1):
-                print('Index: {}'.format(index))
+            for n in range(number):
+                print('Index: {}'.format(n + 1))
                 
                 # Lambda
-                with h5py.File(os.path.join(summarize_folder, '{}/{}/LENS/LENS{}/TRUTH.hdf5'.format(tag, name, index)), 'r') as file:
+                with h5py.File(os.path.join(summarize_folder, '{}/{}/LENS/LENS{}/TRUTH.hdf5'.format(tag, name, n + 1)), 'r') as file:
                     lambda_lens = numpy.mean(file['value']['lambda'][...], axis=1)
                     bin_lens_size = file['meta']['bin_size'][...]
                 
-                with h5py.File(os.path.join(summarize_folder, '{}/{}/SOURCE/SOURCE{}/TRUTH.hdf5'.format(tag, name, index)), 'r') as file:
+                with h5py.File(os.path.join(summarize_folder, '{}/{}/SOURCE/SOURCE{}/TRUTH.hdf5'.format(tag, name, n + 1)), 'r') as file:
                     lambda_source = numpy.mean(file['value']['lambda'][...], axis=1)
                     bin_source_size = file['meta']['bin_size'][...]
                 
                 # Application
-                with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+                with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, n + 1)), 'r') as file:
                     application_sigma = file['morphology']['sigma'][...]
                 
                 # Lens
-                with h5py.File(os.path.join(model_folder, '{}/LENS/LENS{}/TARGET.hdf5'.format(tag, index)), 'r') as file:
+                with h5py.File(os.path.join(model_folder, '{}/LENS/LENS{}/TARGET.hdf5'.format(tag, n + 1)), 'r') as file:
                     target_lens = file['target'][...]
                 
                 value = numpy.zeros(bin_lens_size, dtype=numpy.float32)
@@ -75,7 +75,7 @@ def main(number, folder):
                 density_lens.append(value * lambda_lens)
                 
                 # Source
-                with h5py.File(os.path.join(model_folder, '{}/SOURCE/SOURCE{}/TARGET.hdf5'.format(tag, index)), 'r') as file:
+                with h5py.File(os.path.join(model_folder, '{}/SOURCE/SOURCE{}/TARGET.hdf5'.format(tag, n + 1)), 'r') as file:
                     target_source = file['target'][...]
                 
                 value = numpy.zeros(bin_source_size, dtype=numpy.float32)
