@@ -7,12 +7,12 @@ import argparse
 import multiprocessing
 
 
-def synthesize(data, weight, z_grid, number, sample_size, random_generator):
+def synthesize(data, z_grid, number, sample_size, random_generator):
     
-    indices = numpy.arange(number + 1, dtype=numpy.int32)
-    select = random_generator.choice(numpy.arange(sample_size, dtype=numpy.int32), size=number + 1, replace=True)
+    indices = numpy.arange(number, dtype=numpy.int32)
+    select = random_generator.choice(numpy.arange(sample_size, dtype=numpy.int32), size=number, replace=True)
     
-    alpha = weight[indices] / numpy.sum(weight[indices])
+    alpha = numpy.ones(number) / number
     beta = numpy.ravel(random_generator.dirichlet(alpha, size=1))
     
     value = numpy.maximum(numpy.sum(beta[:, numpy.newaxis, numpy.newaxis] * data[indices, :, select, :], axis=0), 0.0)
@@ -40,7 +40,6 @@ def main(tag, name, number, folder):
     random_generator = numpy.random.default_rng(0)
     
     # Path
-    model_folder = os.path.join(folder, 'MODEL/')
     summarize_folder = os.path.join(folder, 'SUMMARIZE/')
     synthesize_folder = os.path.join(folder, 'SYNTHESIZE/')
     os.makedirs(os.path.join(synthesize_folder, '{}/'.format(tag)), exist_ok=True)
@@ -53,9 +52,11 @@ def main(tag, name, number, folder):
     z_grid = numpy.linspace(z1, z2, grid_size + 1)
     
     # Bin
-    with h5py.File(os.path.join(model_folder, '{}/TARGET/DATA0.hdf5'.format(tag)), 'r') as file:
-        bin_lens_size = len(file['bin_lens'][...]) - 1
-        bin_source_size = len(file['bin_source'][...]) - 1
+    with h5py.File(os.path.join(summarize_folder, '{}/{}/LENS/LENS0/HYBRID.hdf5'.format(tag, name)), 'r') as file:
+        bin_lens_size = file['meta']['bin_size'][...]
+    
+    with h5py.File(os.path.join(summarize_folder, '{}/{}/SOURCE/SOURCE0/HYBRID.hdf5'.format(tag, name)), 'r') as file:
+        bin_source_size = file['meta']['bin_size'][...]
     
     # Size
     size = 16
@@ -63,32 +64,36 @@ def main(tag, name, number, folder):
     synthesize_size = 500000
     
     # Summarize Lens
-    summarize_lens = numpy.zeros((number + 1, bin_lens_size, sample_size, grid_size + 1))
-    for n in range(number + 1):
-        
+    bin_lens = numpy.zeros((number, bin_lens_size))
+    summarize_lens = numpy.zeros((number, bin_lens_size, sample_size, grid_size + 1))
+    
+    for n in range(1, number + 1):
         with h5py.File(os.path.join(summarize_folder, '{}/{}/LENS/LENS{}/HYBRID.hdf5'.format(tag, name, n)), 'r') as file:
-            summarize_lens[n, :, :, :] = file['data'][...]
+            bin_lens[n, :] = file['meta']['bin'][...]
+            summarize_lens[n, :, :, :] = file['ensemble']['data'][...]
+    bin_lens = numpy.mean(bin_lens, axis=0)
     
     # Summarize Source
-    summarize_source = numpy.zeros((number + 1, bin_source_size, sample_size, grid_size + 1))
-    for n in range(number + 1):
-        
+    bin_source = numpy.zeros((number, bin_source_size))
+    summarize_source = numpy.zeros((number, bin_source_size, sample_size, grid_size + 1))
+    
+    for n in range(1, number + 1):
         with h5py.File(os.path.join(summarize_folder, '{}/{}/SOURCE/SOURCE{}/HYBRID.hdf5'.format(tag, name, n)), 'r') as file:
-            summarize_source[n, :, :, :] = file['data'][...]
+            bin_source[n, :] = file['meta']['bin'][...]
+            summarize_source[n, :, :, :] = file['ensemble']['data'][...]
+    bin_source = numpy.mean(bin_source, axis=0)
     
     # Synthesize Lens
-    weight_lens = numpy.ones(number + 1)
     with multiprocessing.Pool(processes=size) as pool:
-        data_lens = numpy.stack(pool.starmap(synthesize, [(summarize_lens, weight_lens, z_grid, number, sample_size, random_generator) for _ in range(synthesize_size)]), axis=0)
+        data_lens = numpy.stack(pool.starmap(synthesize, [(summarize_lens, z_grid, number, sample_size, random_generator) for _ in range(synthesize_size)]), axis=0)
     
     average_lens = numpy.mean(data_lens, axis=0)
     factor_lens = scipy.integrate.trapezoid(x=z_grid, y=average_lens, axis=1)[:, numpy.newaxis]
     average_lens = numpy.divide(average_lens, factor_lens, out=numpy.zeros((bin_lens_size, grid_size + 1)), where=factor_lens != 0)
     
     # Synthesize Source
-    weight_source = numpy.ones(number + 1)
     with multiprocessing.Pool(processes=size) as pool:
-        data_source = numpy.stack(pool.starmap(synthesize, [(summarize_source, weight_source, z_grid, number, sample_size, random_generator) for _ in range(synthesize_size)]), axis=0)
+        data_source = numpy.stack(pool.starmap(synthesize, [(summarize_source, z_grid, number, sample_size, random_generator) for _ in range(synthesize_size)]), axis=0)
     
     average_source = numpy.mean(data_source, axis=0)
     factor_source = scipy.integrate.trapezoid(x=z_grid, y=average_source, axis=1)[:, numpy.newaxis]
@@ -102,14 +107,18 @@ def main(tag, name, number, folder):
         file['meta'].create_dataset('grid_size', data=grid_size, dtype=numpy.int32)
         file['meta'].create_dataset('synthesize_size', data=synthesize_size, dtype=numpy.int32)
         
+        file['meta'].create_dataset('bin_lens', data=bin_lens, dtype=numpy.float32)
+        file['meta'].create_dataset('bin_lens_size', data=bin_lens_size, dtype=numpy.int32)
+        
+        file['meta'].create_dataset('bin_source', data=bin_source, dtype=numpy.float32)
+        file['meta'].create_dataset('bin_source_size', data=bin_source_size, dtype=numpy.int32)
+        
         file.create_group('lens')
         file['lens'].create_dataset('data', data=data_lens, dtype=numpy.float32)
-        file['lens'].create_dataset('weight', data=weight_lens, dtype=numpy.float32)
         file['lens'].create_dataset('average', data=average_lens, dtype=numpy.float32)
         
         file.create_group('source')
         file['source'].create_dataset('data', data=data_source, dtype=numpy.float32)
-        file['source'].create_dataset('weight', data=weight_source, dtype=numpy.float32)
         file['source'].create_dataset('average', data=average_source, dtype=numpy.float32)
     
     # Return
