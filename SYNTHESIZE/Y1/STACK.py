@@ -64,21 +64,21 @@ def main(tag, name, number, folder):
     synthesize_size = 500000
     
     # Summarize Lens
-    bin_lens = numpy.zeros((number, bin_lens_size))
+    bin_lens = numpy.zeros((number, bin_lens_size + 1))
     summarize_lens = numpy.zeros((number, bin_lens_size, sample_size, grid_size + 1))
     
-    for n in range(1, number + 1):
-        with h5py.File(os.path.join(summarize_folder, '{}/{}/LENS/LENS{}/STACK.hdf5'.format(tag, name, n)), 'r') as file:
+    for n in range(number):
+        with h5py.File(os.path.join(summarize_folder, '{}/{}/LENS/LENS{}/STACK.hdf5'.format(tag, name, n + 1)), 'r') as file:
             bin_lens[n, :] = file['meta']['bin'][...]
             summarize_lens[n, :, :, :] = file['ensemble']['data'][...]
     bin_lens = numpy.mean(bin_lens, axis=0)
     
     # Summarize Source
-    bin_source = numpy.zeros((number, bin_source_size))
+    bin_source = numpy.zeros((number, bin_source_size + 1))
     summarize_source = numpy.zeros((number, bin_source_size, sample_size, grid_size + 1))
     
-    for n in range(1, number + 1):
-        with h5py.File(os.path.join(summarize_folder, '{}/{}/SOURCE/SOURCE{}/STACK.hdf5'.format(tag, name, n)), 'r') as file:
+    for n in range(number):
+        with h5py.File(os.path.join(summarize_folder, '{}/{}/SOURCE/SOURCE{}/STACK.hdf5'.format(tag, name, n + 1)), 'r') as file:
             bin_source[n, :] = file['meta']['bin'][...]
             summarize_source[n, :, :, :] = file['ensemble']['data'][...]
     bin_source = numpy.mean(bin_source, axis=0)
