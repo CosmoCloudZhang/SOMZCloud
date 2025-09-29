@@ -6,9 +6,9 @@
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH --cpus-per-task=64
-#SBATCH --ntasks-per-node=4
+#SBATCH --cpus-per-task=8
 #SBATCH -J ANALYZE_Y10_VALUE
+#SBATCH --ntasks-per-node=32
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -41,6 +41,5 @@ for NAME in "${NAME_LIST[@]}"; do
     for LABEL in "${LABEL_LIST[@]}"; do
         srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}ANALYZE/${TAG}/VALUE.py" --tag=$TAG --name=$NAME --label=$LABEL --folder=$BASE_FOLDER &
     done
-    wait
 done
 wait

@@ -74,8 +74,8 @@ def main(tag, name, folder):
         violin = plot[m, 0].violinplot(
             widths=0.8,
             vert=False, 
-            showmeans=False, 
-            showmedians=True,
+            showmeans=True, 
+            showmedians=False,
             showextrema=True,
             positions=[4, 3, 2, 1],
             dataset=[dir_eta_lens[:, m], stack_eta_lens[:, m], hybrid_eta_lens[:, m], truth_eta_lens[:, m]]
@@ -88,7 +88,7 @@ def main(tag, name, folder):
         violin['cbars'].set_color('black')
         violin['cmins'].set_color('black')
         violin['cmaxes'].set_color('black')
-        violin['cmedians'].set_color('black')
+        violin['cmeans'].set_color('black')
         
         plot[m, 0].axvspan(average_eta_lens[m] - factor_lens[m], average_eta_lens[m] + factor_lens[m], alpha=0.3, color='gray')
         plot[m, 0].text(x=average_eta_lens[m] + range_lens[m] / 3 * 2 * (1 + average_eta_lens[m]), y=2.25, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
@@ -111,8 +111,8 @@ def main(tag, name, folder):
         violin = plot[m, 1].violinplot(
             widths=0.8,
             vert=False, 
-            showmeans=False, 
-            showmedians=True,
+            showmeans=True, 
+            showmedians=False,
             showextrema=True,
             positions=[4, 3, 2, 1],
             dataset=[dir_eta_lens[:, m + bin_size], stack_eta_lens[:, m + bin_size], hybrid_eta_lens[:, m + bin_size], truth_eta_lens[:, m + bin_size]]
@@ -125,7 +125,7 @@ def main(tag, name, folder):
         violin['cbars'].set_color('black')
         violin['cmins'].set_color('black')
         violin['cmaxes'].set_color('black')
-        violin['cmedians'].set_color('black')
+        violin['cmeans'].set_color('black')
         
         plot[m, 1].axvspan(average_eta_lens[m + bin_size] - factor_lens[m + bin_size], average_eta_lens[m + bin_size] + factor_lens[m + bin_size], alpha=0.3, color='gray')
         plot[m, 1].text(x=average_eta_lens[m + bin_size] + range_lens[m + bin_size] / 3 * 2 * (1 + average_eta_lens[m + bin_size]), y=2.25, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + bin_size + 1), color='black', ha='center')
@@ -148,8 +148,8 @@ def main(tag, name, folder):
         violin = plot[m, 2].violinplot(
             widths=0.8,
             vert=False, 
-            showmeans=False,
-            showmedians=True,
+            showmeans=True,
+            showmedians=False,
             showextrema=True,
             positions=[4, 3, 2, 1],
             dataset=[dir_eta_source[:, m], stack_eta_source[:, m], hybrid_eta_source[:, m], truth_eta_source[:, m]]
@@ -162,7 +162,7 @@ def main(tag, name, folder):
         violin['cbars'].set_color('black')
         violin['cmins'].set_color('black')
         violin['cmaxes'].set_color('black')
-        violin['cmedians'].set_color('black')
+        violin['cmeans'].set_color('black')
         
         plot[m, 2].axvspan(average_eta_source[m] - factor_source[m], average_eta_source[m] + factor_source[m], alpha=0.3, color='gray')
         plot[m, 2].text(x=average_eta_source[m] + range_source[m] / 3 * 2 * (1 + average_eta_source[m]), y=2.25, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')

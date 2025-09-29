@@ -118,8 +118,8 @@ def main(tag, label, folder):
         violin = plot[m, 0].violinplot(
             vert=True, 
             widths=0.8,
-            showmeans=False,
-            showmedians=True,
+            showmeans=True,
+            showmedians=False,
             showextrema=True,
             positions=[1, 2, 3, 4, 5, 6],
             dataset=[gold_delta_lens[:, m], silver_delta_lens[:, m], copper_delta_lens[:, m], iron_delta_lens[:, m], titanium_delta_lens[:, m], zinc_delta_lens[:, m]]
@@ -132,7 +132,7 @@ def main(tag, label, folder):
         violin['cbars'].set_color('black')
         violin['cmins'].set_color('black')
         violin['cmaxes'].set_color('black')
-        violin['cmedians'].set_color('black')
+        violin['cmeans'].set_color('black')
         
         plot[m, 0].axhspan(-factor_lens, +factor_lens, alpha=0.3, color='gray')
         plot[m, 0].text(x=5.5, y=range_lens[m] / 3 * 2, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
@@ -157,8 +157,8 @@ def main(tag, label, folder):
         violin = plot[m, 1].violinplot(
             vert=True, 
             widths=0.8,
-            showmeans=False,
-            showmedians=True,
+            showmeans=True,
+            showmedians=False,
             showextrema=True,
             positions=[1, 2, 3, 4, 5, 6],
             dataset=[gold_delta_lens[:, m + bin_size], silver_delta_lens[:, m + bin_size], copper_delta_lens[:, m + bin_size], iron_delta_lens[:, m + bin_size], titanium_delta_lens[:, m + bin_size], zinc_delta_lens[:, m + bin_size]]
@@ -171,7 +171,7 @@ def main(tag, label, folder):
         violin['cbars'].set_color('black')
         violin['cmins'].set_color('black')
         violin['cmaxes'].set_color('black')
-        violin['cmedians'].set_color('black')
+        violin['cmeans'].set_color('black')
         
         plot[m, 1].axhspan(-factor_lens, +factor_lens, alpha=0.3, color='gray')
         plot[m, 1].text(x=5.5, y=range_lens[m] / 3 * 2, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
@@ -195,8 +195,8 @@ def main(tag, label, folder):
         violin = plot[m, 2].violinplot(
             vert=True, 
             widths=0.8,
-            showmeans=False,
-            showmedians=True,
+            showmeans=True,
+            showmedians=False,
             showextrema=True,
             positions=[1, 2, 3, 4, 5, 6],
             dataset=[gold_delta_source[:, m], silver_delta_source[:, m], copper_delta_source[:, m], iron_delta_source[:, m], titanium_delta_source[:, m], zinc_delta_source[:, m]]
@@ -209,7 +209,7 @@ def main(tag, label, folder):
         violin['cbars'].set_color('black')
         violin['cmins'].set_color('black')
         violin['cmaxes'].set_color('black')
-        violin['cmedians'].set_color('black')
+        violin['cmeans'].set_color('black')
         
         plot[m, 2].axhspan(-factor_source, +factor_source, alpha=0.3, color='gray')
         plot[m, 2].text(x=5.5, y=range_source[m] / 3 * 2, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
