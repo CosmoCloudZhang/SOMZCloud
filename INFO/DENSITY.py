@@ -52,20 +52,14 @@ def main(number, folder):
             for index in range(number + 1):
                 print('Index: {}'.format(index))
                 
-                # Bin
-                with h5py.File(os.path.join(model_folder, '{}/TARGET/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-                    bin_lens = file['bin_lens'][...]
-                    bin_source = file['bin_source'][...]
-                
-                bin_lens_size = len(bin_lens) - 1
-                bin_source_size = len(bin_source) - 1
-                
                 # Lambda
                 with h5py.File(os.path.join(summarize_folder, '{}/{}/LENS/LENS{}/TRUTH.hdf5'.format(tag, name, index)), 'r') as file:
-                    lambda_lens = numpy.mean(file['lambda'][...], axis=1)
+                    lambda_lens = numpy.mean(file['value']['lambda'][...], axis=1)
+                    bin_lens_size = file['meta']['bin_size'][...]
                 
                 with h5py.File(os.path.join(summarize_folder, '{}/{}/SOURCE/SOURCE{}/TRUTH.hdf5'.format(tag, name, index)), 'r') as file:
-                    lambda_source = numpy.mean(file['lambda'][...], axis=1)
+                    lambda_source = numpy.mean(file['value']['lambda'][...], axis=1)
+                    bin_source_size = file['meta']['bin_size'][...]
                 
                 # Application
                 with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
