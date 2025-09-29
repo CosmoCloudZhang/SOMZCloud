@@ -32,43 +32,53 @@ def main(tag, name, index, folder):
     os.makedirs(os.path.join(assess_folder, '{}/CONDITIONAL/'.format(tag)), exist_ok=True)
     os.makedirs(os.path.join(assess_folder, '{}/CONDITIONAL/{}/'.format(tag, name)), exist_ok=True)
     
-    # Bin
-    with h5py.File(os.path.join(model_folder, '{}/TARGET/DATA{}.hdf5'.format(tag, index)), 'r') as file:
-        bin_lens = file['bin_lens'][...]
-        bin_source = file['bin_source'][...]
-    
     # Summarize Lens
     with h5py.File(os.path.join(summarize_folder, '{}/{}/LENS/LENS{}/DIR.hdf5'.format(tag, name, index)), 'r') as file:
-        dir_lens = file['average'][...]
+        dir_lens = file['ensemble']['average'][...]
+        meta_lens = {key: file['meta'][key][...] for key in file['meta'].keys()}
     
     with h5py.File(os.path.join(summarize_folder, '{}/{}/LENS/LENS{}/STACK.hdf5'.format(tag, name, index)), 'r') as file:
-        stack_lens = file['average'][...]
+        stack_lens = file['ensemble']['average'][...]
+        meta_lens = {key: file['meta'][key][...] for key in file['meta'].keys()}
     
     with h5py.File(os.path.join(summarize_folder, '{}/{}/LENS/LENS{}/HYBRID.hdf5'.format(tag, name, index)), 'r') as file:
-        hybrid_lens = file['average'][...]
+        hybrid_lens = file['ensemble']['average'][...]
+        meta_lens = {key: file['meta'][key][...] for key in file['meta'].keys()}
     
     with h5py.File(os.path.join(summarize_folder, '{}/{}/LENS/LENS{}/TRUTH.hdf5'.format(tag, name, index)), 'r') as file:
-        truth_lens = file['average'][...]
+        truth_lens = file['ensemble']['average'][...]
+        meta_lens = {key: file['meta'][key][...] for key in file['meta'].keys()}
+    
+    # Meta Lens
+    z1 = meta_lens['z1']
+    z2 = meta_lens['z2']
+    bin_lens = meta_lens['bin']
+    z_grid = meta_lens['z_grid']
     
     # Summarize Source
     with h5py.File(os.path.join(summarize_folder, '{}/{}/SOURCE/SOURCE{}/DIR.hdf5'.format(tag, name, index)), 'r') as file:
-        dir_source = file['average'][...]
+        dir_source = file['ensemble']['average'][...]
+        meta_source = {key: file['meta'][key][...] for key in file['meta'].keys()}
     
     with h5py.File(os.path.join(summarize_folder, '{}/{}/SOURCE/SOURCE{}/STACK.hdf5'.format(tag, name, index)), 'r') as file:
-        stack_source = file['average'][...]
+        stack_source = file['ensemble']['average'][...]
+        meta_source = {key: file['meta'][key][...] for key in file['meta'].keys()}
     
     with h5py.File(os.path.join(summarize_folder, '{}/{}/SOURCE/SOURCE{}/HYBRID.hdf5'.format(tag, name, index)), 'r') as file:
-        hybrid_source = file['average'][...]
+        hybrid_source = file['ensemble']['average'][...]
+        meta_source = {key: file['meta'][key][...] for key in file['meta'].keys()}
     
     with h5py.File(os.path.join(summarize_folder, '{}/{}/SOURCE/SOURCE{}/TRUTH.hdf5'.format(tag, name, index)), 'r') as file:
-        truth_source = file['average'][...]
+        truth_source = file['ensemble']['average'][...]
+        meta_source = {key: file['meta'][key][...] for key in file['meta'].keys()}
     
-    # Redshift
-    z1 = 0.0
-    z2 = 3.0
-    grid_size = 300
-    z_grid = numpy.linspace(z1, z2, grid_size + 1)
+    # Meta Source
+    z1 = meta_source['z1']
+    z2 = meta_source['z2']
+    z_grid = meta_source['z_grid']
+    bin_source = meta_source['bin']
     
+    # Center
     center_lens = scipy.integrate.trapezoid(x=z_grid, y=z_grid[numpy.newaxis, :] * truth_lens, axis=1)
     center_source = scipy.integrate.trapezoid(x=z_grid, y=z_grid[numpy.newaxis, :] * truth_source, axis=1)
     
@@ -100,7 +110,7 @@ def main(tag, name, index, folder):
         plot[m, 0].set_xlim(numpy.maximum(z1, center_lens[m] - range_lens / 2), numpy.minimum(numpy.maximum(z1, center_lens[m] - range_lens / 2) + range_lens, z2))
         
         plot[m, 0].set_yticks([2, 4, 6, 8])
-        plot[m, 0].set_ylabel(r'$\phi \left( z | \mathcal{S}_n, \mathcal{P}_n \right)$')
+        plot[m, 0].set_ylabel(r'$\phi \left( z \,|\, \mathcal{R}_n, \mathcal{T}_n \right)$')
         plot[m, 0].text(x=numpy.minimum(numpy.maximum(z1, center_lens[m] - range_lens / 2) + range_lens, z2) - range_lens / 3, y=6.0, s=r'$\mathrm{Bin} \, ' + r'{}$'.format(m + 1))
         
         if m == 0:

@@ -9,7 +9,7 @@ import argparse
 def main(tag, name, label, index, folder):
     '''
     This function is used to analyze the information of the dataset
-    
+        
     Arguments:
         tag (str): The tag of the configuration
         name (str): The name of the configuration
@@ -21,7 +21,7 @@ def main(tag, name, label, index, folder):
         duration (float): The duration of the process
     '''
     start = time.time()
-    print('Name: {}, Label: {}'.format(name, label))
+    print('Name: {} Label: {} Index: {}'.format(name, label, index))
     
     # Path
     assess_folder = os.path.join(folder, 'ASSESS/')
@@ -33,22 +33,33 @@ def main(tag, name, label, index, folder):
     
     # Summarize Lens
     with h5py.File(os.path.join(summarize_folder, '{}/{}/LENS/LENS{}/{}.hdf5'.format(tag, name, index, label)), 'r') as file:
-        data_lens = file['data'][...]
-        average_lens = file['average'][...]
-    bin_lens_size, z_size = average_lens.shape
+        data_lens = file['ensemble']['data'][...]
+        average_lens = file['ensemble']['average'][...]
+        meta_lens = {key: file['meta'][key][...] for key in file['meta'].keys()}
+    
+    z1 = meta_lens['z1']
+    z2 = meta_lens['z2']
+    z_grid = meta_lens['z_grid']
+    grid_size = meta_lens['grid_size']
+    
+    bin_lens = meta_lens['bin']
+    bin_lens_size = meta_lens['bin_size']
     data_lens = numpy.transpose(data_lens, (1, 0, 2))
     
     # Summarize Source
     with h5py.File(os.path.join(summarize_folder, '{}/{}/SOURCE/SOURCE{}/{}.hdf5'.format(tag, name, index, label)), 'r') as file:
-        data_source = file['data'][...]
-        average_source = file['average'][...]
-    bin_source_size, z_size = average_source.shape
-    data_source = numpy.transpose(data_source, (1, 0, 2))
+        data_source = file['ensemble']['data'][...]
+        average_source = file['ensemble']['average'][...]
+        meta_source = {key: file['meta'][key][...] for key in file['meta'].keys()}
     
-    # Redshift
-    z1 = 0.0
-    z2 = 3.0
-    z_grid = numpy.linspace(z1, z2, z_size)
+    z1 = meta_source['z1']
+    z2 = meta_source['z2']
+    z_grid = meta_source['z_grid']
+    grid_size = meta_source['grid_size']
+    
+    bin_source = meta_source['bin']
+    bin_source_size = meta_source['bin_size']
+    data_source = numpy.transpose(data_source, (1, 0, 2))
     
     # Mu
     mu_lens = scipy.integrate.trapezoid(x=z_grid, y=z_grid[numpy.newaxis, numpy.newaxis, :] * data_lens, axis=2)
@@ -77,9 +88,13 @@ def main(tag, name, label, index, folder):
         file.create_group('meta')
         file['meta'].create_dataset('z1', data=z1, dtype=numpy.float32)
         file['meta'].create_dataset('z2', data=z2, dtype=numpy.float32)
-        file['meta'].create_dataset('z_size', data=z_size, dtype=numpy.int32)
         file['meta'].create_dataset('z_grid', data=z_grid, dtype=numpy.float32)
+        file['meta'].create_dataset('grid_size', data=grid_size, dtype=numpy.int32)
+        
+        file['meta'].create_dataset('bin_lens', data=bin_lens, dtype=numpy.float32)
         file['meta'].create_dataset('bin_lens_size', data=bin_lens_size, dtype=numpy.int32)
+        
+        file['meta'].create_dataset('bin_source', data=bin_source, dtype=numpy.float32)
         file['meta'].create_dataset('bin_source_size', data=bin_source_size, dtype=numpy.int32)
         
         file.create_group('lens')

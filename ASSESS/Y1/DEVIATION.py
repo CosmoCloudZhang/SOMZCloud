@@ -103,8 +103,8 @@ def main(tag, name, number, folder):
         violin = plot[m, 0].violinplot(
             widths=0.8,
             vert=False, 
-            showmeans=False, 
-            showmedians=True,
+            showmeans=True, 
+            showmedians=False,
             showextrema=True,
             positions=[3, 2, 1], 
             dataset=[dir_delta_lens[:, m], stack_delta_lens[:, m], hybrid_delta_lens[:, m]]
@@ -117,7 +117,7 @@ def main(tag, name, number, folder):
         violin['cbars'].set_color('black')
         violin['cmins'].set_color('black')
         violin['cmaxes'].set_color('black')
-        violin['cmedians'].set_color('black')
+        violin['cmeans'].set_color('black')
         
         plot[m, 0].axvspan(-factor_lens, factor_lens, alpha=0.3, color='gray')
         plot[m, 0].text(x=range_lens[m] / 3 * 2, y=2.25, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
@@ -133,15 +133,15 @@ def main(tag, name, number, folder):
             plot[m, 0].set_title(r'$\mathrm{Lens}$')
         
         if m == bin_size - 1:
-            plot[m, 0].set_xlabel(r'$\delta_\eta$')
+            plot[m, 0].set_xlabel(r'$\delta_{\eta_n}$')
     
     # Plot Source
     for m in range(bin_size):
         violin = plot[m, 1].violinplot(
             widths=0.8,
             vert=False, 
-            showmeans=False,
-            showmedians=True,
+            showmeans=True,
+            showmedians=False,
             showextrema=True,
             positions=[3, 2, 1],
             dataset=[dir_delta_source[:, m], stack_delta_source[:, m], hybrid_delta_source[:, m]]
@@ -154,7 +154,7 @@ def main(tag, name, number, folder):
         violin['cbars'].set_color('black')
         violin['cmins'].set_color('black')
         violin['cmaxes'].set_color('black')
-        violin['cmedians'].set_color('black')
+        violin['cmeans'].set_color('black')
         
         plot[m, 1].axvspan(-factor_source, factor_source, alpha=0.3, color='gray')
         plot[m, 1].text(x=range_source[m] / 3 * 2, y=2.25, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
@@ -170,7 +170,7 @@ def main(tag, name, number, folder):
             plot[m, 1].set_title(r'$\mathrm{Source}$')
         
         if m == bin_size - 1:
-            plot[m, 1].set_xlabel(r'$\delta_\eta$')
+            plot[m, 1].set_xlabel(r'$\delta_{\eta_n}$')
     
     figure.subplots_adjust(wspace=0.12, hspace=0.12)
     figure.savefig(os.path.join(assess_folder, '{}/DEVIATION/{}/FIGURE.pdf'.format(tag, name)), format='pdf', bbox_inches='tight')

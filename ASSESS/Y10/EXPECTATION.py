@@ -100,8 +100,8 @@ def main(tag, name, number, folder):
         violin = plot[m, 0].violinplot(
             widths=0.8,
             vert=False, 
-            showmeans=False, 
-            showmedians=True,
+            showmeans=True, 
+            showmedians=False,
             showextrema=True,
             positions=[3, 2, 1], 
             dataset=[dir_delta_lens[:, m], stack_delta_lens[:, m], hybrid_delta_lens[:, m]]
@@ -114,7 +114,7 @@ def main(tag, name, number, folder):
         violin['cbars'].set_color('black')
         violin['cmins'].set_color('black')
         violin['cmaxes'].set_color('black')
-        violin['cmedians'].set_color('black')
+        violin['cmeans'].set_color('black')
         
         plot[m, 0].axvspan(-factor_lens, factor_lens, alpha=0.3, color='gray')
         plot[m, 0].text(x=range_lens[m] / 3 * 2, y=2.25, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
@@ -137,8 +137,8 @@ def main(tag, name, number, folder):
         violin = plot[m, 1].violinplot(
             widths=0.8,
             vert=False, 
-            showmeans=False, 
-            showmedians=True,
+            showmeans=True, 
+            showmedians=False,
             showextrema=True,
             positions=[3, 2, 1], 
             dataset=[dir_delta_lens[:, m + bin_size], stack_delta_lens[:, m + bin_size], hybrid_delta_lens[:, m + bin_size]]
@@ -151,7 +151,7 @@ def main(tag, name, number, folder):
         violin['cbars'].set_color('black')
         violin['cmins'].set_color('black')
         violin['cmaxes'].set_color('black')
-        violin['cmedians'].set_color('black')
+        violin['cmeans'].set_color('black')
         
         plot[m, 1].axvspan(-factor_lens, factor_lens, alpha=0.3, color='gray')
         plot[m, 1].text(x=range_lens[m + bin_size] / 3 * 2, y=2.25, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + bin_size + 1), color='black', ha='center')
@@ -174,8 +174,8 @@ def main(tag, name, number, folder):
         violin = plot[m, 2].violinplot(
             widths=0.8,
             vert=False, 
-            showmeans=False,
-            showmedians=True,
+            showmeans=True,
+            showmedians=False,
             showextrema=True,
             positions=[3, 2, 1],
             dataset=[dir_delta_source[:, m], stack_delta_source[:, m], hybrid_delta_source[:, m]]
@@ -188,7 +188,7 @@ def main(tag, name, number, folder):
         violin['cbars'].set_color('black')
         violin['cmins'].set_color('black')
         violin['cmaxes'].set_color('black')
-        violin['cmedians'].set_color('black')
+        violin['cmeans'].set_color('black')
         
         plot[m, 2].axvspan(-factor_source, factor_source, alpha=0.3, color='gray')
         plot[m, 2].text(x=range_source[m] / 3 * 2, y=2.25, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
