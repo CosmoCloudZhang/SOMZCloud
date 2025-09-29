@@ -42,6 +42,5 @@ for NAME in "${NAME_LIST[@]}"; do
     for LABEL in "${LABEL_LIST[@]}"; do
         srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}PRIOR/${TAG}/COVARIANCE.py" --tag=$TAG --name=$NAME --label=$LABEL --number=$NUMBER --folder=$BASE_FOLDER &
     done
-    wait
 done
 wait
