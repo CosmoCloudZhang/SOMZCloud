@@ -61,7 +61,7 @@ def main(tag, name, number, folder):
     # Size
     size = 16
     sample_size = 100
-    synthesize_size = 500000
+    data_size = 500000
     
     # Summarize Lens
     bin_lens = numpy.zeros((number, bin_lens_size + 1))
@@ -85,7 +85,7 @@ def main(tag, name, number, folder):
     
     # Synthesize Lens
     with multiprocessing.Pool(processes=size) as pool:
-        data_lens = numpy.stack(pool.starmap(synthesize, [(summarize_lens, z_grid, number, sample_size, random_generator) for _ in range(synthesize_size)]), axis=0)
+        data_lens = numpy.stack(pool.starmap(synthesize, [(summarize_lens, z_grid, number, sample_size, random_generator) for _ in range(data_size)]), axis=0)
     
     average_lens = numpy.mean(data_lens, axis=0)
     factor_lens = scipy.integrate.trapezoid(x=z_grid, y=average_lens, axis=1)[:, numpy.newaxis]
@@ -93,7 +93,7 @@ def main(tag, name, number, folder):
     
     # Synthesize Source
     with multiprocessing.Pool(processes=size) as pool:
-        data_source = numpy.stack(pool.starmap(synthesize, [(summarize_source, z_grid, number, sample_size, random_generator) for _ in range(synthesize_size)]), axis=0)
+        data_source = numpy.stack(pool.starmap(synthesize, [(summarize_source, z_grid, number, sample_size, random_generator) for _ in range(data_size)]), axis=0)
     
     average_source = numpy.mean(data_source, axis=0)
     factor_source = scipy.integrate.trapezoid(x=z_grid, y=average_source, axis=1)[:, numpy.newaxis]
@@ -105,7 +105,7 @@ def main(tag, name, number, folder):
         file['meta'].create_dataset('z2', data=z2, dtype=numpy.float32)
         file['meta'].create_dataset('z_grid', data=z_grid, dtype=numpy.float32)
         file['meta'].create_dataset('grid_size', data=grid_size, dtype=numpy.int32)
-        file['meta'].create_dataset('synthesize_size', data=synthesize_size, dtype=numpy.int32)
+        file['meta'].create_dataset('data_size', data=data_size, dtype=numpy.int32)
         
         file['meta'].create_dataset('bin_lens', data=bin_lens, dtype=numpy.float32)
         file['meta'].create_dataset('bin_lens_size', data=bin_lens_size, dtype=numpy.int32)
