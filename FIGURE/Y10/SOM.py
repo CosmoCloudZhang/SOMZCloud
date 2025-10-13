@@ -41,12 +41,12 @@ def main(tag, index, folder):
         application_cell_z_true = file['meta']['cell_z_true'][...]
     application_map = application_cell_z_true.reshape((cell_size1, cell_size2))
     
-    # Association
-    with h5py.File(os.path.join(dataset_folder, '{}/ASSOCIATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
+    # Restriction
+    with h5py.File(os.path.join(dataset_folder, '{}/RESTRICTION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
         cell_size1 = file['meta']['cell_size1'][...]
         cell_size2 = file['meta']['cell_size2'][...]
-        association_cell_z_true = file['meta']['cell_z_true'][...]
-    association_map = association_cell_z_true.reshape((cell_size1, cell_size2))
+        restriction_cell_z_true = file['meta']['cell_z_true'][...]
+    restriction_map = restriction_cell_z_true.reshape((cell_size1, cell_size2))
     
     # Combination
     with h5py.File(os.path.join(dataset_folder, '{}/COMBINATION/DATA{}.hdf5'.format(tag, index)), 'r') as file:
@@ -60,9 +60,9 @@ def main(tag, index, folder):
     figure, plot = pyplot.subplots(nrows=2, ncols=1, figsize=(8, 12))
     figure.subplots_adjust(right=0.90, bottom=0.0, hspace=0.15, wspace=0.0)
     
-    # Association
-    mesh1 = plot[0].imshow((association_map - application_map) / (1 + application_map), norm=normalize, cmap='coolwarm')
-    plot[0].set_title(r'$\mathrm{Association}$')
+    # Restriction
+    mesh1 = plot[0].imshow((restriction_map - application_map) / (1 + application_map), norm=normalize, cmap='coolwarm')
+    plot[0].set_title(r'$\mathrm{Restriction}$')
     plot[0].axis('off')
     
     colorbar1 = figure.add_axes([0.90, 0.50, 0.05, 0.35])
