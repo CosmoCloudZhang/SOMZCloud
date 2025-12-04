@@ -81,6 +81,7 @@ def main(tag, folder):
                 'model': 'input_model',
             }, 
             'n_rows': 180, 
+            'n_epochs': 100, 
             'n_columns': 180, 
             'std_coeff': 0.5, 
             'maptype': 'toroid', 

@@ -2,7 +2,7 @@
 #SBATCH -A m1727
 #SBATCH --nodes=1
 #SBATCH -q regular
-#SBATCH --time=12:00:00
+#SBATCH --time=24:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
@@ -34,5 +34,5 @@ INPUT_CONFIG="${BASE_FOLDER}DATASET/${TAG}/SOM/INFORM.yaml"
 
 # Run applications
 python -u "${BASE_PATH}DATASET/${TAG}/SOM.py" --tag=$TAG --folder=$BASE_FOLDER &&
-python -m ceci rail.estimation.algos.somoclu_som.SOMocluInformer --mpi --INPUT_name=$INPUT_NAME --input=$INPUT_DATA --model=$INPUT_MODEL --config=$INPUT_CONFIG & 
+python -m ceci rail.estimation.algos.somoclu_som.SOMocluInformer --mpi --name=$INPUT_NAME --input=$INPUT_DATA --model=$INPUT_MODEL --config=$INPUT_CONFIG & 
 wait
