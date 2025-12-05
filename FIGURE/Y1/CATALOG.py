@@ -2,6 +2,7 @@ import os
 import h5py
 import time
 import numpy
+import corner
 import argparse
 from matplotlib import pyplot
 from matplotlib.gridspec import GridSpec
@@ -53,7 +54,7 @@ def main(tag, index, folder):
     simulation_dataset = {key: simulation_dataset[key][indices] for key in simulation_dataset.keys()}
     
     # Plot
-    os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
+    os.environ['PATH'] = '/pscratch/sd/y/yhzhang/texlive/2025/bin/x86_64-linux:' + os.environ['PATH']
     pyplot.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
     pyplot.rcParams['pgf.texsystem'] = 'pdflatex'
     pyplot.rcParams['text.usetex'] = True
@@ -100,8 +101,37 @@ def main(tag, index, folder):
             observation_select = (magnitude_edge[i] < observation_dataset['mag_i_lsst']) & (observation_dataset['mag_i_lsst'] < magnitude_edge[i + 1])
             simulation_select = (magnitude_edge[i] < simulation_dataset['mag_i_lsst']) & (simulation_dataset['mag_i_lsst'] < magnitude_edge[i + 1])
             
-            plot.scatter(simulation_redshift[simulation_select], simulation_color[j][simulation_select], s=0.10, c='darkgreen', marker='o', label=r'$\mathtt{CosmoDC2}$', alpha=0.05)
-            plot.scatter(observation_redshift[observation_select], observation_color[j][observation_select], s=0.10, c='darkorange', marker='o', label=r'$\mathtt{OpenUniverse2024}$', alpha=0.05)
+            corner.hist2d(
+                ax=plot,
+                smooth=1.0, 
+                plot_density=False,
+                plot_contours=True, 
+                fill_contours=False, 
+                plot_datapoints=False, 
+                no_fill_contours=True,
+                axes_scale=['linear', 'linear'],
+                levels=[0.1175, 0.3935, 0.8647, 0.9889],
+                x=simulation_redshift[simulation_select],
+                y=simulation_color[j][simulation_select], 
+                data_kwargs={'color': 'darkgreen', 'alpha': 0.05},
+                contour_kwargs={'colors': 'darkgreen', 'linewidths': 2.5}
+            )
+            
+            corner.hist2d(
+                ax=plot,
+                smooth=1.0,
+                plot_density=False,
+                plot_contours=True, 
+                fill_contours=False, 
+                plot_datapoints=False,
+                no_fill_contours=True,
+                axes_scale=['linear', 'linear'], 
+                levels=[0.1175, 0.3935, 0.8647, 0.9889],
+                x=observation_redshift[observation_select],
+                y=observation_color[j][observation_select], 
+                data_kwargs={'color': 'darkorange', 'alpha': 0.05},
+                contour_kwargs={'colors': 'darkorange', 'linewidths': 2.5}
+            )
             
             plot.set_xticks([0.5, 1.0, 1.5, 2.0, 2.5])
             plot.set_yticks([0.0, 0.5, 1.0, 1.5, 2.0, 2.5])
