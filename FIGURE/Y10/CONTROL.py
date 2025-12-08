@@ -20,7 +20,7 @@ def main(tag, index, folder):
     '''
     # Start
     start = time.time()
-    print('Index:{}'.format(index))
+    print('Index: {}'.format(index))
     
     # Path
     figure_folder = os.path.join(folder, 'FIGURE/')
