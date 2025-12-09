@@ -42,7 +42,7 @@ def main(tag, index, folder):
         application_dataset['photometry'] = {key: file['photometry'][key][...] for key in file['photometry'].keys()}
     
     # Magnitude
-    magnitude1 = {'Y1': 21.0, 'Y10': 21.0}
+    magnitude1 = {'Y1': 20.0, 'Y10': 20.0}
     magnitude2 = {'Y1': 24.0, 'Y10': 25.0}
     magnitude = random_generator.uniform(low=magnitude1[tag], high=magnitude2[tag])
     
