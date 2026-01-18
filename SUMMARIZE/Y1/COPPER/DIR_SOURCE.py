@@ -72,13 +72,6 @@ def main(tag, name, index, folder):
     with h5py.File(os.path.join(model_folder, '{}/SOURCE/SOURCE{}/REFERENCE.hdf5'.format(tag, index)), 'r') as file:
         reference_source = file['reference'][...]
     
-    reference = numpy.any(reference_source, axis=0)
-    reference_size = numpy.sum(reference)
-    
-    combination_z_phot_reference = combination_z_phot[reference]
-    combination_z_spec_reference = combination_redshift[reference]
-    combination_cell_id_reference = combination_cell_id[reference]
-    
     # SOM
     data_store = core.stage.RailStage.data_store
     data_store.__class__.allow_overwrite = True
@@ -108,6 +101,15 @@ def main(tag, name, index, folder):
         application_sigma_target = application_sigma[target]
         application_z_phot_target = application_z_phot[target]
         application_cell_id_target = application_cell_id[target]
+        
+        # Reference
+        reference = numpy.any(reference_source, axis=0)
+        reference_size = numpy.sum(reference)
+        
+        # Combination
+        combination_z_phot_reference = combination_z_phot[reference]
+        combination_z_spec_reference = combination_redshift[reference]
+        combination_cell_id_reference = combination_cell_id[reference]
         
         if target_size > 0 and reference_size > 0:
             # Bootstrap
@@ -196,7 +198,7 @@ def main(tag, name, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Summarize Iron DIR Source')
+    PARSE = argparse.ArgumentParser(description='Summarize Copper DIR Source')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of configuration')
     PARSE.add_argument('--name', type=str, required=True, help='The name of configuration')
     PARSE.add_argument('--index', type=int, required=True, help='The index of all the datasets')

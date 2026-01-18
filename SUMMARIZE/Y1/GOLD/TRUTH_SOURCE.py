@@ -229,7 +229,7 @@ def main(tag, name, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Summarize Fiducial Truth Source')
+    PARSE = argparse.ArgumentParser(description='Summarize Gold Truth Source')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of configuration')
     PARSE.add_argument('--name', type=str, required=True, help='The name of configuration')
     PARSE.add_argument('--index', type=int, required=True, help='The index of all the datasets')

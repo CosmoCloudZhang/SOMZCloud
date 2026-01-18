@@ -34,6 +34,7 @@ def main(tag, name, index, folder):
                 'model': 'input_model',
             }, 
             'n_rows': 125, 
+            'n_epochs': 100, 
             'n_columns': 125, 
             'std_coeff': 0.5, 
             'maptype': 'toroid', 
@@ -77,7 +78,7 @@ def main(tag, name, index, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Summarize Iron Informer')
+    PARSE = argparse.ArgumentParser(description='Summarize Copper Informer')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of configuration')
     PARSE.add_argument('--name', type=str, required=True, help='The name of configuration')
     PARSE.add_argument('--index', type=int, required=True, help='The index of all the datasets')

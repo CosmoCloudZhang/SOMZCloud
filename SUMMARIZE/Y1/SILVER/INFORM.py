@@ -34,6 +34,7 @@ def main(tag, name, index, folder):
                 'model': 'input_model',
             }, 
             'n_rows': 100, 
+            'n_epochs': 100, 
             'n_columns': 100, 
             'std_coeff': 0.5, 
             'maptype': 'toroid', 
