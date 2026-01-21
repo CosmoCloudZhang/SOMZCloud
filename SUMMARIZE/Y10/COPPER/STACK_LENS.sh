@@ -2,7 +2,7 @@
 #SBATCH -A m1727
 #SBATCH --nodes=4
 #SBATCH -q regular
-#SBATCH --time=16:00:00
+#SBATCH --time=12:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
