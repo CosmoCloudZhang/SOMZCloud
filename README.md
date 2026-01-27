@@ -1,15 +1,8 @@
 # SOMZCloud: Simulation-Informed Machine-Learning for Redshift Calibration
 
-SOMZCloud is an end-to-end, modular pipeline for photometric redshift calibration,
-validation, and uncertainty propagation using simulation-informed machine learning.
+SOMZCloud is an end-to-end, modular pipeline for photometric redshift calibration, validation, and uncertainty propagation using simulation-informed machine learning. The project is designed for Stage-IV cosmology analyses (e.g. LSST, Euclid), with a focus on population-level redshift distribution calibration, robustness to domain shift between simulations and observations, and reproducibility and traceability for downstream cosmological inference.
 
-The project is designed for Stage-IV cosmology analyses (e.g. LSST, Euclid), with a
-focus on population-level redshift distribution calibration, robustness to domain
-shift between simulations and observations, and reproducibility and traceability
-for downstream cosmological inference.
-
-The codebase follows a component-based architecture, where each directory
-implements a well-defined stage of the scientific workflow.
+The codebase follows a component-based architecture, where each directory implements a well-defined stage of the scientific workflow.
 
 ---
 
@@ -22,17 +15,16 @@ SOMZCloud supports:
 - Quantification of uncertainty and its propagation into cosmological inference
 - Reproducible evaluation of model performance under controlled assumptions
 
-The pipeline is designed to integrate naturally into cosmic shear,
-galaxy–galaxy lensing, and galaxy clustering analyses.
+The pipeline is designed to integrate naturally into cosmic shear, galaxy–galaxy lensing, and galaxy clustering analyses.
 
 ---
 
 ## Repository Structure
 
-Each top-level directory corresponds to a logical component of the pipeline.
-Detailed documentation is provided in a dedicated `README.md` within each folder.
+Each top-level directory corresponds to a logical component of the pipeline. Detailed documentation is provided in a dedicated `README.md` within each folder.
 
-```text
+```
+text
 SOMZCloud/
 ├── ANALYZE/        # Diagnostic analysis and validation metrics
 ├── ASSESS/         # Quality assessment and performance evaluation
@@ -50,7 +42,7 @@ SOMZCloud/
 ├── VALUE/          # Derived quantities and summary statistics
 ├── LICENSE         # BSD-3-Clause license text
 └── README.md       # Top-level project overview (this file)
-
+```
 ---
 
 ## Design Principles
@@ -70,6 +62,7 @@ SOMZCloud/
    bash
    git clone https://github.com/<your-org>/SOMZCloud.git
    cd SOMZCloud
+   ```
 2. See DATASET/README.md for data requirements and formats.
 3. See MODEL/README.md and CALIBRATE/README.md for training and calibration workflows.
 4. Each directory contains a standalone README describing:
@@ -96,7 +89,7 @@ archivePrefix = {arXiv},
        adsurl = {https://ui.adsabs.harvard.edu/abs/2025MNRAS.tmp.2117Z},
       adsnote = {Provided by the SAO/NASA Astrophysics Data System}
 }
-
+```
 ## License
 
 This project is released under the terms specified in LICENSE.
