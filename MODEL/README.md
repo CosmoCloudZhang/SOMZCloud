@@ -9,21 +9,13 @@ All modelling steps are implemented as standalone Python scripts controlled via 
 ## High-level Structure
 
 MODEL/
-├── Y1/ # LSST Year 1 modelling configuration
+├── Y1/ & Y10 # LSST Year 1 and Y10 modelling configuration
 │ ├── REFERENCE.py # Define reference or baseline models
 │ ├── TARGET.py # Define modelling targets and observables
 │ ├── ESTIMATE.py # Parameter estimation (model fitting)
 │ ├── EVALUATE.py # Model validation and performance metrics
 │ ├── INFORM.py # Diagnostic summaries and metadata products
 │ ├── *.sh # Execution scripts and HPC environment control
-│
-├── Y10/ # LSST Year 10 modelling configuration
-│ ├── REFERENCE.py
-│ ├── TARGET.py
-│ ├── ESTIMATE.py
-│ ├── EVALUATE.py
-│ ├── INFORM.py
-│ ├── *.sh
 │
 └── README.md
 

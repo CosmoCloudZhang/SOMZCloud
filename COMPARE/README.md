@@ -11,21 +11,13 @@ All comparison steps are implemented as standalone Python scripts controlled via
 ## High-level Structure
 
 COMPARE/
-├── Y1/ # LSST Year 1 comparison configuration
+├── Y1/ & Y10 # LSST Year 1 and Year 10 comparison configuration
 │ ├── REFERENCE.py # Define reference datasets or baseline comparisons
 │ ├── TARGET.py # Define comparison targets and observables
 │ ├── COMPARE.py # Perform model–data or model–model comparisons
 │ ├── EVALUATE.py # Quantify agreement and discrepancy metrics
 │ ├── INFORM.py # Diagnostic summaries and comparison metadata
 │ ├── *.sh # Execution scripts and HPC environment control
-│
-├── Y10/ # LSST Year 10 comparison configuration
-│ ├── REFERENCE.py
-│ ├── TARGET.py
-│ ├── COMPARE.py
-│ ├── EVALUATE.py
-│ ├── INFORM.py
-│ ├── *.sh
 │
 └── README.md
 

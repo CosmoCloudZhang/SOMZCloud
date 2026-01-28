@@ -11,7 +11,7 @@ DATASET/
 ├── CATALOG.py # Dataset configuration and catalogue bookkeeping
 ├── CATALOG.sh # Environment setup and execution wrapper
 │
-├── Y1/ # LSST Year 1 configuration
+├── Y1/ & Y10 # LSST Year 1 and Year 10 configuration
 │ ├── OBSERVE.py # Apply Y1 observing conditions
 │ ├── SIMULATE.py # Forward-model photometry from truth catalogues
 │ ├── SOM.py # Train and apply Self-Organising Maps
@@ -19,19 +19,6 @@ DATASET/
 │ ├── SELECT.py # Define photometric and spectroscopic selections
 │ ├── RESTRICT.py # Enforce redshift, magnitude, and quality cuts
 │ ├── DEGRADE.py # Degrade ideal data to Y1 survey realism
-│ ├── AUGMENT.py # Adaptive simulation-based augmentation
-│ ├── COMBINE.py # Merge observed and augmented samples
-│ ├── ASSOCIATE.py # Photometric–spectroscopic association
-│ ├── *.sh # HPC job scripts and environment control
-│
-├── Y10/ # LSST Year 10 configuration
-│ ├── OBSERVE.py # Apply Y10 observing conditions
-│ ├── SIMULATE.py # Forward-model photometry from truth catalogues
-│ ├── SOM.py # Train and apply Self-Organising Maps
-│ ├── APPLY.py # Apply SOM mappings and weights
-│ ├── SELECT.py # Define photometric and spectroscopic selections
-│ ├── RESTRICT.py # Enforce redshift, magnitude, and quality cuts
-│ ├── DEGRADE.py # Degrade ideal data to Y10 survey realism
 │ ├── AUGMENT.py # Adaptive simulation-based augmentation
 │ ├── COMBINE.py # Merge observed and augmented samples
 │ ├── ASSOCIATE.py # Photometric–spectroscopic association

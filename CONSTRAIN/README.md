@@ -11,21 +11,13 @@ All constraint steps are implemented as standalone Python scripts controlled via
 ## High-level Structure
 
 CONSTRAIN/
-├── Y1/ # LSST Year 1 constraint configuration
+├── Y1/ & Y10 # LSST Year 1 and Year 10 constraint configuration
 │ ├── REFERENCE.py # Define reference simulations and fiducial scenarios
 │ ├── TARGET.py # Define constraint targets and parameters of interest
 │ ├── CONSTRAIN.py # Perform constraint estimation and bias propagation
 │ ├── EVALUATE.py # Quantify bias, uncertainty, and robustness metrics
 │ ├── INFORM.py # Diagnostic summaries and constraint metadata
 │ ├── *.sh # Execution scripts and HPC environment control
-│
-├── Y10/ # LSST Year 10 constraint configuration
-│ ├── REFERENCE.py
-│ ├── TARGET.py
-│ ├── CONSTRAIN.py
-│ ├── EVALUATE.py
-│ ├── INFORM.py
-│ ├── *.sh
 │
 └── README.md
 
