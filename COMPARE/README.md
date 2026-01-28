@@ -29,7 +29,6 @@ COMPARE/
 │
 └── README.md
 
-
 ## Conceptual Pipeline
 
 The modelling pipeline follows an ordered sequence of steps. Each stage consumes versioned outputs from the DATASET pipeline and produces explicit intermediate or final model products that are written to disk.
