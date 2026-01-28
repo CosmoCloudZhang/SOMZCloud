@@ -24,24 +24,23 @@ The pipeline is designed to integrate naturally into cosmic shear, galaxy–gala
 Each top-level directory corresponds to a logical component of the pipeline. Detailed documentation is provided in a dedicated `README.md` within each folder.
 
 ```
-text
 SOMZCloud/
-├── ANALYZE/        # Diagnostic analysis and validation metrics
-├── ASSESS/         # Quality assessment and performance evaluation
+├── ANALYZE/        # Diagnostic analysis and validation metrics for conditional redshift distributions
+├── ASSESS/         # Quality assessment and performance evaluation for marginal redshift distributions
 ├── CALIBRATE/      # Redshift calibration methods and workflows
-├── CELL/           # Atomic processing units (reusable pipeline cells)
-├── COMPARE/        # Model and distribution comparison tools
-├── CONSTRAIN/      # Statistical and cosmological inference interfaces
+├── CELL/           # Investigate impact on summary statistics of angular power spectra
+├── COMPARE/        # Comparison model without augmentation training and estimation 
+├── CONSTRAIN/      # Constrain model with full augmentation training and estimation
 ├── DATASET/        # Dataset definitions, loaders, and metadata
 ├── FIGURE/         # Figure generation and plotting scripts
 ├── INFO/           # Configuration, metadata, and run information
-├── MODEL/          # Machine-learning models and training logic
+├── MODEL/          # Fiducial machine-learning models and training logic
 ├── PRIOR/          # Prior assumptions and population models
-├── SUMMARIZE/      # Aggregation and reporting utilities
-├── SYNTHESIZE/     # Synthetic data generation and augmentation
+├── SUMMARIZE/      # Summarisation for conditional redshift distributions
+├── SYNTHESIZE/     # Synthesis of marginal redshift distributions with uncertainty quantifications
 ├── VALUE/          # Derived quantities and summary statistics
 ├── LICENSE         # BSD-3-Clause license text
-└── README.md       # Top-level project overview (this file)
+└── README.md       # Top-level project overview
 ```
 ---
 
@@ -60,7 +59,7 @@ SOMZCloud/
 1. Clone the repository:
    ```
    bash
-   git clone https://github.com/<your-org>/SOMZCloud.git
+   git clone git@github.com:CosmoCloudZhang/SOMZCloud.git
    cd SOMZCloud
    ```
 2. See DATASET/README.md for data requirements and formats.
