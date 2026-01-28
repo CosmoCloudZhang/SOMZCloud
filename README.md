@@ -33,7 +33,7 @@ SOMZCloud/
 ├── MODEL/          # Fiducial machine-learning models and training logic
 ├── PRIOR/          # Prior assumptions and population models
 ├── SUMMARIZE/      # Summarisation for conditional redshift distributions
-├── SYNTHESIZE/     # Synthesis of marginal redshift distributions with uncertainty quantifications
+├── SYNTHESIZE/     # Synthesis of marginal redshift distributions with uncertainty quantification
 ├── VALUE/          # Derived quantities and summary statistics
 ├── LICENSE         # BSD-3-Clause license text
 └── README.md       # Top-level project overview
