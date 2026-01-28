@@ -42,20 +42,20 @@ def main(folder):
         extra_parameters = {'camb': {'kmax': 100, 'lmax': 5000, 'halofit_version': 'mead2020_feedback', 'HMCode_logT_AGN': 7.8}}
     )
     
-    constant = 5e-14 / numpy.square(cosmology_info['H'])
-    growth_factor = pyccl.background.growth_factor(cosmo=cosmology, a=1.0)
-    rho_m = cosmology_info['OMEGA_M'] * pyccl.background.rho_x(cosmo=cosmology, a=1.0, species='critical', is_comoving=True)
-    
     # Redshift
     z1 = 0.0
-    z2 = 3.0
+    z2 = 3.5
     grid_size = 300
     z_grid = numpy.linspace(z1, z2, grid_size + 1)
     
-    a_pivot = 0.5
     z_pivot = 0.5
-    xi_pivot = 0.0
-    a_grid = - constant * rho_m / growth_factor * a_pivot * numpy.power((1 + z_grid) / (1 + z_pivot), xi_pivot)
+    a_pivot = 0.5
+    eta_pivot = 0.0
+    
+    constant = 5e-14 / numpy.square(cosmology_info['H'])
+    growth = pyccl.background.growth_factor(cosmo=cosmology, a=1.0 / (1.0 + z_grid))
+    rho_m = pyccl.background.rho_x(cosmo=cosmology, a=1.0, species='matter', is_comoving=True)
+    a_grid = - constant * rho_m / growth * a_pivot * numpy.power((1 + z_grid) / (1 + z_pivot), eta_pivot)
     
     alignment_info = {
         'A': a_grid.tolist(),
