@@ -10,6 +10,7 @@ The pipeline is implemented as a sequence of clearly scoped Python scripts, each
 DATASET/
 ├── CATALOG.py # Dataset configuration and catalogue bookkeeping
 ├── CATALOG.sh # Environment setup and execution wrapper
+│
 ├── Y1/ # LSST Year 1 configuration
 │ ├── OBSERVE.py # Apply Y1 observing conditions
 │ ├── SIMULATE.py # Forward-model photometry from truth catalogues
@@ -92,6 +93,8 @@ Each configuration provides:
 - Shell scripts for environment setup and job submission  
 - Independent output directories to avoid cross-contamination between configurations  
 
+## Execution Model
+
 ### Python scripts
 
 Each Python script uses argparse to expose configurable parameters, including:
@@ -126,26 +129,7 @@ This design supports reproducible cosmological analyses, controlled ablation stu
 
 ## Typical Usage Example
 
-The pipeline is executed from within a specific configuration directory using the provided shell wrappers.
-
-```
-Example: run dataset construction for LSST Year 1
-
-cd DATASET/Y1
-
-bash OBSERVE.sh
-bash SIMULATE.sh
-bash SOM.sh
-bash APPLY.sh
-bash SELECT.sh
-bash RESTRICT.sh
-bash DEGRADE.sh
-bash AUGMENT.sh
-bash COMBINE.sh
-bash ASSOCIATE.sh
-```
-
-The exact ordering and subset of steps may vary depending on the analysis configuration.
+The modelling pipeline is executed from within a specific configuration directory, such as Y1 or Y10, by running the corresponding shell scripts in sequence. The exact ordering and subset of steps may vary depending on the modelling task and analysis configuration.
 
 ## Intended Use
 
