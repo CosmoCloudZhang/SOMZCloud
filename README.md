@@ -1,6 +1,6 @@
 # SOMZCloud: Simulation-Informed Machine-Learning for Redshift Calibration
 
-SOMZCloud is an end-to-end, modular pipeline for photometric redshift calibration, validation, and uncertainty propagation based on simulation-informed machine-learning methods. The project is designed to support Stage-IV cosmology analyses, including LSST, Euclid, and Roman, with an emphasis on population-level redshift distribution calibration, robustness to domain shift between simulations and observations, and reproducibility and scientific traceability for downstream cosmological inference. 
+SOMZCloud is an end-to-end, modular pipeline for photometric redshift calibration, validation, and uncertainty propagation based on simulation-informed machine-learning methods. The project is designed to support Stage-IV cosmology analyses, including LSST, Euclid, and Roman, with an emphasis on population-level redshift distribution calibration, robustness to domain shift between simulations and observations, and reproducibility and scientific traceability for downstream cosmological inference.
 
 The codebase adopts a component-based architecture, in which each directory corresponds to a well-defined stage of the scientific workflow and can be used independently or composed into an end-to-end analysis pipeline.
 
@@ -69,6 +69,7 @@ SOMZCloud/
 ## Citation
 
 If you use SOMZCloud in a publication, please cite:
+
 ```
 @ARTICLE{2025MNRAS.tmp.2117Z,
        author = {{Zhang}, Yun-Hao and {Zuntz}, Joe and {Moskowitz}, Irene and {Gawiser}, Eric and {Kuijken}, Konrad and {Asgari}, Marika and {Hoekstra}, Henk and {Malz}, Alex I. and {Yan}, Ziang and {Zhang}, Tianqing},
