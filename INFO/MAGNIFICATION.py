@@ -1,14 +1,17 @@
 import os
+import h5py
 import json
 import time
+import numpy
 import argparse
 
 
-def main(folder):
+def main(number, folder):
     '''
-    Store the fiducial values of magnification bias
+    Store the fiducial values of density configuration
     
     Arguments:
+        number (int): The number of the datasets
         folder (str): The base folder of the datasets
     
     Returns:
@@ -19,12 +22,45 @@ def main(folder):
     
     # Path
     info_folder = os.path.join(folder, 'INFO/')
+    model_folder = os.path.join(folder, 'MODEL/')
+    dataset_folder = os.path.join(folder, 'DATASET/')
     
-    # Magnification
-    magnification = {
-        'Y1': [0.106, 0.244, 0.307, 0.223, 0.251],
-        'Y10': [0.049, 0.143, 0.260, 0.230, 0.284, 0.324, 0.208, 0.242, 0.246, 0.255],
-    }
+    # Definition
+    slope = 4.0
+    delta = 0.05
+    intercept = 18.0
+    magnification = {'Y1': {}, 'Y10': {}}
+    
+    # Loop
+    for tag in magnification.keys():
+        print('Tag: {}'.format(tag))
+        
+        value = []
+        for n in range(number):
+            print('Index: {}'.format(n + 1))
+            
+            # Application
+            with h5py.File(os.path.join(dataset_folder, '{}/APPLICATION/DATA{}.hdf5'.format(tag, n + 1)), 'r') as file:
+                application_magnitude = file['photometry']['mag_i_lsst'][...]
+            
+            # Target
+            with h5py.File(os.path.join(model_folder, '{}/TARGET/DATA{}.hdf5'.format(tag, n + 1)), 'r') as file:
+                z_phot = file['z_phot'][...]
+                bin_lens = file['bin_lens'][...]
+            bin_lens_size = len(bin_lens) - 1
+            
+            count_plus = numpy.zeros(bin_lens_size, dtype=int)
+            target_lens_plus = (application_magnitude < slope * z_phot + intercept + delta)
+            for m in range(bin_lens_size):
+                count_plus[m] = numpy.sum(target_lens_plus & (bin_lens[m] <= z_phot) & (z_phot < bin_lens[m + 1]))
+            
+            count_minus = numpy.zeros(bin_lens_size, dtype=int)
+            target_lens_minus = (application_magnitude < slope * z_phot + intercept - delta)
+            for m in range(bin_lens_size):
+                count_minus[m] = numpy.sum(target_lens_minus & (bin_lens[m] <= z_phot) & (z_phot < bin_lens[m + 1]))
+            
+            value.append(numpy.log10(count_plus / count_minus) / 2 / delta)
+        magnification[tag] = numpy.mean(numpy.vstack(value), axis=0).tolist()
     
     # Save
     with open(os.path.join(info_folder, 'MAGNIFICATION.json'), 'w') as file:
@@ -42,10 +78,11 @@ def main(folder):
 if __name__ == '__main__':
     # Input
     PARSE = argparse.ArgumentParser(description='Info Magnification')
+    PARSE.add_argument('--number', type=int, required=True, help='The number of the datasets')
     PARSE.add_argument('--folder', type=str, required=True, help='The base folder of the datasets')
     
     # Parse
+    NUMBER = PARSE.parse_args().number
     FOLDER = PARSE.parse_args().folder
-    
     # Output
-    OUTPUT = main(FOLDER)
+    OUTPUT = main(NUMBER, FOLDER)

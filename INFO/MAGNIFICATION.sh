@@ -22,8 +22,9 @@ source $HOME/.bashrc
 conda activate $CosmoENV
 
 # Initialize the process
+NUMBER=1
 BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 
 # Run applications
-python -u "${BASE_PATH}INFO/MAGNIFICATION.py" --folder=$BASE_FOLDER 
+python -u "${BASE_PATH}INFO/MAGNIFICATION.py" --number=$NUMBER --folder=$BASE_FOLDER 
