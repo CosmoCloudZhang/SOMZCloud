@@ -6,8 +6,8 @@
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH --cpus-per-task=256
-#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=128
+#SBATCH --ntasks-per-node=2
 #SBATCH -J CELL_Y10_COVARIANCE_DATA
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 

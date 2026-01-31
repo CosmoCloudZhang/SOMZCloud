@@ -40,14 +40,10 @@ def main(tag, name, label, folder):
         meta = {key: file['meta'][key][...] for key in file['meta'].keys()}
         average_lens = file['lens']['average'][...]
         data_lens = file['lens']['data'][...]
-    data_size, bin_lens_size, z_size = data_lens.shape
     
-    # Select
-    select_size = data_size // 10
-    select_indices = numpy.random.choice(data_size, size = select_size, replace = False)
-    
+    # Size
     z_grid = meta['z_grid']
-    data_lens = data_lens[select_indices, :, :]
+    data_size, bin_lens_size, z_size = data_lens.shape
     
     # Cosmology
     with open(os.path.join(info_folder, 'COSMOLOGY.json'), 'r') as file:
@@ -65,12 +61,15 @@ def main(tag, name, label, folder):
         Omega_b=cosmology_info['OMEGA_B'], 
         Omega_c=cosmology_info['OMEGA_CDM'],
         Omega_g=cosmology_info['OMEGA_GAMMA'], 
-        mass_split = 'single', matter_power_spectrum = 'halofit', transfer_function = 'boltzmann_camb',
-        extra_parameters = {'camb': {'kmax': 100, 'lmax': 5000, 'halofit_version': 'mead2020_feedback', 'HMCode_logT_AGN': 7.8}}
+        mass_split='single', matter_power_spectrum='halofit', transfer_function='boltzmann_camb',
+        extra_parameters={'camb': {'kmax': 50, 'lmax': 5000, 'halofit_version': 'mead2020_feedback', 'HMCode_logT_AGN': 7.8}}
     )
     
-    pyccl.spline_params.N_K = z_size
-    pyccl.gsl_params.NZ_NORM_SPLINE_INTEGRATION = True
+    pyccl.gsl_params['NZ_NORM_SPLINE_INTEGRATION'] = False
+    pyccl.gsl_params['LENSING_KERNEL_SPLINE_INTEGRATION'] = False
+    
+    pyccl.gsl_params['INTEGRATION_GAUSS_KRONROD_POINTS'] = 100
+    pyccl.gsl_params['INTEGRATION_LIMBER_GAUSS_KRONROD_POINTS'] = 100
     
     # Multipole
     ell1 = 20
@@ -81,27 +80,37 @@ def main(tag, name, label, folder):
     # Galaxy
     with open(os.path.join(info_folder, 'GALAXY.json'), 'r') as file:
         galaxy_info = json.load(file)
+    galaxy_bias = galaxy_info[tag]
     
-    cell_data = numpy.zeros((select_size, bin_lens_size, bin_lens_size, ell_size))
-    for n in range(select_size):
-        for (i, j) in product(range(bin_lens_size), range(bin_lens_size)):
-            tracer1 = pyccl.tracers.NumberCountsTracer(cosmo=cosmology, dndz=[z_grid, data_lens[n, i, :]], bias=[z_grid, galaxy_info[tag]], mag_bias=None, has_rsd=False, n_samples=z_size)
-            tracer2 = pyccl.tracers.NumberCountsTracer(cosmo=cosmology, dndz=[z_grid, data_lens[n, j, :]], bias=[z_grid, galaxy_info[tag]], mag_bias=None, has_rsd=False, n_samples=z_size)
-            cell_grid = pyccl.cells.angular_cl(cosmo=cosmology, tracer1=tracer1, tracer2=tracer2, ell=ell_grid, p_of_k_a='delta_matter:delta_matter', l_limber=-1, limber_max_error=0.01, limber_integration_method='qag_quad', non_limber_integration_method='FKEM', fkem_chi_min=0, fkem_Nchi=z_size, p_of_k_a_lin='delta_matter:delta_matter', return_meta=False)
-            
-            cell_value = scipy.interpolate.CubicSpline(x=numpy.log(ell_grid), y=ell_grid * cell_grid, bc_type='natural', extrapolate=True)
-            for k in range(ell_size):
-                cell_data[n, i, j, k] = cell_value.integrate(numpy.log(ell_grid[k]), numpy.log(ell_grid[k + 1])) / (ell_grid[k + 1] - ell_grid[k])
+    # Magnification
+    with open(os.path.join(info_folder, 'MAGNIFICATION.json'), 'r') as file:
+        magnification_info = json.load(file)
+    magnification_bias = magnification_info[tag]
     
+    # Cell Average
     cell_average = numpy.zeros((bin_lens_size, bin_lens_size, ell_size))
     for (i, j) in product(range(bin_lens_size), range(bin_lens_size)):
-        tracer1 = pyccl.tracers.NumberCountsTracer(cosmo=cosmology, dndz=[z_grid, average_lens[i, :]], bias=[z_grid, galaxy_info[tag]], mag_bias=None, has_rsd=False, n_samples=z_size)
-        tracer2 = pyccl.tracers.NumberCountsTracer(cosmo=cosmology, dndz=[z_grid, average_lens[j, :]], bias=[z_grid, galaxy_info[tag]], mag_bias=None, has_rsd=False, n_samples=z_size)
-        cell_grid = pyccl.cells.angular_cl(cosmo=cosmology, tracer1=tracer1, tracer2=tracer2, ell=ell_grid, p_of_k_a='delta_matter:delta_matter', l_limber=-1, limber_max_error=0.01, limber_integration_method='qag_quad', non_limber_integration_method='FKEM', fkem_chi_min=0, fkem_Nchi=z_size, p_of_k_a_lin='delta_matter:delta_matter', return_meta=False)
+        tracer1 = pyccl.tracers.NumberCountsTracer(cosmo=cosmology, dndz=[z_grid, average_lens[i, :]], bias=[z_grid, galaxy_bias], mag_bias=[z_grid, numpy.ones(z_size) * magnification_bias[i]], has_rsd=False, n_samples=z_size)
+        tracer2 = pyccl.tracers.NumberCountsTracer(cosmo=cosmology, dndz=[z_grid, average_lens[j, :]], bias=[z_grid, galaxy_bias], mag_bias=[z_grid, numpy.ones(z_size) * magnification_bias[j]], has_rsd=False, n_samples=z_size)
+        cell_grid = pyccl.cells.angular_cl(cosmo=cosmology, tracer1=tracer1, tracer2=tracer2, ell=ell_grid, p_of_k_a='delta_matter:delta_matter', l_limber=-1, limber_max_error=0.01, limber_integration_method='spline', p_of_k_a_lin='delta_matter:delta_matter', return_meta=False)
         
         cell_value = scipy.interpolate.CubicSpline(x=numpy.log(ell_grid), y=ell_grid * cell_grid, bc_type='natural', extrapolate=True)
         for k in range(ell_size):
             cell_average[i, j, k] = cell_value.integrate(numpy.log(ell_grid[k]), numpy.log(ell_grid[k + 1])) / (ell_grid[k + 1] - ell_grid[k])
+    
+    # Cell Data
+    cell_data = numpy.zeros((data_size, bin_lens_size, bin_lens_size, ell_size))
+    for n in range(data_size):
+        for (i, j) in product(range(bin_lens_size), range(bin_lens_size)):
+            if i <= j:
+                tracer1 = pyccl.tracers.NumberCountsTracer(cosmo=cosmology, dndz=[z_grid, data_lens[n, i, :]], bias=[z_grid, galaxy_bias], mag_bias=[z_grid, numpy.ones(z_size) * magnification_bias[i]], has_rsd=False, n_samples=z_size)
+                tracer2 = pyccl.tracers.NumberCountsTracer(cosmo=cosmology, dndz=[z_grid, data_lens[n, j, :]], bias=[z_grid, galaxy_bias], mag_bias=[z_grid, numpy.ones(z_size) * magnification_bias[j]], has_rsd=False, n_samples=z_size)
+                cell_grid = pyccl.cells.angular_cl(cosmo=cosmology, tracer1=tracer1, tracer2=tracer2, ell=ell_grid, p_of_k_a='delta_matter:delta_matter', l_limber=-1, limber_max_error=0.01, limber_integration_method='spline', p_of_k_a_lin='delta_matter:delta_matter', return_meta=False)
+                
+                cell_value = scipy.interpolate.CubicSpline(x=numpy.log(ell_grid), y=ell_grid * cell_grid, bc_type='natural', extrapolate=True)
+                for k in range(ell_size):
+                    cell_data[n, i, j, k] = cell_value.integrate(numpy.log(ell_grid[k]), numpy.log(ell_grid[k + 1])) / (ell_grid[k + 1] - ell_grid[k])
+                    cell_data[n, j, i, k] = cell_data[n, i, j, k]
     
     # Save
     with h5py.File(os.path.join(cell_folder, '{}/NN/SCALE/{}/{}.hdf5'.format(tag, name, label)), 'w') as file:
