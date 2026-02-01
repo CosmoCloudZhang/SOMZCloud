@@ -2,7 +2,6 @@ import os
 import h5py
 import json
 import time
-import numpy
 import argparse
 from astropy import table
 
@@ -40,8 +39,8 @@ def main(tag, name, folder):
     
     # Meta
     z_grid = meta['z_grid']
-    bin_lens_size = meta['lens_bin_size'][...]
-    bin_source_size = meta['source_bin_size'][...]
+    bin_lens_size = meta['bin_lens_size'][...]
+    bin_source_size = meta['bin_source_size'][...]
     
     # Galaxy
     with open(os.path.join(info_folder, 'GALAXY.json'), 'r') as file:
