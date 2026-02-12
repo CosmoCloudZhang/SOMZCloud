@@ -2,8 +2,12 @@ import os
 import h5py
 import json
 import time
+import numpy
+import scipy
+import pyccl
 import argparse
 from astropy import table
+from itertools import product
 
 
 def main(tag, name, folder):
@@ -33,24 +37,14 @@ def main(tag, name, folder):
     # Load
     with h5py.File(os.path.join(synthesize_folder, '{}/{}/TRUTH.hdf5'.format(tag, name)), 'r') as file:
         meta = {key: file['meta'][key][...] for key in file['meta'].keys()}
-        
-        truth_average_lens = file['lens']['average'][...]
         truth_average_source = file['source']['average'][...]
+        truth_average_lens = file['lens']['average'][...]
     
     # Meta
     z_grid = meta['z_grid']
+    grid_size = meta['grid_size'][...]
     bin_lens_size = meta['bin_lens_size'][...]
     bin_source_size = meta['bin_source_size'][...]
-    
-    # Galaxy
-    with open(os.path.join(info_folder, 'GALAXY.json'), 'r') as file:
-        galaxy = json.load(file)
-    
-    table_bias = table.Table()
-    table_bias['redshift'] = z_grid
-    for m in range(bin_lens_size):
-        table_bias['b_{}(z)'.format(m + 1)] = galaxy[tag]
-    table_bias.write(os.path.join(cell_folder, '{}/COVARIANCE/{}/BIAS.ascii'.format(tag, name)), overwrite = True, format = 'ascii')
     
     # Lens
     table_lens = table.Table()
@@ -65,6 +59,39 @@ def main(tag, name, folder):
     for m in range(bin_source_size):
         table_source['n_{}(z)'.format(m + 1)] = truth_average_source[m, :]
     table_source.write(os.path.join(cell_folder, '{}/COVARIANCE/{}/SOURCE.ascii'.format(tag, name)), overwrite = True, format = 'ascii')
+    
+    # Alignment
+    with open(os.path.join(info_folder, 'ALIGNMENT.json'), 'r') as file:
+        alignment_info = json.load(file)
+    alignment_bias = numpy.array(alignment_info['A'])
+    
+    table_alignment = table.Table()
+    table_alignment['redshift'] = z_grid
+    for m in range(bin_source_size):
+        table_alignment['A_{}(z)'.format(m + 1)] = alignment_bias
+    table_alignment.write(os.path.join(cell_folder, '{}/COVARIANCE/{}/ALIGNMENT.ascii'.format(tag, name)), overwrite = True, format = 'ascii')
+    
+    # Galaxy
+    with open(os.path.join(info_folder, 'GALAXY.json'), 'r') as file:
+        galaxy_info = json.load(file)
+    galaxy_bias = numpy.array(galaxy_info[tag])
+    
+    table_galaxy = table.Table()
+    table_galaxy['redshift'] = z_grid
+    for m in range(bin_lens_size):
+        table_galaxy['b_{}(z)'.format(m + 1)] = galaxy_bias
+    table_galaxy.write(os.path.join(cell_folder, '{}/COVARIANCE/{}/GALAXY.ascii'.format(tag, name)), overwrite = True, format = 'ascii')
+    
+    # Magnification
+    with open(os.path.join(info_folder, 'MAGNIFICATION.json'), 'r') as file:
+        magnification_info = json.load(file)
+    magnification_bias = numpy.array(magnification_info[tag])
+    
+    table_magnification = table.Table()
+    table_magnification['redshift'] = z_grid
+    for m in range(bin_source_size):
+        table_magnification['m_{}(z)'.format(m + 1)] = magnification_bias[m] * numpy.ones(grid_size + 1)
+    table_magnification.write(os.path.join(cell_folder, '{}/COVARIANCE/{}/MAGNIFICATION.ascii'.format(tag, name)), overwrite = True, format = 'ascii')
     
     # Duration
     end = time.time()

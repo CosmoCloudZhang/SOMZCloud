@@ -31,9 +31,9 @@ def main(tag, name, label, folder):
     info_folder = os.path.join(folder, 'INFO/')
     calibrate_folder = os.path.join(folder, 'CALIBRATE/')
     os.makedirs(os.path.join(cell_folder, '{}/'.format(tag)), exist_ok = True)
-    os.makedirs(os.path.join(cell_folder, '{}/NN/'.format(tag)), exist_ok = True)
-    os.makedirs(os.path.join(cell_folder, '{}/NN/SHIFT/'.format(tag)), exist_ok = True)
-    os.makedirs(os.path.join(cell_folder, '{}/NN/SHIFT/{}/'.format(tag, name)), exist_ok = True)
+    os.makedirs(os.path.join(cell_folder, '{}/TT/'.format(tag)), exist_ok = True)
+    os.makedirs(os.path.join(cell_folder, '{}/TT/SHIFT/'.format(tag)), exist_ok = True)
+    os.makedirs(os.path.join(cell_folder, '{}/TT/SHIFT/{}/'.format(tag, name)), exist_ok = True)
     
     # Load
     with h5py.File(os.path.join(calibrate_folder, '{}/SHIFT/{}/{}.hdf5'.format(tag, name, label)), 'r') as file:
@@ -113,7 +113,7 @@ def main(tag, name, label, folder):
                     cell_data[n, j, i, k] = cell_data[n, i, j, k]
     
     # Save
-    with h5py.File(os.path.join(cell_folder, '{}/NN/SHIFT/{}/{}.hdf5'.format(tag, name, label)), 'w') as file:
+    with h5py.File(os.path.join(cell_folder, '{}/TT/SHIFT/{}/{}.hdf5'.format(tag, name, label)), 'w') as file:
         file.create_dataset('data', data = cell_data)
         file.create_dataset('average', data = cell_average)
     
@@ -128,7 +128,7 @@ def main(tag, name, label, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Cell NN Shift')
+    PARSE = argparse.ArgumentParser(description='Cell TT Shift')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
     PARSE.add_argument('--name', type=str, required=True, help='The name of the power spectra')
     PARSE.add_argument('--label', type=str, required=True, help='The label of the configuration')
