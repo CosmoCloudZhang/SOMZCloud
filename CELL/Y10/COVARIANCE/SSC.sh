@@ -8,7 +8,7 @@
 #SBATCH -o LOG/%x_%j.out
 #SBATCH --cpus-per-task=128
 #SBATCH --ntasks-per-node=2
-#SBATCH -J CELL_Y1_COVARIANCE_CONNECTION
+#SBATCH -J CELL_Y10_COVARIANCE_SSC
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -29,13 +29,13 @@ export OMP_PROC_BIND=spread
 export OMP_PLACES=threads
 
 # Initialize the process
-TAG="Y1"
+TAG="Y10"
 BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 
 # Run applications
 NAME_LIST=("COPPER" "GOLD" "IRON" "SILVER" "TITANIUM" "ZINC")
 for NAME in "${NAME_LIST[@]}"; do
-    python -u "${BASE_PATH}CELL/${TAG}/COVARIANCE/CONNECTION.py" --tag=$TAG --name=$NAME --folder=$BASE_FOLDER &
+    python -u "${BASE_PATH}CELL/${TAG}/COVARIANCE/SSC.py" --tag=$TAG --name=$NAME --folder=$BASE_FOLDER &
 done
 wait
