@@ -123,15 +123,15 @@ def main(tag, name, folder):
     ell_size = 100
     ell_grid = numpy.geomspace(ell1, ell2, ell_size + 1)
     
-    # Cell EE
-    ell = numpy.zeros((bin_source_size, bin_source_size, ell_size + 1), dtype=numpy.float32)
-    index1 = numpy.zeros((bin_source_size, bin_source_size, ell_size + 1), dtype=numpy.int32)
-    index2 = numpy.zeros((bin_source_size, bin_source_size, ell_size + 1), dtype=numpy.int32)
-    value = numpy.zeros((bin_source_size, bin_source_size, ell_size + 1), dtype=numpy.float32)
+    # Cell TT
+    ell = numpy.zeros((bin_lens_size, bin_lens_size, ell_size + 1), dtype=numpy.float32)
+    index1 = numpy.zeros((bin_lens_size, bin_lens_size, ell_size + 1), dtype=numpy.int32)
+    index2 = numpy.zeros((bin_lens_size, bin_lens_size, ell_size + 1), dtype=numpy.int32)
+    value = numpy.zeros((bin_lens_size, bin_lens_size, ell_size + 1), dtype=numpy.float32)
     
-    for (i, j) in product(range(bin_source_size), range(bin_source_size)):
-        tracer1 = pyccl.tracers.WeakLensingTracer(cosmo=cosmology, dndz=(z_grid, truth_average_source[i, :]), has_shear=True, ia_bias=(z_grid, alignment_bias), use_A_ia=False, n_samples=grid_size + 1)
-        tracer2 = pyccl.tracers.WeakLensingTracer(cosmo=cosmology, dndz=(z_grid, truth_average_source[j, :]), has_shear=True, ia_bias=(z_grid, alignment_bias), use_A_ia=False, n_samples=grid_size + 1)
+    for (i, j) in product(range(bin_lens_size), range(bin_lens_size)):
+        tracer1 = pyccl.tracers.NumberCountsTracer(cosmo=cosmology, dndz=(z_grid, truth_average_lens[i, :]), bias=(z_grid, galaxy_bias), mag_bias=(z_grid, magnification_bias[i] * numpy.ones(grid_size + 1)), has_rsd=False, n_samples=grid_size + 1)
+        tracer2 = pyccl.tracers.NumberCountsTracer(cosmo=cosmology, dndz=(z_grid, truth_average_lens[j, :]), bias=(z_grid, galaxy_bias), mag_bias=(z_grid, magnification_bias[j] * numpy.ones(grid_size + 1)), has_rsd=False, n_samples=grid_size + 1)
         value[i, j, :] = pyccl.cells.angular_cl(cosmo=cosmology, tracer1=tracer1, tracer2=tracer2, ell=ell_grid, p_of_k_a='delta_matter:delta_matter', l_limber=-1, limber_max_error=0.001, limber_integration_method='spline', p_of_k_a_lin='delta_matter:delta_matter', return_meta=False)
         
         index1[i, j, :] = i + 1
@@ -143,8 +143,8 @@ def main(tag, name, folder):
     table_cell['ell'] = ell.flatten()[order]
     table_cell['tomo_i'] = index1.flatten()[order]
     table_cell['tomo_j'] = index2.flatten()[order]
-    table_cell['Cell_kappakappa'] = value.flatten()[order]
-    table_cell.write(os.path.join(cell_folder, '{}/COVARIANCE/{}/Cell_kappakappa.ascii'.format(tag, name)), overwrite = True, format = 'ascii.commented_header')
+    table_cell['Cell_gg'] = value.flatten()[order]
+    table_cell.write(os.path.join(cell_folder, '{}/COVARIANCE/{}/Cell_gg.ascii'.format(tag, name)), overwrite = True, format = 'ascii.commented_header')
     
     # Cell TE
     ell = numpy.zeros((bin_lens_size, bin_source_size, ell_size + 1), dtype=numpy.float32)
@@ -169,15 +169,15 @@ def main(tag, name, folder):
     table_cell['Cell_gkappa'] = value.flatten()[order]
     table_cell.write(os.path.join(cell_folder, '{}/COVARIANCE/{}/Cell_gkappa.ascii'.format(tag, name)), overwrite = True, format = 'ascii.commented_header')
     
-    # Cell TT
-    ell = numpy.zeros((bin_lens_size, bin_lens_size, ell_size + 1), dtype=numpy.float32)
-    index1 = numpy.zeros((bin_lens_size, bin_lens_size, ell_size + 1), dtype=numpy.int32)
-    index2 = numpy.zeros((bin_lens_size, bin_lens_size, ell_size + 1), dtype=numpy.int32)
-    value = numpy.zeros((bin_lens_size, bin_lens_size, ell_size + 1), dtype=numpy.float32)
+    # Cell EE
+    ell = numpy.zeros((bin_source_size, bin_source_size, ell_size + 1), dtype=numpy.float32)
+    index1 = numpy.zeros((bin_source_size, bin_source_size, ell_size + 1), dtype=numpy.int32)
+    index2 = numpy.zeros((bin_source_size, bin_source_size, ell_size + 1), dtype=numpy.int32)
+    value = numpy.zeros((bin_source_size, bin_source_size, ell_size + 1), dtype=numpy.float32)
     
-    for (i, j) in product(range(bin_lens_size), range(bin_lens_size)):
-        tracer1 = pyccl.tracers.NumberCountsTracer(cosmo=cosmology, dndz=(z_grid, truth_average_lens[i, :]), bias=(z_grid, galaxy_bias), mag_bias=(z_grid, magnification_bias[i] * numpy.ones(grid_size + 1)), has_rsd=False, n_samples=grid_size + 1)
-        tracer2 = pyccl.tracers.NumberCountsTracer(cosmo=cosmology, dndz=(z_grid, truth_average_lens[j, :]), bias=(z_grid, galaxy_bias), mag_bias=(z_grid, magnification_bias[j] * numpy.ones(grid_size + 1)), has_rsd=False, n_samples=grid_size + 1)
+    for (i, j) in product(range(bin_source_size), range(bin_source_size)):
+        tracer1 = pyccl.tracers.WeakLensingTracer(cosmo=cosmology, dndz=(z_grid, truth_average_source[i, :]), has_shear=True, ia_bias=(z_grid, alignment_bias), use_A_ia=False, n_samples=grid_size + 1)
+        tracer2 = pyccl.tracers.WeakLensingTracer(cosmo=cosmology, dndz=(z_grid, truth_average_source[j, :]), has_shear=True, ia_bias=(z_grid, alignment_bias), use_A_ia=False, n_samples=grid_size + 1)
         value[i, j, :] = pyccl.cells.angular_cl(cosmo=cosmology, tracer1=tracer1, tracer2=tracer2, ell=ell_grid, p_of_k_a='delta_matter:delta_matter', l_limber=-1, limber_max_error=0.001, limber_integration_method='spline', p_of_k_a_lin='delta_matter:delta_matter', return_meta=False)
         
         index1[i, j, :] = i + 1
@@ -189,8 +189,8 @@ def main(tag, name, folder):
     table_cell['ell'] = ell.flatten()[order]
     table_cell['tomo_i'] = index1.flatten()[order]
     table_cell['tomo_j'] = index2.flatten()[order]
-    table_cell['Cell_gg'] = value.flatten()[order]
-    table_cell.write(os.path.join(cell_folder, '{}/COVARIANCE/{}/Cell_gg.ascii'.format(tag, name)), overwrite = True, format = 'ascii.commented_header')
+    table_cell['Cell_kappakappa'] = value.flatten()[order]
+    table_cell.write(os.path.join(cell_folder, '{}/COVARIANCE/{}/Cell_kappakappa.ascii'.format(tag, name)), overwrite = True, format = 'ascii.commented_header')
     
     # Duration
     end = time.time()

@@ -8,7 +8,7 @@
 #SBATCH -o LOG/%x_%j.out
 #SBATCH --cpus-per-task=128
 #SBATCH --ntasks-per-node=2
-#SBATCH -J CELL_Y10_COVARIANCE_GAUSSIAN
+#SBATCH -J CELL_Y10_COVARIANCE_DATA
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -36,7 +36,7 @@ BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 # Run applications
 NAME_LIST=("COPPER" "GOLD" "IRON" "SILVER" "TITANIUM" "ZINC")
 for NAME in "${NAME_LIST[@]}"; do
-    python -u "${BASE_PATH}CELL/${TAG}/COVARIANCE/GAUSSIAN.py" --tag=$TAG --name=$NAME --folder=$BASE_FOLDER &&
+    python -u "${BASE_PATH}CELL/${TAG}/COVARIANCE/DATA.py" --tag=$TAG --name=$NAME --folder=$BASE_FOLDER &&
     srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python /global/homes/y/yhzhang/opt/OneCovariance/covariance.py "${BASE_FOLDER}/CELL/${TAG}/COVARIANCE/${NAME}/CONFIG.ini" &
 done
 wait
