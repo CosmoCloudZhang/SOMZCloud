@@ -120,7 +120,7 @@ def main(tag, name, folder):
     # Multipole
     ell1 = 20
     ell2 = 2000
-    ell_size = 1000
+    ell_size = 100
     ell_grid = numpy.geomspace(ell1, ell2, ell_size + 1)
     
     # Cell TT
