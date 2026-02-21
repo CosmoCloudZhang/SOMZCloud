@@ -8,13 +8,13 @@
 #SBATCH -o LOG/%x_%j.out
 #SBATCH --cpus-per-task=128
 #SBATCH --ntasks-per-node=2
-#SBATCH -J CELL_Y1_COVARIANCE_DATA
+#SBATCH -J CELL_Y1_COVARIANCE_MATRIX
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
 module load conda
+module load cray-mpich
 module load PrgEnv-gnu
-module load cray-mpich/8.1.30
 module load cray-hdf5-parallel
 
 # Activate the conda environment
@@ -36,7 +36,7 @@ BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 # Run applications
 NAME_LIST=("COPPER" "GOLD" "IRON" "SILVER" "TITANIUM" "ZINC")
 for NAME in "${NAME_LIST[@]}"; do
-    python -u "${BASE_PATH}CELL/${TAG}/COVARIANCE/DATA.py" --tag=$TAG --name=$NAME --folder=$BASE_FOLDER &&
+    python -u "${BASE_PATH}CELL/${TAG}/COVARIANCE/MATRIX.py" --tag=$TAG --name=$NAME --folder=$BASE_FOLDER &&
     srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python /global/homes/y/yhzhang/opt/OneCovariance/covariance.py "${BASE_FOLDER}/CELL/${TAG}/COVARIANCE/${NAME}/CONFIG.ini" &
 done
 wait
