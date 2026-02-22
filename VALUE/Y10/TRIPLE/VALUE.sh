@@ -7,14 +7,14 @@
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
 #SBATCH --cpus-per-task=8
+#SBATCH -J VALUE_Y10_TRIPLE
 #SBATCH --ntasks-per-node=32
-#SBATCH -J CELL_Y1_TRIPLE_VALUE
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
 module load conda
+module load cray-mpich
 module load PrgEnv-gnu
-module load cray-mpich/8.1.30
 module load cray-hdf5-parallel
 
 # Activate the conda environment
