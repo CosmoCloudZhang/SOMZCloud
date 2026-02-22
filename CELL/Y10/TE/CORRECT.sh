@@ -8,7 +8,7 @@
 #SBATCH -o LOG/%x_%j.out
 #SBATCH --cpus-per-task=8
 #SBATCH --ntasks-per-node=32
-#SBATCH -J CELL_Y10_NS_CORRECT
+#SBATCH -J CELL_Y10_TE_CORRECT
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -39,7 +39,7 @@ NAME_LIST=("COPPER" "GOLD" "IRON" "SILVER" "TITANIUM" "ZINC")
 
 for NAME in "${NAME_LIST[@]}"; do
     for LABEL in "${LABEL_LIST[@]}"; do
-        srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}CELL/${TAG}/NS/CORRECT.py" --tag=$TAG --name=$NAME --label=$LABEL --folder=$BASE_FOLDER & 
+        srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}CELL/${TAG}/TE/CORRECT.py" --tag=$TAG --name=$NAME --label=$LABEL --folder=$BASE_FOLDER & 
     done
 done
 wait

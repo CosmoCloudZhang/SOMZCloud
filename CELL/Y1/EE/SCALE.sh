@@ -7,7 +7,7 @@
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
 #SBATCH --cpus-per-task=8
-#SBATCH -J CELL_Y1_SS_SCALE
+#SBATCH -J CELL_Y1_EE_SCALE
 #SBATCH --ntasks-per-node=32
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
@@ -39,7 +39,7 @@ NAME_LIST=("COPPER" "GOLD" "IRON" "SILVER" "TITANIUM" "ZINC")
 
 for NAME in "${NAME_LIST[@]}"; do
     for LABEL in "${LABEL_LIST[@]}"; do
-        srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}CELL/${TAG}/SS/SCALE.py" --tag=$TAG --name=$NAME --label=$LABEL --folder=$BASE_FOLDER & 
+        srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}CELL/${TAG}/EE/SCALE.py" --tag=$TAG --name=$NAME --label=$LABEL --folder=$BASE_FOLDER & 
     done
 done
 wait

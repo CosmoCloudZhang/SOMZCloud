@@ -8,7 +8,7 @@
 #SBATCH -o LOG/%x_%j.out
 #SBATCH --cpus-per-task=8
 #SBATCH --ntasks-per-node=32
-#SBATCH -J CELL_Y1_SS_CORRECT
+#SBATCH -J CELL_Y1_EE_CORRECT
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -28,10 +28,10 @@ export HDF5_USE_FILE_LOCKING=FALSE
 export OMP_PROC_BIND=spread
 export OMP_PLACES=threads
 
-# Initialize the process
+# Initialize the proceEE
 TAG="Y1"
 BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
-BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
+BASE_FOLDER="/global/cfs/cdirs/lEEt/groups/MCP/CosmoCloud/SOMZCloud/"
 
 # Run applications
 LABEL_LIST=("DIR"  "STACK" "HYBRID" "TRUTH")
@@ -39,7 +39,7 @@ NAME_LIST=("COPPER" "GOLD" "IRON" "SILVER" "TITANIUM" "ZINC")
 
 for NAME in "${NAME_LIST[@]}"; do
     for LABEL in "${LABEL_LIST[@]}"; do
-        srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}CELL/${TAG}/SS/CORRECT.py" --tag=$TAG --name=$NAME --label=$LABEL --folder=$BASE_FOLDER & 
+        srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}CELL/${TAG}/EE/CORRECT.py" --tag=$TAG --name=$NAME --label=$LABEL --folder=$BASE_FOLDER & 
     done
 done
 wait
