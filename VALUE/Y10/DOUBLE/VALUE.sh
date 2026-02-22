@@ -2,13 +2,13 @@
 #SBATCH -A m1727
 #SBATCH --nodes=1
 #SBATCH -q regular
-#SBATCH --time=48:00:00
+#SBATCH --time=24:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
 #SBATCH --cpus-per-task=8
-#SBATCH -J CELL_Y10_SS_ERROR
 #SBATCH --ntasks-per-node=32
+#SBATCH -J CELL_Y1_DOUBLE_VALUE
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -29,18 +29,17 @@ export OMP_PROC_BIND=spread
 export OMP_PLACES=threads
 
 # Initialize the process
-TAG="Y10"
-NAME="SS"
+TAG="Y1"
 BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 
 # Run applications
-LABEL_LIST=("ZERO" "HALF" "UNITY" "DOUBLE")
-RANK_LIST=("DIR" "FIDUCIAL" "STACK" "PRODUCT" "TRUTH")
+LABEL_LIST=("DIR"  "STACK" "HYBRID" "TRUTH")
+NAME_LIST=("COPPER" "GOLD" "IRON" "SILVER" "TITANIUM" "ZINC")
 
-for LABEL in "${LABEL_LIST[@]}"; do
-    for RANK in "${RANK_LIST[@]}"; do
-        srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}CELL/${TAG}/${NAME}/ERROR.py" --tag=$TAG --name=$NAME --rank=$RANK --label=$LABEL --folder=$BASE_FOLDER &
+for NAME in "${NAME_LIST[@]}"; do
+    for LABEL in "${LABEL_LIST[@]}"; do
+        srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}CELL/${TAG}/DOUBLE/VALUE.py" --tag=$TAG --name=$NAME --label=$LABEL --folder=$BASE_FOLDER & 
     done
 done
 wait

@@ -1,14 +1,14 @@
 #!/bin/bash
 #SBATCH -A m1727
-#SBATCH --nodes=4
+#SBATCH --nodes=1
 #SBATCH -q regular
-#SBATCH --time=04:00:00
+#SBATCH --time=24:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
-#SBATCH --cpus-per-task=32
-#SBATCH --ntasks-per-node=8
-#SBATCH -J HISTOGRAM_Y1_NN_ERROR
+#SBATCH --cpus-per-task=8
+#SBATCH --ntasks-per-node=32
+#SBATCH -J CELL_Y1_TRIPLE_VALUE
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -39,7 +39,7 @@ NAME_LIST=("COPPER" "GOLD" "IRON" "SILVER" "TITANIUM" "ZINC")
 
 for NAME in "${NAME_LIST[@]}"; do
     for LABEL in "${LABEL_LIST[@]}"; do
-        srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}HISTOGRAM/${TAG}/NN/ERROR.py" --tag=$TAG --name=$NAME --label=$LABEL --folder=$BASE_FOLDER & 
+        srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}CELL/${TAG}/TRIPLE/VALUE.py" --tag=$TAG --name=$NAME --label=$LABEL --folder=$BASE_FOLDER & 
     done
 done
 wait
