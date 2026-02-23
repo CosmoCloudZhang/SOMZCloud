@@ -101,7 +101,7 @@ def main(tag, name, label, folder):
     cell_te_size = bin_lens_size * bin_source_size * ell_size
     
     covariance = numpy.loadtxt(os.path.join(cell_folder, '{}/COVARIANCE/{}/MATRIX.ascii'.format(tag, name)))
-    covariance = covariance[0: cell_tt_size + cell_te_size, 0: cell_tt_size + cell_te_size]
+    variance = numpy.diag(covariance)[0: cell_tt_size + cell_te_size]
     
     # Data
     data_average = numpy.zeros((cell_tt_size + cell_te_size))
@@ -133,7 +133,7 @@ def main(tag, name, label, folder):
     for i in range(bin_lens_size):
         for j in range(bin_source_size):
             if bin_lens[i] + bin_lens[i + 1] / 2 < bin_source[j] + bin_source[j + 1] / 2:
-                index = i * bin_source_size + j
+                index = j * bin_source_size + i
                 index1 = cell_tt_size + index * ell_size
                 index2 = cell_tt_size + (index + 1) * ell_size
                 
@@ -148,35 +148,22 @@ def main(tag, name, label, folder):
     data_shift_mask = data_shift[:, mask]
     data_scale_mask = data_scale[:, mask]
     data_correct_mask = data_correct[:, mask]
+    
+    variance_mask = variance[mask]
     data_average_mask = data_average[mask]
-    covariance_mask = covariance[numpy.ix_(mask, mask)]
     
     # Residuals
     delta_shift = data_shift_mask - data_average_mask
     delta_scale = data_scale_mask - data_average_mask
     delta_correct = data_correct_mask - data_average_mask
     
-    # Eigenvalue decomposition of masked covariance
-    eigenvalues, eigenvectors = numpy.linalg.eigh(covariance_mask)
-    keep = eigenvalues > 0
-    
-    projection = eigenvectors[:, keep].T
-    precision = 1.0 / eigenvalues[keep]
-    number = int(numpy.sum(keep))
-    
-    # Projection
-    projection_shift = delta_shift @ projection.T
-    projection_scale = delta_scale @ projection.T
-    projection_correct = delta_correct @ projection.T
-    
     # Normalized chi-square
-    chi_shift = numpy.sum(numpy.square(projection_shift) * precision, axis=1) / number
-    chi_scale = numpy.sum(numpy.square(projection_scale) * precision, axis=1) / number
-    chi_correct = numpy.sum(numpy.square(projection_correct) * precision, axis=1) / number
+    chi_shift = numpy.sum(numpy.square(delta_shift) / variance_mask, axis=1) / numpy.sum(mask)
+    chi_scale = numpy.sum(numpy.square(delta_scale) / variance_mask, axis=1) / numpy.sum(mask)
+    chi_correct = numpy.sum(numpy.square(delta_correct) / variance_mask, axis=1) / numpy.sum(mask)
     
     # Save
     with h5py.File(os.path.join(value_folder, '{}/DOUBLE/{}/{}.hdf5'.format(tag, name, label)), 'w') as file:
-        file.create_dataset('number', data=number)
         file.create_dataset('chi_shift', data=chi_shift)
         file.create_dataset('chi_scale', data=chi_scale)
         file.create_dataset('chi_correct', data=chi_correct)
