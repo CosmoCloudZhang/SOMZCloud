@@ -25,7 +25,6 @@ def main(tag, name, index, folder):
     print('Name: {} Index: {}'.format(name, index))
     
     # Path
-    model_folder = os.path.join(folder, 'MODEL/')
     assess_folder = os.path.join(folder, 'ASSESS/')
     summarize_folder = os.path.join(folder, 'SUMMARIZE/')
     os.makedirs(os.path.join(assess_folder, '{}/'.format(tag)), exist_ok=True)
@@ -96,13 +95,13 @@ def main(tag, name, index, folder):
     figure, plot = pyplot.subplots(nrows=bin_size, ncols=3, figsize=(20, 5 * bin_size))
     
     for m in range(bin_size):
-        plot[m, 0].plot(z_grid, dir_lens[m, :], color='darkmagenta', linewidth=1.5, linestyle='-')
+        plot[m, 0].plot(z_grid, dir_lens[m, :], color='darkmagenta', linewidth=1.5, linestyle='-', label=r'$\mathtt{DIR}$')
         
-        plot[m, 0].plot(z_grid, stack_lens[m, :], color='darkgreen', linewidth=1.5, linestyle='-')
+        plot[m, 0].plot(z_grid, stack_lens[m, :], color='darkgreen', linewidth=1.5, linestyle='-', label=r'$\mathtt{Stack}$')
         
-        plot[m, 0].plot(z_grid, hybrid_lens[m, :], color='darkorange', linewidth=1.5, linestyle='-')
+        plot[m, 0].plot(z_grid, hybrid_lens[m, :], color='darkorange', linewidth=1.5, linestyle='-', label=r'$\mathtt{Hybrid}$')
         
-        plot[m, 0].plot(z_grid, truth_lens[m, :], color='black', linewidth=1.5, linestyle='-')
+        plot[m, 0].plot(z_grid, truth_lens[m, :], color='black', linewidth=1.5, linestyle='-', label=r'$\mathtt{Truth}$')
         
         plot[m, 0].fill_betweenx(y=[0, 12], x1=bin_lens[m], x2=bin_lens[m + 1], color='gray', alpha=0.5)
         
@@ -110,7 +109,7 @@ def main(tag, name, index, folder):
         plot[m, 0].set_xlim(numpy.maximum(z1, center_lens[m] - range_lens / 2), numpy.minimum(numpy.maximum(z1, center_lens[m] - range_lens / 2) + range_lens, z2))
         
         plot[m, 0].set_yticks([3, 6, 9, 12])
-        plot[m, 0].set_ylabel(r'$\phi \left( z \,|\, \mathcal{R}_n, \mathcal{T}_n \right)$')
+        plot[m, 0].set_ylabel(r'$\phi_m \left( z \right)$')
         plot[m, 0].text(x=numpy.minimum(numpy.maximum(z1, center_lens[m] - range_lens / 2) + range_lens, z2) - range_lens / 3, y=9.0, s=r'$\mathrm{Bin} \, ' + r'{}$'.format(m + 1))
         
         if m == 0:
@@ -118,15 +117,19 @@ def main(tag, name, index, folder):
         
         if m == bin_size - 1:
             plot[m, 0].set_xlabel(r'$z$')
+        
+        # Legend
+        handles, labels = plot[m, 0].get_legend_handles_labels()
+        figure.legend(handles, labels, loc='lower left', fontsize=20, frameon=True, bbox_to_anchor=(0.32, 0.06), borderaxespad=0.0)
     
     for m in range(bin_size):
-        plot[m, 1].plot(z_grid, dir_lens[m + bin_size, :], color='darkmagenta', linewidth=1.5, linestyle='-')
+        plot[m, 1].plot(z_grid, dir_lens[m + bin_size, :], color='darkmagenta', linewidth=1.5, linestyle='-', label=r'$\mathtt{DIR}$')
         
-        plot[m, 1].plot(z_grid, stack_lens[m + bin_size, :], color='darkgreen', linewidth=1.5, linestyle='-')
+        plot[m, 1].plot(z_grid, stack_lens[m + bin_size, :], color='darkgreen', linewidth=1.5, linestyle='-', label=r'$\mathtt{Stack}$')
         
-        plot[m, 1].plot(z_grid, hybrid_lens[m + bin_size, :], color='darkorange', linewidth=1.5, linestyle='-')
+        plot[m, 1].plot(z_grid, hybrid_lens[m + bin_size, :], color='darkorange', linewidth=1.5, linestyle='-', label=r'$\mathtt{Hybrid}$')
         
-        plot[m, 1].plot(z_grid, truth_lens[m + bin_size, :], color='black', linewidth=1.5, linestyle='-')
+        plot[m, 1].plot(z_grid, truth_lens[m + bin_size, :], color='black', linewidth=1.5, linestyle='-', label=r'$\mathtt{Truth}$')
         
         plot[m, 1].fill_betweenx(y=[0, 12], x1=bin_lens[m + bin_size], x2=bin_lens[m + bin_size + 1], color='gray', alpha=0.5)
         
@@ -141,15 +144,19 @@ def main(tag, name, index, folder):
         
         if m == bin_size - 1:
             plot[m, 1].set_xlabel(r'$z$')
+        
+        # Legend
+        handles, labels = plot[m, 1].get_legend_handles_labels()
+        figure.legend(handles, labels, loc='lower left', fontsize=20, frameon=True, bbox_to_anchor=(0.60, 0.06), borderaxespad=0.0)
     
     for m in range(bin_size):
-        plot[m, 2].plot(z_grid, dir_source[m, :], color='darkmagenta', linewidth=1.5, linestyle='-')
+        plot[m, 2].plot(z_grid, dir_source[m, :], color='darkmagenta', linewidth=1.5, linestyle='-', label=r'$\mathtt{DIR}$')
         
-        plot[m, 2].plot(z_grid, stack_source[m, :], color='darkgreen', linewidth=1.5, linestyle='-')
+        plot[m, 2].plot(z_grid, stack_source[m, :], color='darkgreen', linewidth=1.5, linestyle='-', label=r'$\mathtt{Stack}$')
         
-        plot[m, 2].plot(z_grid, hybrid_source[m, :], color='darkorange', linewidth=1.5, linestyle='-')
+        plot[m, 2].plot(z_grid, hybrid_source[m, :], color='darkorange', linewidth=1.5, linestyle='-', label=r'$\mathtt{Hybrid}$')
         
-        plot[m, 2].plot(z_grid, truth_source[m, :], color='black', linewidth=1.5, linestyle='-')
+        plot[m, 2].plot(z_grid, truth_source[m, :], color='black', linewidth=1.5, linestyle='-', label=r'$\mathtt{Truth}$')
         
         plot[m, 2].fill_betweenx(y=[0, 6], x1=bin_source[m], x2=bin_source[m + 1], color='gray', alpha=0.5)
         
@@ -164,7 +171,7 @@ def main(tag, name, index, folder):
         
         if m == bin_size - 1:
             plot[m, 2].set_xlabel(r'$z$')
-        
+    
     figure.subplots_adjust(wspace=0.2, hspace=0.2)
     figure.savefig(os.path.join(assess_folder, '{}/CONDITIONAL/{}/FIGURE{}.pdf'.format(tag, name, index)), format='pdf', bbox_inches='tight')
     

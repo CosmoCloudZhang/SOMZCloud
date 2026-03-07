@@ -199,7 +199,7 @@ def main(tag, label, number, folder):
         plot[m, 0].set_xlim(0.5, 6.5)
         plot[m, 0].set_ylim(-range_lens[m], +range_lens[m])
         
-        plot[m, 0].set_ylabel(r'$\delta_\eta$')
+        plot[m, 0].set_ylabel(r'$\delta_{\eta_m}$')
         plot[m, 0].set_xticks([1, 2, 3, 4, 5, 6])
         plot[m, 0].tick_params(axis='y', labelsize=20)
         
@@ -238,7 +238,6 @@ def main(tag, label, number, folder):
         plot[m, 1].set_xlim(0.5, 6.5)
         plot[m, 1].set_ylim(-range_lens[m + bin_size], +range_lens[m + bin_size])
         
-        plot[m, 1].set_ylabel(r'$\delta_\eta$')
         plot[m, 1].set_xticks([1, 2, 3, 4, 5, 6])
         plot[m, 1].tick_params(axis='y', labelsize=20)
         

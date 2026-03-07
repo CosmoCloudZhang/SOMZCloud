@@ -133,7 +133,7 @@ def main(tag, name, number, folder):
             plot[m, 0].set_title(r'$\mathrm{Lens}$')
         
         if m == bin_size - 1:
-            plot[m, 0].set_xlabel(r'$\delta_{\eta_n}$')
+            plot[m, 0].set_xlabel(r'$\delta_{\eta_m}$')
     
     # Plot Source
     for m in range(bin_size):
@@ -170,7 +170,7 @@ def main(tag, name, number, folder):
             plot[m, 1].set_title(r'$\mathrm{Source}$')
         
         if m == bin_size - 1:
-            plot[m, 1].set_xlabel(r'$\delta_{\eta_n}$')
+            plot[m, 1].set_xlabel(r'$\delta_{\eta_m}$')
     
     figure.subplots_adjust(wspace=0.12, hspace=0.12)
     figure.savefig(os.path.join(assess_folder, '{}/DEVIATION/{}/FIGURE.pdf'.format(tag, name)), format='pdf', bbox_inches='tight')

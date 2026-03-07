@@ -181,7 +181,7 @@ def main(tag, label, number, folder):
         plot[m, 0].set_xlim(0.5, 6.5)
         plot[m, 0].set_ylim(-range_lens[m], +range_lens[m])
         
-        plot[m, 0].set_ylabel(r'$\delta_\mu$')
+        plot[m, 0].set_ylabel(r'$\delta_{\mu_m}$')
         plot[m, 0].set_xticks([1, 2, 3, 4, 5, 6])
         plot[m, 0].tick_params(axis='y', labelsize=20)
         
