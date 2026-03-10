@@ -95,15 +95,15 @@ def main(tag, name, index, folder):
     figure, plot = pyplot.subplots(nrows=bin_size, ncols=2, figsize=(12, 5 * bin_size))
     
     for m in range(bin_size):
-        plot[m, 0].plot(z_grid, dir_lens[m, :], color='darkmagenta', linewidth=1.5, linestyle='-', label=r'$\mathtt{DIR}$')
+        plot[m, 0].plot(z_grid, dir_lens[m, :], color='darkmagenta', linewidth=1.5, linestyle='-', label=r'$\mathtt{DIR}$', rasterized=True)
         
-        plot[m, 0].plot(z_grid, stack_lens[m, :], color='darkgreen', linewidth=1.5, linestyle='-', label=r'$\mathtt{Stack}$')
+        plot[m, 0].plot(z_grid, stack_lens[m, :], color='darkgreen', linewidth=1.5, linestyle='-', label=r'$\mathtt{Stack}$', rasterized=True)
         
-        plot[m, 0].plot(z_grid, hybrid_lens[m, :], color='darkorange', linewidth=1.5, linestyle='-', label=r'$\mathtt{Hybrid}$')
+        plot[m, 0].plot(z_grid, hybrid_lens[m, :], color='darkorange', linewidth=1.5, linestyle='-', label=r'$\mathtt{Hybrid}$', rasterized=True)
         
-        plot[m, 0].plot(z_grid, truth_lens[m, :], color='black', linewidth=1.5, linestyle='-', label=r'$\mathtt{Truth}$')
+        plot[m, 0].plot(z_grid, truth_lens[m, :], color='black', linewidth=1.5, linestyle='-', label=r'$\mathtt{Truth}$', rasterized=True)
         
-        plot[m, 0].fill_betweenx(y=[0, 8], x1=bin_lens[m], x2=bin_lens[m + 1], color='gray', alpha=0.5)
+        plot[m, 0].fill_betweenx(y=[0, 8], x1=bin_lens[m], x2=bin_lens[m + 1], color='gray', alpha=0.5, rasterized=True)
         
         plot[m, 0].set_ylim(0, 8)
         plot[m, 0].set_xlim(numpy.maximum(z1, center_lens[m] - range_lens / 2), numpy.minimum(numpy.maximum(z1, center_lens[m] - range_lens / 2) + range_lens, z2))
@@ -123,15 +123,15 @@ def main(tag, name, index, folder):
         figure.legend(handles, labels, loc='lower left', fontsize=20, frameon=True, bbox_to_anchor=(0.42, 0.06), borderaxespad=0.0)
     
     for m in range(bin_size):
-        plot[m, 1].plot(z_grid, dir_source[m, :], color='darkmagenta', linewidth=1.5, linestyle='-', label=r'$\mathtt{DIR}$')
+        plot[m, 1].plot(z_grid, dir_source[m, :], color='darkmagenta', linewidth=1.5, linestyle='-', label=r'$\mathtt{DIR}$', rasterized=True)
         
-        plot[m, 1].plot(z_grid, stack_source[m, :], color='darkgreen', linewidth=1.5, linestyle='-', label=r'$\mathtt{Stack}$')
+        plot[m, 1].plot(z_grid, stack_source[m, :], color='darkgreen', linewidth=1.5, linestyle='-', label=r'$\mathtt{Stack}$', rasterized=True)
         
-        plot[m, 1].plot(z_grid, hybrid_source[m, :], color='darkorange', linewidth=1.5, linestyle='-', label=r'$\mathtt{Hybrid}$')
+        plot[m, 1].plot(z_grid, hybrid_source[m, :], color='darkorange', linewidth=1.5, linestyle='-', label=r'$\mathtt{Hybrid}$', rasterized=True)
         
-        plot[m, 1].plot(z_grid, truth_source[m, :], color='black', linewidth=1.5, linestyle='-', label=r'$\mathtt{Truth}$')
+        plot[m, 1].plot(z_grid, truth_source[m, :], color='black', linewidth=1.5, linestyle='-', label=r'$\mathtt{Truth}$', rasterized=True)
         
-        plot[m, 1].fill_betweenx(y=[0, 8], x1=bin_source[m], x2=bin_source[m + 1], color='gray', alpha=0.5)
+        plot[m, 1].fill_betweenx(y=[0, 8], x1=bin_source[m], x2=bin_source[m + 1], color='gray', alpha=0.5, rasterized=True)
         
         plot[m, 1].set_ylim(0, 8)
         plot[m, 1].set_xlim(numpy.maximum(z1, center_source[m] - range_source[m] / 2), numpy.minimum(numpy.maximum(z1, center_source[m] - range_source[m] / 2) + range_source[m], z2))

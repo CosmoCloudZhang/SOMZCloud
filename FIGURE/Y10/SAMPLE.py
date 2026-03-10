@@ -69,17 +69,17 @@ def main(tag, index, folder):
     normalize = colors.LogNorm(vmin=1, vmax=10000)
     figure, plot = pyplot.subplots(nrows=1, ncols=1, figsize=(12, 8))
     
-    image = plot.hist2d(x=z_phot, y=application_magnitude, bins=[z_bin, magnitude_grid], norm=normalize, cmap='plasma')[-1]
+    image = plot.hist2d(x=z_phot, y=application_magnitude, bins=[z_bin, magnitude_grid], norm=normalize, cmap='plasma', rasterized=True)[-1]
     
-    plot.plot(numpy.ones(bin_size) * z1_source, numpy.linspace(magnitude1, magnitude2, bin_size), color='black', linestyle='--', linewidth=2.5)
+    plot.plot(numpy.ones(bin_size) * z1_source, numpy.linspace(magnitude1, magnitude2, bin_size), color='black', linestyle='--', linewidth=2.5, rasterized=True)
     
-    plot.plot(numpy.ones(bin_size) * z2_source, numpy.linspace(magnitude1, magnitude2, bin_size), color='black', linestyle='--', linewidth=2.5)
+    plot.plot(numpy.ones(bin_size) * z2_source, numpy.linspace(magnitude1, magnitude2, bin_size), color='black', linestyle='--', linewidth=2.5, rasterized=True)
     
-    plot.plot(numpy.ones(bin_size) * z1_lens, numpy.linspace(magnitude1, slope * z1_lens + intercept, bin_size), color='black', linestyle='-.', linewidth=2.5)
+    plot.plot(numpy.ones(bin_size) * z1_lens, numpy.linspace(magnitude1, slope * z1_lens + intercept, bin_size), color='black', linestyle='-.', linewidth=2.5, rasterized=True)
     
-    plot.plot(numpy.ones(bin_size) * z2_lens, numpy.linspace(magnitude1, slope * z2_lens + intercept, bin_size), color='black', linestyle='-.', linewidth=2.5)
+    plot.plot(numpy.ones(bin_size) * z2_lens, numpy.linspace(magnitude1, slope * z2_lens + intercept, bin_size), color='black', linestyle='-.', linewidth=2.5, rasterized=True)
     
-    plot.plot(numpy.linspace(z1_lens, z2_lens, bin_size + 1), slope * numpy.linspace(z1_lens, z2_lens, bin_size + 1) + intercept, color='black', linestyle='-.', linewidth=2.5)
+    plot.plot(numpy.linspace(z1_lens, z2_lens, bin_size + 1), slope * numpy.linspace(z1_lens, z2_lens, bin_size + 1) + intercept, color='black', linestyle='-.', linewidth=2.5, rasterized=True)
     
     plot.set_xlim(z1, z2)
     plot.set_ylim(magnitude1, magnitude2)

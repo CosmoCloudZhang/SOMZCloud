@@ -67,19 +67,19 @@ def main(tag, index, folder):
     normalize = colors.Normalize(vmin=0.0, vmax=2.0)
     figure, plot = pyplot.subplots(nrows=2, ncols=2, figsize=(12, 12))
     
-    mesh = plot[0, 0].imshow(application_map, norm=normalize, cmap='coolwarm')
+    mesh = plot[0, 0].imshow(application_map, norm=normalize, cmap='coolwarm', rasterized=True)
     plot[0, 0].set_title(r'$\mathtt{Application}$')
     plot[0, 0].axis('off')
     
-    mesh = plot[0, 1].imshow(degradation_map, norm=normalize, cmap='coolwarm')
+    mesh = plot[0, 1].imshow(degradation_map, norm=normalize, cmap='coolwarm', rasterized=True)
     plot[0, 1].set_title(r'$\mathtt{Degradation}$')
     plot[0, 1].axis('off')
     
-    mesh = plot[1, 0].imshow(augmentation_map, norm=normalize, cmap='coolwarm')
+    mesh = plot[1, 0].imshow(augmentation_map, norm=normalize, cmap='coolwarm', rasterized=True)
     plot[1, 0].set_title(r'$\mathtt{Augmentation}$')
     plot[1, 0].axis('off')
     
-    mesh = plot[1, 1].imshow(combination_map, norm=normalize, cmap='coolwarm')
+    mesh = plot[1, 1].imshow(combination_map, norm=normalize, cmap='coolwarm', rasterized=True)
     plot[1, 1].set_title(r'$\mathtt{Combination}$')
     plot[1, 1].axis('off')
     

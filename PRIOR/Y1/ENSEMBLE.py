@@ -29,7 +29,7 @@ def plot_ensemble(z_grid, select_lens, select_source, bin_lens_size, bin_source_
         
         plot[0].plot(z_grid, numpy.transpose(select_lens[:, m, :]), color = color_lens_list[m], linewidth = 0.1, alpha = 0.1, rasterized=True)
         
-        plot[0].plot(z_grid, numpy.mean(select_lens[:, m, :], axis=0), color = color_lens_list[m], linewidth = 2.5, label=r'$\mathrm{Bin} \,' + r'{:.0f}$'.format(m + 1))
+        plot[0].plot(z_grid, numpy.mean(select_lens[:, m, :], axis=0), color = color_lens_list[m], linewidth = 2.5, label=r'$\mathrm{Bin} \,' + r'{:.0f}$'.format(m + 1), rasterized=True)
     
     plot[0].set_xlim(0.0, 2.0)
     plot[0].set_ylim(0.0, 8.0)
@@ -45,7 +45,7 @@ def plot_ensemble(z_grid, select_lens, select_source, bin_lens_size, bin_source_
         
         plot[1].plot(z_grid, numpy.transpose(select_source[:, m, :]), color = color_source_list[m], linewidth = 0.1, alpha = 0.1, rasterized=True)
         
-        plot[1].plot(z_grid, numpy.mean(select_source[:, m, :], axis=0), color = color_source_list[m], linewidth = 2.5, label=r'$\mathrm{Bin} \,' + r'{:.0f}$'.format(m + 1))
+        plot[1].plot(z_grid, numpy.mean(select_source[:, m, :], axis=0), color = color_source_list[m], linewidth = 2.5, label=r'$\mathrm{Bin} \,' + r'{:.0f}$'.format(m + 1), rasterized=True)
     
     plot[1].set_xlim(0.0, 2.0)
     plot[1].set_ylim(0.0, 8.0)

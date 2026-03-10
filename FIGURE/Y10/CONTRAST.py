@@ -76,17 +76,18 @@ def main(tag, index, folder):
             alpha=0.6,
             marker='s',
             markersize=10,
-            linewidth=3.0, 
-            linestyle='-', 
-            y=histogram_lens[m, :], 
-            color=lens_color_list[m], 
-            x=(histogram_bin_lens[+1:] + histogram_bin_lens[:-1]) / 2, 
+            linewidth=3.0,
+            linestyle='-',
+            rasterized=True,
+            y=histogram_lens[m, :],
+            color=lens_color_list[m],
+            x=(histogram_bin_lens[+1:] + histogram_bin_lens[:-1]) / 2,
             label=r'$z_\mathrm{true} \in ' + r'\left[ {:.1f}, {:.1f} \right]$'.format(z_average_lens[m], z_average_lens[m + 1])
         )
     
-    plot[0].hist(z_quantile_lens, bins=histogram_bin_lens, density=True, color='black', histtype='step', linewidth=5.0, linestyle='-', label=r'$\mathrm{All}$')
+    plot[0].hist(z_quantile_lens, bins=histogram_bin_lens, density=True, color='black', histtype='step', linewidth=5.0, linestyle='-', label=r'$\mathrm{All}$', rasterized=True)
     
-    plot[0].axhline(y=1.0, xmin=0.0, xmax=1.0, color='black', linestyle=':', linewidth=5.0)
+    plot[0].axhline(y=1.0, xmin=0.0, xmax=1.0, color='black', linestyle=':', linewidth=5.0, rasterized=True)
     
     plot[0].set_yscale('log')
     plot[0].set_xscale('linear')
@@ -109,17 +110,18 @@ def main(tag, index, folder):
             alpha=0.6,
             marker='s',
             markersize=10,
-            linewidth=3.0, 
-            linestyle='-', 
-            y=histogram_source[m, :], 
-            color=source_color_list[m], 
-            x=(histogram_bin_source[+1:] + histogram_bin_source[:-1]) / 2, 
+            linewidth=3.0,
+            linestyle='-',
+            rasterized=True,
+            y=histogram_source[m, :],
+            color=source_color_list[m],
+            x=(histogram_bin_source[+1:] + histogram_bin_source[:-1]) / 2,
             label=r'$z_\mathrm{true} \in ' + r'\left[ {:.1f}, {:.1f} \right]$'.format(z_average_source[m], z_average_source[m + 1])
         )
     
-    plot[1].hist(z_quantile_source, bins=histogram_bin_source, density=True, color='black', histtype='step', linewidth=5.0, linestyle='-', label=r'$\mathrm{All}$')
+    plot[1].hist(z_quantile_source, bins=histogram_bin_source, density=True, color='black', histtype='step', linewidth=5.0, linestyle='-', label=r'$\mathrm{All}$', rasterized=True)
     
-    plot[1].axhline(y=1.0, xmin=0.0, xmax=1.0, color='black', linestyle=':', linewidth=5.0)
+    plot[1].axhline(y=1.0, xmin=0.0, xmax=1.0, color='black', linestyle=':', linewidth=5.0, rasterized=True)
     
     plot[1].set_yscale('log')
     plot[1].set_xscale('linear')

@@ -183,13 +183,13 @@ def main(tag, name, label, folder):
     
     figure, plot = pyplot.subplots(nrows=1, ncols=1, figsize=(12, 6))
     
-    plot.axvline(x=1.0, color='black', linestyle='--', linewidth=2.5)
+    plot.axvline(x=1.0, color='black', linestyle='--', linewidth=2.5, rasterized=True)
     
-    plot.hist(chi_shift, bins=chi_bin, color='darkblue', histtype='step', linewidth=2.5, weights=numpy.ones(data_size) / data_size, label=r'$\mathtt{Shift}$')
+    plot.hist(chi_shift, bins=chi_bin, color='darkblue', histtype='step', linewidth=2.5, weights=numpy.ones(data_size) / data_size, label=r'$\mathtt{Shift}$', rasterized=True)
     
-    plot.hist(chi_scale, bins=chi_bin, color='darkorange', histtype='step', linewidth=2.5, weights=numpy.ones(data_size) / data_size, label=r'$\mathtt{Scale}$')
+    plot.hist(chi_scale, bins=chi_bin, color='darkorange', histtype='step', linewidth=2.5, weights=numpy.ones(data_size) / data_size, label=r'$\mathtt{Scale}$', rasterized=True)
     
-    plot.hist(chi_correct, bins=chi_bin, color='darkred', histtype='step', linewidth=2.5, weights=numpy.ones(data_size) / data_size, label=r'$\mathtt{Correct}$')
+    plot.hist(chi_correct, bins=chi_bin, color='darkred', histtype='step', linewidth=2.5, weights=numpy.ones(data_size) / data_size, label=r'$\mathtt{Correct}$', rasterized=True)
     
     plot.set_xlim(chi1, chi2)
     plot.legend(fontsize=25, frameon=True, loc='upper right')

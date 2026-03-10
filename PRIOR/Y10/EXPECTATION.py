@@ -18,7 +18,7 @@ def plot_expectation(sigma, rho_mu):
     figure, plot = pyplot.subplots(nrows = 1, ncols = 1, figsize = (3 * len(sigma), 3 * len(sigma)))
     
     norm = colors.Normalize(vmin = -1.0, vmax = +1.0)
-    image = plot.imshow(rho_mu, norm = norm, cmap = 'coolwarm', origin = 'upper')
+    image = plot.imshow(rho_mu, norm = norm, cmap = 'coolwarm', origin = 'upper', rasterized=True)
     
     for (i, j), value in numpy.ndenumerate(rho_mu):
         if i == j:

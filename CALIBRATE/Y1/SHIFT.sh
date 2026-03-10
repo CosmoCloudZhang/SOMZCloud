@@ -13,8 +13,8 @@
 
 # Load modules
 module load conda
+module load cray-mpich
 module load PrgEnv-gnu
-module load cray-mpich/8.1.30
 module load cray-hdf5-parallel
 
 # Activate the conda environment

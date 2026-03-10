@@ -32,73 +32,91 @@ def main(tag, label, folder):
         gold_eta_source = file['source']['eta'][...]
     
     with h5py.File(os.path.join(analyze_folder, '{}/VALUE/GOLD/TRUTH.hdf5'.format(tag)), 'r') as file:
-        truth_eta_lens = file['lens']['average_eta'][...]
-        truth_eta_source = file['source']['average_eta'][...]
+        truth_mu_lens = file['lens']['mu'][...]
+        truth_mu_source = file['source']['mu'][...]
+        
+        truth_eta_lens = file['lens']['eta'][...]
+        truth_eta_source = file['source']['eta'][...]
     
-    gold_delta_lens = (gold_eta_lens - truth_eta_lens) / (1 + truth_eta_lens)
-    gold_delta_source = (gold_eta_source - truth_eta_source) / (1 + truth_eta_source)
+    gold_delta_lens = (gold_eta_lens - truth_eta_lens) / (1 + truth_mu_lens)
+    gold_delta_source = (gold_eta_source - truth_eta_source) / (1 + truth_mu_source)
     
     with h5py.File(os.path.join(analyze_folder, '{}/VALUE/SILVER/{}.hdf5'.format(tag, label)), 'r') as file:
         silver_eta_lens = file['lens']['eta'][...]
         silver_eta_source = file['source']['eta'][...]
     
     with h5py.File(os.path.join(analyze_folder, '{}/VALUE/SILVER/TRUTH.hdf5'.format(tag)), 'r') as file:
-        truth_eta_lens = file['lens']['average_eta'][...]
-        truth_eta_source = file['source']['average_eta'][...]
+        truth_mu_lens = file['lens']['mu'][...]
+        truth_mu_source = file['source']['mu'][...]
+        
+        truth_eta_lens = file['lens']['eta'][...]
+        truth_eta_source = file['source']['eta'][...]
     
-    silver_delta_lens = (silver_eta_lens - truth_eta_lens) / (1 + truth_eta_lens)
-    silver_delta_source = (silver_eta_source - truth_eta_source) / (1 + truth_eta_source)
+    silver_delta_lens = (silver_eta_lens - truth_eta_lens) / (1 + truth_mu_lens)
+    silver_delta_source = (silver_eta_source - truth_eta_source) / (1 + truth_mu_source)
     
     with h5py.File(os.path.join(analyze_folder, '{}/VALUE/COPPER/{}.hdf5'.format(tag, label)), 'r') as file:
         copper_eta_lens = file['lens']['eta'][...]
         copper_eta_source = file['source']['eta'][...]
     
     with h5py.File(os.path.join(analyze_folder, '{}/VALUE/COPPER/TRUTH.hdf5'.format(tag)), 'r') as file:
-        truth_eta_lens = file['lens']['average_eta'][...]
-        truth_eta_source = file['source']['average_eta'][...]
+        truth_mu_lens = file['lens']['mu'][...]
+        truth_mu_source = file['source']['mu'][...]
+        
+        truth_eta_lens = file['lens']['eta'][...]
+        truth_eta_source = file['source']['eta'][...]
     
-    copper_delta_lens = (copper_eta_lens - truth_eta_lens) / (1 + truth_eta_lens)
-    copper_delta_source = (copper_eta_source - truth_eta_source) / (1 + truth_eta_source)
+    copper_delta_lens = (copper_eta_lens - truth_eta_lens) / (1 + truth_mu_lens)
+    copper_delta_source = (copper_eta_source - truth_eta_source) / (1 + truth_mu_source)
     
     with h5py.File(os.path.join(analyze_folder, '{}/VALUE/IRON/{}.hdf5'.format(tag, label)), 'r') as file:
         iron_eta_lens = file['lens']['eta'][...]
         iron_eta_source = file['source']['eta'][...]
     
     with h5py.File(os.path.join(analyze_folder, '{}/VALUE/IRON/TRUTH.hdf5'.format(tag)), 'r') as file:
-        truth_eta_lens = file['lens']['average_eta'][...]
-        truth_eta_source = file['source']['average_eta'][...]
+        truth_mu_lens = file['lens']['mu'][...]
+        truth_mu_source = file['source']['mu'][...]
+        
+        truth_eta_lens = file['lens']['eta'][...]
+        truth_eta_source = file['source']['eta'][...]
     
-    iron_delta_lens = (iron_eta_lens - truth_eta_lens) / (1 + truth_eta_lens)
-    iron_delta_source = (iron_eta_source - truth_eta_source) / (1 + truth_eta_source)
+    iron_delta_lens = (iron_eta_lens - truth_eta_lens) / (1 + truth_mu_lens)
+    iron_delta_source = (iron_eta_source - truth_eta_source) / (1 + truth_mu_source)
     
     with h5py.File(os.path.join(analyze_folder, '{}/VALUE/TITANIUM/{}.hdf5'.format(tag, label)), 'r') as file:
         titanium_eta_lens = file['lens']['eta'][...]
         titanium_eta_source = file['source']['eta'][...]
     
     with h5py.File(os.path.join(analyze_folder, '{}/VALUE/TITANIUM/TRUTH.hdf5'.format(tag)), 'r') as file:
-        truth_eta_lens = file['lens']['average_eta'][...]
-        truth_eta_source = file['source']['average_eta'][...]
+        truth_mu_lens = file['lens']['mu'][...]
+        truth_mu_source = file['source']['mu'][...]
+        
+        truth_eta_lens = file['lens']['eta'][...]
+        truth_eta_source = file['source']['eta'][...]
     
-    titanium_delta_lens = (titanium_eta_lens - truth_eta_lens) / (1 + truth_eta_lens)
-    titanium_delta_source = (titanium_eta_source - truth_eta_source) / (1 + truth_eta_source)
+    titanium_delta_lens = (titanium_eta_lens - truth_eta_lens) / (1 + truth_mu_lens)
+    titanium_delta_source = (titanium_eta_source - truth_eta_source) / (1 + truth_mu_source)
     
     with h5py.File(os.path.join(analyze_folder, '{}/VALUE/ZINC/{}.hdf5'.format(tag, label)), 'r') as file:
         zinc_eta_lens = file['lens']['eta'][...]
         zinc_eta_source = file['source']['eta'][...]
     
     with h5py.File(os.path.join(analyze_folder, '{}/VALUE/ZINC/TRUTH.hdf5'.format(tag)), 'r') as file:
-        truth_eta_lens = file['lens']['average_eta'][...]
-        truth_eta_source = file['source']['average_eta'][...]
+        truth_mu_lens = file['lens']['mu'][...]
+        truth_mu_source = file['source']['mu'][...]
+        
+        truth_eta_lens = file['lens']['eta'][...]
+        truth_eta_source = file['source']['eta'][...]
     
-    zinc_delta_lens = (zinc_eta_lens - truth_eta_lens) / (1 + truth_eta_lens)
-    zinc_delta_source = (zinc_eta_source - truth_eta_source) / (1 + truth_eta_source)
+    zinc_delta_lens = (zinc_eta_lens - truth_eta_lens) / (1 + truth_mu_lens)
+    zinc_delta_source = (zinc_eta_source - truth_eta_source) / (1 + truth_mu_source)
     
     # Variable
     factor_lens = 0.005
     range_lens = [0.020, 0.025, 0.030, 0.035, 0.040]
     
     factor_source = 0.002
-    range_source = [0.080, 0.100, 0.120, 0.140, 0.160]
+    range_source = [0.045, 0.050, 0.055, 0.060, 0.065]
     
     # Configuration
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
@@ -140,7 +158,7 @@ def main(tag, label, folder):
         plot[m, 0].set_xlim(0.5, 6.5)
         plot[m, 0].set_ylim(-range_lens[m], +range_lens[m])
         
-        plot[m, 0].set_ylabel(r'$\delta_\eta$')
+        plot[m, 0].set_ylabel(r'$\delta_{\eta_m}$')
         plot[m, 0].set_xticks([1, 2, 3, 4, 5, 6])
         plot[m, 0].tick_params(axis='y', labelsize=20)
         

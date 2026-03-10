@@ -75,15 +75,15 @@ def main(tag, name, folder):
     figure, plot = pyplot.subplots(nrows=bin_size, ncols=3, figsize=(20, 5 * bin_size))
     
     for m in range(bin_size):
-        plot[m, 0].plot(z_grid, dir_average_lens[m, :], color='darkmagenta', linewidth=2.0, linestyle='-')
+        plot[m, 0].plot(z_grid, dir_average_lens[m, :], color='darkmagenta', linewidth=2.0, linestyle='-', label=r'$\mathtt{DIR}$', rasterized=True)
         
-        plot[m, 0].plot(z_grid, stack_average_lens[m, :], color='darkgreen', linewidth=2.0, linestyle='-')
+        plot[m, 0].plot(z_grid, stack_average_lens[m, :], color='darkgreen', linewidth=2.0, linestyle='-', label=r'$\mathtt{Stack}$', rasterized=True)
         
-        plot[m, 0].plot(z_grid, hybrid_average_lens[m, :], color='darkorange', linewidth=2.0, linestyle='-')
+        plot[m, 0].plot(z_grid, hybrid_average_lens[m, :], color='darkorange', linewidth=2.0, linestyle='-', label=r'$\mathtt{Hybrid}$', rasterized=True)
         
-        plot[m, 0].plot(z_grid, truth_average_lens[m, :], color='black', linewidth=2.0, linestyle='-')
+        plot[m, 0].plot(z_grid, truth_average_lens[m, :], color='black', linewidth=2.0, linestyle='-', label=r'$\mathtt{Truth}$', rasterized=True)
         
-        plot[m, 0].fill_betweenx(y=[0, 12], x1=bin_lens[m], x2=bin_lens[m + 1], color='gray', alpha=0.5)
+        plot[m, 0].fill_betweenx(y=[0, 12], x1=bin_lens[m], x2=bin_lens[m + 1], color='gray', alpha=0.5, rasterized=True)
         
         plot[m, 0].set_ylim(0, 12)
         plot[m, 0].set_xlim(numpy.maximum(z1, center_lens[m] - range_lens / 2), numpy.minimum(numpy.maximum(z1, center_lens[m] - range_lens / 2) + range_lens, z2))
@@ -98,16 +98,20 @@ def main(tag, name, folder):
         if m == bin_size - 1:
             plot[m, 0].set_xlabel(r'$z$')
     
+    # Legend
+    handles, labels = plot[0, 0].get_legend_handles_labels()
+    figure.legend(handles, labels, loc='lower left', fontsize=20, frameon=True, bbox_to_anchor=(0.32, 0.06), borderaxespad=0.0)
+    
     for m in range(bin_size):
-        plot[m, 1].plot(z_grid, dir_average_lens[m + bin_size, :], color='darkmagenta', linewidth=2.0, linestyle='-')
+        plot[m, 1].plot(z_grid, dir_average_lens[m + bin_size, :], color='darkmagenta', linewidth=2.0, linestyle='-', label=r'$\mathtt{DIR}$', rasterized=True)
         
-        plot[m, 1].plot(z_grid, stack_average_lens[m + bin_size, :], color='darkgreen', linewidth=2.0, linestyle='-')
+        plot[m, 1].plot(z_grid, stack_average_lens[m + bin_size, :], color='darkgreen', linewidth=2.0, linestyle='-', label=r'$\mathtt{Stack}$', rasterized=True)
         
-        plot[m, 1].plot(z_grid, hybrid_average_lens[m + bin_size, :], color='darkorange', linewidth=2.0, linestyle='-')
+        plot[m, 1].plot(z_grid, hybrid_average_lens[m + bin_size, :], color='darkorange', linewidth=2.0, linestyle='-', label=r'$\mathtt{Hybrid}$', rasterized=True)
         
-        plot[m, 1].plot(z_grid, truth_average_lens[m + bin_size, :], color='black', linewidth=2.0, linestyle='-')
+        plot[m, 1].plot(z_grid, truth_average_lens[m + bin_size, :], color='black', linewidth=2.0, linestyle='-', label=r'$\mathtt{Truth}$', rasterized=True)
         
-        plot[m, 1].fill_betweenx(y=[0, 12], x1=bin_lens[m + bin_size], x2=bin_lens[m + bin_size + 1], color='gray', alpha=0.5)
+        plot[m, 1].fill_betweenx(y=[0, 12], x1=bin_lens[m + bin_size], x2=bin_lens[m + bin_size + 1], color='gray', alpha=0.5, rasterized=True)
         
         plot[m, 1].set_ylim(0, 12)
         plot[m, 1].set_xlim(numpy.maximum(z1, center_lens[m + bin_size] - range_lens / 2), numpy.minimum(numpy.maximum(z1, center_lens[m + bin_size] - range_lens / 2) + range_lens, z2))
@@ -121,16 +125,20 @@ def main(tag, name, folder):
         if m == bin_size - 1:
             plot[m, 1].set_xlabel(r'$z$')
     
+    # Legend
+    handles, labels = plot[0, 1].get_legend_handles_labels()
+    figure.legend(handles, labels, loc='lower left', fontsize=20, frameon=True, bbox_to_anchor=(0.60, 0.06), borderaxespad=0.0)
+    
     for m in range(bin_size):
-        plot[m, 2].plot(z_grid, dir_average_source[m, :], color='darkmagenta', linewidth=2.0, linestyle='-')
+        plot[m, 2].plot(z_grid, dir_average_source[m, :], color='darkmagenta', linewidth=2.0, linestyle='-', label=r'$\mathtt{DIR}$', rasterized=True)
         
-        plot[m, 2].plot(z_grid, stack_average_source[m, :], color='darkgreen', linewidth=2.0, linestyle='-')
+        plot[m, 2].plot(z_grid, stack_average_source[m, :], color='darkgreen', linewidth=2.0, linestyle='-', label=r'$\mathtt{Stack}$', rasterized=True)
         
-        plot[m, 2].plot(z_grid, hybrid_average_source[m, :], color='darkorange', linewidth=2.0, linestyle='-')
+        plot[m, 2].plot(z_grid, hybrid_average_source[m, :], color='darkorange', linewidth=2.0, linestyle='-', label=r'$\mathtt{Hybrid}$', rasterized=True)
         
-        plot[m, 2].plot(z_grid, truth_average_source[m, :], color='black', linewidth=2.0, linestyle='-')
+        plot[m, 2].plot(z_grid, truth_average_source[m, :], color='black', linewidth=2.0, linestyle='-', label=r'$\mathtt{Truth}$', rasterized=True)
         
-        plot[m, 2].fill_betweenx(y=[0, 6], x1=bin_source[m], x2=bin_source[m + 1], color='gray', alpha=0.5)
+        plot[m, 2].fill_betweenx(y=[0, 6], x1=bin_source[m], x2=bin_source[m + 1], color='gray', alpha=0.5, rasterized=True)
         
         plot[m, 2].set_ylim(0, 6)
         plot[m, 2].set_xlim(numpy.maximum(z1, center_source[m] - range_source[m] / 2), numpy.minimum(numpy.maximum(z1, center_source[m] - range_source[m] / 2) + range_source[m], z2))

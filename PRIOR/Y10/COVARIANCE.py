@@ -26,7 +26,7 @@ def plot_covariance(bin_size, map_size, covariance):
         for n in range(bin_size):
             
             map_covariance = covariance[n * map_size: (n + 1) * map_size, m * map_size: (m + 1) * map_size]
-            image = plot[n, m].imshow(map_covariance, norm = norm, cmap = 'seismic', origin = 'upper')
+            image = plot[n, m].imshow(map_covariance, norm = norm, cmap = 'seismic', origin = 'upper', rasterized=True)
             
             plot[n, m].set_xticks([])
             plot[n, m].set_yticks([])

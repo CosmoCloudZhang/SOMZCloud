@@ -1,6 +1,7 @@
 import os
 import h5py
 import time
+import numpy
 import argparse
 from matplotlib import pyplot
 
@@ -32,8 +33,8 @@ def main(tag, label, folder):
         gold_mu_source = file['source']['mu'][...]
     
     with h5py.File(os.path.join(analyze_folder, '{}/VALUE/GOLD/TRUTH.hdf5'.format(tag)), 'r') as file:
-        truth_mu_lens = file['lens']['average_mu'][...]
-        truth_mu_source = file['source']['average_mu'][...]
+        truth_mu_lens = file['lens']['mu'][...]
+        truth_mu_source = file['source']['mu'][...]
     
     gold_delta_lens = (gold_mu_lens - truth_mu_lens) / (1 + truth_mu_lens)
     gold_delta_source = (gold_mu_source - truth_mu_source) / (1 + truth_mu_source)
@@ -43,8 +44,8 @@ def main(tag, label, folder):
         silver_mu_source = file['source']['mu'][...]
     
     with h5py.File(os.path.join(analyze_folder, '{}/VALUE/SILVER/TRUTH.hdf5'.format(tag)), 'r') as file:
-        truth_mu_lens = file['lens']['average_mu'][...]
-        truth_mu_source = file['source']['average_mu'][...]
+        truth_mu_lens = file['lens']['mu'][...]
+        truth_mu_source = file['source']['mu'][...]
     
     silver_delta_lens = (silver_mu_lens - truth_mu_lens) / (1 + truth_mu_lens)
     silver_delta_source = (silver_mu_source - truth_mu_source) / (1 + truth_mu_source)
@@ -54,8 +55,8 @@ def main(tag, label, folder):
         copper_mu_source = file['source']['mu'][...]
     
     with h5py.File(os.path.join(analyze_folder, '{}/VALUE/COPPER/TRUTH.hdf5'.format(tag)), 'r') as file:
-        truth_mu_lens = file['lens']['average_mu'][...]
-        truth_mu_source = file['source']['average_mu'][...]
+        truth_mu_lens = file['lens']['mu'][...]
+        truth_mu_source = file['source']['mu'][...]
     
     copper_delta_lens = (copper_mu_lens - truth_mu_lens) / (1 + truth_mu_lens)
     copper_delta_source = (copper_mu_source - truth_mu_source) / (1 + truth_mu_source)
@@ -65,8 +66,8 @@ def main(tag, label, folder):
         iron_mu_source = file['source']['mu'][...]
     
     with h5py.File(os.path.join(analyze_folder, '{}/VALUE/IRON/TRUTH.hdf5'.format(tag)), 'r') as file:
-        truth_mu_lens = file['lens']['average_mu'][...]
-        truth_mu_source = file['source']['average_mu'][...]
+        truth_mu_lens = file['lens']['mu'][...]
+        truth_mu_source = file['source']['mu'][...]
     
     iron_delta_lens = (iron_mu_lens - truth_mu_lens) / (1 + truth_mu_lens)
     iron_delta_source = (iron_mu_source - truth_mu_source) / (1 + truth_mu_source)
@@ -76,8 +77,8 @@ def main(tag, label, folder):
         titanium_mu_source = file['source']['mu'][...]
     
     with h5py.File(os.path.join(analyze_folder, '{}/VALUE/TITANIUM/TRUTH.hdf5'.format(tag)), 'r') as file:
-        truth_mu_lens = file['lens']['average_mu'][...]
-        truth_mu_source = file['source']['average_mu'][...]
+        truth_mu_lens = file['lens']['mu'][...]
+        truth_mu_source = file['source']['mu'][...]
     
     titanium_delta_lens = (titanium_mu_lens - truth_mu_lens) / (1 + truth_mu_lens)
     titanium_delta_source = (titanium_mu_source - truth_mu_source) / (1 + truth_mu_source)
@@ -87,8 +88,8 @@ def main(tag, label, folder):
         zinc_mu_source = file['source']['mu'][...]
     
     with h5py.File(os.path.join(analyze_folder, '{}/VALUE/ZINC/TRUTH.hdf5'.format(tag)), 'r') as file:
-        truth_mu_lens = file['lens']['average_mu'][...]
-        truth_mu_source = file['source']['average_mu'][...]
+        truth_mu_lens = file['lens']['mu'][...]
+        truth_mu_source = file['source']['mu'][...]
     
     zinc_delta_lens = (zinc_mu_lens - truth_mu_lens) / (1 + truth_mu_lens)
     zinc_delta_source = (zinc_mu_source - truth_mu_source) / (1 + truth_mu_source)
@@ -140,7 +141,7 @@ def main(tag, label, folder):
         plot[m, 0].set_xlim(0.5, 6.5)
         plot[m, 0].set_ylim(-range_lens[m], +range_lens[m])
         
-        plot[m, 0].set_ylabel(r'$\delta_\mu$')
+        plot[m, 0].set_ylabel(r'$\delta_{\mu_m}$')
         plot[m, 0].set_xticks([1, 2, 3, 4, 5, 6])
         plot[m, 0].tick_params(axis='y', labelsize=20)
         
@@ -151,6 +152,12 @@ def main(tag, label, folder):
             plot[m, 0].set_xticklabels([r'$\mathrm{' + name + '}$' for name in name_list], rotation=45, ha='right', fontsize=25)
         else:
             plot[m, 0].set_xticklabels([])
+        
+        if label == 'HYBRID':
+            median = numpy.median(titanium_delta_lens[:, m])
+            upper = numpy.quantile(titanium_delta_lens[:, m], 0.84)
+            lower = numpy.quantile(titanium_delta_lens[:, m], 0.16)
+            print(label, m + 1, '{:.3f}_{:.3f}^{:.3f}'.format(median, lower - median, upper - median))
     
     # Plot Lens
     for m in range(bin_size):
@@ -189,6 +196,12 @@ def main(tag, label, folder):
             plot[m, 1].set_xticklabels([r'$\mathrm{' + name + '}$' for name in name_list], rotation=45, ha='right', fontsize=25)
         else:
             plot[m, 1].set_xticklabels([])
+        
+        if label == 'HYBRID':
+            median = numpy.median(titanium_delta_lens[:, m + bin_size])
+            upper = numpy.quantile(titanium_delta_lens[:, m + bin_size], 0.84)
+            lower = numpy.quantile(titanium_delta_lens[:, m + bin_size], 0.16)
+            print(label, m + bin_size + 1, '{:.3f}_{:.3f}^{:.3f}'.format(median, lower - median, upper - median))
     
     # Plot Source
     for m in range(bin_size):
@@ -227,6 +240,12 @@ def main(tag, label, folder):
             plot[m, 2].set_xticklabels([r'$\mathrm{' + name + '}$' for name in name_list], rotation=45, ha='right', fontsize=25)
         else:
             plot[m, 2].set_xticklabels([])
+        
+        if label == 'HYBRID':
+            median = numpy.median(titanium_delta_source[:, m])
+            upper = numpy.quantile(titanium_delta_source[:, m], 0.84)
+            lower = numpy.quantile(titanium_delta_source[:, m], 0.16)
+            print(label, m + 1, '{:.3f}_{:.3f}^{:.3f}'.format(median, lower - median, upper - median))
     
     figure.subplots_adjust(wspace=0.24, hspace=0.08)
     figure.savefig(os.path.join(analyze_folder, '{}/CENTER/{}/FIGURE.pdf'.format(tag, label)), format='pdf', bbox_inches='tight')

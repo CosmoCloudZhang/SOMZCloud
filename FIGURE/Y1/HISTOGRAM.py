@@ -59,13 +59,13 @@ def main(tag, index, folder):
     
     figure, plot = pyplot.subplots(nrows=1, ncols=1, figsize=(12, 6))
     
-    plot.hist(application_redshift_true, bins=z_bin, linewidth=4.0, density=True, histtype='step', color='black', label=r'$\mathtt{Application}$')
+    plot.hist(application_redshift_true, bins=z_bin, linewidth=4.0, density=True, histtype='step', color='black', label=r'$\mathtt{Application}$', rasterized=True)
     
-    plot.hist(degradation_redshift_true, bins=z_bin, linewidth=4.0, density=True, histtype='step', color='darkblue', label=r'$\mathtt{Degradation}$')
+    plot.hist(degradation_redshift_true, bins=z_bin, linewidth=4.0, density=True, histtype='step', color='darkblue', label=r'$\mathtt{Degradation}$', rasterized=True)
     
-    plot.hist(augmentation_redshift_true, bins=z_bin, linewidth=4.0, density=True, histtype='step', color='darkred', label=r'$\mathtt{Augmentation}$')
+    plot.hist(augmentation_redshift_true, bins=z_bin, linewidth=4.0, density=True, histtype='step', color='darkred', label=r'$\mathtt{Augmentation}$', rasterized=True)
     
-    plot.hist(combination_redshift_true, bins=z_bin, linewidth=4.0, density=True, histtype='step', color='darkorange', label=r'$\mathtt{Combination}$')
+    plot.hist(combination_redshift_true, bins=z_bin, linewidth=4.0, density=True, histtype='step', color='darkorange', label=r'$\mathtt{Combination}$', rasterized=True)
     
     plot.legend()
     plot.set_xlim(z_bin.min(), z_bin.max())

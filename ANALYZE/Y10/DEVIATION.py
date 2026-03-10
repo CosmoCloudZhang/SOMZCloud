@@ -27,34 +27,40 @@ def main(tag, name, folder):
     os.makedirs(os.path.join(analyze_folder, '{}/DEVIATION/{}/'.format(tag, name)), exist_ok=True)
     
     # Info
+    with h5py.File(os.path.join(analyze_folder, '{}/VALUE/{}/TRUTH.hdf5'.format(tag, name)), 'r') as file:
+        truth_mu_lens = file['lens']['mu'][...]
+        truth_mu_source = file['source']['mu'][...]
+        
+        truth_eta_lens = file['lens']['eta'][...]
+        truth_eta_source = file['source']['eta'][...]
+    
     with h5py.File(os.path.join(analyze_folder, '{}/VALUE/{}/DIR.hdf5'.format(tag, name)), 'r') as file:
         dir_eta_lens = file['lens']['eta'][...]
         dir_eta_source = file['source']['eta'][...]
+    
+    dir_delta_lens = (dir_eta_lens - truth_eta_lens) / (1 + truth_mu_lens)
+    dir_delta_source = (dir_eta_source - truth_eta_source) / (1 + truth_mu_source)
     
     with h5py.File(os.path.join(analyze_folder, '{}/VALUE/{}/STACK.hdf5'.format(tag, name)), 'r') as file:
         stack_eta_lens = file['lens']['eta'][...]
         stack_eta_source = file['source']['eta'][...]
     
+    stack_delta_lens = (stack_eta_lens - truth_eta_lens) / (1 + truth_mu_lens)
+    stack_delta_source = (stack_eta_source - truth_eta_source) / (1 + truth_mu_source)
+    
     with h5py.File(os.path.join(analyze_folder, '{}/VALUE/{}/HYBRID.hdf5'.format(tag, name)), 'r') as file:
         hybrid_eta_lens = file['lens']['eta'][...]
         hybrid_eta_source = file['source']['eta'][...]
     
-    with h5py.File(os.path.join(analyze_folder, '{}/VALUE/{}/TRUTH.hdf5'.format(tag, name)), 'r') as file:
-        truth_eta_lens = file['lens']['eta'][...]
-        truth_eta_source = file['source']['eta'][...]
-        
-        average_mu_lens = file['lens']['average_mu'][...]
-        average_mu_source = file['source']['average_mu'][...]
-        
-        average_eta_lens = file['lens']['average_eta'][...]
-        average_eta_source = file['source']['average_eta'][...]
+    hybrid_delta_lens = (hybrid_eta_lens - truth_eta_lens) / (1 + truth_mu_lens)
+    hybrid_delta_source = (hybrid_eta_source - truth_eta_source) / (1 + truth_mu_source)
     
     # Variable
-    factor_lens = 0.005 * (1 + average_mu_lens)
-    range_lens = [0.020, 0.020, 0.025, 0.025, 0.030, 0.030, 0.035, 0.035, 0.040, 0.040]
+    factor_lens = 0.005
+    range_lens = [0.030, 0.030, 0.035, 0.035, 0.040, 0.040, 0.045, 0.045, 0.050, 0.050]
     
-    factor_source = 0.002 * (1 + average_mu_source)
-    range_source = [0.080, 0.100, 0.120, 0.140, 0.160]
+    factor_source = 0.002
+    range_source = [0.055, 0.060, 0.065, 0.070, 0.075]
     
     # Configuration
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']
@@ -65,8 +71,8 @@ def main(tag, name, folder):
     
     # Figure
     bin_size = 5
-    label_list = ['DIR', 'Stack', 'Hybrid', 'Truth']
-    colors = {'DIR': 'darkmagenta', 'Stack': 'darkgreen', 'Hybrid': 'darkorange', 'Truth': 'black'}
+    label_list = ['DIR', 'Stack', 'Hybrid']
+    colors = {'DIR': 'darkmagenta', 'Stack': 'darkgreen', 'Hybrid': 'darkorange'}
     figure, plot = pyplot.subplots(nrows=bin_size, ncols=3, figsize=(20, 5 * bin_size))
     
     # Plot Lens
@@ -77,8 +83,8 @@ def main(tag, name, folder):
             showmeans=True, 
             showmedians=False,
             showextrema=True,
-            positions=[4, 3, 2, 1],
-            dataset=[dir_eta_lens[:, m], stack_eta_lens[:, m], hybrid_eta_lens[:, m], truth_eta_lens[:, m]]
+            positions=[3, 2, 1],
+            dataset=[dir_delta_lens[:, m], stack_delta_lens[:, m], hybrid_delta_lens[:, m]]
         )
         
         for n, color in enumerate(colors[label] for label in label_list):
@@ -90,21 +96,21 @@ def main(tag, name, folder):
         violin['cmaxes'].set_color('black')
         violin['cmeans'].set_color('black')
         
-        plot[m, 0].axvspan(average_eta_lens[m] - factor_lens[m], average_eta_lens[m] + factor_lens[m], alpha=0.3, color='gray')
-        plot[m, 0].text(x=average_eta_lens[m] + range_lens[m] / 3 * 2 * (1 + average_eta_lens[m]), y=2.25, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
+        plot[m, 0].axvspan(- factor_lens, + factor_lens, alpha=0.3, color='gray')
+        plot[m, 0].text(x=range_lens[m] / 3 * 2, y=2.25, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
         
-        plot[m, 0].set_ylim(0.5, 4.5)
+        plot[m, 0].set_ylim(0.5, 3.5)
         plot[m, 0].tick_params(axis='x', labelsize=25)
-        plot[m, 0].set_xlim(average_eta_lens[m] - range_lens[m] * (1 + average_eta_lens[m]), average_eta_lens[m] + range_lens[m] * (1 + average_eta_lens[m]))
+        plot[m, 0].set_xlim(- range_lens[m], range_lens[m])
         
-        plot[m, 0].set_yticks([4, 3, 2, 1])
+        plot[m, 0].set_yticks([3, 2, 1])
         plot[m, 0].set_yticklabels([r'$\mathrm{' + label + '}$' for label in label_list])
         
         if m == 0:
             plot[m, 0].set_title(r'$\mathrm{Lens}$')
         
         if m == bin_size - 1:
-            plot[m, 0].set_xlabel(r'$\eta$')
+            plot[m, 0].set_xlabel(r'$\delta_{\eta_m}$')
     
     # Plot Lens
     for m in range(bin_size):
@@ -114,8 +120,8 @@ def main(tag, name, folder):
             showmeans=True, 
             showmedians=False,
             showextrema=True,
-            positions=[4, 3, 2, 1],
-            dataset=[dir_eta_lens[:, m + bin_size], stack_eta_lens[:, m + bin_size], hybrid_eta_lens[:, m + bin_size], truth_eta_lens[:, m + bin_size]]
+            positions=[3, 2, 1],
+            dataset=[dir_delta_lens[:, m + bin_size], stack_delta_lens[:, m + bin_size], hybrid_delta_lens[:, m + bin_size]]
         )
         
         for n, color in enumerate(colors[label] for label in label_list):
@@ -127,21 +133,21 @@ def main(tag, name, folder):
         violin['cmaxes'].set_color('black')
         violin['cmeans'].set_color('black')
         
-        plot[m, 1].axvspan(average_eta_lens[m + bin_size] - factor_lens[m + bin_size], average_eta_lens[m + bin_size] + factor_lens[m + bin_size], alpha=0.3, color='gray')
-        plot[m, 1].text(x=average_eta_lens[m + bin_size] + range_lens[m + bin_size] / 3 * 2 * (1 + average_eta_lens[m + bin_size]), y=2.25, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + bin_size + 1), color='black', ha='center')
+        plot[m, 1].axvspan(- factor_lens, + factor_lens, alpha=0.3, color='gray')
+        plot[m, 1].text(x=range_lens[m] / 3 * 2, y=2.25, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + bin_size + 1), color='black', ha='center')
         
-        plot[m, 1].set_ylim(0.5, 4.5)
+        plot[m, 1].set_ylim(0.5, 3.5)
         plot[m, 1].tick_params(axis='x', labelsize=25)
-        plot[m, 1].set_xlim(average_eta_lens[m + bin_size] - range_lens[m + bin_size] * (1 + average_eta_lens[m + bin_size]), average_eta_lens[m + bin_size] + range_lens[m + bin_size] * (1 + average_eta_lens[m + bin_size]))
+        plot[m, 1].set_xlim(- range_lens[m], range_lens[m])
         
         plot[m, 1].set_yticklabels([])
-        plot[m, 1].set_yticks([4, 3, 2, 1])
+        plot[m, 1].set_yticks([3, 2, 1])
         
         if m == 0:
             plot[m, 1].set_title(r'$\mathrm{Lens}$')
         
         if m == bin_size - 1:
-            plot[m, 1].set_xlabel(r'$\eta$')
+            plot[m, 1].set_xlabel(r'$\delta_{\eta_m}$')
     
     # Plot Source
     for m in range(bin_size):
@@ -151,8 +157,8 @@ def main(tag, name, folder):
             showmeans=True,
             showmedians=False,
             showextrema=True,
-            positions=[4, 3, 2, 1],
-            dataset=[dir_eta_source[:, m], stack_eta_source[:, m], hybrid_eta_source[:, m], truth_eta_source[:, m]]
+            positions=[3, 2, 1],
+            dataset=[dir_delta_source[:, m], stack_delta_source[:, m], hybrid_delta_source[:, m]]
         )
         
         for n, color in enumerate(colors[label] for label in label_list):
@@ -164,21 +170,21 @@ def main(tag, name, folder):
         violin['cmaxes'].set_color('black')
         violin['cmeans'].set_color('black')
         
-        plot[m, 2].axvspan(average_eta_source[m] - factor_source[m], average_eta_source[m] + factor_source[m], alpha=0.3, color='gray')
-        plot[m, 2].text(x=average_eta_source[m] + range_source[m] / 3 * 2 * (1 + average_eta_source[m]), y=2.25, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
+        plot[m, 2].axvspan(- factor_source, + factor_source, alpha=0.3, color='gray')
+        plot[m, 2].text(x=range_source[m] / 3 * 2, y=2.25, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
         
-        plot[m, 2].set_ylim(0.5, 4.5)
+        plot[m, 2].set_ylim(0.5, 3.5)
         plot[m, 2].tick_params(axis='x', labelsize=25)
-        plot[m, 2].set_xlim(average_eta_source[m] - range_source[m] * (1 + average_eta_source[m]), average_eta_source[m] + range_source[m] * (1 + average_eta_source[m]))
+        plot[m, 2].set_xlim(- range_source[m], range_source[m])
         
         plot[m, 2].set_yticklabels([])
-        plot[m, 2].set_yticks([4, 3, 2, 1])
+        plot[m, 2].set_yticks([3, 2, 1])
         
         if m == 0:
             plot[m, 2].set_title(r'$\mathrm{Source}$')
         
         if m == bin_size - 1:
-            plot[m, 2].set_xlabel(r'$\eta$')
+            plot[m, 2].set_xlabel(r'$\delta_{\eta_m}$')
     
     figure.subplots_adjust(wspace=0.12, hspace=0.12)
     figure.savefig(os.path.join(analyze_folder, '{}/DEVIATION/{}/FIGURE.pdf'.format(tag, name)), format='pdf', bbox_inches='tight')

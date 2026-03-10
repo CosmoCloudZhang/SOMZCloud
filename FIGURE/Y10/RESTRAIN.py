@@ -92,13 +92,13 @@ def main(tag, index, folder):
     # Plot 1
     plot1 = figure.add_subplot(plot[0, 0])
     
-    image = plot1.hist2d(x=z_true_lens, y=z_phot_lens, bins=[z_bin, z_bin], norm=normalize, cmap='turbo')[-1]
+    image = plot1.hist2d(x=z_true_lens, y=z_phot_lens, bins=[z_bin, z_bin], norm=normalize, cmap='turbo', rasterized=True)[-1]
     
-    plot1.plot(z_bin, z_bin - 0.15 * (1 + z_bin), color='black', linestyle='-.', linewidth=2.5)
+    plot1.plot(z_bin, z_bin - 0.15 * (1 + z_bin), color='black', linestyle='-.', linewidth=2.5, rasterized=True)
     
-    plot1.plot(z_bin, z_bin + 0.15 * (1 + z_bin), color='black', linestyle='-.', linewidth=2.5)
+    plot1.plot(z_bin, z_bin + 0.15 * (1 + z_bin), color='black', linestyle='-.', linewidth=2.5, rasterized=True)
     
-    plot1.plot(z_bin, z_bin, color='black', linestyle='-', linewidth=2.5)
+    plot1.plot(z_bin, z_bin, color='black', linestyle='-', linewidth=2.5, rasterized=True)
     
     plot1.set_xlim(z1, z2)
     plot1.set_ylim(z1, z2)
@@ -112,13 +112,13 @@ def main(tag, index, folder):
     # Plot 2
     plot2 = figure.add_subplot(plot[0, 1])
     
-    image = plot2.hist2d(x=z_true_source, y=z_phot_source, bins=[z_bin, z_bin], norm=normalize, cmap='turbo')[-1]
+    image = plot2.hist2d(x=z_true_source, y=z_phot_source, bins=[z_bin, z_bin], norm=normalize, cmap='turbo', rasterized=True)[-1]
     
-    plot2.plot(z_bin, z_bin - 0.15 * (1 + z_bin), color='black', linestyle='-.', linewidth=2.5)
+    plot2.plot(z_bin, z_bin - 0.15 * (1 + z_bin), color='black', linestyle='-.', linewidth=2.5, rasterized=True)
     
-    plot2.plot(z_bin, z_bin + 0.15 * (1 + z_bin), color='black', linestyle='-.', linewidth=2.5)
+    plot2.plot(z_bin, z_bin + 0.15 * (1 + z_bin), color='black', linestyle='-.', linewidth=2.5, rasterized=True)
     
-    plot2.plot(z_bin, z_bin, color='black', linestyle='-', linewidth=2.5)
+    plot2.plot(z_bin, z_bin, color='black', linestyle='-', linewidth=2.5, rasterized=True)
     
     plot2.set_xlim(z1, z2)
     plot2.set_ylim(z1, z2)
@@ -130,11 +130,11 @@ def main(tag, index, folder):
     # Plot 3
     plot3 = figure.add_subplot(plot[1, 0])
     
-    image = plot3.hist2d(x=z_true_lens, y=delta_lens, bins=[z_bin, delta_bin], norm=normalize, cmap='turbo')[-1]
+    image = plot3.hist2d(x=z_true_lens, y=delta_lens, bins=[z_bin, delta_bin], norm=normalize, cmap='turbo', rasterized=True)[-1]
     
-    plot3.plot(z_bin, 0.03 * numpy.ones(bin_size + 1), color='black', linestyle=':', linewidth=2.5)
+    plot3.plot(z_bin, 0.03 * numpy.ones(bin_size + 1), color='black', linestyle=':', linewidth=2.5, rasterized=True)
     
-    plot3.plot((z_mean[1:] + z_mean[:-1]) / 2, delta_mean_lens, color='black', linestyle='--', linewidth=2.5)
+    plot3.plot((z_mean[1:] + z_mean[:-1]) / 2, delta_mean_lens, color='black', linestyle='--', linewidth=2.5, rasterized=True)
     
     plot3.set_xlim(z1, z2)
     plot3.set_ylim(delta1, delta2)
@@ -146,11 +146,11 @@ def main(tag, index, folder):
     # Plot 4
     plot4 = figure.add_subplot(plot[1, 1])
     
-    image = plot4.hist2d(x=z_true_source, y=delta_source, bins=[z_bin, delta_bin], norm=normalize, cmap='turbo')[-1]
+    image = plot4.hist2d(x=z_true_source, y=delta_source, bins=[z_bin, delta_bin], norm=normalize, cmap='turbo', rasterized=True)[-1]
     
-    plot4.plot(z_bin, 0.05 * numpy.ones(bin_size + 1), color='black', linestyle=':', linewidth=2.5)
+    plot4.plot(z_bin, 0.05 * numpy.ones(bin_size + 1), color='black', linestyle=':', linewidth=2.5, rasterized=True)
     
-    plot4.plot((z_mean[1:] + z_mean[:-1]) / 2, delta_mean_source, color='black', linestyle='--', linewidth=2.5)
+    plot4.plot((z_mean[1:] + z_mean[:-1]) / 2, delta_mean_source, color='black', linestyle='--', linewidth=2.5, rasterized=True)
     
     plot4.set_xlim(z1, z2)
     plot4.set_ylim(delta1, delta2)

@@ -76,7 +76,7 @@ def main(tag, index, folder):
     
     plot.text(-1.5, -1.2, r'$\mathtt{Application}$')
     
-    image = plot.hist2d(application_color2, application_color1, bins=[color1_bin, color2_bin], norm=normalize, cmap='inferno')[-1]
+    image = plot.hist2d(application_color2, application_color1, bins=[color1_bin, color2_bin], norm=normalize, cmap='inferno', rasterized=True)[-1]
     
     plot.set_ylabel(r'$i - z$')
     plot.set_xticklabels([])
@@ -88,7 +88,7 @@ def main(tag, index, folder):
     
     plot.text(-1.5, -1.2, r'$\mathtt{Degradation}$')
     
-    image = plot.hist2d(degradation_color2, degradation_color1, bins=[color1_bin, color2_bin], norm=normalize, cmap='inferno')[-1]
+    image = plot.hist2d(degradation_color2, degradation_color1, bins=[color1_bin, color2_bin], norm=normalize, cmap='inferno', rasterized=True)[-1]
     
     plot.set_yticklabels([])
     plot.set_xticklabels([])
@@ -100,7 +100,7 @@ def main(tag, index, folder):
     
     plot.text(-1.5, -1.2, r'$\mathtt{Augmentation}$')
     
-    image = plot.hist2d(augmentation_color2, augmentation_color1, bins=[color1_bin, color2_bin], norm=normalize, cmap='inferno')[-1]
+    image = plot.hist2d(augmentation_color2, augmentation_color1, bins=[color1_bin, color2_bin], norm=normalize, cmap='inferno', rasterized=True)[-1]
     
     plot.set_ylim(color1_edge1, color1_edge2)
     plot.set_xlim(color2_edge1, color2_edge2)
@@ -112,7 +112,7 @@ def main(tag, index, folder):
     
     plot.text(-1.5, -1.2, r'$\mathtt{Combination}$')
     
-    image = plot.hist2d(combination_color2, combination_color1, bins=[color1_bin, color2_bin], norm=normalize, cmap='inferno')[-1]
+    image = plot.hist2d(combination_color2, combination_color1, bins=[color1_bin, color2_bin], norm=normalize, cmap='inferno', rasterized=True)[-1]
     
     plot.set_ylim(color1_edge1, color1_edge2)
     plot.set_xlim(color2_edge1, color2_edge2)

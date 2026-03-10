@@ -75,7 +75,7 @@ def main(tag, index, folder):
     
     plot.text(2.1, 17.0, r'$\mathtt{Application}$')
     
-    image = plot.hist2d(application_color, application_magnitude, bins=[color_bin, magnitude_bin], norm=normalize, cmap='magma')[-1]
+    image = plot.hist2d(application_color, application_magnitude, bins=[color_bin, magnitude_bin], norm=normalize, cmap='magma', rasterized=True)[-1]
     
     plot.set_ylabel(r'$i$')
     plot.set_xticklabels([])
@@ -90,7 +90,7 @@ def main(tag, index, folder):
     
     plot.text(2.1, 17.0, r'$\mathtt{Degradation}$')
     
-    image = plot.hist2d(degradation_color, degradation_magnitude, bins=[color_bin, magnitude_bin], norm=normalize, cmap='magma')[-1]
+    image = plot.hist2d(degradation_color, degradation_magnitude, bins=[color_bin, magnitude_bin], norm=normalize, cmap='magma', rasterized=True)[-1]
     
     plot.set_yticklabels([])
     plot.set_xticklabels([])
@@ -105,7 +105,7 @@ def main(tag, index, folder):
     
     plot.text(2.1, 17.0, r'$\mathtt{Augmentation}$')
     
-    image = plot.hist2d(augmentation_color, augmentation_magnitude, bins=[color_bin, magnitude_bin], norm=normalize, cmap='magma')[-1]
+    image = plot.hist2d(augmentation_color, augmentation_magnitude, bins=[color_bin, magnitude_bin], norm=normalize, cmap='magma', rasterized=True)[-1]
     
     plot.set_xlim(color_bin.min(), color_bin.max())
     plot.set_ylim(magnitude_bin.min(), magnitude_bin.max())
@@ -120,7 +120,7 @@ def main(tag, index, folder):
     
     plot.text(2.1, 17.0, r'$\mathtt{Combination}$')
     
-    image = plot.hist2d(combination_color, combination_magnitude, bins=[color_bin, magnitude_bin], norm=normalize, cmap='magma')[-1]
+    image = plot.hist2d(combination_color, combination_magnitude, bins=[color_bin, magnitude_bin], norm=normalize, cmap='magma', rasterized=True)[-1]
     
     plot.set_xlim(color_bin.min(), color_bin.max())
     plot.set_ylim(magnitude_bin.min(), magnitude_bin.max())
