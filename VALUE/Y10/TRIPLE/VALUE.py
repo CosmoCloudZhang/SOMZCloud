@@ -225,7 +225,7 @@ def main(tag, name, label, folder):
     plot.set_ylabel(r'$\mathrm{{Fraction}}$', fontsize=25)
     plot.set_xlabel(r'$\chi^2 / N_{\mathrm{dof}}$', fontsize=25)
     
-    figure.savefig(os.path.join(value_folder, '{}/TRIPLE/{}/{}.pdf'.format(tag, name, label)), bbox_inches='tight')
+    figure.savefig(os.path.join(value_folder, '{}/TRIPLE/{}/{}.pdf'.format(tag, name, label)), bbox_inches='tight', dpi=512)
     pyplot.close(figure)
     
     # Duration
