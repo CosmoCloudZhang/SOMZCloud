@@ -43,9 +43,6 @@ def main(tag, name, label, folder):
         
         mu_lens = file['lens']['mu'][...]
         mu_source = file['source']['mu'][...]
-        
-        average_mu_lens = file['lens']['average_mu'][...]
-        average_mu_source = file['source']['average_mu'][...]
     
     # Data
     with h5py.File(os.path.join(synthesize_folder, '{}/{}/{}.hdf5'.format(tag, name, label)), 'r') as file:
@@ -56,16 +53,14 @@ def main(tag, name, label, folder):
     
     # Meta
     z_grid = meta['z_grid']
-    grid_size = meta['grid_size']
     data_size = meta['data_size']
+    grid_size = meta['grid_size']
     bin_lens_size = meta['bin_lens_size']
     bin_source_size = meta['bin_source_size']
     
     # Lens
+    zeta_lens = truth_average_mu_lens - mu_lens
     shift_data_lens = numpy.zeros((data_size, bin_lens_size, grid_size + 1))
-    
-    difference_mu_lens = truth_average_mu_lens - average_mu_lens
-    zeta_lens = numpy.random.multivariate_normal(mean=difference_mu_lens, cov=numpy.cov(mu_lens, rowvar=False), size=int(data_size))
     
     for m in range(bin_lens_size):
         z_shift = z_grid[numpy.newaxis, :] - zeta_lens[:, m, numpy.newaxis]
@@ -79,10 +74,8 @@ def main(tag, name, label, folder):
     shift_average_lens = numpy.divide(shift_average_lens, average_factor_lens, out=numpy.zeros((bin_lens_size, grid_size + 1)), where=average_factor_lens > 0)
     
     # Source
+    zeta_source = truth_average_mu_source - mu_source
     shift_data_source = numpy.zeros((data_size, bin_source_size, grid_size + 1))
-    
-    difference_mu_source = truth_average_mu_source - average_mu_source
-    zeta_source = numpy.random.multivariate_normal(mean=difference_mu_source, cov=numpy.cov(mu_source, rowvar=False), size=int(data_size))
     
     for m in range(bin_source_size):
         z_shift = z_grid[numpy.newaxis, :] - zeta_source[:, m, numpy.newaxis]
