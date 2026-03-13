@@ -22,9 +22,9 @@ def plot_expectation(sigma, rho_mu):
     
     for (i, j), value in numpy.ndenumerate(rho_mu):
         if i == j:
-            plot.text(j, i, r'$\sigma_\mu = ' + r'{:.3f}$'.format(sigma[i]), va='center', ha='center', color='black', fontsize = 30)
+            plot.text(j, i, r'{:.3f}$'.format(sigma[i]), va='center', ha='center', color='black', fontsize = 45)
         else:
-            plot.text(j, i, r'${:.3f}$'.format(value), va='center', ha='center', color='black', fontsize = 30)
+            plot.text(j, i, r'${:.3f}$'.format(value), va='center', ha='center', color='black', fontsize = 45)
     
     for i in range(len(sigma)):
         plot.text(i, -1, r'$\mathrm{Bin} \, ' + r'{:.0f}$'.format(i + 1), va='center', ha='center', color='black', fontsize = 30)
@@ -34,7 +34,7 @@ def plot_expectation(sigma, rho_mu):
     
     plot.axis('off')
     cax = figure.add_axes([0.15, 0.05, 0.72, 0.05])
-    figure.colorbar(cax = cax, mappable = image, orientation = 'horizontal', label = r'$\mathcal{R}_\mu$')
+    figure.colorbar(cax = cax, mappable = image, orientation = 'horizontal', label = r'$\mathcal{R}^\mu_{m m^\prime}$')
     
     figure.subplots_adjust(wspace = 0.02, hspace = 0.02)
     return figure
@@ -85,11 +85,11 @@ def main(tag, name, label, folder):
     
     # Plot Expectation
     figure = plot_expectation(sigma_lens, rho_mu_lens)
-    figure.savefig(os.path.join(prior_folder, '{}/EXPECTATION/{}/{}/FIGURE_LENS.pdf'.format(tag, name, label)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(prior_folder, '{}/EXPECTATION/{}/{}/FIGURE_LENS.pdf'.format(tag, name, label)), format='pdf', bbox_inches='tight', dpi=512)
     pyplot.close(figure)
     
     figure = plot_expectation(sigma_source, rho_mu_source)
-    figure.savefig(os.path.join(prior_folder, '{}/EXPECTATION/{}/{}/FIGURE_SOURCE.pdf'.format(tag, name, label)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(prior_folder, '{}/EXPECTATION/{}/{}/FIGURE_SOURCE.pdf'.format(tag, name, label)), format='pdf', bbox_inches='tight', dpi=512)
     pyplot.close(figure)
     
     # Duration

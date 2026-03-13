@@ -34,7 +34,7 @@ def plot_covariance(bin_size, map_size, covariance):
     cax = figure.add_axes([0.15, 0.05, 0.72, 0.05])
     figure.subplots_adjust(wspace = 0.0, hspace = 0.0)
     
-    figure.colorbar(cax = cax, mappable = image, orientation = 'horizontal', label = r'$\mathcal{C} \: [\phi^{a} (z_1), \phi^{b} (z_2)]$')
+    figure.colorbar(cax = cax, mappable = image, orientation = 'horizontal', label = r'$\mathcal{C} \: [\varphi_{m} (z_1), \varphi_{m^\prime} (z_2)]$')
     return figure
 
 
@@ -124,11 +124,11 @@ def main(tag, name, label, number, folder):
     
     # Plot Data
     figure = plot_covariance(bin_lens_size, map_lens_size, covariance_lens)
-    figure.savefig(os.path.join(prior_folder, '{}/COVARIANCE/{}/{}/FIGURE_LENS.pdf'.format(tag, name, label)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(prior_folder, '{}/COVARIANCE/{}/{}/FIGURE_LENS.pdf'.format(tag, name, label)), format='pdf', bbox_inches='tight', dpi=512)
     pyplot.close(figure)
     
     figure = plot_covariance(bin_source_size, map_source_size, covariance_source)
-    figure.savefig(os.path.join(prior_folder, '{}/COVARIANCE/{}/{}/FIGURE_SOURCE.pdf'.format(tag, name, label)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(prior_folder, '{}/COVARIANCE/{}/{}/FIGURE_SOURCE.pdf'.format(tag, name, label)), format='pdf', bbox_inches='tight', dpi=512)
     pyplot.close(figure)
     
     # Duration

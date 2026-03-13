@@ -38,7 +38,7 @@ def plot_ensemble(z_grid, select_lens, select_source, bin_lens_size, bin_source_
     plot[0].set_yticks([2.0, 4.0, 6.0, 8.0])
     plot[0].legend(loc='upper right', fontsize=20)
     
-    plot[0].set_ylabel(r'$\phi \left( z \right)$')
+    plot[0].set_ylabel(r'$\varphi_m \left( z \right)$')
     plot[0].text(x=1.6, y=3.0, s=r'$\mathrm{Lens}$', fontsize=25)
     
     for m in range(bin_source_size):
@@ -54,7 +54,7 @@ def plot_ensemble(z_grid, select_lens, select_source, bin_lens_size, bin_source_
     plot[1].legend(loc='upper right', fontsize=20)
     
     plot[1].set_xlabel(r'$z$')
-    plot[1].set_ylabel(r'$\phi \left( z \right)$')
+    plot[1].set_ylabel(r'$\varphi_m \left( z \right)$')
     plot[1].text(x=1.6, y=3.0, s=r'$\mathtt{Source}$', fontsize=25)
     
     figure.subplots_adjust(hspace=0.0)
@@ -115,7 +115,7 @@ def main(tag, name, label, folder):
     
     # Plot
     figure = plot_ensemble(z_grid, select_lens, select_source, bin_lens_size, bin_source_size)
-    figure.savefig(os.path.join(prior_folder, '{}/ENSEMBLE/{}/{}/SHIFT.pdf'.format(tag, name, label)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(prior_folder, '{}/ENSEMBLE/{}/{}/SHIFT.pdf'.format(tag, name, label)), format='pdf', bbox_inches='tight', dpi=512)
     pyplot.close(figure)
     
     # Scale
@@ -133,7 +133,7 @@ def main(tag, name, label, folder):
     
     # Plot
     figure = plot_ensemble(z_grid, select_scale_lens, select_scale_source, bin_lens_size, bin_source_size)
-    figure.savefig(os.path.join(prior_folder, '{}/ENSEMBLE/{}/{}/SCALE.pdf'.format(tag, name, label)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(prior_folder, '{}/ENSEMBLE/{}/{}/SCALE.pdf'.format(tag, name, label)), format='pdf', bbox_inches='tight', dpi=512)
     pyplot.close(figure)
     
     # Correct
@@ -151,7 +151,7 @@ def main(tag, name, label, folder):
     
     # Plot
     figure = plot_ensemble(z_grid, select_correct_lens, select_correct_source, bin_lens_size, bin_source_size)
-    figure.savefig(os.path.join(prior_folder, '{}/ENSEMBLE/{}/{}/CORRECT.pdf'.format(tag, name, label)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(prior_folder, '{}/ENSEMBLE/{}/{}/CORRECT.pdf'.format(tag, name, label)), format='pdf', bbox_inches='tight', dpi=512)
     pyplot.close(figure)
     
     # Duration
