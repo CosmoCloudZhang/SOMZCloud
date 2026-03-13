@@ -93,7 +93,7 @@ def main(tag, index, folder):
     color_bar.set_label(r'$\mathrm{Counts}$')
     
     # Save
-    figure.savefig(os.path.join(figure_folder, '{}/SAMPLE/FIGURE{}.pdf'.format(tag, index)), dpi=512, format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(figure_folder, '{}/SAMPLE/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight', dpi=512)
     pyplot.close(figure)
     
     # Duration

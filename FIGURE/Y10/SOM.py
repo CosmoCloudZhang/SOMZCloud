@@ -79,7 +79,7 @@ def main(tag, index, folder):
     colorbar2.set_label(r'$\delta_{\langle z_\mathrm{true} \rangle}$')
     
     # Save
-    figure.savefig(os.path.join(figure_folder, '{}/SOM/FIGURE{}.pdf'.format(tag, index)), dpi=512, format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(figure_folder, '{}/SOM/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight', dpi=512)
     pyplot.close(figure)
     
     # Duration

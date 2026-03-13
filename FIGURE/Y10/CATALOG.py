@@ -160,7 +160,7 @@ def main(tag, index, folder):
                 plot.text(0.8, 2.1, r'$\mathtt{OpenUniverse2024}$', color='darkorange')
     
     # Save
-    figure.savefig(os.path.join(figure_folder, '{}/CATALOG/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(figure_folder, '{}/CATALOG/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight', dpi=512)
     pyplot.close(figure)
     
     # Duration

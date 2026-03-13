@@ -320,7 +320,7 @@ def main(tag, number, folder):
     
     # Save
     figure.subplots_adjust(wspace=0.24, hspace=0.0)
-    figure.savefig(os.path.join(figure_folder, '{}/METRIC/FIGURE.pdf'.format(tag)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(figure_folder, '{}/METRIC/FIGURE.pdf'.format(tag)), format='pdf', bbox_inches='tight', dpi=512)
     pyplot.close(figure)
     
     # Duration

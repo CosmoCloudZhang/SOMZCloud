@@ -125,7 +125,7 @@ def main(tag, index, folder):
     figure.subplots_adjust(bottom=0.15)
     
     # Save    
-    figure.savefig(os.path.join(figure_folder, '{}/INFRARED/FIGURE{}.pdf'.format(tag, index)), dpi=512, format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(figure_folder, '{}/INFRARED/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight', dpi=512)
     pyplot.close(figure)
     
     # Duration
