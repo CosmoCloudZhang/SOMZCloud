@@ -1,7 +1,6 @@
 import os
 import h5py
 import time
-import numpy
 import argparse
 from matplotlib import pyplot
 
@@ -152,12 +151,6 @@ def main(tag, label, folder):
             plot[m, 0].set_xticklabels([r'$\mathrm{' + name + '}$' for name in name_list], rotation=45, ha='right', fontsize=25)
         else:
             plot[m, 0].set_xticklabels([])
-        
-        if label == 'HYBRID':
-            median = numpy.median(titanium_delta_lens[:, m])
-            upper = numpy.quantile(titanium_delta_lens[:, m], 0.84)
-            lower = numpy.quantile(titanium_delta_lens[:, m], 0.16)
-            print(label, m + 1, '{:.3f}_{:.3f}^{:.3f}'.format(median, lower - median, upper - median))
     
     # Plot Lens
     for m in range(bin_size):
@@ -196,12 +189,6 @@ def main(tag, label, folder):
             plot[m, 1].set_xticklabels([r'$\mathrm{' + name + '}$' for name in name_list], rotation=45, ha='right', fontsize=25)
         else:
             plot[m, 1].set_xticklabels([])
-        
-        if label == 'HYBRID':
-            median = numpy.median(titanium_delta_lens[:, m + bin_size])
-            upper = numpy.quantile(titanium_delta_lens[:, m + bin_size], 0.84)
-            lower = numpy.quantile(titanium_delta_lens[:, m + bin_size], 0.16)
-            print(label, m + bin_size + 1, '{:.3f}_{:.3f}^{:.3f}'.format(median, lower - median, upper - median))
     
     # Plot Source
     for m in range(bin_size):
@@ -240,12 +227,6 @@ def main(tag, label, folder):
             plot[m, 2].set_xticklabels([r'$\mathrm{' + name + '}$' for name in name_list], rotation=45, ha='right', fontsize=25)
         else:
             plot[m, 2].set_xticklabels([])
-        
-        if label == 'HYBRID':
-            median = numpy.median(titanium_delta_source[:, m])
-            upper = numpy.quantile(titanium_delta_source[:, m], 0.84)
-            lower = numpy.quantile(titanium_delta_source[:, m], 0.16)
-            print(label, m + 1, '{:.3f}_{:.3f}^{:.3f}'.format(median, lower - median, upper - median))
     
     figure.subplots_adjust(wspace=0.24, hspace=0.08)
     figure.savefig(os.path.join(analyze_folder, '{}/CENTER/{}/FIGURE.pdf'.format(tag, label)), format='pdf', bbox_inches='tight', dpi=512)
