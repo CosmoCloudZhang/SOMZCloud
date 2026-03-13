@@ -247,7 +247,7 @@ def main(tag, label, folder):
             plot[m, 2].set_xticklabels([])
             
     figure.subplots_adjust(wspace=0.24, hspace=0.08)
-    figure.savefig(os.path.join(analyze_folder, '{}/WIDTH/{}/FIGURE.pdf'.format(tag, label)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(analyze_folder, '{}/WIDTH/{}/FIGURE.pdf'.format(tag, label)), format='pdf', bbox_inches='tight', dpi=512)
     pyplot.close(figure)
     
     # Duration

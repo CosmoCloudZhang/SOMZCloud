@@ -150,7 +150,7 @@ def main(tag, name, folder):
             plot[m, 1].set_xlabel(r'$\delta_{\eta_m}$')
     
     figure.subplots_adjust(wspace=0.12, hspace=0.12)
-    figure.savefig(os.path.join(analyze_folder, '{}/DEVIATION/{}/FIGURE.pdf'.format(tag, name)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(analyze_folder, '{}/DEVIATION/{}/FIGURE.pdf'.format(tag, name)), format='pdf', bbox_inches='tight', dpi=512)
     pyplot.close(figure)
     
     # Duration

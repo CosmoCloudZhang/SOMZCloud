@@ -248,7 +248,7 @@ def main(tag, label, folder):
             print(label, m + 1, '{:.3f}_{:.3f}^{:.3f}'.format(median, lower - median, upper - median))
     
     figure.subplots_adjust(wspace=0.24, hspace=0.08)
-    figure.savefig(os.path.join(analyze_folder, '{}/CENTER/{}/FIGURE.pdf'.format(tag, label)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(analyze_folder, '{}/CENTER/{}/FIGURE.pdf'.format(tag, label)), format='pdf', bbox_inches='tight', dpi=512)
     pyplot.close(figure)
     
     # Duration
