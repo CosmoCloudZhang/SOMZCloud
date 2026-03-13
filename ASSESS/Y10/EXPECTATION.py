@@ -207,7 +207,7 @@ def main(tag, name, number, folder):
             plot[m, 2].set_xlabel(r'$\delta_{\mu_m}$')
     
     figure.subplots_adjust(wspace=0.12, hspace=0.12)
-    figure.savefig(os.path.join(assess_folder, '{}/EXPECTATION/{}/FIGURE.pdf'.format(tag, name)), format='pdf', bbox_inches='tight')
+    figure.savefig(os.path.join(assess_folder, '{}/EXPECTATION/{}/FIGURE.pdf'.format(tag, name)), format='pdf', bbox_inches='tight', dpi=512)
     pyplot.close(figure)
     
     # Duration
