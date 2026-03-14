@@ -67,7 +67,7 @@ def main(tag, index, folder):
     
     colorbar1 = figure.add_axes([0.90, 0.50, 0.05, 0.35])
     colorbar1 = figure.colorbar(mesh1, cax=colorbar1, orientation='vertical')
-    colorbar1.set_label(r'$\delta_{\langle z_\mathrm{true} \rangle}$')
+    colorbar1.set_label(r'$\delta_{z_\mathrm{true}}$')
     
     # Combination
     mesh2 = plot[1].imshow((combination_map - application_map) / (1 + application_map), norm=normalize, cmap='coolwarm', rasterized=True)
@@ -76,7 +76,7 @@ def main(tag, index, folder):
     
     colorbar2 = figure.add_axes([0.90, 0.02, 0.05, 0.35])
     colorbar2 = figure.colorbar(mesh2, cax=colorbar2, orientation='vertical')
-    colorbar2.set_label(r'$\delta_{\langle z_\mathrm{true} \rangle}$')
+    colorbar2.set_label(r'$\delta_{z_\mathrm{true}}$')
     
     # Save
     figure.savefig(os.path.join(figure_folder, '{}/SOM/FIGURE{}.pdf'.format(tag, index)), format='pdf', bbox_inches='tight', dpi=512)
