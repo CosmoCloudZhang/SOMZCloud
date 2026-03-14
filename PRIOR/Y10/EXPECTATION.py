@@ -22,7 +22,7 @@ def plot_expectation(sigma, rho_mu):
     
     for (i, j), value in numpy.ndenumerate(rho_mu):
         if i == j:
-            plot.text(j, i, r'{:.3f}$'.format(sigma[i]), va='center', ha='center', color='black', fontsize = 45)
+            plot.text(j, i, r'${:.3f}$'.format(sigma[i]), va='center', ha='center', color='black', fontsize = 45)
         else:
             plot.text(j, i, r'${:.3f}$'.format(value), va='center', ha='center', color='black', fontsize = 45)
     

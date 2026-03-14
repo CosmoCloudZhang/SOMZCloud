@@ -22,7 +22,7 @@ def plot_deviation(sigma, rho):
     
     for (i, j), value in numpy.ndenumerate(rho):
         if i == j:
-            plot.text(j, i, r'{:.3f}$'.format(sigma[i]), va='center', ha='center', color='black', fontsize = 45)
+            plot.text(j, i, r'${:.3f}$'.format(sigma[i]), va='center', ha='center', color='black', fontsize = 45)
         else:
             plot.text(j, i, r'${:.3f}$'.format(value), va='center', ha='center', color='black', fontsize = 45)
     
