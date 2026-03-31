@@ -22,8 +22,8 @@ def plot_ensemble(z_grid, select_lens, select_source, bin_lens_size, bin_source_
     '''
     # Figure
     figure, plot = pyplot.subplots(nrows = 2, ncols = 1, figsize = (12, 12))
-    color_lens_list = ['darkmagenta', 'darkblue', 'darkgreen', 'darkorange', 'darkred']
-    color_source_list = ['darkmagenta', 'darkblue', 'darkgreen', 'darkorange', 'darkred']
+    color_lens_list = ['darkmagenta', 'darkblue', 'darkcyan', 'darkorange', 'darkred']
+    color_source_list = ['darkmagenta', 'darkblue', 'darkcyan', 'darkorange', 'darkred']
     
     for m in range(bin_lens_size):
         
