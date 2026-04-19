@@ -75,22 +75,36 @@ def main(tag, folder):
     
     # Features
     feature = numpy.stack([
-        observation_dataset['mag_i_lsst'], 
+        observation_dataset['mag_u_lsst'],
+        observation_dataset['mag_g_lsst'],
+        observation_dataset['mag_r_lsst'],
+        observation_dataset['mag_i_lsst'],
+        observation_dataset['mag_z_lsst'],
+        observation_dataset['mag_y_lsst'],
         observation_dataset['mag_u_lsst'] - observation_dataset['mag_g_lsst'], 
+        observation_dataset['mag_u_lsst'] - observation_dataset['mag_r_lsst'], 
+        observation_dataset['mag_u_lsst'] - observation_dataset['mag_i_lsst'], 
+        observation_dataset['mag_u_lsst'] - observation_dataset['mag_z_lsst'], 
+        observation_dataset['mag_u_lsst'] - observation_dataset['mag_y_lsst'], 
         observation_dataset['mag_g_lsst'] - observation_dataset['mag_r_lsst'], 
+        observation_dataset['mag_g_lsst'] - observation_dataset['mag_i_lsst'], 
+        observation_dataset['mag_g_lsst'] - observation_dataset['mag_z_lsst'], 
+        observation_dataset['mag_g_lsst'] - observation_dataset['mag_y_lsst'], 
         observation_dataset['mag_r_lsst'] - observation_dataset['mag_i_lsst'], 
+        observation_dataset['mag_r_lsst'] - observation_dataset['mag_z_lsst'], 
+        observation_dataset['mag_r_lsst'] - observation_dataset['mag_y_lsst'], 
         observation_dataset['mag_i_lsst'] - observation_dataset['mag_z_lsst'], 
+        observation_dataset['mag_i_lsst'] - observation_dataset['mag_y_lsst'], 
         observation_dataset['mag_z_lsst'] - observation_dataset['mag_y_lsst'], 
     ], axis=1).astype(numpy.float32)
     
     # Parameters
     number = -1
     distance = 0.1
-    neighbors = 30
+    neighbors = 10
     components = 2
     metric = 'euclidean'
     
-
     reducer = umap.UMAP(
         verbose=True,
         n_jobs=number,
