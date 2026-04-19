@@ -12,7 +12,8 @@ def main(tag, index, folder):
     
     Arguments:
         tag (str): The tag of the configuration
-        folder (str): The base folder of the figure
+        index (int): The index of all suites of datasets
+        folder (str): The base folder of all suites of datasets
     
     Returns:
         duration (float): The duration of the process
