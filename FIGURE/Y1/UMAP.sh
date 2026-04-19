@@ -2,7 +2,7 @@
 #SBATCH -A m1727
 #SBATCH --nodes=1
 #SBATCH -q regular
-#SBATCH --time=08:00:00
+#SBATCH --time=24:00:00
 #SBATCH --mail-type=END
 #SBATCH --constraint=cpu
 #SBATCH -o LOG/%x_%j.out
@@ -22,15 +22,15 @@ source $HOME/.bashrc
 conda activate $RAILENV
 
 # Set environment
-#export NUMEXPR_MAX_THREADS=$SLURM_CPUS_PER_TASK
-#export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-#export HDF5_USE_FILE_LOCKING=FALSE
-#export OMP_PROC_BIND=spread
-#export OMP_PLACES=threads
+export NUMEXPR_MAX_THREADS=$SLURM_CPUS_PER_TASK
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+export HDF5_USE_FILE_LOCKING=FALSE
+export OMP_PROC_BIND=spread
+export OMP_PLACES=threads
 
 # Initialize the process
 TAG="Y1"
-NUMBER=0
+NUMBER=500
 BASE_PATH="/pscratch/sd/y/yhzhang/SOMZCloud/"
 BASE_FOLDER="/global/cfs/cdirs/lsst/groups/MCP/CosmoCloud/SOMZCloud/"
 

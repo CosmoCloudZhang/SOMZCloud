@@ -83,7 +83,7 @@ def main(tag, index, folder):
     figure.subplots_adjust(right=0.90, bottom=0.0, hspace=0.15, wspace=0.0)
     
     # Restriction
-    mesh1 = plot[0].imshow(application_map, norm=normalize, cmap='coolwarm', rasterized=True)
+    mesh1 = plot[0].imshow(application_map, norm=normalize, cmap='rainbow', rasterized=True)
     plot[0].set_title(r'$\mathrm{SOM}$')
     plot[0].axis('off')
     
@@ -92,7 +92,7 @@ def main(tag, index, folder):
     colorbar1.set_label(r'$z_\mathrm{true}$')
     
     # Combination
-    mesh2 = plot[1].scatter(coordinate1, coordinate2, c=application_photometry['redshift_true'], norm=normalize, cmap='coolwarm', s=0.01, marker='.', rasterized=True)
+    mesh2 = plot[1].scatter(coordinate1, coordinate2, c=application_photometry['redshift_true'], norm=normalize, cmap='rainbow', s=0.01, marker='.', rasterized=True)
     plot[1].set_title(r'$\mathrm{UMAP}$')
     plot[1].axis('off')
     

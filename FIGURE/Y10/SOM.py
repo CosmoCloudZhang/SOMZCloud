@@ -62,7 +62,7 @@ def main(tag, index, folder):
     figure.subplots_adjust(right=0.90, bottom=0.0, hspace=0.15, wspace=0.0)
     
     # Restriction
-    mesh1 = plot[0].imshow((restriction_map - application_map) / (1 + application_map), norm=normalize, cmap='coolwarm', rasterized=True)
+    mesh1 = plot[0].imshow((restriction_map - application_map) / (1 + application_map), norm=normalize, cmap='Spectral_r', rasterized=True)
     plot[0].set_title(r'$\mathrm{Restriction}$')
     plot[0].axis('off')
     
@@ -71,7 +71,7 @@ def main(tag, index, folder):
     colorbar1.set_label(r'$\delta_{z_\mathrm{true}}$')
     
     # Combination
-    mesh2 = plot[1].imshow((combination_map - application_map) / (1 + application_map), norm=normalize, cmap='coolwarm', rasterized=True)
+    mesh2 = plot[1].imshow((combination_map - application_map) / (1 + application_map), norm=normalize, cmap='Spectral_r', rasterized=True)
     plot[1].set_title(r'$\mathrm{Combination}$')
     plot[1].axis('off')
     
