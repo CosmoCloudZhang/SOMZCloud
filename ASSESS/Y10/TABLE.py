@@ -76,7 +76,6 @@ def main(tag, name, label, number, folder):
     table.add_column(numpy.concatenate((average_delta_eta_lens, average_delta_eta_source)), name='Average_Delta_Eta')
     table.add_column(numpy.concatenate((sigma_delta_eta_lens, sigma_delta_eta_source)), name='Sigma_Delta_Eta')
     
-    # Keep 3 decimals and always display sign (+/-) in exported table values.
     for column in table.colnames:
         table[column].info.format = '{:+.3f}'
     
