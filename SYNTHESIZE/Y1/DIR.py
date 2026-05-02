@@ -9,10 +9,10 @@ import multiprocessing
 
 def synthesize(data, z_grid, number, sample_size, random_generator):
     
-    indices = numpy.arange(number, dtype=numpy.int32)
-    select = random_generator.choice(numpy.arange(sample_size, dtype=numpy.int32), size=number, replace=True)
+    indices = numpy.arange(number + 1, dtype=numpy.int32)
+    select = random_generator.choice(numpy.arange(sample_size, dtype=numpy.int32), size=number + 1, replace=True)
     
-    alpha = numpy.ones(number) / number
+    alpha = numpy.ones(number + 1) / (number + 1)
     beta = numpy.ravel(random_generator.dirichlet(alpha, size=1))
     
     value = numpy.maximum(numpy.sum(beta[:, numpy.newaxis, numpy.newaxis] * data[indices, :, select, :], axis=0), 0.0)
@@ -64,21 +64,21 @@ def main(tag, name, number, folder):
     data_size = 500000
     
     # Summarize Lens
-    bin_lens = numpy.zeros((number, bin_lens_size + 1))
-    summarize_lens = numpy.zeros((number, bin_lens_size, sample_size, grid_size + 1))
+    bin_lens = numpy.zeros((number + 1, bin_lens_size + 1))
+    summarize_lens = numpy.zeros((number + 1, bin_lens_size, sample_size, grid_size + 1))
     
-    for n in range(number):
-        with h5py.File(os.path.join(summarize_folder, '{}/{}/LENS/LENS{}/DIR.hdf5'.format(tag, name, n + 1)), 'r') as file:
+    for n in range(number + 1):
+        with h5py.File(os.path.join(summarize_folder, '{}/{}/LENS/LENS{}/DIR.hdf5'.format(tag, name, n)), 'r') as file:
             bin_lens[n, :] = file['meta']['bin'][...]
             summarize_lens[n, :, :, :] = file['ensemble']['data'][...]
     bin_lens = numpy.mean(bin_lens, axis=0)
     
     # Summarize Source
-    bin_source = numpy.zeros((number, bin_source_size + 1))
-    summarize_source = numpy.zeros((number, bin_source_size, sample_size, grid_size + 1))
+    bin_source = numpy.zeros((number + 1, bin_source_size + 1))
+    summarize_source = numpy.zeros((number + 1, bin_source_size, sample_size, grid_size + 1))
     
-    for n in range(number):
-        with h5py.File(os.path.join(summarize_folder, '{}/{}/SOURCE/SOURCE{}/DIR.hdf5'.format(tag, name, n + 1)), 'r') as file:
+    for n in range(number + 1):
+        with h5py.File(os.path.join(summarize_folder, '{}/{}/SOURCE/SOURCE{}/DIR.hdf5'.format(tag, name, n)), 'r') as file:
             bin_source[n, :] = file['meta']['bin'][...]
             summarize_source[n, :, :, :] = file['ensemble']['data'][...]
     bin_source = numpy.mean(bin_source, axis=0)
