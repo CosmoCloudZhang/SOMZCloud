@@ -78,11 +78,11 @@ def main(tag, index, folder):
             linestyle='-',
             linewidth=3.0,
             markersize=10,
+            rasterized=True,
             y=histogram_lens[m, :],
             color=lens_color_list[m],
             x=(histogram_bin_lens[+1:] + histogram_bin_lens[:-1]) / 2,
-            label=r'$z_\mathrm{true} \in ' + r'\left[ {:.1f}, {:.1f} \right]$'.format(z_average_lens[m], z_average_lens[m + 1]),
-            rasterized=True
+            label=r'$z_\mathrm{true} \in ' + r'\left[ {:.1f}, {:.1f} \right]$'.format(z_average_lens[m], z_average_lens[m + 1])
         )
     
     plot[0].hist(z_quantile_lens, bins=histogram_bin_lens, density=True, color='black', histtype='step', linewidth=5.0, linestyle='-', label=r'$\mathrm{All}$', rasterized=True)
@@ -112,11 +112,11 @@ def main(tag, index, folder):
             linestyle='-',
             linewidth=3.0,
             markersize=10,
+            rasterized=True,
             y=histogram_source[m, :],
             color=source_color_list[m],
             x=(histogram_bin_source[+1:] + histogram_bin_source[:-1]) / 2,
-            label=r'$z_\mathrm{true} \in ' + r'\left[ {:.1f}, {:.1f} \right]$'.format(z_average_source[m], z_average_source[m + 1]),
-            rasterized=True
+            label=r'$z_\mathrm{true} \in ' + r'\left[ {:.1f}, {:.1f} \right]$'.format(z_average_source[m], z_average_source[m + 1])
         )
     
     plot[1].hist(z_quantile_source, bins=histogram_bin_source, density=True, color='black', histtype='step', linewidth=5.0, linestyle='-', label=r'$\mathrm{All}$', rasterized=True)
