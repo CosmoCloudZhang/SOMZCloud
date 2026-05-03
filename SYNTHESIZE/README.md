@@ -1,108 +1,46 @@
-# SYNTHESIZE Pipeline
+# SYNTHESIZE
 
-This folder defines the synthesis stage of the pipeline. It operates on summarised outputs produced by the SUMMARIZE module and is responsible for combining, harmonising, and assembling results into unified synthesis products suitable for downstream valuation, interpretation, and decision-making.
+**SYNTHESIZE** merges **SUMMARIZE** outputs into unified, analysis-ready **marginal** products across strategies (truth, direct, hybrid, stack), materials (e.g. COPPER, GOLD, IRON, SILVER, TITANIUM, ZINC), and survey epoch (**Y1** / **Y10**). It does not fit new models; it harmonises existing summaries.
 
-The SYNTHESIZE pipeline does not perform modelling, comparison, or inference. Instead, it consolidates results across different methodological strategies, tracers, and experimental groupings, producing coherent synthesis-level datasets that capture the combined behaviour of the pipeline under well-defined assumptions.
+Downstream **ANALYZE** and **ASSESS** read **SYNTHESIZE** products; **CORRECT** and **PRIOR** consume the resulting distribution trees.
 
-The design follows the same principles as the rest of the pipeline: modular, configuration-driven, and HPC-ready, with explicit support for LSST Year 1 (Y1) and Year 10 (Y10) scenarios.
+## Layout
 
-All synthesis steps are implemented as standalone Python scripts controlled via argparse, with corresponding shell scripts used to manage execution environments, parallelisation, and computational resource allocation.
-
-## High-level Structure
-
+```
 SYNTHESIZE/
-├── Y1/ & Y10 # LSST Year 1 and Year 10 synthesis configuration
-│ ├── DIR.py # Direct synthesis products
-│ ├── HYBRID.py # Hybrid synthesis products
-│ ├── STACK.py # Stack synthesis products
-│ ├── TRUTH.py # Truth-based synthesis products
-│ ├── *.sh # Execution scripts and HPC environment control
-│
+├── Y1/
+│   ├── DIR.py
+│   ├── HYBRID.py
+│   ├── STACK.py
+│   ├── TRUTH.py
+│   └── *.sh
+├── Y10/
+│   └── (same script names)
 └── README.md
+```
 
-## Conceptual Role in the Pipeline
+## Strategies
 
-The SYNTHESIZE pipeline serves as the integration layer between summarised results and final valuation or interpretation stages. It aggregates outputs across:
+| Script | Meaning |
+|--------|---------|
+| **TRUTH** | Simulation-truth reference combinations. |
+| **DIR** | Direct, observation-facing branch without augmentation path. |
+| **HYBRID** | Blends observational and simulation-informed components. |
+| **STACK** | Aggregates multiple realisations or subsamples. |
 
-- Multiple methodological strategies (truth, direct, hybrid, stack)
-- Multiple tracer populations and analysis channels
-- Multiple experimental groupings or material categories
-- Multiple survey configurations (Y1 and Y10)
+Each script loops materials consistently so cross-scenario comparisons stay aligned.
 
-The resulting synthesis products are designed to be compact, internally consistent, and directly usable for downstream VALUE, INFO, or reporting modules.
+## Execution
 
-## Methodological Strategies
+- **Python** — Inputs point at **SUMMARIZE** trees; flags control which materials, how many realisations, and batching.  
+- **Shell / SLURM** — Often one allocation fan-outs independent tasks per material.
 
-Synthesis is organised explicitly by strategy, with each script producing a distinct class of combined products.
+Scripts are restart-safe: you can regenerate a single strategy without touching others.
 
-- TRUTH  
-  Synthesises results derived from simulation-truth information, serving as idealised or reference-level combinations.
+## Reproducibility
 
-- DIR  
-  Synthesises results based on direct, observation-facing quantities without simulation augmentation.
+Synthesis is a pure function of frozen **SUMMARIZE** artefacts plus CLI parameters. No shared mutable globals between jobs.
 
-- HYBRID  
-  Synthesises results that combine observational inputs with simulation-informed components.
+## Intended use
 
-- STACK  
-  Synthesises results obtained by stacking or aggregating multiple samples or realisations.
-
-This separation ensures clarity when interpreting synthesis outputs and tracing them back to underlying assumptions.
-
-## Material and Scenario Looping
-
-Each synthesis script operates over a predefined set of experimental groupings (for example `COPPER`, `GOLD`, `IRON`, `SILVER`, `TITANIUM`, `ZINC`) and processes them in a uniform, automated manner. This enables consistent synthesis across heterogeneous result sets while maintaining strict bookkeeping.
-
-The number of realisations or samples to synthesise is configurable via command-line arguments, allowing controlled scaling and sensitivity studies.
-
-## LSST Configurations
-
-The synthesis pipeline is parameterised for different survey depths.
-
-- Y1/  
-  Produces synthesis products corresponding to LSST Year 1-like data volumes and uncertainties, suitable for early-stage integration and assessment.
-
-- Y10/  
-  Produces synthesis products corresponding to LSST Year 10-like data, enabling full-depth synthesis and stress testing.
-
-Each configuration uses independent input paths and output directories, ensuring isolation between survey scenarios.
-
-## Execution Model
-
-### Python Scripts
-
-Each Python script uses argparse to expose configuration options, including:
-
-- Input paths to summarised results  
-- Selection of synthesis strategy and experimental grouping  
-- Number of samples or realisations to synthesise  
-- Parallelisation and batching controls  
-
-Scripts are designed to be stateless and restart-safe, enabling selective regeneration of synthesis products.
-
-### Shell Scripts
-
-Shell wrappers manage execution details external to synthesis logic. These scripts handle environment activation, computational resource requests such as CPU allocation, memory, and walltime, and parallel execution across experimental groupings using HPC schedulers.
-
-Typical execution involves launching independent synthesis tasks for each grouping within a single job allocation, as shown in the provided SLURM scripts .
-
-## Typical Usage
-
-The synthesis pipeline is executed from within a specific configuration directory, such as `Y1` or `Y10`, by running the corresponding shell scripts for the desired synthesis strategy. Individual synthesis scripts may be run independently depending on which combined products are required.
-
-## Reproducibility and Governance
-
-The SYNTHESIZE pipeline is designed with reproducibility and traceability as core principles. All synthesis products are generated from explicitly versioned summarised inputs, no hidden global state is shared between scripts, and survey configuration is cleanly separated from synthesis logic.
-
-This design ensures that synthesis-level results can always be traced back to their originating summaries and analyses.
-
-## Intended Use
-
-This folder provides the synthesis backbone for:
-
-- Integration of summarised results across methods and tracers  
-- Construction of unified, analysis-ready datasets  
-- Preparation of inputs for downstream VALUE and INFO modules  
-- Transparent aggregation of pipeline outputs under controlled assumptions  
-
-It is not intended to perform analysis or inference, but to assemble and harmonise existing results into coherent synthesis products.
+Feeding **ANALYZE**, **ASSESS**, **CORRECT**, and **PRIOR** with one coherent marginal layer per analysis variant—not for ad hoc hand-merging of pickles.

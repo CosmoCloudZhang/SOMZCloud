@@ -1,107 +1,57 @@
-# PRIOR Pipeline
+# PRIOR
 
-This folder defines the prior-construction stage of the pipeline, focused on deriving statistically well-motivated priors for nuisance parameters used in downstream inference and constraint analyses. It provides a structured framework for translating empirical performance diagnostics into prior distributions that encode residual uncertainty and systematic variation.
+The **PRIOR** stage builds statistically motivated priors on nuisance parameters for downstream inference. It aggregates information from **ANALYZE**, **ASSESS**, **SYNTHESIZE**, and **CORRECT** (including **SHIFT**, **SCALE**, and **SHAPE** products), but does not run likelihood sampling or cosmological MCMC itself.
 
-The PRIOR pipeline operates on outputs from the ANALYZE, ASSESS, CALIBRATE, and SYNTHESIZE stages. It does not perform inference or parameter estimation itself. Instead, it constructs prior distributions that summarise uncertainty in nuisance parameters arising from redshift calibration, modelling assumptions, and systematic effects.
+Like other stages, **PRIOR** is split into **Y1** and **Y10** configurations with `argparse` scripts and SLURM `*.sh` helpers.
 
-The design follows the same principles as the rest of the pipeline: modular, configuration-driven, and HPC-ready, with explicit support for LSST Year 1 (Y1) and Year 10 (Y10) scenarios.
+## Layout
 
-All prior-construction steps are implemented as standalone Python scripts controlled via argparse, with corresponding shell scripts used to manage execution environments, parallelisation, and computational resource allocation.
-
-## High-level Structure
-
+```
 PRIOR/
-├── Y1/ & Y10 # LSST Year 1 and Year 10 prior construction
-│ ├── EXPECTATION.py # Prior means from ensemble expectations
-│ ├── DEVIATION.py # Bias and spread of nuisance parameters
-│ ├── COVARIANCE.py # Covariance estimation for nuisance parameters
-│ ├── ENSEMBLE.py # Ensemble-based prior construction
-│ ├── *.sh # Execution scripts and HPC environment control
-│
+├── Y1/
+│   ├── EXPECTATION.py
+│   ├── DEVIATION.py
+│   ├── COVARIANCE.py
+│   ├── ENSEMBLE.py
+│   └── *.sh
+├── Y10/
+│   └── (same script names)
 └── README.md
+```
 
+## Role in the pipeline
 
-## Conceptual Role in the Pipeline
+**PRIOR** translates empirical pipeline variability into distributions over nuisance parameters:
 
-The PRIOR pipeline converts empirical performance information into probabilistic priors suitable for cosmological inference. It provides a principled way to propagate calibration and modelling uncertainty into downstream likelihood analyses by encoding uncertainty in nuisance parameters.
+- **EXPECTATION** — Central values (means / locations) of nuisance parameters across ensembles.  
+- **DEVIATION** — Scatter, bias structure, and higher-moment behaviour that set prior scales.  
+- **COVARIANCE** — Joint uncertainty between nuisances for multivariate priors.  
+- **ENSEMBLE** — Combines the above into consolidated prior products; reads corrected distributions from **CORRECT** subtrees (`SHIFT`, `SCALE`, `SHAPE`) when building shape-related ensembles (see code comments and output names such as `SHAPE.pdf`).
 
-Rather than relying on ad hoc or externally imposed priors, this stage derives priors directly from pipeline outputs, ensuring internal consistency between calibration, assessment, and inference.
+This keeps inference priors aligned with the same simulations, assessments, and correction choices used in the rest of SOMZCloud.
 
-## Prior Construction Components
+## LSST configurations
 
-Priors are derived using several complementary statistical components.
+- **Y1/** — Wider, more conservative priors reflecting early-survey systematics.  
+- **Y10/** — Tighter priors appropriate to full-depth statistical errors (still conservative where needed).
 
-### Expectation Values
+Input and output roots are disjoint between Y1 and Y10 to avoid cross-talk.
 
-- EXPECTATION  
-  Computes ensemble expectation values of nuisance parameters, which define the central values of prior distributions.
+## Execution
 
-### Deviations and Scatter
+- **Python** — Paths, grouping of nuisances, aggregation rules, and export formats are CLI flags.  
+- **Shell** — Wrappers handle allocation, env activation, and batch fan-out on HPC.
 
-- DEVIATION  
-  Quantifies bias, scatter, and higher-order variation in nuisance parameters across configurations or realisations. These statistics determine prior widths and asymmetries.
+Typical order: **EXPECTATION** → **DEVIATION** → **COVARIANCE** → **ENSEMBLE**, rerunning later steps when upstream metrics or **CORRECT** branches change.
 
-### Covariance Structure
+## Reproducibility
 
-- COVARIANCE  
-  Estimates covariance matrices between nuisance parameters, capturing correlated uncertainties that must be accounted for in joint inference.
+All prior artefacts are derived from versioned upstream directories; there is no shared mutable state between scripts. Survey tags and scenario names are explicit in paths so priors can be reproduced or differenced across pipeline versions.
 
-### Ensemble-Based Priors
+## Intended use
 
-- ENSEMBLE  
-  Combines expectation values, deviations, and covariance information into full prior distributions, potentially multivariate, suitable for direct use in likelihood analyses.
+- Nuisance priors for **CONSTRAIN**-style or external likelihood codes.  
+- Consistent propagation of calibration and correction uncertainty.  
+- Documentation of systematic floors via ensemble spread.
 
-This modular decomposition allows individual components to be inspected, validated, and updated independently.
-
-## LSST Configurations
-
-The prior-construction pipeline is parameterised for different survey depths.
-
-- Y1/  
-  Constructs priors appropriate for LSST Year 1-like data, reflecting larger uncertainties and stronger systematic effects.
-
-- Y10/  
-  Constructs priors appropriate for LSST Year 10-like data, enabling tighter but still conservative treatment of nuisance parameters.
-
-Each configuration uses independent input paths and output directories to ensure isolation between survey scenarios.
-
-## Execution Model
-
-### Python Scripts
-
-Each Python script uses argparse to expose configuration options, including:
-
-- Input paths to assessment and calibration products  
-- Selection of nuisance parameters and grouping schemes  
-- Statistical assumptions and aggregation controls  
-- Output formats for prior products  
-- Parallelisation or batching options  
-
-Scripts are designed to be stateless and restart-safe, enabling controlled regeneration of priors under updated assumptions.
-
-### Shell Scripts
-
-Shell wrappers manage execution details external to the prior logic. These scripts handle environment activation, computational resource requests such as CPU allocation, memory, and walltime, and parallel execution on HPC systems.
-
-This separation ensures portability across local machines and high-performance computing environments.
-
-## Typical Usage
-
-The prior pipeline is executed from within a specific configuration directory, such as `Y1` or `Y10`, by running the corresponding shell scripts for expectation, deviation, covariance, and ensemble construction. Individual steps may be run independently depending on the required level of detail.
-
-## Reproducibility and Governance
-
-The PRIOR pipeline is designed with reproducibility and traceability as core principles. All prior products are derived from explicitly versioned upstream inputs, no hidden global state is shared between scripts, and survey configuration is cleanly separated from prior-construction logic.
-
-This design ensures that nuisance parameter priors are transparent, auditable, and scientifically justified.
-
-## Intended Use
-
-This folder provides the prior backbone for:
-
-- Construction of nuisance parameter priors for cosmological inference  
-- Propagation of calibration and modelling uncertainty  
-- Consistent treatment of correlated systematics  
-- Inputs to downstream CONSTRAIN and inference pipelines  
-
-It is intended to support principled, data-informed prior specification rather than ad hoc or externally imposed choices.
+**PRIOR** is meant for data- and pipeline-informed priors, not arbitrary hand-set hyperpriors disconnected from the SOMZCloud workflow.

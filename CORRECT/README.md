@@ -1,101 +1,68 @@
-# CALIBRATE Pipeline
+# CORRECT
 
-This folder defines the calibration stage of the pipeline, focused on correcting residual biases in redshift distributions using multiple parameterisations. It provides a structured framework for applying controlled transformations to marginal and conditional redshift distributions in order to mitigate systematic offsets identified in upstream analysis and assessment stages.
+The **CORRECT** stage applies explicit, low-dimensional transformations to redshift distributions to mitigate residual biases identified in **ANALYZE** and **ASSESS**. It does not train new models or perform inference; it implements auditable **shift**, **scale**, and **shape** mappings on existing marginal (and related) products.
 
-The CALIBRATE pipeline operates on outputs from the ANALYZE and ASSESS modules and does not perform modelling, training, or inference itself. Instead, it applies explicit, parameterised calibration mappings designed to correct residual biases while preserving the statistical structure of the distributions.
+The layout mirrors the rest of SOMZCloud: **Y1** and **Y10** survey configurations, Python entry points with `argparse`, and SLURM-friendly `*.sh` wrappers.
 
-The design follows the same principles as the rest of the pipeline: modular, configuration-driven, and HPC-ready, with explicit support for LSST Year 1 (Y1) and Year 10 (Y10) scenarios.
+## Layout
 
-All calibration steps are implemented as standalone Python scripts controlled via argparse, with corresponding shell scripts used to manage execution environments, parallelisation, and computational resource allocation.
-
-## High-level Structure
-
-CALIBRATE/
-├── Y1/ & Y10 # LSST Year 1 and Year 10 calibration configuration
-│ ├── SHIFT.py # Additive bias correction
-│ ├── SCALE.py # Multiplicative rescaling correction
-│ ├── CORRECT.py # Combined or general calibration mapping
-│ ├── *.sh # Execution scripts and HPC environment control
-│
+```
+CORRECT/
+├── Y1/
+│   ├── SHIFT.py
+│   ├── SCALE.py
+│   ├── SHAPE.py
+│   └── *.sh
+├── Y10/
+│   ├── SHIFT.py
+│   ├── SCALE.py
+│   ├── SHAPE.py
+│   └── *.sh
 └── README.md
+```
 
+On disk, outputs are organised under a user-defined base path, typically with separate subtrees for each correction family, for example:
 
-## Conceptual Role in the Pipeline
+`…/CORRECT/<scenario_tag>/SHIFT/`, `…/CORRECT/<scenario_tag>/SCALE/`, `…/CORRECT/<scenario_tag>/SHAPE/`
 
-The CALIBRATE pipeline bridges performance evaluation and downstream valuation. It takes diagnostic information about bias, dispersion, and deviation from the ANALYZE and ASSESS stages and applies controlled corrections to redshift distributions.
+Downstream **PRIOR** scripts (e.g. `ENSEMBLE.py`) consume these trees alongside other pipeline products; ensemble figures use the **shape** branch where applicable (e.g. `SHAPE.pdf`).
 
-Calibration is performed explicitly and transparently, using simple but interpretable parameterisations. This ensures that any bias mitigation remains auditable, reproducible, and separable from modelling assumptions.
+## Role in the pipeline
 
-## Calibration Parameterisations
+**CORRECT** sits between performance evaluation and prior construction:
 
-Residual biases are corrected using several complementary parameterisations.
+- Inputs: diagnostics and distribution products from **ANALYZE**, **ASSESS**, and related **SYNTHESIZE** paths (see script help for exact arguments).  
+- Outputs: corrected distributions and sidecar metrics suitable for sensitivity studies and for **PRIOR**.
 
-### Additive Shift
+Corrections are intentionally simple so they remain interpretable and separable from modelling choices.
 
-- SHIFT  
-  Applies additive corrections to redshift distributions, targeting systematic offsets in central tendency (for example, mean or median redshift bias).
+## Parameterisations
 
-### Multiplicative Scaling
+| Script   | Role |
+|----------|------|
+| **SHIFT** | Additive adjustment of redshift (centroid / offset biases). |
+| **SCALE** | Multiplicative rescaling of redshift (width / effective uncertainty biases). |
+| **SHAPE** | Combined or more flexible low-order mapping that can encode shift- and scale-like effects together. |
 
-- SCALE  
-  Applies multiplicative rescaling to redshift distributions, correcting biases in width, dispersion, or effective uncertainty.
+Run only the subset your analysis requires; each script is independent and restart-safe.
 
-### General Correction Mapping
+## Execution
 
-- CORRECT  
-  Applies combined or more flexible correction mappings that incorporate both shift and scale effects, or other low-dimensional calibration parameters.
+- **Python** — Each script exposes paths, binning, bounds, and parallel/batch options via `argparse`.  
+- **Shell / SLURM** — `*.sh` files request resources, load modules or Conda envs, and launch jobs (e.g. job names like `CORRECT_Y1_SHAPE`).
 
-These parameterisations are designed to be minimal yet expressive, allowing systematic effects to be corrected without introducing unnecessary complexity.
+Run from `Y1/` or `Y10/` (or call scripts with absolute paths) so relative path conventions in your config stay consistent.
 
-## LSST Configurations
+## Reproducibility
 
-The calibration pipeline is parameterised for different survey depths.
+- No hidden global state; inputs and outputs are path-addressable.  
+- Corrections are orthogonal to **MODEL** training: they post-process fixed upstream artefacts.  
+- Document which **SHIFT** / **SCALE** / **SHAPE** run feeds **PRIOR** so ensembles remain traceable.
 
-- Y1/  
-  Applies calibration appropriate for LSST Year 1-like data volumes and uncertainties, focusing on robust bias mitigation under limited data conditions.
+## Intended use
 
-- Y10/  
-  Applies calibration for LSST Year 10-like data, enabling more precise correction of smaller residual systematics at full survey depth.
+- Mitigate residual population-level redshift bias after ML and synthesis.  
+- Propagate correction choices into **PRIOR** for nuisance parameters.  
+- Run ablations over correction order and strength.
 
-Each configuration uses independent input paths and output directories to ensure isolation between survey scenarios.
-
-## Execution Model
-
-### Python Scripts
-
-Each Python script uses argparse to expose configuration options, including:
-
-- Input paths to redshift distributions and assessment diagnostics  
-- Choice of calibration parameterisation  
-- Calibration parameters and bounds  
-- Numerical controls and binning choices  
-- Parallelisation or batching options  
-
-Scripts are designed to be stateless and restart-safe, enabling controlled experimentation with different calibration strategies.
-
-### Shell Scripts
-
-Shell wrappers manage execution details external to the calibration logic. These scripts handle environment activation, computational resource requests such as CPU allocation, memory, and walltime, and parallel execution on HPC systems.
-
-This separation ensures portability across local machines and high-performance computing environments.
-
-## Typical Usage
-
-The calibration pipeline is executed from within a specific configuration directory, such as `Y1` or `Y10`, by running the corresponding shell scripts for the desired calibration parameterisation. Individual calibration scripts may be run independently depending on which corrections are required.
-
-## Reproducibility and Governance
-
-The CALIBRATE pipeline is designed with reproducibility and traceability as core principles. All calibration products are generated from explicitly versioned upstream inputs, no hidden global state is shared between scripts, and calibration logic is cleanly separated from analysis and assessment stages.
-
-This design ensures that any applied bias corrections can be fully traced, reproduced, and justified.
-
-## Intended Use
-
-This folder provides the calibration backbone for:
-
-- Mitigation of residual redshift biases  
-- Controlled correction of marginal and conditional distributions  
-- Sensitivity studies over calibration parameterisations  
-- Preparation of calibrated inputs for downstream VALUE and constraint analyses  
-
-It is intended to support transparent, analysis-driven bias correction rather than opaque or data-driven re-training.
+**CORRECT** is not a substitute for improved training data or architecture; it is a transparent adjustment layer for already-published or frozen model outputs.

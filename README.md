@@ -1,76 +1,88 @@
-# SOMZCloud: Simulation-Informed Machine-Learning for Redshift Calibration
+# SOMZCloud: Simulation-Informed Machine Learning for Redshift Calibration
 
-SOMZCloud is an end-to-end, modular pipeline for photometric redshift calibration, validation, and uncertainty propagation based on simulation-informed machine-learning methods. The project is designed to support Stage-IV cosmology analyses, including LSST, Euclid, and Roman, with an emphasis on population-level redshift distribution calibration, robustness to domain shift between simulations and observations, and reproducibility and scientific traceability for downstream cosmological inference.
+SOMZCloud is a modular, end-to-end pipeline for photometric redshift calibration, validation, and uncertainty propagation using simulation-informed machine-learning methods. It targets Stage-IV cosmology use cases (LSST, Euclid, Roman), with emphasis on population-level redshift distribution calibration, robustness to simulation–data domain shift, and reproducible traceability for downstream inference.
 
-The codebase adopts a component-based architecture, in which each directory corresponds to a well-defined stage of the scientific workflow and can be used independently or composed into an end-to-end analysis pipeline.
+Each top-level directory is a self-contained stage that can be run alone or composed into a full workflow. Stage-specific conventions, scripts, and SLURM wrappers are documented in that folder’s `README.md`.
 
-## Scientific Scope
+## Scientific scope
 
-SOMZCloud supports:
+- Construction, validation, and comparison of ensemble redshift distributions  
+- Calibration using spectroscopic and simulation-based reference samples  
+- Uncertainty quantification and propagation toward cosmological observables  
+- Controlled evaluation of performance under systematic and configuration changes  
 
-- Construction, validation, and comparison of ensemble redshift distributions
-- Calibration using spectroscopic and simulation-based reference samples
-- Uncertainty quantification and its propagation into cosmological observables
-- Reproducible evaluation of model performance under controlled systematic variations
+The design aligns naturally with cosmic shear, galaxy–galaxy lensing, and clustering analyses that rely on well-characterised redshift distributions.
 
-The pipeline is designed to integrate naturally into analyses of cosmic shear, galaxy–galaxy lensing, and galaxy clustering.
-
-## Repository Structure
-
-Each top-level directory corresponds to a logical component of the pipeline. Detailed documentation is provided in a dedicated `README.md` within each folder.
+## Repository layout
 
 ```
 SOMZCloud/
-├── ANALYZE/        # Diagnostic analysis and validation metrics for conditional redshift distributions
-├── ASSESS/         # Quality assessment and performance evaluation for marginal redshift distributions
-├── CALIBRATE/      # Redshift calibration methods and workflows
-├── CELL/           # Investigate impact on summary statistics of angular power spectra
-├── COMPARE/        # Comparison model without augmentation training and estimation 
-├── CONSTRAIN/      # Constrain model with full augmentation training and estimation
-├── DATASET/        # Dataset definitions, loaders, and metadata
-├── FIGURE/         # Figure generation and plotting scripts
-├── INFO/           # Configuration, metadata, and run information
-├── MODEL/          # Fiducial machine-learning models and training logic
-├── PRIOR/          # Prior assumptions and population models
-├── SUMMARIZE/      # Summarisation for conditional redshift distributions
-├── SYNTHESIZE/     # Synthesis of marginal redshift distributions with uncertainty quantification
-├── VALUE/          # Derived quantities and summary statistics
-├── LICENSE         # BSD-3-Clause license text
-└── README.md       # Top-level project overview
+├── DATASET/      # Catalogue construction, observing realism, SOM, augmentation
+├── MODEL/        # Fiducial ML training, estimation, and evaluation
+├── COMPARE/      # Model vs observational spectroscopy (no simulation augmentation)
+├── CONSTRAIN/    # Stress tests and bounds using simulation-only (incl. augmentation)
+├── FIGURE/       # Publication-style figures from upstream products
+├── SUMMARIZE/    # Aggregation of model/compare/constraint outputs by tracer & strategy
+├── SYNTHESIZE/   # Unified marginal products across strategies and materials
+├── ANALYZE/      # Diagnostics and metrics for marginal redshift distributions
+├── ASSESS/       # Diagnostics and metrics for conditional redshift distributions
+├── CORRECT/      # Explicit corrections: shift, scale, and shape
+├── PRIOR/        # Nuisance priors from ensemble statistics (uses CORRECT among others)
+├── INFO/         # Survey, galaxy, lensing, and cosmology configuration helpers
+├── LOG/          # Runtime / job logging (optional convention)
+├── LICENSE
+└── README.md
 ```
 
-## Design Principles
+Further cosmology or summary-statistics stages (e.g. angular power spectra, global “value” pipelines) are left to separate workflows that consume `PRIOR` and `INFO` products.
 
-- **Modularity**: Each component can be used independently or composed into end-to-end analysis pipelines.
-- **Reproducibility**: Deterministic configurations with explicitly documented assumptions and processing choices.
-- **Scientific traceability**: Clear and auditable mapping from inputs, through assumptions and methods, to final outputs.
-- **Survey agnosticism**: Designed to generalise across LSST, Euclid, Roman, and a range of simulation suites.
-- **Ethical and responsible machine learning**: Explicit treatment of bias, uncertainty, and known methodological limitations.
+## End-to-end workflow (recommended order)
 
-## Getting Started
+1. **DATASET** — Build LSST-like catalogues, SOM cells, selections, augmentation, and association.  
+2. **MODEL** — Train and evaluate photometric models; produce point estimates and intermediates.  
+3. **COMPARE** / **CONSTRAIN** — Benchmark against spec samples (COMPARE) or simulation-only stress cases (CONSTRAIN).  
+4. **FIGURE** — Visual QA and paper figures from dataset and model outputs.  
+5. **SUMMARIZE** — Collapse results by material (e.g. COPPER, GOLD, …), tracer (lens/source), and strategy (truth, direct, hybrid, stack).  
+6. **SYNTHESIZE** — Merge summaries into analysis-ready marginal ensembles.  
+7. **ANALYZE** / **ASSESS** — Quantify marginal vs conditional distribution quality.  
+8. **CORRECT** — Apply transparent **SHIFT** (additive), **SCALE** (multiplicative), and **SHAPE** (combined) corrections informed by those diagnostics.  
+9. **PRIOR** — Turn expectations, deviations, covariances, and ensembles (including CORRECT outputs) into nuisance priors for inference.  
+10. **INFO** — Cosmology and survey metadata for any downstream likelihood or forecasting code.
+
+Each stage writes explicit, path-stable products; rerun order is flexible when upstream artefacts are frozen.
+
+## Design principles
+
+- **Modularity** — Stages are loosely coupled via filesystem contracts.  
+- **Reproducibility** — Argparse-driven scripts, documented paths, seeds where applicable.  
+- **Traceability** — Clear mapping from inputs and assumptions to figures and priors.  
+- **Survey agnosticism** — Y1 and Y10 layouts mirror different depth/volume regimes.  
+- **Responsible ML** — Uncertainty and limitations are first-class, not afterthoughts.
+
+## Getting started
 
 1. Clone the repository:
 
-   ```
-   bash
+   ```bash
    git clone git@github.com:CosmoCloudZhang/SOMZCloud.git
    cd SOMZCloud
    ```
-2. Data reduction, catalogue manipulation and initial processing in `DATASET`.
-3. Train machine-learning models under different configurations and conduct photometric redshift point estimates using `MODEL`, `COMPARE`, and `CONSTRAIN`.
-4. Generate diagnostic plots for photometric redshift point estimates using `FIGURE`.
-5. Construct conditional redshift distributions using `SUMMARIZE`.
-6. Derive marginal redshift distributions and systematic uncertainties using `SYNTHESIZE`.
-7. Evaluate ensemble redshift distribution properties and performance metrics using `ANALYZE` and `ASSESS`.
-8. Correct residual systematic biases and define priors on nuisance parameters using `CALIBRATE` and `PRIOR`.
-9. Propagate redshift distribution uncertainties to angular power spectra at `CELL` using configuration and metadata defined in `INFO`.
-10. Quantify the impact of redshift uncertainties on cosmological parameter inference using `VALUE`.
+
+2. Follow **DATASET** for catalogue generation and augmentation.  
+3. Use **MODEL**, **COMPARE**, and **CONSTRAIN** for training and controlled benchmarks.  
+4. Use **FIGURE** for diagnostic and publication plots.  
+5. Run **SUMMARIZE** then **SYNTHESIZE** to build marginal ensembles.  
+6. Run **ANALYZE** and **ASSESS** for population-level quality metrics.  
+7. Run **CORRECT** (`SHIFT` → `SCALE` → `SHAPE` as needed), then **PRIOR** for nuisance priors.  
+8. Point external cosmology pipelines at **PRIOR** outputs and **INFO** configuration.
+
+Environment activation, modules, and SLURM directives are stage-specific; see each `README.md` and the accompanying `*.sh` scripts.
 
 ## Citation
 
 If you use SOMZCloud in a publication, please cite:
 
-```
+```bibtex
 @ARTICLE{2025MNRAS.tmp.2117Z,
        author = {{Zhang}, Yun-Hao and {Zuntz}, Joe and {Moskowitz}, Irene and {Gawiser}, Eric and {Kuijken}, Konrad and {Asgari}, Marika and {Hoekstra}, Henk and {Malz}, Alex I. and {Yan}, Ziang and {Zhang}, Tianqing},
         title = "{Improved photometric redshift estimations through self-organising map-based data augmentation}",
@@ -89,22 +101,12 @@ archivePrefix = {arXiv},
 
 ## License
 
-This project is distributed under the BSD 3-Clause License.
+This project is distributed under the BSD 3-Clause License. Copyright © 2025 Yun-Hao Zhang. See `LICENSE` for full terms.
 
-Copyright © 2025 Yun-Hao Zhang. All rights reserved.
+## Data availability
 
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the conditions set out in the `LICENSE` file are met. The software is provided “as is”, without warranty of any kind, express or implied. See the `LICENSE` file in the root of this repository for the full license text.
-
-## Data Availability
-
-Data products used or generated by SOMZCloud are stored on the National Energy Research Scientific Computing Center (NERSC) Community File System (CFS).
-
-Access conditions and permitted usage are governed by the policies of the original data providers, relevant survey collaborations, and NERSC allocation agreements. Availability of specific datasets may therefore vary depending on user affiliation and authorization.
+Data products referenced by the pipeline are stored on the NERSC Community File System (CFS). Access depends on survey collaboration policies, data-provider terms, and your NERSC allocation.
 
 ## Contact
 
-For questions, issues, or collaboration inquiries:
-
-Open a GitHub issue
-
-Or contact the repository maintainer directly
+Open a GitHub issue or contact the repository maintainer for questions and collaboration.

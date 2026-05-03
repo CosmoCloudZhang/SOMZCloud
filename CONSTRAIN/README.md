@@ -1,88 +1,43 @@
-# CONSTRAIN Pipeline
+# CONSTRAIN
 
-This folder defines the constraint stage of the pipeline. It operates on model outputs produced by the MODEL module and simulated datasets constructed in the DATASET module, with the purpose of quantifying parameter constraints and bounding systematic effects under controlled, worst-case scenarios.
+**CONSTRAIN** quantifies how tightly parameters can be recovered—or how large systematic residuals can grow—using **simulation-only** data products from **DATASET** (including augmentation where enabled) together with **MODEL** outputs. It **does not** use observational spectroscopy.
 
-Unlike the COMPARE stage, the CONSTRAIN pipeline does not use any observational spectroscopic samples. All training and inference are performed exclusively on simulated data products, including simulation-based augmentation where applicable. This design allows the pipeline to probe limiting cases and to benchmark the maximum systematic biases that may arise in the absence of observational anchoring.
+Use **COMPARE** when you need empirical anchoring to real spectra; use **CONSTRAIN** for conservative envelopes and augmentation stress paths.
 
-The design follows the same principles as the rest of the pipeline: modular, configuration-driven, and HPC-ready, with explicit support for LSST Year 1 (Y1) and Year 10 (Y10) scenarios.
+## Layout
 
-All constraint steps are implemented as standalone Python scripts controlled via argparse, with corresponding shell scripts used to manage execution environments, parallelisation, and computational resource allocation.
-
-## High-level Structure
-
+```
 CONSTRAIN/
-├── Y1/ & Y10 # LSST Year 1 and Year 10 constraint configuration
-│ ├── REFERENCE.py # Define reference simulations and fiducial scenarios
-│ ├── TARGET.py # Define constraint targets and parameters of interest
-│ ├── CONSTRAIN.py # Perform constraint estimation and bias propagation
-│ ├── EVALUATE.py # Quantify bias, uncertainty, and robustness metrics
-│ ├── INFORM.py # Diagnostic summaries and constraint metadata
-│ ├── *.sh # Execution scripts and HPC environment control
-│
+├── Y1/
+│   ├── REFERENCE.py
+│   ├── TARGET.py
+│   ├── INFORM.py
+│   ├── ESTIMATE.py
+│   ├── EVALUATE.py
+│   └── *.sh
+├── Y10/
+│   └── (same script names)
 └── README.md
+```
 
-## Conceptual Pipeline
+## Conceptual workflow
 
-The modelling pipeline follows an ordered sequence of steps. Each stage consumes versioned outputs from the DATASET pipeline and produces explicit intermediate or final model products that are written to disk.
+1. **INFORM** — Wire together simulation roots, augmentation flags, and model artefacts.  
+2. **REFERENCE** — Fiducial cosmology or simulation scenario against which biases are measured.  
+3. **TARGET** — Parameters or summary statistics whose recoverability you probe.  
+4. **ESTIMATE** — Core simulation-only fitting / sampling / stress logic for constraint forecasts (see script docstrings).  
+5. **EVALUATE** — Summarise offsets, degeneracies, and failure modes relative to **REFERENCE**.
 
-1. `INFORM`  
-   Defines the modelling context and bookkeeping for a run, including input dataset references, configuration metadata, and diagnostic summaries used to standardise downstream estimation and evaluation. This stage establishes consistent paths, identifiers, and reporting products for the rest of the modelling workflow.
+Outputs are explicit tables and plots suitable for **SUMMARIZE** and **FIGURE**.
 
-2. `ESTIMATE`  
-   Performs parameter estimation or model fitting under the specified configuration, mapping inputs and modelling assumptions to target quantities. Depending on the analysis setup, this step may involve likelihood evaluation, optimisation, sampling, or other estimation procedures, and writes fitted parameters and associated products to disk.
+## LSST configurations
 
-3. `EVALUATE`  
-   Assesses model quality and robustness using validation metrics, residual diagnostics, uncertainty checks, and internal consistency tests. Outputs from this stage are intended to verify that the estimation results meet analysis requirements and to identify failure modes.
+**Y1** paths emphasise noise-dominated regimes; **Y10** paths explore systematics at high \(n\). Never mix outputs between epochs in the same directory.
 
-4. `TARGET`  
-   Specifies the modelling targets and observables used for estimation and evaluation, such as summary statistics, redshift distributions, latent representations, or other derived quantities constructed from dataset products. This stage provides the explicit definitions and selections that the estimation step aims to match.
+## Execution
 
-5. `REFERENCE`  
-   Defines reference or baseline models used for comparison and calibration, such as fiducial parameter sets, simulation-derived priors, or externally defined benchmarks. The reference model provides a controlled baseline against which targets, estimates, and evaluation results are interpreted.
+Python CLIs for all science switches; shell wrappers for batch systems. Statelessness enables large parameter sweeps.
 
-## LSST Configurations
+## Intended use
 
-The constraint pipeline is parameterised for different survey depths and simulation regimes.
-
-- Y1/  
-  Uses LSST Year 1-like simulated data volumes and noise properties, enabling early-stage constraint forecasts seen as conservative or pessimistic scenarios.
-
-- Y10/  
-  Uses LSST Year 10-like simulated data, enabling high-precision constraint forecasts and stress testing of systematic effects at full survey depth.
-
-Each configuration provides independent configuration files and output directories, dedicated shell scripts for execution and resource management, and isolation of results to avoid cross-configuration interference.
-
-## Execution Model
-
-### Python Scripts
-
-Each Python script uses argparse to expose configuration options, including simulated data paths, model outputs, parameter definitions, random seeds, and parallelisation or batching options.
-
-Scripts are designed to be stateless, reproducible, and restart-safe, enabling controlled re-runs and systematic exploration of systematic uncertainties.
-
-### Shell Scripts
-
-Shell wrappers manage execution details external to the constraint logic. These scripts handle environment activation, computational resource requests such as CPU or GPU allocation, memory, and walltime, and parallel execution strategies on HPC systems.
-
-This separation between constraint logic and execution governance ensures portability across local machines and high-performance computing environments.
-
-## Typical Usage
-
-The constraint pipeline is executed from within a specific configuration directory, such as Y1 or Y10, by running the corresponding shell scripts in sequence. The exact ordering and subset of steps may vary depending on the constraint strategy and analysis configuration.
-
-## Reproducibility and Governance
-
-The pipeline is designed with reproducibility and auditability as core principles. Deterministic seeding is supported throughout, all intermediate and final constraint products are written explicitly to disk, no hidden global state is shared between stages, and survey configuration is cleanly separated from inference logic.
-
-This design supports transparent stress testing, controlled bias propagation, and reproducible constraint forecasts.
-
-## Intended Use
-
-This folder provides the constraint backbone for:
-
-- Worst-case and conservative constraint forecasts  
-- Quantification of maximum systematic biases  
-- Sensitivity studies using simulation-only data  
-- Stress testing modelling assumptions prior to observational calibration  
-
-It is not intended to provide validated constraints against real data, but rather to establish conservative bounds and failure envelopes that inform interpretation of observational analyses.
+Pessimistic forecasts, augmentation sensitivity, and systematic ceilings—not a replacement for spectroscopic validation (**COMPARE**).
