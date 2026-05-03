@@ -2,8 +2,8 @@ import os
 import time
 import h5py
 import numpy
-import scipy
 import argparse
+from scipy import integrate
 
 
 def main(tag, name, index, folder):
@@ -52,12 +52,12 @@ def main(tag, name, index, folder):
         data_source_stack = file['ensemble']['data'][...]
     
     data_source = numpy.sqrt(numpy.maximum(data_source_dir * data_source_stack, 0.0))
-    data_factor = scipy.integrate.trapezoid(x=z_grid, y=data_source, axis=2)[:, :, numpy.newaxis]
+    data_factor = integrate.trapezoid(x=z_grid, y=data_source, axis=2)[:, :, numpy.newaxis]
     data_source = numpy.divide(data_source, data_factor, out=numpy.zeros((bin_source_size, data_size, grid_size + 1)), where=data_factor > 0)
     
     # Average
     average_source = numpy.mean(data_source, axis=1)
-    average_factor = scipy.integrate.trapezoid(x=z_grid, y=average_source, axis=1)[:, numpy.newaxis]
+    average_factor = integrate.trapezoid(x=z_grid, y=average_source, axis=1)[:, numpy.newaxis]
     average_source = numpy.divide(average_source, average_factor, out=numpy.zeros((bin_source_size, grid_size + 1)), where=average_factor > 0)
     
     # Save

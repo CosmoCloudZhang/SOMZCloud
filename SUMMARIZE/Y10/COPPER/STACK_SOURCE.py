@@ -2,9 +2,9 @@ import os
 import time
 import h5py
 import numpy
-import scipy
 import argparse
 from rail import core
+from scipy import integrate
 from sklearn import cluster
 
 
@@ -158,20 +158,20 @@ def main(tag, name, index, folder):
                 ensemble_cluster = numpy.zeros((cluster_size, grid_size + 1))
                 numpy.add.at(ensemble_cluster, application_cluster_id_data[application_cluster_mask], (z_pdf[application_indices[application_cluster_mask], :] * application_weight_data[application_cluster_mask, numpy.newaxis]))
                 
-                factor_cluster = scipy.integrate.trapezoid(x=z_grid, y=ensemble_cluster, axis=1)[:, numpy.newaxis]
+                factor_cluster = integrate.trapezoid(x=z_grid, y=ensemble_cluster, axis=1)[:, numpy.newaxis]
                 ensemble_cluster = numpy.divide(ensemble_cluster, factor_cluster, out=numpy.zeros((cluster_size, grid_size + 1)), where=factor_cluster > 0)
                 
                 # Ensemble
                 ensemble = numpy.average(ensemble_cluster, axis=0, weights=application_cluster_count_data)
                 
-                data_factor = scipy.integrate.trapezoid(x=z_grid, y=ensemble, axis=0)
+                data_factor = integrate.trapezoid(x=z_grid, y=ensemble, axis=0)
                 data_source[m, n, :] = numpy.divide(ensemble, data_factor, out=numpy.zeros((grid_size + 1)), where=data_factor > 0)
         else:
             data_source[m, :, :] = numpy.zeros((data_size, grid_size + 1))
     
     # Average
     average_source = numpy.mean(data_source, axis=1)
-    average_factor = scipy.integrate.trapezoid(x=z_grid, y=average_source, axis=1)[:, numpy.newaxis]
+    average_factor = integrate.trapezoid(x=z_grid, y=average_source, axis=1)[:, numpy.newaxis]
     average_source = numpy.divide(average_source, average_factor, out=numpy.zeros((bin_source_size, grid_size + 1)), where=average_factor > 0)
     
     # Save

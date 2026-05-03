@@ -2,8 +2,8 @@ import os
 import time
 import h5py
 import numpy
-import scipy
 import argparse
+from scipy import integrate
 
 
 def synthesize(data, z_grid, number, sample_size, random_generator):
@@ -15,7 +15,7 @@ def synthesize(data, z_grid, number, sample_size, random_generator):
     beta = numpy.ravel(random_generator.dirichlet(alpha, size=1))
     
     value = numpy.maximum(numpy.sum(beta[:, numpy.newaxis, numpy.newaxis] * data[indices, :, select, :], axis=0), 0.0)
-    factor = scipy.integrate.trapezoid(x=z_grid, y=value, axis=1)[:, numpy.newaxis]
+    factor = integrate.trapezoid(x=z_grid, y=value, axis=1)[:, numpy.newaxis]
     
     return numpy.divide(value, factor, out=numpy.zeros(value.shape), where=factor != 0)
 
@@ -85,14 +85,14 @@ def main(tag, name, number, folder):
     data_lens = numpy.stack([synthesize(summarize_lens, z_grid, number, sample_size, random_generator) for _ in range(data_size)], axis=0)
     
     average_lens = numpy.mean(data_lens, axis=0)
-    factor_lens = scipy.integrate.trapezoid(x=z_grid, y=average_lens, axis=1)[:, numpy.newaxis]
+    factor_lens = integrate.trapezoid(x=z_grid, y=average_lens, axis=1)[:, numpy.newaxis]
     average_lens = numpy.divide(average_lens, factor_lens, out=numpy.zeros((bin_lens_size, grid_size + 1)), where=factor_lens != 0)
     
     # Synthesize Source
     data_source = numpy.stack([synthesize(summarize_source, z_grid, number, sample_size, random_generator) for _ in range(data_size)], axis=0)
     
     average_source = numpy.mean(data_source, axis=0)
-    factor_source = scipy.integrate.trapezoid(x=z_grid, y=average_source, axis=1)[:, numpy.newaxis]
+    factor_source = integrate.trapezoid(x=z_grid, y=average_source, axis=1)[:, numpy.newaxis]
     average_source = numpy.divide(average_source, factor_source, out=numpy.zeros((bin_source_size, grid_size + 1)), where=factor_source != 0)
     
     with h5py.File(os.path.join(synthesize_folder, '{}/{}/DIR.hdf5'.format(tag, name)), 'w') as file:

@@ -2,8 +2,8 @@ import os
 import time
 import h5py
 import numpy
-import scipy
 import argparse
+from scipy import integrate, interpolate
 
 
 def main(tag, name, label, folder):
@@ -74,13 +74,13 @@ def main(tag, name, label, folder):
     
     for m in range(bin_lens_size):
         z_scale = average_mu_lens[m] + (z_grid[numpy.newaxis, :] - average_mu_lens[m] - zeta_lens[:, m, numpy.newaxis]) / gamma_lens[:, m, numpy.newaxis]
-        scale_data_lens[:, m, :] = numpy.maximum(scipy.interpolate.CubicSpline(z_grid, average_lens[m, :], extrapolate=True)(z_scale), 0)
+        scale_data_lens[:, m, :] = numpy.maximum(interpolate.CubicSpline(z_grid, average_lens[m, :], extrapolate=True)(z_scale), 0)
     
-    factor_lens = scipy.integrate.trapezoid(x=z_grid, y=scale_data_lens, axis=2)[:, :, numpy.newaxis]
+    factor_lens = integrate.trapezoid(x=z_grid, y=scale_data_lens, axis=2)[:, :, numpy.newaxis]
     scale_data_lens = numpy.divide(scale_data_lens, factor_lens, out=numpy.zeros((data_size, bin_lens_size, grid_size + 1)), where=factor_lens > 0)
     
     scale_average_lens = numpy.mean(scale_data_lens, axis=0)
-    average_factor_lens = scipy.integrate.trapezoid(x=z_grid, y=scale_average_lens, axis=1)[:, numpy.newaxis]
+    average_factor_lens = integrate.trapezoid(x=z_grid, y=scale_average_lens, axis=1)[:, numpy.newaxis]
     scale_average_lens = numpy.divide(scale_average_lens, average_factor_lens, out=numpy.zeros((bin_lens_size, grid_size + 1)), where=average_factor_lens > 0)
     
     # Source
@@ -90,13 +90,13 @@ def main(tag, name, label, folder):
     
     for m in range(bin_source_size):
         z_scale = average_mu_source[m] + (z_grid[numpy.newaxis, :] - average_mu_source[m] - zeta_source[:, m, numpy.newaxis]) / gamma_source[:, m, numpy.newaxis]
-        scale_data_source[:, m, :] = numpy.maximum(scipy.interpolate.CubicSpline(z_grid, average_source[m, :], extrapolate=True)(z_scale), 0)
+        scale_data_source[:, m, :] = numpy.maximum(interpolate.CubicSpline(z_grid, average_source[m, :], extrapolate=True)(z_scale), 0)
     
-    factor_source = scipy.integrate.trapezoid(x=z_grid, y=scale_data_source, axis=2)[:, :, numpy.newaxis]
+    factor_source = integrate.trapezoid(x=z_grid, y=scale_data_source, axis=2)[:, :, numpy.newaxis]
     scale_data_source = numpy.divide(scale_data_source, factor_source, out=numpy.zeros((data_size, bin_source_size, grid_size + 1)), where=factor_source > 0)
     
     scale_average_source = numpy.mean(scale_data_source, axis=0)
-    average_factor_source = scipy.integrate.trapezoid(x=z_grid, y=scale_average_source, axis=1)[:, numpy.newaxis]
+    average_factor_source = integrate.trapezoid(x=z_grid, y=scale_average_source, axis=1)[:, numpy.newaxis]
     scale_average_source = numpy.divide(scale_average_source, average_factor_source, out=numpy.zeros((bin_source_size, grid_size + 1)), where=average_factor_source > 0)
     
     # Save

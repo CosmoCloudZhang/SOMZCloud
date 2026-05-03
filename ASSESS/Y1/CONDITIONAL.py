@@ -2,8 +2,8 @@ import os
 import time
 import h5py
 import numpy
-import scipy
 import argparse
+from scipy import integrate
 from matplotlib import pyplot
 
 
@@ -78,8 +78,8 @@ def main(tag, name, index, folder):
     bin_source = meta_source['bin']
     
     # Center
-    center_lens = scipy.integrate.trapezoid(x=z_grid, y=z_grid[numpy.newaxis, :] * truth_lens, axis=1)
-    center_source = scipy.integrate.trapezoid(x=z_grid, y=z_grid[numpy.newaxis, :] * truth_source, axis=1)
+    center_lens = integrate.trapezoid(x=z_grid, y=z_grid[numpy.newaxis, :] * truth_lens, axis=1)
+    center_source = integrate.trapezoid(x=z_grid, y=z_grid[numpy.newaxis, :] * truth_source, axis=1)
     
     # Configuration
     os.environ['PATH'] = '/global/homes/y/yhzhang/opt/texlive/bin/x86_64-linux:' + os.environ['PATH']

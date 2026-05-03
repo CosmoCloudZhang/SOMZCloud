@@ -2,10 +2,10 @@ import os
 import time
 import h5py
 import numpy
-import scipy
 import argparse
 from rail import core
 from sklearn import cluster
+from scipy import integrate, stats
 
 
 def main(tag, name, index, folder):
@@ -159,13 +159,13 @@ def main(tag, name, index, folder):
                 ensemble_cluster = numpy.zeros((cluster_size, grid_size + 1))
                 numpy.add.at(ensemble_cluster, (application_cluster_id_data[application_cluster_mask], application_ensemble_indices[application_cluster_mask]), application_weight_data[application_cluster_mask])
                 
-                factor_cluster = scipy.integrate.trapezoid(x=z_grid, y=ensemble_cluster, axis=1)[:, numpy.newaxis]
+                factor_cluster = integrate.trapezoid(x=z_grid, y=ensemble_cluster, axis=1)[:, numpy.newaxis]
                 ensemble_cluster = numpy.divide(ensemble_cluster, factor_cluster, out=numpy.zeros((cluster_size, grid_size + 1)), where=factor_cluster > 0)
                 
                 # Ensemble
                 ensemble = numpy.average(ensemble_cluster, axis=0, weights=application_cluster_count_data)
                 
-                data_factor = scipy.integrate.trapezoid(x=z_grid, y=ensemble, axis=0)
+                data_factor = integrate.trapezoid(x=z_grid, y=ensemble, axis=0)
                 data_lens[m, n, :] = numpy.divide(ensemble, data_factor, out=numpy.zeros((grid_size + 1)), where=data_factor > 0)
                 
                 # Value
@@ -174,7 +174,7 @@ def main(tag, name, index, folder):
                     bias = ((application_cluster_z_phot_data - degradation_cluster_z_spec_data) / (1 + degradation_cluster_z_phot_data))[filter_data]
                     
                     gamma_lens[m, n] = numpy.median(bias)
-                    kappa_lens[m, n] = scipy.stats.median_abs_deviation(bias, scale='normal')
+                    kappa_lens[m, n] = stats.median_abs_deviation(bias, scale='normal')
                     lambda_lens[m, n] = numpy.divide(numpy.sum(application_cluster_mask), target_size)
                 else:
                     nu_lens[m, n] = 0.0
@@ -190,7 +190,7 @@ def main(tag, name, index, folder):
     
     # Average
     average_lens = numpy.mean(data_lens, axis=1)
-    average_factor = scipy.integrate.trapezoid(x=z_grid, y=average_lens, axis=1)[:, numpy.newaxis]
+    average_factor = integrate.trapezoid(x=z_grid, y=average_lens, axis=1)[:, numpy.newaxis]
     average_lens = numpy.divide(average_lens, average_factor, out=numpy.zeros((bin_lens_size, grid_size + 1)), where=average_factor > 0)
     
     # Save

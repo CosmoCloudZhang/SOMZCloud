@@ -2,8 +2,8 @@ import os
 import h5py
 import time
 import numpy
-import scipy
 import argparse
+from scipy import integrate
 
 
 def main(tag, name, label, index, folder):
@@ -62,19 +62,19 @@ def main(tag, name, label, index, folder):
     data_source = numpy.transpose(data_source, (1, 0, 2))
     
     # Mu
-    mu_lens = scipy.integrate.trapezoid(x=z_grid, y=z_grid[numpy.newaxis, numpy.newaxis, :] * data_lens, axis=2)
-    mu_source = scipy.integrate.trapezoid(x=z_grid, y=z_grid[numpy.newaxis, numpy.newaxis, :] * data_source, axis=2)
+    mu_lens = integrate.trapezoid(x=z_grid, y=z_grid[numpy.newaxis, numpy.newaxis, :] * data_lens, axis=2)
+    mu_source = integrate.trapezoid(x=z_grid, y=z_grid[numpy.newaxis, numpy.newaxis, :] * data_source, axis=2)
     
     # Eta
-    eta_lens = numpy.sqrt(scipy.integrate.trapezoid(x=z_grid, y=numpy.square(z_grid[numpy.newaxis, numpy.newaxis, :] - mu_lens[:, :, numpy.newaxis]) * data_lens, axis=2))
-    eta_source = numpy.sqrt(scipy.integrate.trapezoid(x=z_grid, y=numpy.square(z_grid[numpy.newaxis, numpy.newaxis, :] - mu_source[:, :, numpy.newaxis]) * data_source, axis=2))
+    eta_lens = numpy.sqrt(integrate.trapezoid(x=z_grid, y=numpy.square(z_grid[numpy.newaxis, numpy.newaxis, :] - mu_lens[:, :, numpy.newaxis]) * data_lens, axis=2))
+    eta_source = numpy.sqrt(integrate.trapezoid(x=z_grid, y=numpy.square(z_grid[numpy.newaxis, numpy.newaxis, :] - mu_source[:, :, numpy.newaxis]) * data_source, axis=2))
     
     # Average
-    average_mu_lens = scipy.integrate.trapezoid(x=z_grid, y=z_grid[numpy.newaxis, :] * average_lens, axis=1)
-    average_mu_source = scipy.integrate.trapezoid(x=z_grid, y=z_grid[numpy.newaxis, :] * average_source, axis=1)
+    average_mu_lens = integrate.trapezoid(x=z_grid, y=z_grid[numpy.newaxis, :] * average_lens, axis=1)
+    average_mu_source = integrate.trapezoid(x=z_grid, y=z_grid[numpy.newaxis, :] * average_source, axis=1)
     
-    average_eta_lens = numpy.sqrt(scipy.integrate.trapezoid(x=z_grid, y=numpy.square(z_grid[numpy.newaxis, :] - average_mu_lens[:, numpy.newaxis]) * average_lens, axis=1))
-    average_eta_source = numpy.sqrt(scipy.integrate.trapezoid(x=z_grid, y=numpy.square(z_grid[numpy.newaxis, :] - average_mu_source[:, numpy.newaxis]) * average_source, axis=1))
+    average_eta_lens = numpy.sqrt(integrate.trapezoid(x=z_grid, y=numpy.square(z_grid[numpy.newaxis, :] - average_mu_lens[:, numpy.newaxis]) * average_lens, axis=1))
+    average_eta_source = numpy.sqrt(integrate.trapezoid(x=z_grid, y=numpy.square(z_grid[numpy.newaxis, :] - average_mu_source[:, numpy.newaxis]) * average_source, axis=1))
     
     # Sigma
     sigma_mu_lens = numpy.std(mu_lens, axis=0) / (1 + average_mu_lens)

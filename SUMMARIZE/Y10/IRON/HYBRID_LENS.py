@@ -2,8 +2,8 @@ import os
 import time
 import h5py
 import numpy
-import scipy
 import argparse
+from scipy import integrate
 
 
 def main(tag, name, index, folder):
@@ -52,12 +52,12 @@ def main(tag, name, index, folder):
         data_lens_stack = file['ensemble']['data'][...]
     
     data_lens = numpy.sqrt(numpy.maximum(data_lens_dir * data_lens_stack, 0.0))
-    data_factor = scipy.integrate.trapezoid(x=z_grid, y=data_lens, axis=2)[:, :, numpy.newaxis]
+    data_factor = integrate.trapezoid(x=z_grid, y=data_lens, axis=2)[:, :, numpy.newaxis]
     data_lens = numpy.divide(data_lens, data_factor, out=numpy.zeros((bin_lens_size, data_size, grid_size + 1)), where=data_factor > 0)
     
     # Average
     average_lens = numpy.mean(data_lens, axis=1)
-    average_factor = scipy.integrate.trapezoid(x=z_grid, y=average_lens, axis=1)[:, numpy.newaxis]
+    average_factor = integrate.trapezoid(x=z_grid, y=average_lens, axis=1)[:, numpy.newaxis]
     average_lens = numpy.divide(average_lens, average_factor, out=numpy.zeros((bin_lens_size, grid_size + 1)), where=average_factor > 0)
     
     # Save

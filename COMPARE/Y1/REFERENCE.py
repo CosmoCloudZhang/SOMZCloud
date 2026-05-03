@@ -2,8 +2,8 @@ import os
 import time
 import h5py
 import numpy
-import scipy
 import argparse
+from scipy import interpolate, stats
 
 
 def main(tag, index, folder):
@@ -70,7 +70,7 @@ def main(tag, index, folder):
         stop = min((m + 1) * chunk_size, degradation_size)
         
         if begin < stop:
-            z_pdf = numpy.maximum(scipy.interpolate.CubicSpline(x=z_grid, y=evaluator['data']['yvals'][begin: stop].astype(numpy.float32), axis=1, bc_type='natural', extrapolate=False)(z_mesh), 0.0)
+            z_pdf = numpy.maximum(interpolate.CubicSpline(x=z_grid, y=evaluator['data']['yvals'][begin: stop].astype(numpy.float32), axis=1, bc_type='natural', extrapolate=False)(z_mesh), 0.0)
             z_pdf = z_pdf / numpy.sum(z_pdf, axis=1, keepdims=True) / z_delta
             z_phot[begin: stop] = z_mesh[numpy.argmax(z_pdf, axis=1)]
             
@@ -115,7 +115,7 @@ def main(tag, index, folder):
     delta = (z_phot - degradation_redshift_true) / (1 + degradation_redshift_true)
     
     bias = numpy.median(delta)
-    sigma = scipy.stats.median_abs_deviation(delta)
+    sigma = stats.median_abs_deviation(delta)
     fraction = numpy.sum(numpy.abs(delta) > 0.15) / degradation_size
     rate = numpy.sum(numpy.abs(z_phot - degradation_redshift_true) > 1.0) / degradation_size
     
@@ -144,7 +144,7 @@ def main(tag, index, folder):
             bias_lens_reference = (z_phot_lens_reference - z_true_lens_reference) / (1 + z_true_lens_reference)
             
             bias_lens[m] = numpy.median(bias_lens_reference)
-            sigma_lens[m] = scipy.stats.median_abs_deviation(bias_lens_reference)
+            sigma_lens[m] = stats.median_abs_deviation(bias_lens_reference)
             fraction_lens[m] = numpy.sum(numpy.abs(bias_lens_reference) > 0.15) / numpy.sum(reference_lens_average)
             rate_lens[m] = numpy.sum(numpy.abs(z_phot_lens_reference - z_true_lens_reference) > 1.0) / numpy.sum(reference_lens_average)
             
@@ -182,7 +182,7 @@ def main(tag, index, folder):
             bias_source_reference = (z_phot_source_reference - z_true_source_reference) / (1 + z_true_source_reference)
             
             bias_source[m] = numpy.median(bias_source_reference)
-            sigma_source[m] = scipy.stats.median_abs_deviation(bias_source_reference)
+            sigma_source[m] = stats.median_abs_deviation(bias_source_reference)
             fraction_source[m] = numpy.sum(numpy.abs(bias_source_reference) > 0.15) / numpy.sum(reference_source_average)
             rate_source[m] = numpy.sum(numpy.abs(z_phot_source_reference - z_true_source_reference) > 1.0) / numpy.sum(reference_source_average)
             
