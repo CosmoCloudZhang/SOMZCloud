@@ -78,11 +78,11 @@ def main(tag, name, folder):
     # Plot Lens
     for m in range(bin_size):
         violin = plot[m, 0].violinplot(
+            vert=False,
             widths=0.8,
-            vert=False, 
             showmeans=True, 
-            showmedians=False,
             showextrema=True,
+            showmedians=False,
             positions=[3, 2, 1],
             dataset=[dir_delta_lens[:, m], stack_delta_lens[:, m], hybrid_delta_lens[:, m]]
         )
@@ -96,7 +96,14 @@ def main(tag, name, folder):
         violin['cmaxes'].set_color('black')
         violin['cmeans'].set_color('black')
         
-        plot[m, 0].axvspan(-factor_lens, +factor_lens, alpha=0.3, color='gray')
+        for body in violin['bodies']:
+            body.set_rasterized(True)
+        violin['cbars'].set_rasterized(True)
+        violin['cmins'].set_rasterized(True)
+        violin['cmaxes'].set_rasterized(True)
+        violin['cmeans'].set_rasterized(True)
+        
+        plot[m, 0].axvspan(-factor_lens, +factor_lens, alpha=0.3, color='gray', rasterized=True)
         plot[m, 0].text(x=+range_lens[m] / 3 * 2, y=2.25, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
         
         plot[m, 0].set_ylim(0.5, 3.5)
@@ -115,11 +122,11 @@ def main(tag, name, folder):
     # Plot Source
     for m in range(bin_size):
         violin = plot[m, 1].violinplot(
+            vert=False,
             widths=0.8,
-            vert=False, 
             showmeans=True,
-            showmedians=False,
             showextrema=True,
+            showmedians=False,
             positions=[3, 2, 1],
             dataset=[dir_delta_source[:, m], stack_delta_source[:, m], hybrid_delta_source[:, m]]
         )
@@ -133,7 +140,14 @@ def main(tag, name, folder):
         violin['cmaxes'].set_color('black')
         violin['cmeans'].set_color('black')
         
-        plot[m, 1].axvspan(-factor_source, +factor_source, alpha=0.3, color='gray')
+        for body in violin['bodies']:
+            body.set_rasterized(True)
+        violin['cbars'].set_rasterized(True)
+        violin['cmins'].set_rasterized(True)
+        violin['cmaxes'].set_rasterized(True)
+        violin['cmeans'].set_rasterized(True)
+        
+        plot[m, 1].axvspan(-factor_source, +factor_source, alpha=0.3, color='gray', rasterized=True)
         plot[m, 1].text(x=+range_source[m] / 3 * 2, y=2.25, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
         
         plot[m, 1].set_ylim(0.5, 3.5)

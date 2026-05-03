@@ -160,8 +160,8 @@ def main(tag, label, number, folder):
             vert=True, 
             widths=0.8,
             showmeans=True,
-            showmedians=False,
             showextrema=True,
+            showmedians=False,
             positions=[1, 2, 3, 4, 5, 6],
             dataset=[gold_delta_lens[:, m], silver_delta_lens[:, m], copper_delta_lens[:, m], iron_delta_lens[:, m], titanium_delta_lens[:, m], zinc_delta_lens[:, m]]
         )
@@ -175,7 +175,14 @@ def main(tag, label, number, folder):
         violin['cmaxes'].set_color('black')
         violin['cmeans'].set_color('black')
         
-        plot[m, 0].axhspan(-factor_lens, factor_lens, alpha=0.3, color='gray')
+        for body in violin['bodies']:
+            body.set_rasterized(True)
+        violin['cbars'].set_rasterized(True)
+        violin['cmins'].set_rasterized(True)
+        violin['cmaxes'].set_rasterized(True)
+        violin['cmeans'].set_rasterized(True)
+        
+        plot[m, 0].axhspan(-factor_lens, factor_lens, alpha=0.3, color='gray', rasterized=True)
         plot[m, 0].text(x=5.5, y=range_lens[m] / 3 * 2, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
         
         plot[m, 0].set_xlim(0.5, 6.5)
@@ -199,8 +206,8 @@ def main(tag, label, number, folder):
             vert=True, 
             widths=0.8,
             showmeans=True,
-            showmedians=False,
             showextrema=True,
+            showmedians=False,
             positions=[1, 2, 3, 4, 5, 6],
             dataset=[gold_delta_source[:, m], silver_delta_source[:, m], copper_delta_source[:, m], iron_delta_source[:, m], titanium_delta_source[:, m], zinc_delta_source[:, m]]
         )
@@ -214,7 +221,14 @@ def main(tag, label, number, folder):
         violin['cmaxes'].set_color('black')
         violin['cmeans'].set_color('black')
         
-        plot[m, 1].axhspan(-factor_source, factor_source, alpha=0.3, color='gray')
+        for body in violin['bodies']:
+            body.set_rasterized(True)
+        violin['cbars'].set_rasterized(True)
+        violin['cmins'].set_rasterized(True)
+        violin['cmaxes'].set_rasterized(True)
+        violin['cmeans'].set_rasterized(True)
+        
+        plot[m, 1].axhspan(-factor_source, factor_source, alpha=0.3, color='gray', rasterized=True)
         plot[m, 1].text(x=5.5, y=range_source[m] / 3 * 2, s=r'$\mathrm{Bin \,}' + r'{:.0f}$'.format(m + 1), color='black', ha='center')
         
         plot[m, 1].set_xlim(0.5, 6.5)
