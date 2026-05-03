@@ -24,11 +24,11 @@ def main(tag, name, label, folder):
     print('Name: {}, Label: {}'.format(name, label))
     
     # Path
-    calibrate_folder = os.path.join(folder, 'CALIBRATE/')
+    correct_folder = os.path.join(folder, 'CORRECT/')
     synthesize_folder = os.path.join(folder, 'SYNTHESIZE/')
-    os.makedirs(os.path.join(calibrate_folder, '{}/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(calibrate_folder, '{}/CORRECT/'.format(tag)), exist_ok=True)
-    os.makedirs(os.path.join(calibrate_folder, '{}/CORRECT/{}/'.format(tag, name)), exist_ok=True)
+    os.makedirs(os.path.join(correct_folder, '{}/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(correct_folder, '{}/SHAPE/'.format(tag)), exist_ok=True)
+    os.makedirs(os.path.join(correct_folder, '{}/SHAPE/{}/'.format(tag, name)), exist_ok=True)
     
     # Truth
     with h5py.File(os.path.join(synthesize_folder, '{}/{}/TRUTH.hdf5'.format(tag, name)), 'r') as file:
@@ -74,7 +74,7 @@ def main(tag, name, label, folder):
     average_factor_source = integrate.trapezoid(x=z_grid, y=correct_average_source, axis=1)[:, numpy.newaxis]
     correct_average_source = numpy.divide(correct_average_source, average_factor_source, out=numpy.zeros((bin_source_size, grid_size + 1)), where=average_factor_source > 0)
     
-    with h5py.File(os.path.join(calibrate_folder, '{}/CORRECT/{}/{}.hdf5'.format(tag, name, label)), 'w') as file:
+    with h5py.File(os.path.join(correct_folder, '{}/SHAPE/{}/{}.hdf5'.format(tag, name, label)), 'w') as file:
         file.create_group('meta')
         for key in meta.keys():
             file['meta'].create_dataset(key, data=meta[key], dtype=meta[key].dtype)
@@ -97,7 +97,7 @@ def main(tag, name, label, folder):
 
 if __name__ == '__main__':
     # Input
-    PARSE = argparse.ArgumentParser(description='Calibrate Correct')
+    PARSE = argparse.ArgumentParser(description='Correct Shape')
     PARSE.add_argument('--tag', type=str, required=True, help='The tag of the configuration')
     PARSE.add_argument('--name', type=str, required=True, help='The name of the configuration')
     PARSE.add_argument('--label', type=str, required=True, help='The label of the configuration')

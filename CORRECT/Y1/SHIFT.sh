@@ -8,7 +8,7 @@
 #SBATCH -o LOG/%x_%j.out
 #SBATCH --cpus-per-task=64
 #SBATCH --ntasks-per-node=4
-#SBATCH -J CALIBRATE_Y1_SHIFT
+#SBATCH -J CORRECT_Y1_SHIFT
 #SBATCH --mail-user=YunHao.Zhang@ed.ac.uk
 
 # Load modules
@@ -39,7 +39,7 @@ NAME_LIST=("COPPER" "GOLD" "IRON" "SILVER" "TITANIUM" "ZINC")
 
 for NAME in "${NAME_LIST[@]}"; do
     for LABEL in "${LABEL_LIST[@]}"; do
-        srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}CALIBRATE/${TAG}/SHIFT.py" --tag=$TAG --name=$NAME --label=$LABEL --folder=$BASE_FOLDER &
+        srun -u -N 1 -n 1 -c $SLURM_CPUS_PER_TASK python -u "${BASE_PATH}CORRECT/${TAG}/SHIFT.py" --tag=$TAG --name=$NAME --label=$LABEL --folder=$BASE_FOLDER &
     done
 done
 wait

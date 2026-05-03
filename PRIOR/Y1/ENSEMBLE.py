@@ -79,7 +79,7 @@ def main(tag, name, label, folder):
     
     # Path
     prior_folder = os.path.join(folder, 'PRIOR/')
-    calibrate_folder = os.path.join(folder, 'CALIBRATE/')
+    correct_folder = os.path.join(folder, 'CORRECT/')
     os.makedirs(os.path.join(prior_folder, '{}/'.format(tag)), exist_ok=True)
     os.makedirs(os.path.join(prior_folder, '{}/ENSEMBLE/'.format(tag)), exist_ok=True)
     os.makedirs(os.path.join(prior_folder, '{}/ENSEMBLE/{}/'.format(tag, name)), exist_ok=True)
@@ -93,7 +93,7 @@ def main(tag, name, label, folder):
     pyplot.rcParams['font.size'] = 30
     
     # Shift
-    with h5py.File(os.path.join(calibrate_folder, '{}/SHIFT/{}/{}.hdf5'.format(tag, name, label)), 'r') as file:
+    with h5py.File(os.path.join(correct_folder, '{}/SHIFT/{}/{}.hdf5'.format(tag, name, label)), 'r') as file:
         meta = {key: file['meta'][key][...] for key in file['meta'].keys()}
         
         data_lens = file['lens']['data'][...]
@@ -119,7 +119,7 @@ def main(tag, name, label, folder):
     pyplot.close(figure)
     
     # Scale
-    with h5py.File(os.path.join(calibrate_folder, '{}/SCALE/{}/{}.hdf5'.format(tag, name, label)), 'r') as file:
+    with h5py.File(os.path.join(correct_folder, '{}/SCALE/{}/{}.hdf5'.format(tag, name, label)), 'r') as file:
         meta = {key: file['meta'][key][...] for key in file['meta'].keys()}
         
         scale_lens = file['lens']['data'][...]
@@ -136,8 +136,8 @@ def main(tag, name, label, folder):
     figure.savefig(os.path.join(prior_folder, '{}/ENSEMBLE/{}/{}/SCALE.pdf'.format(tag, name, label)), format='pdf', bbox_inches='tight', dpi=512)
     pyplot.close(figure)
     
-    # Correct
-    with h5py.File(os.path.join(calibrate_folder, '{}/CORRECT/{}/{}.hdf5'.format(tag, name, label)), 'r') as file:
+    # Shape
+    with h5py.File(os.path.join(correct_folder, '{}/SHAPE/{}/{}.hdf5'.format(tag, name, label)), 'r') as file:
         meta = {key: file['meta'][key][...] for key in file['meta'].keys()}
         
         data_lens = file['lens']['data'][...]
@@ -151,7 +151,7 @@ def main(tag, name, label, folder):
     
     # Plot
     figure = plot_ensemble(z_grid, select_correct_lens, select_correct_source, bin_lens_size, bin_source_size)
-    figure.savefig(os.path.join(prior_folder, '{}/ENSEMBLE/{}/{}/CORRECT.pdf'.format(tag, name, label)), format='pdf', bbox_inches='tight', dpi=512)
+    figure.savefig(os.path.join(prior_folder, '{}/ENSEMBLE/{}/{}/SHAPE.pdf'.format(tag, name, label)), format='pdf', bbox_inches='tight', dpi=512)
     pyplot.close(figure)
     
     # Duration
