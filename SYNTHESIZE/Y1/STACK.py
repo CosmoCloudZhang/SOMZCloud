@@ -4,7 +4,6 @@ import h5py
 import numpy
 import scipy
 import argparse
-import multiprocessing
 
 
 def synthesize(data, z_grid, number, sample_size, random_generator):
@@ -59,7 +58,6 @@ def main(tag, name, number, folder):
         bin_source_size = file['meta']['bin_size'][...]
     
     # Size
-    size = 16
     sample_size = 100
     data_size = 500000
     
@@ -84,16 +82,14 @@ def main(tag, name, number, folder):
     bin_source = numpy.mean(bin_source, axis=0)
     
     # Synthesize Lens
-    with multiprocessing.Pool(processes=size) as pool:
-        data_lens = numpy.stack(pool.starmap(synthesize, [(summarize_lens, z_grid, number, sample_size, random_generator) for _ in range(data_size)]), axis=0)
+    data_lens = numpy.stack([synthesize(summarize_lens, z_grid, number, sample_size, random_generator) for _ in range(data_size)], axis=0)
     
     average_lens = numpy.mean(data_lens, axis=0)
     factor_lens = scipy.integrate.trapezoid(x=z_grid, y=average_lens, axis=1)[:, numpy.newaxis]
     average_lens = numpy.divide(average_lens, factor_lens, out=numpy.zeros((bin_lens_size, grid_size + 1)), where=factor_lens != 0)
     
     # Synthesize Source
-    with multiprocessing.Pool(processes=size) as pool:
-        data_source = numpy.stack(pool.starmap(synthesize, [(summarize_source, z_grid, number, sample_size, random_generator) for _ in range(data_size)]), axis=0)
+    data_source = numpy.stack([synthesize(summarize_source, z_grid, number, sample_size, random_generator) for _ in range(data_size)], axis=0)
     
     average_source = numpy.mean(data_source, axis=0)
     factor_source = scipy.integrate.trapezoid(x=z_grid, y=average_source, axis=1)[:, numpy.newaxis]
