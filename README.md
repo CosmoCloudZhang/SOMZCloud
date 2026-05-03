@@ -34,8 +34,6 @@ SOMZCloud/
 └── README.md
 ```
 
-Further cosmology or summary-statistics stages (e.g. angular power spectra, global “value” pipelines) are left to separate workflows that consume `PRIOR` and `INFO` products.
-
 ## End-to-end workflow (recommended order)
 
 1. **DATASET** — Build LSST-like catalogues, SOM cells, selections, augmentation, and association.  
