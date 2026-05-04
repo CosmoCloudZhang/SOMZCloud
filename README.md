@@ -9,7 +9,7 @@ Each top-level directory is a self-contained stage that can be run alone or comp
 - Construction, validation, and comparison of ensemble redshift distributions  
 - Calibration using spectroscopic and simulation-based reference samples  
 - Uncertainty quantification and propagation toward cosmological observables  
-- Controlled evaluation of performance under systematic and configuration changes  
+- Controlled evaluation of performance under systematic and configuration changes
 
 The design aligns naturally with cosmic shear, galaxy–galaxy lensing, and clustering analyses that rely on well-characterised redshift distributions.
 
@@ -36,15 +36,15 @@ SOMZCloud/
 
 ## End-to-end workflow (recommended order)
 
-1. **DATASET** — Build LSST-like catalogues, SOM cells, selections, augmentation, and association.  
-2. **MODEL** — Train and evaluate photometric models; produce point estimates and intermediates.  
-3. **COMPARE** / **CONSTRAIN** — Benchmark against spec samples (COMPARE) or simulation-only stress cases (CONSTRAIN).  
-4. **FIGURE** — Visual QA and paper figures from dataset and model outputs.  
-5. **SUMMARIZE** — Collapse results by material (e.g. COPPER, GOLD, …), tracer (lens/source), and strategy (truth, direct, hybrid, stack).  
-6. **SYNTHESIZE** — Merge summaries into analysis-ready marginal ensembles.  
-7. **ANALYZE** / **ASSESS** — Quantify marginal vs conditional distribution quality.  
-8. **CORRECT** — Apply transparent **SHIFT** (additive), **SCALE** (multiplicative), and **SHAPE** (combined) corrections informed by those diagnostics.  
-9. **PRIOR** — Turn expectations, deviations, covariances, and ensembles (including CORRECT outputs) into nuisance priors for inference.  
+1. **DATASET** — Build LSST-like catalogues, SOM cells, selections, augmentation, and association.
+2. **MODEL** — Train and evaluate photometric models; produce point estimates and intermediates.
+3. **COMPARE** / **CONSTRAIN** — Benchmark against spec samples (COMPARE) or simulation-only stress cases (CONSTRAIN).
+4. **FIGURE** — Visual QA and paper figures from dataset and model outputs.
+5. **SUMMARIZE** — Collapse results by material (e.g. COPPER, GOLD, …), tracer (lens/source), and strategy (truth, direct, hybrid, stack).
+6. **SYNTHESIZE** — Merge summaries into analysis-ready marginal ensembles.
+7. **ANALYZE** / **ASSESS** — Quantify marginal vs conditional distribution quality.
+8. **CORRECT** — Apply transparent **SHIFT** (additive), **SCALE** (multiplicative), and **SHAPE** (combined) corrections informed by those diagnostics.
+9. **PRIOR** — Turn expectations, deviations, covariances, and ensembles (including CORRECT outputs) into nuisance priors for inference.
 10. **INFO** — Cosmology and survey metadata for any downstream likelihood or forecasting code.
 
 Each stage writes explicit, path-stable products; rerun order is flexible when upstream artefacts are frozen.
@@ -72,13 +72,12 @@ Each stage writes explicit, path-stable products; rerun order is flexible when u
    git clone git@github.com:CosmoCloudZhang/SOMZCloud.git
    cd SOMZCloud
    ```
-
-2. Follow **DATASET** for catalogue generation and augmentation.  
-3. Use **MODEL**, **COMPARE**, and **CONSTRAIN** for training and controlled benchmarks.  
-4. Use **FIGURE** for diagnostic and publication plots.  
-5. Run **SUMMARIZE** then **SYNTHESIZE** to build marginal ensembles.  
-6. Run **ANALYZE** and **ASSESS** for population-level quality metrics.  
-7. Run **CORRECT** (`SHIFT` → `SCALE` → `SHAPE` as needed), then **PRIOR** for nuisance priors.  
+2. Follow **DATASET** for catalogue generation and augmentation.
+3. Use **MODEL**, **COMPARE**, and **CONSTRAIN** for training and controlled benchmarks.
+4. Use **FIGURE** for diagnostic and publication plots.
+5. Run **SUMMARIZE** then **SYNTHESIZE** to build marginal ensembles.
+6. Run **ANALYZE** and **ASSESS** for population-level quality metrics.
+7. Run **CORRECT** (`SHIFT` → `SCALE` → `SHAPE` as needed), then **PRIOR** for nuisance priors.
 8. Point external cosmology pipelines at **PRIOR** outputs and **INFO** configuration.
 
 Environment activation, modules, and SLURM directives are stage-specific; see each `README.md` and the accompanying `*.sh` scripts.
@@ -97,22 +96,20 @@ cd ../../.. && cd SYNTHESIZE/Y1 && python TRUTH.py --help
 The exact required arguments are stage-specific and documented by each script's CLI help and local `README.md`.
 
 ## Stage input/output contracts
-
-| Stage | Primary inputs | Primary outputs |
-|------|------|------|
-| **DATASET** | Source catalogues and survey configuration | Processed catalogues, SOM mappings, selected/augmented samples |
-| **MODEL** | DATASET products | Trained estimators, predictions, evaluation artefacts |
-| **COMPARE** | MODEL outputs and spectroscopic references | Observation-anchored agreement metrics |
-| **CONSTRAIN** | MODEL outputs and simulation-only references | Simulation stress-test metrics and bounds |
-| **FIGURE** | Upstream numerical products | QA and publication figures |
-| **SUMMARIZE** | MODEL/COMPARE/CONSTRAIN outputs | Material/tracer/strategy summaries |
-| **SYNTHESIZE** | SUMMARIZE outputs | Unified marginal ensemble products |
-| **ANALYZE** | SYNTHESIZE products | Marginal quality diagnostics |
-| **ASSESS** | SYNTHESIZE products | Conditional quality diagnostics |
-| **CORRECT** | ANALYZE/ASSESS diagnostics plus distributions | SHIFT/SCALE/SHAPE-corrected products |
-| **PRIOR** | SYNTHESIZE/ANALYZE/ASSESS/CORRECT products | Nuisance-parameter prior artefacts |
-| **INFO** | Cosmology/survey assumptions | Configuration helper files for downstream inference |
-
+| Stage          | Primary inputs                                | Primary outputs                                                |
+| -------------- | --------------------------------------------- | -------------------------------------------------------------- |
+| **DATASET**    | Source catalogues and survey configuration    | Processed catalogues, SOM mappings, selected/augmented samples |
+| **MODEL**      | DATASET products                              | Trained estimators, predictions, evaluation artefacts          |
+| **COMPARE**    | MODEL outputs and spectroscopic references    | Observation-anchored agreement metrics                         |
+| **CONSTRAIN**  | MODEL outputs and simulation-only references  | Simulation stress-test metrics and bounds                      |
+| **FIGURE**     | Upstream numerical products                   | QA and publication figures                                     |
+| **SUMMARIZE**  | MODEL/COMPARE/CONSTRAIN outputs               | Material/tracer/strategy summaries                             |
+| **SYNTHESIZE** | SUMMARIZE outputs                             | Unified marginal ensemble products                             |
+| **ANALYZE**    | SYNTHESIZE products                           | Marginal quality diagnostics                                   |
+| **ASSESS**     | SYNTHESIZE products                           | Conditional quality diagnostics                                |
+| **CORRECT**    | ANALYZE/ASSESS diagnostics plus distributions | SHIFT/SCALE/SHAPE-corrected products                           |
+| **PRIOR**      | SYNTHESIZE/ANALYZE/ASSESS/CORRECT products    | Nuisance-parameter prior artefacts                             |
+| **INFO**       | Cosmology/survey assumptions                  | Configuration helper files for downstream inference            |
 ## Glossary
 
 - **Material**: Named scenario grouping (for example COPPER, GOLD, ZINC) used for controlled comparisons.
