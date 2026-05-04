@@ -34,9 +34,37 @@ Outputs are explicit tables and plots suitable for **SUMMARIZE** and **FIGURE**.
 
 **Y1** paths emphasise noise-dominated regimes; **Y10** paths explore systematics at high \(n\). Never mix outputs between epochs in the same directory.
 
+## Inputs
+
+- **MODEL** outputs and simulation-only products from **DATASET**.  
+- Augmentation flags/scenario tags and fiducial references.  
+- Parameter definitions and sweep settings for stress forecasts.
+
+## Outputs
+
+- Constraint envelopes, offsets, and degeneracy summaries from simulation-only analyses.  
+- Evaluation artefacts consumable by **SUMMARIZE** and **FIGURE**.
+
 ## Execution
 
 Python CLIs for all science switches; shell wrappers for batch systems. Statelessness enables large parameter sweeps.
+
+## Example commands
+
+```bash
+cd CONSTRAIN/Y1
+python INFORM.py --help
+python ESTIMATE.py --help
+python EVALUATE.py --help
+```
+
+Use `CONSTRAIN/Y10` for full-depth stress paths.
+
+## Failure modes and restart guidance
+
+- Keep simulation scenario tags explicit to avoid accidental mixing of stress runs.  
+- Restart from `ESTIMATE` or `EVALUATE` when upstream references are unchanged.  
+- Recompute `REFERENCE` after any change to cosmology or simulation baseline assumptions.
 
 ## Intended use
 

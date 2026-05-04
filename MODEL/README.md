@@ -34,14 +34,43 @@ Scripts communicate only through versioned files on disk.
 
 **Y1** targets early-survey volumes and noise; **Y10** targets full-depth statistical error. Keep outputs in separate directory trees.
 
+## Inputs
+
+- Processed catalogue products from **DATASET**.  
+- Epoch-specific model configuration and hyperparameter settings.  
+- Optional reference artefacts for benchmark comparisons.
+
+## Outputs
+
+- Model estimates/predictions and evaluation tables.  
+- Stage metadata from `INFORM` and baseline products from `REFERENCE`.  
+- Reusable artefacts for **COMPARE**, **CONSTRAIN**, and downstream summary stages.
+
 ## Execution
 
 - **Python** — Model paths, hyperparameters, seeds, and device/batch settings are exposed via `argparse`.  
 - **Shell** — Environment activation and SLURM (or local) resource requests.
 
+## Example commands
+
+```bash
+cd MODEL/Y1
+python REFERENCE.py --help
+python ESTIMATE.py --help
+python EVALUATE.py --help
+```
+
+Switch to `MODEL/Y10` for full-depth equivalents.
+
 ## Reproducibility
 
 No cross-run mutable singletons; configuration is externalised to flags and small config files where used.
+
+## Failure modes and restart guidance
+
+- If training is interrupted, restart from `ESTIMATE` outputs without recomputing `REFERENCE` or `TARGET` when inputs are unchanged.  
+- Fix and record seeds for strict run-to-run comparisons.  
+- Keep path tags explicit so Y1/Y10 checkpoints and metrics do not cross-contaminate.
 
 ## Intended use
 

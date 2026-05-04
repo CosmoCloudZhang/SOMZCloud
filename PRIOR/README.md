@@ -37,12 +37,40 @@ This keeps inference priors aligned with the same simulations, assessments, and 
 
 Input and output roots are disjoint between Y1 and Y10 to avoid cross-talk.
 
+## Inputs
+
+- Diagnostic and distribution products from **ANALYZE**, **ASSESS**, and **SYNTHESIZE**.  
+- Corrected branches from **CORRECT** (`SHIFT`, `SCALE`, `SHAPE`) where included.  
+- Nuisance grouping and aggregation settings from CLI configuration.
+
+## Outputs
+
+- Prior central values, deviations, covariance matrices, and ensemble products.  
+- Export-ready nuisance prior artefacts for downstream inference pipelines.
+
 ## Execution
 
 - **Python** — Paths, grouping of nuisances, aggregation rules, and export formats are CLI flags.  
 - **Shell** — Wrappers handle allocation, env activation, and batch fan-out on HPC.
 
 Typical order: **EXPECTATION** → **DEVIATION** → **COVARIANCE** → **ENSEMBLE**, rerunning later steps when upstream metrics or **CORRECT** branches change.
+
+## Example commands
+
+```bash
+cd PRIOR/Y1
+python EXPECTATION.py --help
+python COVARIANCE.py --help
+python ENSEMBLE.py --help
+```
+
+Use `PRIOR/Y10` for the full-depth branch.
+
+## Failure modes and restart guidance
+
+- Rerun `COVARIANCE` and `ENSEMBLE` whenever upstream correction branches change.  
+- Keep nuisance ordering consistent across exports to avoid downstream parameter mismatches.  
+- Version output directories when modifying aggregation conventions.
 
 ## Reproducibility
 

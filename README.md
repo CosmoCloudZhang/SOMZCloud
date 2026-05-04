@@ -27,7 +27,7 @@ SOMZCloud/
 ├── ANALYZE/      # Diagnostics and metrics for marginal redshift distributions
 ├── ASSESS/       # Diagnostics and metrics for conditional redshift distributions
 ├── CORRECT/      # Explicit corrections: shift, scale, and shape
-├── PRIOR/        # Nuisance priors from ensemble statistics (uses CORRECT among others)
+├── PRIOR/        # Nuisance priors from ensemble statistics
 ├── INFO/         # Survey, galaxy, lensing, and cosmology configuration helpers
 ├── LOG/          # Runtime / job logging (optional convention)
 ├── LICENSE
@@ -57,6 +57,13 @@ Each stage writes explicit, path-stable products; rerun order is flexible when u
 - **Survey agnosticism** — Y1 and Y10 layouts mirror different depth/volume regimes.  
 - **Responsible ML** — Uncertainty and limitations are first-class, not afterthoughts.
 
+## Prerequisites
+
+- Python 3 with standard scientific packages used across stages (`numpy`, `scipy`, `h5py`, `matplotlib`, `yaml`, `sklearn`).  
+- Access to stage-specific environments and tools referenced in shell wrappers (for example, Conda envs and SLURM on HPC systems).  
+- Read/write permissions for the configured data roots (code tree plus product/output trees).
+- External astronomy dependencies where required by stage scripts (for example `GCRCatalogs`, `rail`, `ceci`, `pyccl`, `photerr`).
+
 ## Getting started
 
 1. Clone the repository:
@@ -75,6 +82,43 @@ Each stage writes explicit, path-stable products; rerun order is flexible when u
 8. Point external cosmology pipelines at **PRIOR** outputs and **INFO** configuration.
 
 Environment activation, modules, and SLURM directives are stage-specific; see each `README.md` and the accompanying `*.sh` scripts.
+
+## Minimal quickstart (Y1 example)
+
+Use these commands as a lightweight entry point before running full index sweeps:
+
+```bash
+cd DATASET/Y1 && python OBSERVE.py --help
+cd ../.. && cd MODEL/Y1 && python ESTIMATE.py --help
+cd ../.. && cd SUMMARIZE/Y1/COPPER && python TRUTH_SOURCE.py --help
+cd ../../.. && cd SYNTHESIZE/Y1 && python TRUTH.py --help
+```
+
+The exact required arguments are stage-specific and documented by each script's CLI help and local `README.md`.
+
+## Stage input/output contracts
+
+| Stage | Primary inputs | Primary outputs |
+|------|------|------|
+| **DATASET** | Source catalogues and survey configuration | Processed catalogues, SOM mappings, selected/augmented samples |
+| **MODEL** | DATASET products | Trained estimators, predictions, evaluation artefacts |
+| **COMPARE** | MODEL outputs and spectroscopic references | Observation-anchored agreement metrics |
+| **CONSTRAIN** | MODEL outputs and simulation-only references | Simulation stress-test metrics and bounds |
+| **FIGURE** | Upstream numerical products | QA and publication figures |
+| **SUMMARIZE** | MODEL/COMPARE/CONSTRAIN outputs | Material/tracer/strategy summaries |
+| **SYNTHESIZE** | SUMMARIZE outputs | Unified marginal ensemble products |
+| **ANALYZE** | SYNTHESIZE products | Marginal quality diagnostics |
+| **ASSESS** | SYNTHESIZE products | Conditional quality diagnostics |
+| **CORRECT** | ANALYZE/ASSESS diagnostics plus distributions | SHIFT/SCALE/SHAPE-corrected products |
+| **PRIOR** | SYNTHESIZE/ANALYZE/ASSESS/CORRECT products | Nuisance-parameter prior artefacts |
+| **INFO** | Cosmology/survey assumptions | Configuration helper files for downstream inference |
+
+## Glossary
+
+- **Material**: Named scenario grouping (for example COPPER, GOLD, ZINC) used for controlled comparisons.
+- **Strategy**: Combination pathway (`TRUTH`, `DIR`, `HYBRID`, `STACK`) used in summary and synthesis stages.
+- **Tracer**: Lens or source population branch processed separately.
+- **Y1 / Y10**: Parallel survey-depth regimes; maintain separate trees for reproducibility.
 
 ## Citation
 

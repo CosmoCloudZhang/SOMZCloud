@@ -36,9 +36,37 @@ ASSESS/
 
 **Y1** and **Y10** mirror survey depth; keep outputs in separate trees when running both.
 
+## Inputs
+
+- Conditional/posterior products from **SYNTHESIZE** and related stages.  
+- Truth/reference labels for calibration checks (spectroscopic or simulation-based as configured).  
+- Metric and binning settings for conditional diagnostics.
+
+## Outputs
+
+- Conditional calibration diagnostics, residual summaries, and aggregate quality scores.  
+- Evidence for correction choices in **CORRECT** and uncertainty summaries in **PRIOR**.
+
 ## Execution
 
 Each script is `argparse`-driven with explicit input paths and numerical controls. `*.sh` wrappers handle modules, Conda, and batch schedulers.
+
+## Example commands
+
+```bash
+cd ASSESS/Y1
+python CONDITIONAL.py --help
+python DEVIATION.py --help
+python VALUE.py --help
+```
+
+Use `ASSESS/Y10` for full-depth counterparts.
+
+## Failure modes and restart guidance
+
+- Keep conditional metric settings fixed when comparing methods or epochs.  
+- Rerun only impacted diagnostics after upstream posterior updates.  
+- Track which truth/reference branch was used so conditional-bias trends remain interpretable.
 
 ## Intended use
 

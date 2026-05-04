@@ -45,12 +45,42 @@ Exact subsets depend on your science case; scripts are designed to chain via exp
 
 Each epoch has its own configuration, noise model, and output root so forecasts and early-survey tests do not overwrite one another.
 
+## Inputs
+
+- Source catalogues and truth tables referenced by `CATALOG.py`.  
+- Survey/noise configuration for the selected epoch (`Y1` or `Y10`).  
+- Optional prior intermediate products for staged reruns.
+
+## Outputs
+
+- Stage-wise catalogue products for observe/simulate/select/restrict/degrade/augment/combine/associate steps.  
+- SOM artefacts (trained maps and mapped assignments).  
+- Audit-friendly intermediates for partial reruns and diagnostics.
+
 ## Execution
 
 - **Python** — Paths, seeds, chunking, and augmentation hyperparameters are CLI flags.  
 - **Shell** — Module or Conda loads, CPUs/GPUs, memory, walltime, and array jobs.
 
 Stages avoid hidden global state: every step reads named inputs and writes named outputs.
+
+## Example commands
+
+```bash
+cd DATASET
+python CATALOG.py --help
+cd Y1
+python OBSERVE.py --help
+python SOM.py --help
+```
+
+Use `Y10/` equivalents for full-depth runs.
+
+## Failure modes and restart guidance
+
+- Prefer rerunning only failed sub-stages because intermediates are materialised by design.  
+- Keep random seeds fixed when comparing augmentation variants.  
+- Confirm input/output roots before batch submission to avoid mixing `Y1` and `Y10` products.
 
 ## Reproducibility
 

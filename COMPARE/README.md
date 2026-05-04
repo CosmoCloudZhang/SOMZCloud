@@ -34,9 +34,37 @@ Each step reads/writes explicit artefacts so partial reruns stay cheap.
 
 **Y1** uses early-depth spec samples; **Y10** assumes larger statistical leverage. Paths are isolated per epoch.
 
+## Inputs
+
+- **MODEL** outputs to be validated.  
+- Observational spectroscopic catalogues and quality cuts from **DATASET** products.  
+- Run metadata/configuration resolved in `INFORM`.
+
+## Outputs
+
+- Agreement/tension diagnostics between model predictions and spectroscopic truth anchors.  
+- Comparison-specific tables and residual summaries for later aggregation.
+
 ## Execution
 
 `argparse` scripts for all numerical choices; `*.sh` for allocation and env modules. Designed for array jobs over tracers or tomographic bins when needed.
+
+## Example commands
+
+```bash
+cd COMPARE/Y1
+python INFORM.py --help
+python ESTIMATE.py --help
+python EVALUATE.py --help
+```
+
+Run the analogous scripts in `COMPARE/Y10` for the full-depth branch.
+
+## Failure modes and restart guidance
+
+- If spec sample filtering changes, rerun from `REFERENCE`/`TARGET` onward to keep diagnostics coherent.  
+- Keep spectroscopic quality cuts versioned in job logs for traceability.  
+- Avoid mixing validation products from different survey epochs in a shared output root.
 
 ## Intended use
 

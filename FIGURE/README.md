@@ -31,10 +31,36 @@ Scripts favour deterministic rendering from fixed inputs. Where heavy vector gra
 
 **Y1** and **Y10** mirror other stages: separate roots so plots never cross-contaminate epochs.
 
+## Inputs
+
+- Numerical products from upstream stages (**DATASET**, **MODEL**, **COMPARE**, **CONSTRAIN**, and optionally **ANALYZE** / **ASSESS**).  
+- Plot configuration via CLI flags (paths, labels, colourmaps, output names).
+
+## Outputs
+
+- Deterministic QA and publication-ready figure files.  
+- Script-specific plot products grouped by epoch and figure family.
+
 ## Execution
 
 - **Python** — Input directories, catalogue subsets, colourmaps, and output filenames.  
 - **Shell** — HPC submission for large batches of panels or bootstrap loops.
+
+## Example commands
+
+```bash
+cd FIGURE/Y1
+python SOM.py --help
+python METRIC.py --help
+```
+
+Use matching scripts in `FIGURE/Y10` for full-depth products.
+
+## Failure modes and restart guidance
+
+- Regenerate only the affected figure family after upstream changes.  
+- Keep output naming/version tags explicit to avoid overwriting publication candidates.  
+- Ensure plotting backends/fonts are available on the target environment before large batch submissions.
 
 ## Reproducibility
 

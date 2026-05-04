@@ -36,6 +36,17 @@ Downstream **PRIOR** scripts (e.g. `ENSEMBLE.py`) consume these trees alongside 
 
 Corrections are intentionally simple so they remain interpretable and separable from modelling choices.
 
+## Inputs
+
+- Diagnostic products from **ANALYZE** and **ASSESS**.  
+- Distribution products from **SYNTHESIZE** (and related branches as configured).  
+- Correction configuration for selected families (`SHIFT`, `SCALE`, `SHAPE`).
+
+## Outputs
+
+- Corrected distribution artefacts for each correction family.  
+- Sidecar diagnostics and comparison products for audit and prior construction.
+
 ## Parameterisations
 
 | Script   | Role |
@@ -52,6 +63,23 @@ Run only the subset your analysis requires; each script is independent and resta
 - **Shell / SLURM** — `*.sh` files request resources, load modules or Conda envs, and launch jobs (e.g. job names like `CORRECT_Y1_SHAPE`).
 
 Run from `Y1/` or `Y10/` (or call scripts with absolute paths) so relative path conventions in your config stay consistent.
+
+## Example commands
+
+```bash
+cd CORRECT/Y1
+python SHIFT.py --help
+python SCALE.py --help
+python SHAPE.py --help
+```
+
+Repeat in `CORRECT/Y10` for the corresponding branch.
+
+## Practical decision rubric
+
+- Start with **SHIFT** when dominant residuals are centroid offsets.  
+- Use **SCALE** when posterior widths are systematically too narrow or too broad.  
+- Use **SHAPE** when residual structure cannot be captured by additive or multiplicative transforms alone.
 
 ## Reproducibility
 

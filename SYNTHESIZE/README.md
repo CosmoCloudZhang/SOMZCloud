@@ -30,12 +30,38 @@ SYNTHESIZE/
 
 Each script loops materials consistently so cross-scenario comparisons stay aligned.
 
+## Inputs
+
+- Material/tracer/strategy summaries from **SUMMARIZE**.  
+- Strategy-specific synthesis parameters and scenario tags.
+
+## Outputs
+
+- Unified marginal products per strategy and epoch.  
+- Harmonised artefacts for **ANALYZE**, **ASSESS**, **CORRECT**, and **PRIOR**.
+
 ## Execution
 
 - **Python** — Inputs point at **SUMMARIZE** trees; flags control which materials, how many realisations, and batching.  
 - **Shell / SLURM** — Often one allocation fan-outs independent tasks per material.
 
 Scripts are restart-safe: you can regenerate a single strategy without touching others.
+
+## Example commands
+
+```bash
+cd SYNTHESIZE/Y1
+python TRUTH.py --help
+python STACK.py --help
+```
+
+Run corresponding scripts in `SYNTHESIZE/Y10` for the full-depth branch.
+
+## Failure modes and restart guidance
+
+- Rebuild only impacted strategy outputs when one upstream summary branch changes.  
+- Keep material lists consistent across strategy runs to preserve comparability.  
+- Version output roots when changing synthesis configuration defaults.
 
 ## Reproducibility
 
