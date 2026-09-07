@@ -108,8 +108,8 @@ def main(tag, index, folder, count):
     sample_photometry = [application_photometry, degradation_photometry, combination_photometry]
     sample_style = {
         'Application': {'color': 'black', 'marker': 'o', 'markersize': 6.5, 'offset': 0.0},
-        'Degradation': {'color': 'darkgreen', 'marker': 's', 'markersize': 6.0, 'offset': -0.04},
-        'Combination': {'color': 'darkorange', 'marker': '^', 'markersize': 7.0, 'offset': +0.04}
+        'Degradation': {'color': 'darkgreen', 'marker': 's', 'markersize': 6.0, 'offset': -0.05},
+        'Combination': {'color': 'darkorange', 'marker': '^', 'markersize': 7.0, 'offset': +0.05}
     }
     
     # Plot
@@ -136,8 +136,6 @@ def main(tag, index, folder, count):
     magnitude_edge = [magnitude_lower, magnitude_edge1, magnitude_edge2, magnitude_edge3, magnitude_upper]
     
     # Color
-    color1 = [-0.4, -0.4, -0.4, -0.4]
-    color2 = [+2.0, +2.0, +1.0, +1.0]
     label_list = [r'$u - g$', r'$g - r$', r'$i - z$', r'$z - y$']
     
     sample_color_list = [sample_color(photometry) for photometry in sample_photometry]
@@ -165,13 +163,31 @@ def main(tag, index, folder, count):
                 
                 measurement[name][i][j] = statistic_list
     
+    color1 = []
+    color2 = []
+    for j in range(len(label_list)):
+        endpoint = []
+        for name in sample_name:
+            for i in range(len(magnitude_edge) - 1):
+                for statistic in measurement[name][i][j]:
+                    if statistic['plotted']:
+                        endpoint.append(statistic['quantile_low'])
+                        endpoint.append(statistic['quantile_high'])
+        endpoint = numpy.asarray(endpoint, dtype=numpy.float64)
+        endpoint = endpoint[numpy.isfinite(endpoint)]
+        lower = numpy.min(endpoint)
+        upper = numpy.max(endpoint)
+        pad = max(0.05, 0.08 * (upper - lower))
+        color1.append(float(numpy.floor((lower - pad) * 10.0) / 10.0))
+        color2.append(float(numpy.ceil((upper + pad) * 10.0) / 10.0))
+    
     # Figure
     figure = pyplot.figure(figsize=(20, 20))
     gridspec = GridSpec(nrows=len(label_list), ncols=len(magnitude_edge) - 1, figure=figure, hspace=0.0, wspace=0.0, top=0.94)
     
     legend_handle = [
         Line2D([0], [0], color='black', marker='o', linestyle='-', markersize=6.5, linewidth=1.8, label=r'$\mathtt{Application}$'),
-        Patch(facecolor='0.82', edgecolor='none', label=r'$\mathtt{Application}\,68.27\%\, \mathrm{percentile}$'),
+        Patch(facecolor='0.82', edgecolor='none', label=r'$\mathtt{Application}$ central $68.27\%$ interval'),
         Line2D([0], [0], color='darkgreen', marker='s', linestyle='-', markersize=6.0, linewidth=1.4, label=r'$\mathtt{Degradation}$'),
         Line2D([0], [0], color='darkorange', marker='^', linestyle='-', markersize=7.0, linewidth=1.4, label=r'$\mathtt{Combination}$')
     ]
