@@ -9,8 +9,8 @@ from matplotlib.gridspec import GridSpec
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 
-QUANTILE_LOW = 0.158655253931
-QUANTILE_HIGH = 0.841344746069
+QUANTILE_LOW = 0.16
+QUANTILE_HIGH = 0.84
 PHOTOMETRY_KEY = ['redshift_true', 'mag_u_lsst', 'mag_g_lsst', 'mag_r_lsst', 'mag_i_lsst', 'mag_z_lsst', 'mag_y_lsst']
 
 
@@ -27,7 +27,7 @@ def redshift_bin(redshift, redshift_edge):
 
 def measure_color(color, count):
     '''
-    Measure the median and 1-sigma-equivalent percentile interval
+    Measure the 16th, 50th, and 84th percentiles
     '''
     value = numpy.asarray(color, dtype=numpy.float64)
     value = value[numpy.isfinite(value)]
@@ -163,23 +163,8 @@ def main(tag, index, folder, count):
                 
                 measurement[name][i][j] = statistic_list
     
-    color1 = []
-    color2 = []
-    for j in range(len(label_list)):
-        endpoint = []
-        for name in sample_name:
-            for i in range(len(magnitude_edge) - 1):
-                for statistic in measurement[name][i][j]:
-                    if statistic['plotted']:
-                        endpoint.append(statistic['quantile_low'])
-                        endpoint.append(statistic['quantile_high'])
-        endpoint = numpy.asarray(endpoint, dtype=numpy.float64)
-        endpoint = endpoint[numpy.isfinite(endpoint)]
-        lower = numpy.min(endpoint)
-        upper = numpy.max(endpoint)
-        pad = max(0.05, 0.08 * (upper - lower))
-        color1.append(float(numpy.floor((lower - pad) * 10.0) / 10.0))
-        color2.append(float(numpy.ceil((upper + pad) * 10.0) / 10.0))
+    color1 = [-0.2, -0.7, -0.7, -0.7]
+    color2 = [+1.8, +1.8, +0.7, +0.7]
     
     # Figure
     figure = pyplot.figure(figsize=(20, 20))
@@ -187,7 +172,7 @@ def main(tag, index, folder, count):
     
     legend_handle = [
         Line2D([0], [0], color='black', marker='o', linestyle='-', markersize=6.5, linewidth=1.8, label=r'$\mathtt{Application}$'),
-        Patch(facecolor='0.82', edgecolor='none', label=r'$\mathtt{Application}$ central $68.27\%$ interval'),
+        Patch(facecolor='0.82', edgecolor='none', label=r'$\mathtt{Application}$ central $68\%$ interval'),
         Line2D([0], [0], color='darkgreen', marker='s', linestyle='-', markersize=6.0, linewidth=1.4, label=r'$\mathtt{Degradation}$'),
         Line2D([0], [0], color='darkorange', marker='^', linestyle='-', markersize=7.0, linewidth=1.4, label=r'$\mathtt{Combination}$')
     ]
@@ -238,6 +223,7 @@ def main(tag, index, folder, count):
                 )
             
             plot.set_xticks([0.0, 0.6, 1.2, 1.8, 2.4])
+            plot.set_yticks([-0.5, 0.0, 0.5, 1.0, 1.5])
             plot.set_xlim(redshift_z1, redshift_z2)
             plot.set_ylim(color1[j], color2[j])
             

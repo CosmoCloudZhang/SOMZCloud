@@ -9,8 +9,8 @@ from matplotlib.gridspec import GridSpec
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 
-QUANTILE_LOW = 0.158655253931
-QUANTILE_HIGH = 0.841344746069
+QUANTILE_LOW = 0.16
+QUANTILE_HIGH = 0.84
 PHOTOMETRY_KEY = ['redshift_true', 'mag_u_lsst', 'mag_g_lsst', 'mag_r_lsst', 'mag_i_lsst', 'mag_z_lsst', 'mag_y_lsst']
 
 
@@ -27,7 +27,7 @@ def redshift_bin(redshift, redshift_edge):
 
 def measure_color(color, count):
     '''
-    Measure the median and 1-sigma-equivalent percentile interval
+    Measure the 16th, 50th, and 84th percentiles
     '''
     value = numpy.asarray(color, dtype=numpy.float64)
     value = value[numpy.isfinite(value)]
@@ -187,7 +187,7 @@ def main(tag, index, folder, count):
     
     legend_handle = [
         Line2D([0], [0], color='black', marker='o', linestyle='-', markersize=6.5, linewidth=1.8, label=r'$\mathtt{Application}$'),
-        Patch(facecolor='0.82', edgecolor='none', label=r'$\mathtt{Application}$ central $68.27\%$ interval'),
+        Patch(facecolor='0.82', edgecolor='none', label=r'$\mathtt{Application}$ central $68\%$ interval'),
         Line2D([0], [0], color='darkgreen', marker='s', linestyle='-', markersize=6.0, linewidth=1.4, label=r'$\mathtt{Degradation}$'),
         Line2D([0], [0], color='darkorange', marker='^', linestyle='-', markersize=7.0, linewidth=1.4, label=r'$\mathtt{Combination}$')
     ]
