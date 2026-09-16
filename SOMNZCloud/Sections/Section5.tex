@@ -1,0 +1,227 @@
+Sections~\ref{sec:2}--\ref{sec:4} define estimators of the conditional tomographic redshift distributions for one realised statistical experiment at a time. Within any one such experiment, the \texttt{Target} and \texttt{Reference} samples---and therefore the effective calibration measure---are determined by the specific calibration set-up of that experiment, including the photometric-noise realisation, finite-sample fluctuations in the calibration sample, and, most importantly for the present work, the effective spectroscopic selection and augmentation procedure. Across experiments, however, these ingredients can vary, and such variation can induce non-negligible changes in the inferred colour--redshift relation. In this section we therefore propagate uncertainty by sampling across an ensemble of plausible experiments, producing experiment-marginalised realisations of the tomographic redshift distributions that reflect the combined impact of these effects.
+
+A useful interpretation is to view each experiment as a discrete realisation of a set of experimental hyper-parameters governing how the calibration sample is constructed (e.g.\ the mixture of spectroscopic surveys, balancing rules between shallow and deep components, and the augmentation model family). Probabilistic weighted sampling then provides a practical approximation to marginalisation over these hyper-parameters, whilst retaining the conditional estimators of Section~\ref{sec:2} as the basic building blocks.
+
+In this section we therefore move from experiment-by-experiment performance assessment to experiment-marginalised uncertainty propagation. Section~\ref{sec:5.1} constructs Monte Carlo realisations of tomographic redshift distributions by Dirichlet-weighted sampling over the experimental ensemble. Section~\ref{sec:5.2} compresses those realisations into low-dimensional nuisance-parameter priors and their cross-bin covariance. Section~\ref{sec:5.3} then converts the same ensemble into released bias-corrected tomographic products at three levels: \texttt{Shift}, \texttt{Scale}, and \texttt{Shape}. Unlike the distributions discussed in Section~\ref{sec:4}, which compare the estimator and \texttt{Truth} within the same realised experiment, the quantities defined here are constructed over the Dirichlet-sampled ensemble and therefore represent experiment-marginalised calibration uncertainty.
+
+\subsection{Dirichlet-weighted sampling over the experimental ensemble} \label{sec:5.1}
+
+For each statistical experiment \(i \in \{0, 1, \ldots, I\}\) (with \(I = 500\), so that the baseline and its \(I\) variations together form \(I+1 = 501\) realisations; Section~\ref{sec:3.1}), we apply the estimators of Section~\ref{sec:2.2} to obtain tomographic redshift distributions on the common redshift grid \(\{z_n\}\), enforcing the normalisation condition of Equation~(\ref{eq:14}). Formally, if \(e_i\) denotes the \(i\text{th}\) latent experimental set-up and \(s_m\) the tomographic selection for bin \(m\), then the conditional distributions of Sections~\ref{sec:2}--\ref{sec:4} may be written schematically as
+\begin{equation} \label{eq:23}
+    \phi_m(z \mid e_i) \equiv p(z \mid s_m, e_i).
+\end{equation}
+If we do not condition on one specific experiment, the corresponding experiment-marginalised distribution is
+\begin{equation} \label{eq:24}
+    \varphi_m(z) \equiv p(z \mid s_m) = \sum_{i} p(z \mid s_m, e_i)\, p(e_i).
+\end{equation}
+Our finite-ensemble construction approximates this marginalisation by replacing the continuous integral with a convex combination over the discrete set of realised experiments, with Dirichlet-sampled weights providing a Bayesian-bootstrap description of the unknown mixing proportions.
+
+To propagate finite-sample fluctuations in the calibration step, we additionally construct \(J = 100\) bootstrap resamples of the \texttt{Target} and \texttt{Reference} samples within each experiment and recompute the corresponding distributions. This yields bootstrap-level estimates \(\phi^{(i,j)}_m(z_n)\) for \(j \in \{1, \ldots, J\}\). We generate Monte Carlo realisations by forming random convex combinations of the bootstrap-level experiment outputs. For each Monte Carlo draw \(k\), we first select one bootstrap index \(j^{(k)}_i\) for every experiment \(i\), and then draw a non-negative weight vector \(\boldsymbol{\alpha}^{(k)} = (\alpha^{(k)}_0, \alpha^{(k)}_1, \ldots, \alpha^{(k)}_I)\) from a Dirichlet distribution,
+\begin{equation} \label{eq:25}
+    \boldsymbol{\alpha}^{(k)} \sim \texttt{Dirichlet}\!\left(\beta_0, \beta_1, \ldots, \beta_I\right),
+\end{equation}
+subject to
+\begin{equation} \label{eq:26}
+    \sum_{i=0}^{I} \alpha^{(k)}_i = 1, \qquad \alpha^{(k)}_i \ge 0.
+\end{equation}
+The resulting tomographic realisation is
+\begin{equation} \label{eq:27}
+    \varphi^{(k)}_m(z_n) = \sum_{i=0}^{I} \alpha^{(k)}_i \, \phi^{(i,\,j_i^{(k)})}_m(z_n).
+\end{equation}
+Each \(\varphi^{(k)}_m(z_n)\) is therefore best interpreted as an \emph{experiment-marginalised realisation}: it is not conditioned on any single realised experiment, but instead represents one draw from the uncertainty model over plausible mixtures of experiment-level conditional distributions. Since each \(\phi^{(i,\,j_i^{(k)})}_m(z_n)\) is non-negative and normalised, the convex combination in Equation~(\ref{eq:27}) preserves positivity and normalisation. In practice we explicitly renormalise \(\varphi^{(k)}_m(z_n)\) to satisfy Equation~(\ref{eq:14}) in order to avoid the accumulation of numerical round-off.
+
+Throughout this work we adopt uniform concentration parameters \(\beta_i = 1/(I+1)\), so that all selection-function realisations have equal opportunity to dominate a draw as a source of both statistical and systematic uncertainty. This corresponds to a sparse Bayesian-bootstrap regime in which individual experimental realisations can carry substantial weight in a given draw, intentionally widening the uncertainty envelope for stress-testing. For each estimator and configuration considered in Sections~\ref{sec:3}--\ref{sec:4}, we generate \(K = 5\times 10^5\) Monte Carlo realisations \(\{ \varphi^{(k)}_m(z_n) \}_{k=1}^{K}\) for every tomographic bin \(m\).
+
+\subsection{Uncertainty priors and cross-bin covariance} \label{sec:5.2}
+
+A common strategy in forecasts and likelihood analyses is to compress redshift-distribution uncertainty within each tomographic bin into a small set of nuisance parameters, most often a per-bin shift of the mean redshift and, optionally, a per-bin rescaling of the width. The Dirichlet-sampled ensembles provide these priors directly: by propagating calibration and selection-function variation through experiment-marginalised realisations of \(\{\varphi_m^{(k)}(z)\}_{k=1}^{K}\), we obtain both the marginal uncertainty in each bin and the cross-bin covariance induced by the same underlying ensemble.
+
+Hereafter, in Section~\ref{sec:5}, angle brackets \(\langle \cdot \rangle\) denote averages over the \(K\) Dirichlet-sampled Monte Carlo realisations. We reserve the overbar notation used earlier for summaries over the finite set of realised statistical experiments in Section~\ref{sec:4}. For an ensemble of tomographic redshift distributions \(\{\varphi^{(k)}_m(z_n)\}_{k=1}^{K}\), we define the expectation value \(\mu^{(k)}_m\) and standard deviation \(\eta^{(k)}_m\) as in Equation~(\ref{eq:21}), evaluated on the discrete redshift grid \(\{z_n\}\). From the \(K\) Monte Carlo realisations we then form the experiment-marginalised mean redshift distribution,
+\begin{equation} \label{eq:28}
+    \langle \varphi_m \rangle (z_n) \equiv \frac{1}{K}\sum_{k} \varphi^{(k)}_m(z_n),
+\end{equation}
+and analogously
+\begin{equation} \label{eq:29}
+    \langle \mu_m \rangle \equiv \frac{1}{K}\sum_{k} \mu^{(k)}_m, \qquad \langle \eta_m \rangle \equiv \frac{1}{K}\sum_{k} \eta^{(k)}_m.
+\end{equation}
+We construct the corresponding ensemble-averaged quantities for the supported \texttt{Truth} benchmark using the same sampling procedure, paired draw-by-draw with identical combination coefficients \(\boldsymbol{\alpha}^{(k)}\), yielding \(\langle \varphi^{\texttt{Truth}}_m \rangle (z_n)\), \(\langle \mu^{\texttt{Truth}}_m \rangle\), and \(\langle \eta^{\texttt{Truth}}_m \rangle\).
+
+We then define dimensionless deviations in the first two moments,
+\begin{equation} \label{eq:30}
+    \delta^{(k)}_{\mu_m} \equiv \frac{\mu^{(k)}_m - \langle \mu_m \rangle}{1 + \langle \mu_m \rangle}, \qquad \delta^{(k)}_{\eta_m} \equiv \frac{\eta^{(k)}_m - \langle \eta_m \rangle}{1 + \langle \mu_m \rangle}.
+\end{equation}
+These quantities describe fluctuations around the experiment-marginalised mean, rather than residual biases relative to \texttt{Truth} within a fixed experiment.
+
+We define the covariance matrices across tomographic bins by
+\begin{equation} \label{eq:31}
+    \Sigma^\mu_{m m'} \equiv \left\langle \delta^{(k)}_{\mu_{m}} \, \delta^{(k)}_{\mu_{m'}} \right\rangle, \qquad \Sigma^\eta_{m m'} \equiv \left\langle \delta^{(k)}_{\eta_{m}} \, \delta^{(k)}_{\eta_{m'}} \right\rangle,
+\end{equation}
+where the averages are taken over the \(K\) Monte Carlo realisations. We denote the corresponding diagonal scatters by
+\begin{equation} \label{eq:32}
+    \varsigma_{\mu_m} \equiv \sqrt{\Sigma^{\mu}_{m m}}, \qquad \varsigma_{\eta_m} \equiv \sqrt{\Sigma^{\eta}_{m m}},
+\end{equation}
+so that the correlation matrices are
+\begin{equation} \label{eq:33}
+    \mathcal{R}^\mu_{m m'} \equiv \frac{\Sigma^\mu_{m m'}}{\varsigma_{\mu_{m}} \, \varsigma_{\mu_{m'}}}, \qquad \mathcal{R}^\eta_{m m'} \equiv \frac{\Sigma^\eta_{m m'}}{\varsigma_{\eta_{m}} \, \varsigma_{\eta_{m'}}}.
+\end{equation}
+Figures~\ref{fig:8} and~\ref{fig:9} present \(\mathcal{R}^{\mu}_{m m'}\) and \(\mathcal{R}^{\eta}_{m m'}\) for lens and source samples in the LSST Y1 and Y10 scenarios.
+
+\begin{figure*}
+    \centering
+    \begin{subfigure}[t]{0.49\linewidth}
+        \centering
+        \begin{subfigure}[b]{\linewidth}
+            \centering
+            \includegraphics[width=\linewidth]{Figures/Y1/SHIFT_LENS.pdf}
+        \end{subfigure}
+        \par\medskip
+        \begin{subfigure}[b]{\linewidth}
+            \centering
+            \includegraphics[width=\linewidth]{Figures/Y1/SHIFT_SOURCE.pdf}
+        \end{subfigure}
+        \caption{LSST Y1}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.49\linewidth}
+        \centering
+        \begin{subfigure}[b]{\linewidth}
+            \centering
+            \includegraphics[width=\linewidth]{Figures/Y10/SHIFT_LENS.pdf}
+        \end{subfigure}
+        \par\medskip
+        \begin{subfigure}[b]{\linewidth}
+            \centering
+            \includegraphics[width=\linewidth]{Figures/Y10/SHIFT_SOURCE.pdf}
+        \end{subfigure}
+        \caption{LSST Y10}
+    \end{subfigure}
+    \caption{Correlation matrices \(\mathcal{R}^\mu_{m m'}\) (Equation~\ref{eq:33}) for the scaled mean-shift nuisance parameters \(\delta^{(k)}_{\mu_m}\), defined in Equation~\ref{eq:30}, evaluated from the fiducial \(\texttt{Titanium} + \texttt{Hybrid}\) experiment-marginalised ensemble. Results are shown for the LSST Y1 scenario (left column) and the LSST Y10 scenario (right column); within each column, the upper panel corresponds to lens bins and the lower panel to source bins. Off-diagonal entries quantify cross-bin correlations; the diagonal values are not correlations, which are unity by construction and would therefore saturate the colour scale, but rather the per-bin scatters \(\varsigma_{\mu_m}\), reported in the native units of the corresponding parameter.}
+    \label{fig:8}
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \begin{subfigure}[t]{0.49\linewidth}
+        \centering
+        \begin{subfigure}[b]{\linewidth}
+            \centering
+            \includegraphics[width=\linewidth]{Figures/Y1/SCALE_LENS.pdf}
+        \end{subfigure}
+        \par\medskip
+        \begin{subfigure}[b]{\linewidth}
+            \centering
+            \includegraphics[width=\linewidth]{Figures/Y1/SCALE_SOURCE.pdf}
+        \end{subfigure}
+        \caption{LSST Y1}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.49\linewidth}
+        \centering
+        \begin{subfigure}[b]{\linewidth}
+            \centering
+            \includegraphics[width=\linewidth]{Figures/Y10/SCALE_LENS.pdf}
+        \end{subfigure}
+        \par\medskip
+        \begin{subfigure}[b]{\linewidth}
+            \centering
+            \includegraphics[width=\linewidth]{Figures/Y10/SCALE_SOURCE.pdf}
+        \end{subfigure}
+        \caption{LSST Y10}
+    \end{subfigure}
+    \caption{As Figure~\ref{fig:8}, but for the scaled width nuisance parameters \(\delta^{(k)}_{\eta_m}\) and their correlation matrix \(\mathcal{R}^\eta_{m m'}\) (Equation~\ref{eq:33}). Off-diagonal entries quantify cross-bin correlations; the diagonal values are not correlations, which are unity by construction and would therefore saturate the colour scale, but rather the per-bin scatters \(\varsigma_{\eta_m}\), reported in the native units of the corresponding parameter.}
+    \label{fig:9}
+\end{figure*}
+
+The scatters \(\varsigma_{\mu_m}\) and \(\varsigma_{\eta_m}\) in Figures~\ref{fig:8}--\ref{fig:9} quantify the spread of tomographic moments across the full Dirichlet-sampled ensemble, which explicitly marginalises over variation in the effective selection function. By contrast, the violin plots in Section~\ref{sec:4} report \(\delta_{\mu_m}\) and \(\delta_{\eta_m}\) computed within each experiment relative to the supported \texttt{Truth} benchmark for that same experiment. That construction cancels common-mode experiment-to-experiment fluctuations shared by the estimator and \texttt{Truth} (e.g.\ coherent shifts induced by a particular spectroscopic-selection realisation), and therefore isolates residual within-experiment bias.
+
+It is therefore expected that \(\varsigma_{\mu_m}\) can exceed a statistical-only reference in bins where the dominant contribution is not residual per-experiment bias but rather construction uncertainty---including the range of plausible \(\varphi_m(z)\) induced by calibration and hyper-parameter realisations. This distinction is central to the interpretation of the priors derived here: they are intended to bracket experiment-marginalised calibration outcomes, not merely the repeatability of a fixed estimator in a fixed experiment.
+
+For lenses, the diagonal scatters \(\varsigma_{\mu_m}\) and \(\varsigma_{\eta_m}\) are typically small, consistent with the stability of lens calibration seen in Section~\ref{sec:4}, and cross-bin correlations are modest. For sources, the diagonal \(\varsigma_{\mu_m}\) values are larger, with the strongest contributions arising in bins where the shape of \(\varphi_m(z)\) is sensitive to the spectroscopic selection function and incomplete support, and to residual mismatch between \texttt{CosmoDC2} and \texttt{OpenUniverse2024} populations.
+
+The off-diagonal structure shows that mean shifts and width variations are generally correlated across bins. Neighbouring bins often exhibit strong positive correlations, consistent with coherent selection-function and calibration fluctuations, whilst more widely separated bins can be anti-correlated, reflecting redistribution of probability mass between low- and high-redshift regions as the colour--redshift relation varies. These correlations imply that adopting independent per-bin priors can misrepresent the uncertainty budget; the full matrices \(\mathcal{R}^\mu_{m m'}\) and \(\mathcal{R}^\eta_{m m'}\) should therefore be retained when stress-testing cosmological pipelines. Numerical values of the per-bin diagonal scatters \(\varsigma_{\mu_m}\) and \(\varsigma_{\eta_m}\) for the fiducial configuration are tabulated in Appendix~\ref{sec:A}.
+
+\subsection{Bias-corrected data products} \label{sec:5.3}
+
+We now define the bias-corrected tomographic products released for downstream forecasts. Section~\ref{sec:5.2} provides priors on low-dimensional nuisance parameters---per-bin mean shifts and width rescalings---including their cross-bin covariance. Those priors quantify the residual, experiment-marginalised dispersion about a chosen fiducial calibration. However, the Dirichlet-sampled ensemble is designed for uncertainty propagation, and its ensemble average can retain a systematic offset relative to the supported \texttt{Truth} benchmark if the underlying estimator is biased. In the nuisance-parameter language of Section~\ref{sec:5.2}, this corresponds to a non-zero offset between the fiducial ensemble mean and \texttt{Truth}, which should be removed before applying the priors in cosmological forecasts.
+
+We therefore provide three levels of bias correction that recentre the tomographic products relative to \texttt{Truth} with increasing flexibility, whilst preserving the draw-to-draw variation that encodes the covariance structure measured in Section~\ref{sec:5.2}. The first two levels correspond directly to the standard low-dimensional nuisance model (\textit{shift-only}, or \textit{shift plus scale}), with nuisance-parameter draws taken from the ensemble-derived priors; the third level corrects the full mean shape whilst retaining the same experiment-marginalised variation.
+
+The connection to Section~\ref{sec:5.2} is as follows. There, the covariance matrices \(\Sigma^\mu_{m m'}\) and \(\Sigma^\eta_{m m'}\) describe dimensionless fluctuations of the first two moments about the experiment-marginalised mean. Here, we use the same Dirichlet-sampled ensemble to define the direct recentering parameters needed to map each Monte Carlo realisation to the supported \texttt{Truth} benchmark. In this way, Section~\ref{sec:5.2} characterises the nuisance-parameter uncertainty, while the present subsection turns that same information into released bias-corrected tomographic products.
+
+To make this connection explicit, we define, for each Monte Carlo realisation \(k\), the moment-matching mean-shift and width-rescaling parameters required to map that realisation to the supported \texttt{Truth} benchmark:
+\begin{equation} \label{eq:34}
+    \Delta_m^{(k)} \equiv \langle \mu_m^{\texttt{Truth}} \rangle - \mu_m^{(k)}, \qquad \Gamma_m^{(k)} \equiv \frac{\langle \eta_m^{\texttt{Truth}} \rangle}{\eta_m^{(k)}}.
+\end{equation}
+Their ensemble means,
+\begin{equation} \label{eq:35}
+    \langle \Delta_m \rangle \equiv \frac{1}{K}\sum_{k}\Delta_m^{(k)}, \qquad \langle \Gamma_m \rangle \equiv \frac{1}{K}\sum_{k}\Gamma_m^{(k)},
+\end{equation}
+define the deterministic offsets of the released products for any chosen density estimator and calibration configuration. The residual scatter about these means, together with the cross-bin covariance of the vectors \(\{\Delta_m\}\) and \(\{\Gamma_m\}\), is induced by the same Dirichlet-sampled ensemble that underlies Section~\ref{sec:5.2}. We denote the corresponding per-bin one-sigma standard deviations by \(\varsigma_{\Delta_m}\) and \(\varsigma_{\Gamma_m}\); these are quoted directly in the native units of \(\Delta_m\) and \(\Gamma_m\) and do not carry the dimensionless \((1+\langle\mu_m^{\texttt{Truth}}\rangle)\) normalisation adopted for \(\varsigma_{\mu_m}\) and \(\varsigma_{\eta_m}\) in Equation~(\ref{eq:30}). The scaled covariance matrices \(\Sigma^\mu_{m m'}\) and \(\Sigma^\eta_{m m'}\) of Section~\ref{sec:5.2} correspondingly provide a dimensionless summary of this same uncertainty, whilst \(\Delta_m\) and \(\Gamma_m\) are the direct correction parameters used to construct the released moment-corrected products. The fiducial numerical values of \(\langle\Delta_m\rangle\), \(\langle\Gamma_m\rangle\), \(\varsigma_{\Delta_m}\) and \(\varsigma_{\Gamma_m}\) are tabulated in Appendix~\ref{sec:A} (Table~\ref{tab:A1}).
+
+In the \texttt{Shift} and \texttt{Scale} products we generate an ensemble by applying nuisance-parameter draws to the fiducial template \(\langle \varphi_m \rangle(z)\), thereby isolating the information content of a two-parameter model. In practice, we draw the full vectors \(\{\Delta_m\}\), and \(\{\Gamma_m\}\) where required, across bins so that the cross-bin covariance structure measured in Section~\ref{sec:5.2} is retained.
+
+We first apply a \textit{shift-only} correction by shifting \(\langle \varphi_m \rangle(z)\) in each bin along the redshift axis using the draw \(\Delta_m^{(k)}\):
+\begin{equation} \label{eq:36}
+    \varphi^{(k,\,\texttt{Shift})}_m(z) \propto \langle \varphi_m \rangle (z - \Delta_m^{(k)}),
+\end{equation}
+followed by renormalisation to satisfy Equation~(\ref{eq:14}). In practice, the shift is implemented by interpolation on the redshift grid; values shifted outside the tabulated range are set to zero prior to renormalisation.
+
+We next apply a \textit{shift plus scale} correction using an affine transformation that matches both the expectation value and standard deviation, with \(\Delta_m^{(k)}\) and \(\Gamma_m^{(k)}\) drawn jointly from their ensemble-derived prior:
+\begin{equation} \label{eq:37}
+    \varphi^{(k,\,\texttt{Scale})}_m(z) \propto \frac{1}{\Gamma_m^{(k)}}\,
+    \langle \varphi_m \rangle \! \left(\langle \mu_m \rangle + \frac{z - \langle \mu_m \rangle - \Delta_m^{(k)}}{\Gamma_m^{(k)}}\right),
+\end{equation}
+followed by renormalisation on the discrete grid. This corresponds to the common nuisance-parameter model in which redshift uncertainty is compressed into a per-bin mean shift and width rescaling, with the cross-bin covariance encoded by \(\Sigma^\mu_{m m'}\) and \(\Sigma^\eta_{m m'}\).
+
+Finally, to correct residual differences beyond the first two moments, we apply a \textit{full-shape} correction by aligning the ensemble-average distribution \(\langle \varphi_m \rangle(z)\) to the \texttt{Truth} average \(\langle \varphi^{\texttt{Truth}}_m \rangle(z)\) whilst retaining the draw-to-draw variation:
+\begin{equation} \label{eq:38}
+    \varphi^{(k,\,\texttt{Shape})}_m(z_n) \equiv \varphi^{(k)}_m(z_n)
+    + \langle \varphi^{\texttt{Truth}}_m \rangle(z_n) - \langle \varphi_m \rangle(z_n).
+\end{equation}
+After applying Equation~(\ref{eq:38}), we set any negative values to zero and renormalise. This defines a fiducial ensemble whose average distribution matches \texttt{Truth} by construction, whilst preserving the experiment-marginalised variation captured by the Dirichlet sampling. Figure~\ref{fig:10} illustrates how the three correction choices modify the Dirichlet-sampled tomographic realisations, and how much residual shape freedom remains once the first two moments have been matched.
+
+\begin{figure*}
+    \centering
+    \begin{subfigure}[b]{0.32\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{Figures/Y1/SHIFT.pdf}
+        \caption{LSST-Y1 \texttt{Shift}}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.32\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{Figures/Y1/SCALE.pdf}
+        \caption{LSST-Y1 \texttt{Scale}}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.32\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{Figures/Y1/SHAPE.pdf}
+        \caption{LSST-Y1 \texttt{Shape}}
+    \end{subfigure}
+    \hspace{0.0\linewidth}
+    \begin{subfigure}[b]{0.32\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{Figures/Y10/SHIFT.pdf}
+        \caption{LSST-Y10 \texttt{Shift}}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.32\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{Figures/Y10/SCALE.pdf}
+        \caption{LSST-Y10 \texttt{Scale}}
+    \end{subfigure}
+    \hspace{0.0\linewidth}
+    \begin{subfigure}[b]{0.32\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{Figures/Y10/SHAPE.pdf}
+        \caption{LSST-Y10 \texttt{Shape}}
+    \end{subfigure}
+    \caption{Random subsets (50{,}000 draws) of the bias-corrected experiment-marginalised tomographic redshift-distribution realisations for the fiducial \(\texttt{Titanium} + \texttt{Hybrid}\) configuration. The three correction levels are shown, from left to right within each survey scenario, as \texttt{Shift} (Equation~\ref{eq:36}), \texttt{Scale} (Equation~\ref{eq:37}), and \texttt{Shape} (Equation~\ref{eq:38}). The upper row corresponds to LSST Y1 and the lower row to LSST Y10. Within each panel, the upper subpanels show lens bins and the lower subpanels show source bins. The figure illustrates how much draw-to-draw freedom remains after matching the ensemble-average mean only, the ensemble-average mean and width, or the full ensemble-average shape to the supported \texttt{Truth} benchmark.}
+    \label{fig:10}
+\end{figure*}
+
+For the Y1 lens sample, the realisations are already comparatively stable across bins, with most of the visible dispersion concentrated in the highest-redshift bin where support is weakest and the tails are most sensitive to the calibration relation. Applying the \texttt{Shift} correction primarily recentres the ensemble without materially changing the internal structure of each bin, whilst the \texttt{Scale} correction further matches the overall width but leaves small shoulders and asymmetric tails intact. The \texttt{Shape} correction aligns the ensemble-average distribution to \texttt{Truth} by construction, yet a non-negligible spread remains within each bin, particularly in the high-redshift lens tail, reflecting experiment-to-experiment redistribution of probability mass that cannot be absorbed by a rigid shift or an affine rescaling.
+
+In the Y10 lens case, the increased number of tomographic bins and reduced photometric noise sharpen the central peaks, and the dispersion in the bulk of each bin is correspondingly small. Nevertheless, even here the \texttt{Shift} and \texttt{Scale} corrections do not exhaust the full variability: residual differences appear as changes in peak sharpness and in detailed tail structure near bin boundaries. The \texttt{Shape} ensemble makes this explicit by retaining draw-to-draw fluctuations in the wings whilst fixing the mean shape, indicating that lens-calibration uncertainty is largely sub-dominant in the core but can still manifest through coherent tail variations across experiments.
+
+For sources, the limitations of moment-based corrections are more apparent. In Y1, the lowest-redshift source bins exhibit broad, structured shapes with visible multi-feature behaviour, and the highest-redshift bin shows an extended tail whose amplitude varies substantially across realisations. A \texttt{Shift} correction can align the ensemble-average expectation value, but it does not control how probability is redistributed between the peak and the tails; as a result, the corrected realisations retain significant variation in skewness and tail weight. The \texttt{Scale} correction improves agreement in the overall dispersion, but it still cannot reproduce higher-order differences in shape (e.g.\ changes in tail curvature, secondary features, or asymmetric broadening), which remain prominent across bins. The \texttt{Shape} correction provides a more faithful representation of the experiment-marginalised uncertainty by matching the ensemble-average \(\langle \varphi_m \rangle(z)\) to \texttt{Truth} whilst retaining the full draw-to-draw variation; the remaining spread therefore directly visualises the level of shape freedom beyond what is captured by \(\Delta_m\) and \(\Gamma_m\).
+
+The same qualitative conclusion holds for the Y10 source sample. Although deeper photometry reduces statistical broadening in the central regions, the high-redshift tails and the detailed within-bin structure continue to vary across experiments, and these variations are not fully described by matching only the first two moments. Taken together, Figure~\ref{fig:10} shows that, even under the fiducial \texttt{Titanium} configuration, a two-parameter (\texttt{Shift} or \texttt{Shift} plus \texttt{Scale}) nuisance description is not, in general, sufficient to reproduce the full range of sampled experiment-marginalised redshift-distribution shapes. This motivates providing bias-corrected data products at all three levels, enabling future forecasts to quantify the loss of information incurred by low-dimensional nuisance parametrisations (as encoded by the priors in Section~\ref{sec:5.2}) and to assess when more flexible, shape-aware treatments become necessary; we outline how such investigations can be conducted in Section~\ref{sec:6}.

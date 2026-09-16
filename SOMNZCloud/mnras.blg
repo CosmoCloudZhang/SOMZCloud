@@ -1,0 +1,50 @@
+This is BibTeX, Version 0.99d (TeX Live 2023)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: mnras.aux
+The style file: mnras.bst
+Database file #1: mnras.bib
+Reallocated str_pool (elt_size=1) to 130000 items from 65000.
+Reallocated str_pool (elt_size=1) to 195000 items from 130000.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+You've used 167 entries,
+            2881 wiz_defined-function locations,
+            2202 strings with 180487 characters,
+and the built_in function-call counts, 88378 in all, are:
+= -- 8777
+> -- 4790
+< -- 237
++ -- 2180
+- -- 579
+* -- 10327
+:= -- 11984
+add.period$ -- 0
+call.type$ -- 167
+change.case$ -- 334
+chr.to.int$ -- 162
+cite$ -- 167
+duplicate$ -- 4791
+empty$ -- 4339
+format.name$ -- 1129
+if$ -- 16826
+int.to.chr$ -- 6
+int.to.str$ -- 0
+missing$ -- 169
+newline$ -- 516
+num.names$ -- 940
+pop$ -- 892
+preamble$ -- 1
+purify$ -- 668
+quote$ -- 0
+skip$ -- 3694
+stack$ -- 0
+substring$ -- 6895
+swap$ -- 2773
+text.length$ -- 706
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 1497
+warning$ -- 0
+while$ -- 1149
+width$ -- 0
+write$ -- 1683

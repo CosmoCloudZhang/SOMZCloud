@@ -1,0 +1,180 @@
+In this section, we assess the calibration performance of the conditional redshift estimators introduced in Section~\ref{sec:2} under the experimental design choices specified in Section~\ref{sec:3}. Throughout Sections~\ref{sec:4.1}--\ref{sec:4.4}, we evaluate residual calibration bias within realised statistical experiments, either for individual baseline cases or across the ensemble of all \(501\) experiments defined in Section~\ref{sec:3.1}. For each LSST depth scenario (Y1 and Y10), we construct tomographic conditional redshift distributions \(\phi_m(z)\) for both lens and source galaxy populations using each estimation technique, and compare them with the supported \texttt{Truth} benchmark. We begin with a qualitative inspection of the reconstructed distributions, then introduce compact summary metrics that quantify shifts in their centres and widths across experiments. We next isolate estimator-driven behaviour at fixed analysis configuration, before comparing the broader sensitivity to the experimental configurations introduced in Section~\ref{sec:3.4}. This section therefore establishes the residual-bias properties of the conditional estimators before Section~\ref{sec:5} turns to the experiment-marginalised ensemble of redshift distributions and the associated released calibration products.
+
+\subsection{Visual validation of conditional redshift distributions} \label{sec:4.1}
+
+We begin with a qualitative validation of the reconstructed conditional redshift distributions \(\phi_m(z)\) across tomographic bins for both lens and source samples. This subsection focuses on the baseline experiment as a representative realised case, in order to visualise how the estimators behave before turning in Sections~\ref{sec:4.2}--\ref{sec:4.4} to moment-based summaries across the full ensemble of statistical experiments. Figures~\ref{fig:2} and~\ref{fig:3} show results for the \texttt{Gold} (purely spectroscopic) and \texttt{Titanium} (augmentation-enabled) configurations, respectively. In each panel, the shaded bands indicate the tomographic binning ranges defined by the MAP point estimates \(z_{\text{phot}}\) (Equation~\ref{eq:20}). The curves compare the three estimators introduced in Section~\ref{sec:2.2} with the supported \texttt{Truth} benchmark, with all summaries defined on an identical supported set of clusters (Section~\ref{sec:3.3}). Differences between methods therefore primarily reflect how the cluster-level conditional densities \(H_c(z_n\mid s_m)\) are estimated. We focus on \texttt{Gold} and \texttt{Titanium} as representative cases that bracket the impact of augmentation; the remaining configurations in Table~\ref{tab:2} are assessed in Section~\ref{sec:4.4}.
+
+\begin{figure*}
+    \centering
+    \begin{subfigure}[b]{0.375\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{Figures/Y1/GOLD.pdf}
+        \caption{LSST Y1}
+    \end{subfigure}
+    \hspace{0.0\linewidth}
+    \begin{subfigure}[b]{0.605\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{Figures/Y10/GOLD.pdf}
+        \caption{LSST Y10}
+    \end{subfigure}
+    \caption{Conditional redshift distributions \(\phi_m(z)\) for the baseline experiment under the \texttt{Gold} configuration, shown for lens and source tomographic bins in the LSST-Y1 (left) and LSST-Y10 (right) scenarios. Curves show the \texttt{DIR}, \texttt{Stack}, \texttt{Hybrid}, and supported \texttt{Truth} summaries (distinguished by line colours and labelled in the legend). In the LSST-Y1 panel, the left column shows the five lens bins and the right column shows the five source bins; in the LSST-Y10 panel, the two leftmost columns show the ten lens bins and the rightmost column shows the five source bins. Shaded bands indicate the tomographic binning ranges defined by the MAP point estimates \(z_{\text{phot}}\), and annotated numbers label the tomographic bin indices.}
+    \label{fig:2}
+\end{figure*} 
+
+\begin{figure*}
+    \centering
+    \begin{subfigure}[b]{0.375\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{Figures/Y1/TITANIUM.pdf}
+        \caption{LSST Y1}
+    \end{subfigure}
+    \hspace{0.0\linewidth}
+    \begin{subfigure}[b]{0.605\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{Figures/Y10/TITANIUM.pdf}
+        \caption{LSST Y10}
+    \end{subfigure}
+    \caption{As Figure~\ref{fig:2}, but for the \texttt{Titanium} configuration, in which data augmentation is incorporated consistently in photometric-redshift training and in the construction of the \texttt{Reference} samples (Section~\ref{sec:3.4}). The same layout and binning bands are adopted for direct comparison with \texttt{Gold}.}
+    \label{fig:3}
+\end{figure*}
+
+For the lens samples in the \texttt{Gold} configuration, we observe very close agreement with \texttt{Truth} for both LSST-Y1 and LSST-Y10. This outcome is expected: the lens samples are comparatively bright and span a narrower redshift interval, which leads to higher-quality photometric features and more complete calibration coverage. The remaining small differences are limited to the highest-redshift lens bin in the Y1 case, consistent with greater sensitivity to spectroscopic incompleteness and edge effects near the boundaries of the lens selection. This same stability reappears in the experiment-level moment summaries discussed below.
+
+The source samples exhibit more structured differences between estimators. In the \texttt{Gold} configuration (Figure~\ref{fig:2}), the \texttt{DIR} estimator typically follows sharp features near the distribution peaks, reflecting the discrete SOM partition and the use of secure redshifts within clusters. However, degeneracies in colour--redshift space can map galaxies at distinct redshifts into the same cluster, leading to broadened wings and, in some cases, distorted tails. The \texttt{Stack} estimator yields smoother distributions that are less sensitive to finite spectroscopic sampling, but can over-regularise small-scale structure and suppress extended tails. The \texttt{Hybrid} estimator, despite its ad hoc construction, mitigates these limitations by combining the complementary behaviour of \texttt{DIR} and \texttt{Stack}, and consequently delivers the closest qualitative agreement with \texttt{Truth} across most bins. These visual differences foreshadow the contrasting width-bias signatures quantified in Section~\ref{sec:4.3}.
+
+A further feature evident in Figure~\ref{fig:2} is that the reconstructed source distributions are not, in general, confined to the \(z_{\text{phot}}\) binning intervals. This reflects the distinction between point-estimate assignments and population-level calibration: tomographic bin membership is defined by \(z_{\text{phot}}\), while the true-redshift content of each bin can include a substantial fraction of outliers and high-redshift contaminants. In the highest-redshift source bin, the \texttt{Gold} configuration also shows clear signs of limited calibration support, including a pronounced truncation of the high-redshift tail and increased small-scale noise. This behaviour is consistent with the scarcity of representative secure redshifts at \(z \gtrsim 1.5\) for LSST-like depths.
+
+The \texttt{Titanium} configuration (Figure~\ref{fig:3}) highlights the qualitative benefits of SOM-based data augmentation. Training the photometric-redshift model and constructing the \texttt{Reference} samples from the augmented \texttt{Combination} datasets (Section~\ref{sec:3.4}) improves both the tomographic assignments, by reducing catastrophic-outlier contamination in \(z_{\text{phot}}\), and the feature-space support, by populating sparsely sampled regions and enlarging the supported set of clusters available for calibration. Consequently, the source-bin distributions show improved agreement with \texttt{Truth}, most clearly through a more faithful recovery of the extended high-redshift tails in the final tomographic bin, where the \texttt{Gold} configuration shows strong truncation. Residual differences remain in the highest-redshift tails, including mild ringing and excess smoothing, consistent with the conditional-PDF model being least constrained in this regime and with remaining inconsistencies in SED coverage between the augmented and target populations. For the lens samples, augmentation has little impact overall, as expected for this brighter population. Small discrepancies in the highest-redshift lens bin may nevertheless point to residual mismatches in the colour--redshift relation between the simulated augmentation catalogues and the photometric \texttt{Application} population. We return to these limitations, and their implications for high-redshift calibration, in Section~\ref{sec:6}.
+
+In summary, Figures~\ref{fig:2}--\ref{fig:3} show that lens-bin calibration is visually robust across methods, whereas source-bin performance is governed by the interplay between colour--redshift degeneracies, high-redshift support, and the treatment of conditional tails, with augmentation improving the recovery of the final-bin source distributions. These qualitative differences motivate the moment-based bias diagnostics introduced next.
+
+\subsection{Bias metrics for quantitative evaluation} \label{sec:4.2}
+
+Motivated by the qualitative trends identified in Section~\ref{sec:4.1}, we now introduce compact summary statistics for the conditional redshift distributions \(\phi_m(z)\) and define bias metrics with respect to the supported \texttt{Truth} benchmark. The first moment \(\mu_m\) captures net shifts in the bin redshift distribution, while the width \(\eta_m\) provides a simple diagnostic of broadening, truncation, or over-regularisation relative to \texttt{Truth}. These scalars enable a systematic comparison across the full ensemble of realised statistical experiments defined in Section~\ref{sec:3.1}, while retaining direct interpretability in terms of distribution centre and spread. We emphasise that they are diagnostic summaries rather than a complete description of shape, but they provide a useful quantitative complement to the visual comparisons in Figures~\ref{fig:2}--\ref{fig:3}.
+
+This focus on the first moment and width follows established practice in photometric-redshift calibration: sensitivity analyses of Stage-III and Stage-IV weak-lensing and galaxy-clustering pipelines have consistently shown that the leading impact of tomographic redshift-distribution uncertainty on cosmological parameter inference is captured by the per-bin mean shift and width rescaling, and that two-parameter nuisance models absorb the bulk of the resulting parameter bias under realistic survey conditions \citep{2006ApJ...636...21M, 2024MNRAS.530.4412R, 2026arXiv260400805E}. Whether this two-moment description remains fully sufficient at LSST statistical precision has not yet been conclusively established. We therefore adopt \(\mu_m\) and \(\eta_m\) as the primary diagnostics throughout this section, but also release the full-shape realisations of tomographic redshift distributions described in Section~\ref{sec:5.3}, which preserve higher-order shape variation and allow future forecasting studies to test directly when a two-parameter description becomes inadequate.
+
+For a given statistical experiment, tomographic bin \(m\), configuration, and estimator, we characterise \(\phi_m(z)\) by its expectation value and standard deviation,
+\begin{equation} \label{eq:21}
+    \mu_m \equiv \int z \, \phi_m(z)\, \mathrm{d}z, \qquad \eta_m \equiv \left[\int \left(z-\mu_m\right)^2 \, \phi_m(z)\, \mathrm{d}z \right]^{1/2}.
+\end{equation}
+In practice, these integrals are evaluated on the discrete redshift grid used to represent \(\phi_m(z)\). For each estimator, we compute the corresponding \texttt{Truth} moments, \(\mu_m^{\texttt{Truth}}\) and \(\eta_m^{\texttt{Truth}}\), using the same supported set of clusters (Section~\ref{sec:3.3}).
+
+To quantify calibration accuracy, we define scaled biases in these moments relative to \texttt{Truth}. For a given estimator (\texttt{DIR}, \texttt{Stack}, or \texttt{Hybrid}) and statistical experiment, we write
+\begin{equation} \label{eq:22}
+    \delta_{\mu_m} \equiv \frac{\mu_m -\mu_m^{\texttt{Truth}}}{1 + \mu_m^{\texttt{Truth}}}, \qquad \delta_{\eta_m} \equiv \frac{\eta_m -\eta_m^{\texttt{Truth}}}{1 + \mu_m^{\texttt{Truth}}}.
+\end{equation}
+
+The normalisation by \(1 + \mu_m^{\texttt{Truth}}\) places different tomographic bins on a common fractional scale and follows the convention commonly adopted for redshift-calibration requirements. In addition to the typical bias level, the full distributions of \(\delta_{\mu_m}\) and \(\delta_{\eta_m}\) across the ensemble of statistical experiments provide a complementary characterisation of robustness, quantifying how calibration performance varies under realisations of photometric noise, footprint variation, and non-uniform spectroscopic selection. We denote the corresponding means across realised experiments by \(\bar{\delta}_{\mu_m}\) and \(\bar{\delta}_{\eta_m}\), and the associated scatters by \(\sigma_{\mu_m}\) and \(\sigma_{\eta_m}\). These quantities remain purely descriptive at this stage, and should not be confused with the experiment-marginalised nuisance descriptions introduced in Section~\ref{sec:5}. Tabulated values of these summary statistics for the fiducial \texttt{Titanium}~+~\texttt{Hybrid} configuration are provided in Appendix~\ref{sec:A} (Table~\ref{tab:A1}).
+
+\subsection{Assessment through distinct estimators} \label{sec:4.3}
+
+We now isolate estimator-driven behaviour by fixing the analysis configuration to \texttt{Titanium} and varying only the estimator. Figures~\ref{fig:4} and~\ref{fig:5} show the distributions of the scaled moment biases defined in Equation~\ref{eq:22} across the full ensemble of realised statistical experiments for each tomographic bin. Each sub-panel corresponds to a single bin and compares the \texttt{DIR}, \texttt{Stack}, and \texttt{Hybrid} estimators using violin plots: the violin width encodes the distribution across experiments, while the markers indicate the mean together with the most extreme realised values in the ensemble. The vertical shaded regions in Figure~\ref{fig:4} indicate the statistical-only redshift-calibration requirements adopted from the LSST~DESC SRD, namely \(0.005\) for lens galaxies and \(0.002\) for source galaxies, which serve as a reference scale for the expectation biases.
+
+\begin{figure*}
+    \centering
+    \begin{subfigure}[b]{0.385\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{Figures/Y1/EXPECTATION.pdf}
+        \caption{LSST Y1}
+    \end{subfigure}
+    \hspace{0.0\linewidth}
+    \begin{subfigure}[b]{0.600\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{Figures/Y10/EXPECTATION.pdf}
+        \caption{LSST Y10}
+    \end{subfigure}
+    \caption{Distributions of the scaled expectation bias \(\delta_{\mu_m}\) (Equation~\ref{eq:22}) across the ensemble of statistical experiments for the \texttt{Titanium} configuration. Each sub-panel corresponds to a single tomographic bin and shows the \texttt{DIR}, \texttt{Stack}, and \texttt{Hybrid} estimators as violin plots; violin width encodes the distribution of \(\delta_{\mu_m}\) across experiments, and markers indicate the mean together with the minimum and maximum realised values over the experiment ensemble. The left panel shows LSST-Y1 results (five lens bins and five source bins), while the right panel shows LSST-Y10 results (ten lens bins and five source bins). Vertical shaded bands denote the statistical-only redshift-calibration requirements adopted from the LSST~DESC SRD.}
+    \label{fig:4}
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \begin{subfigure}[b]{0.385\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{Figures/Y1/DEVIATION.pdf}
+        \caption{LSST Y1}
+    \end{subfigure}
+    \hspace{0.0\linewidth}
+    \begin{subfigure}[b]{0.600\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{Figures/Y10/DEVIATION.pdf}
+        \caption{LSST Y10}
+    \end{subfigure}
+    \caption{As Figure~\ref{fig:4}, but for the scaled width bias \(\delta_{\eta_m}\) (Equation~\ref{eq:22}); markers again indicate the mean together with the minimum and maximum realised values across the experiment ensemble.}
+    \label{fig:5}
+\end{figure*}
+
+\subsubsection{Lens galaxies} \label{sec:4.3.1}
+
+For the LSST-Y1 lens sample, all three estimators yield tightly concentrated distributions of both \(\delta_{\mu_m}\) and \(\delta_{\eta_m}\), indicating that calibration of this comparatively bright population is largely insensitive to estimator choice. The mean expectation bias remains small across most bins, with \(\bar{\delta}_{\mu_m} \lesssim 0.002\), and the width biases follow the same pattern, with \(\bar{\delta}_{\eta_m} \lesssim 0.002\) in most bins. The largest deviations are confined to the highest-redshift bin, where \(\bar{\delta}_{\eta_m}\) rises mildly to \(\sim 0.005\) and the experiment-to-experiment scatters \(\sigma_{\mu_m}\) and \(\sigma_{\eta_m}\) correspondingly broaden. This behaviour is consistent with increased sensitivity to edge effects and reduced calibration support near the boundaries of the lens selection, in agreement with the qualitative trends in Section~\ref{sec:4.1}. Differences between estimators are therefore limited throughout, although \texttt{Hybrid} typically yields the lowest residual biases, reflecting the benefit of combining the complementary behaviour of \texttt{DIR} and \texttt{Stack} even when the overall calibration is already close to the supported \texttt{Truth} benchmark. The isolated extreme realisations occur primarily in the highest-redshift bins and should therefore be interpreted as rare but informative failure modes, rather than as representative lens-calibration behaviour.
+
+For the LSST-Y10 lens sample, the expectation-bias distributions remain similarly concentrated, again with \(\bar{\delta}_{\mu_m} \lesssim 0.002\) in the majority of bins and only a slight increase in spread towards the highest-redshift end. As in Y1, the lens calibration is therefore highly stable across estimator choices, with appreciable sensitivity emerging only in the least supported upper-redshift bins. The width biases remain at the \(\lesssim 0.001\,{-}\,0.002\) level in most bins, with similarly small \(\sigma_{\eta_m}\). Estimator-dependent differences are again minor, and \texttt{Hybrid} typically gives the closest agreement with the supported \texttt{Truth} benchmark. Overall, Figures~\ref{fig:4}--\ref{fig:5} show that lens calibration is robust to estimator choice in both survey-depth scenarios, with only mild loss of stability towards the highest-redshift bins.
+
+\subsubsection{Source galaxies} \label{sec:4.3.2}
+
+For the LSST-Y1 source sample, the expectation-bias distributions are broader and more estimator dependent, reflecting fainter photometry, stronger colour--redshift degeneracies, and more variable calibration support. In the first four tomographic bins (\(z \lesssim 1\)), Figure~\ref{fig:4} shows a clear contrast between \texttt{DIR} and \texttt{Stack}. The \texttt{DIR} estimator typically exhibits larger \(\bar{\delta}_{\mu_m}\) offsets and broader experiment-to-experiment scatter \(\sigma_{\mu_m}\), consistent with finite spectroscopic sampling within clusters and degeneracy-driven mixing within the SOM partition. By contrast, \texttt{Stack} yields substantially narrower distributions, but with mean biases that can differ in sign from \texttt{DIR}, indicating that conditional-PDF regularisation and tail modelling can shift \(\mu_m\) in a different direction from the discrete cluster-based estimate. The \texttt{Hybrid} construction reduces the mean bias in these bins by balancing the opposing tendencies of \texttt{DIR} and \texttt{Stack}, while also narrowing the experiment-to-experiment scatter relative to \texttt{DIR}. In the final Y1 source bin, all estimators display a pronounced negative \(\delta_{\mu_m}\) and increased \(\sigma_{\mu_m}\), consistent with limited support and imperfect modelling of the extended high-redshift tail; \texttt{Hybrid} remains negatively biased but modestly reduces the dispersion compared to the most variable component. This contrast already mirrors the visual behaviour in Section~\ref{sec:4.1}: \texttt{DIR} tends to preserve sharper local structure at the cost of broader wings, whereas \texttt{Stack} regularises those wings but can shift or suppress the tails.
+
+For the LSST-Y1 source sample, the width biases further highlight these complementary failure modes. In Figure~\ref{fig:5}, the low-redshift source bins show the characteristic broadening signature of \texttt{DIR}, with large positive \(\bar{\delta}_{\eta_m}\) and substantial \(\sigma_{\eta_m}\), consistent with degeneracy-driven mixing producing overly extended wings within SOM clusters. The \texttt{Stack} widths are much more tightly distributed and are often mildly negative, consistent with regularisation of tails and suppression of small-scale structure in the conditional PDFs. The \texttt{Hybrid} estimator therefore provides an effective compromise at \(z \lesssim 1\), substantially reducing the strong positive width bias of \texttt{DIR} while remaining closer to zero than \texttt{Stack} when the latter becomes noticeably negative. In the highest-redshift Y1 source bin, \texttt{Stack} becomes more strongly negative and \texttt{Hybrid} correspondingly shifts negative, indicating that tail modelling dominates the width behaviour in this regime.
+
+For the LSST-Y10 source sample, the expectation-bias distributions are noticeably tighter than in Y1 in the first three tomographic bins, consistent with reduced photometric noise and improved point-estimate binning in the deeper survey scenario. The relative behaviour of \texttt{DIR} and \texttt{Stack} remains similar to Y1, such that \texttt{Hybrid} again tends to lie closer to zero in these low-redshift bins. At higher redshift (\(z \gtrsim 1\); bins \(4\)--\(5\)), the expectation bias becomes strongly negative for all estimators, with the magnitude increasing towards the final bin. In this regime, tail limitations dominate the behaviour, and \texttt{Hybrid} largely inherits the negative shift associated with the conditional-PDF component rather than cancelling it.
+
+For the LSST-Y10 source sample, the width biases mirror these trends. In the first three source bins, \texttt{DIR} again shows pronounced positive \(\delta_{\eta_m}\), while \texttt{Stack} is slightly negative, leading \texttt{Hybrid} to reduce the overall bias and narrow the scatter relative to \texttt{DIR}. At \(z \gtrsim 1\) (bins \(4\)--\(5\)), \texttt{DIR} widths are closer to zero, but \texttt{Stack} becomes strongly negative, driving \texttt{Hybrid} negative as well. As in the lens case, the most isolated outer values are concentrated in the highest-redshift bins and should be interpreted as rare failure modes within the experiment ensemble rather than as representative performance.
+
+Overall, for \(z \lesssim 1\) the \texttt{Hybrid} estimator most consistently reduces systematic offsets in \(\delta_{\mu_m}\) and mitigates the large positive \(\delta_{\eta_m}\) values seen in \texttt{DIR}, while also narrowing experiment-to-experiment scatter. At \(z \gtrsim 1\), however, all estimators exhibit substantial negative \(\delta_{\mu_m}\) and, for \texttt{Stack}/\texttt{Hybrid}, increasingly negative \(\delta_{\eta_m}\), indicating that limitations in high-redshift tail recovery---ultimately tied to incomplete support and residual mismatch between the \texttt{Augmentation} and \texttt{Application} populations---remain the dominant challenge. Importantly, all results in this section still describe residual calibration behaviour within realised statistical experiments, with the experiment ensemble used only as a diagnostic distribution over those cases. In Section~\ref{sec:5}, we change perspective and use that same ensemble itself to construct experiment-marginalised uncertainty realisations, priors, and released bias-corrected redshift products.
+
+\subsection{Evaluation across analysis configurations} \label{sec:4.4}
+
+We next fix the estimator to \texttt{Hybrid} and assess how the moment-bias distributions depend on the analysis configuration defined in Section~\ref{sec:3.4}. Figures~\ref{fig:6} and~\ref{fig:7} summarise \(\delta_{\mu_m}\) and \(\delta_{\eta_m}\) (Equation~\ref{eq:22}) across the ensemble of realised statistical experiments for each tomographic bin, now comparing configurations rather than estimators. In each sub-panel, the violin shapes capture the experiment-to-experiment variability within a given configuration, while the markers indicate the mean together with the minimum and maximum realised values across the ensemble. This representation therefore isolates the impact of dataset and sample-construction choices---including the incorporation of augmentation, the calibration SOM training set, and the \texttt{Reference} definition---on both the typical bias level and its robustness, as summarised in Table~\ref{tab:2}. As in Section~\ref{sec:4.3}, the isolated outer markers should be interpreted as rare realised failure modes, most often in the highest-redshift bins, rather than as representative performance.
+
+\begin{figure*}
+    \centering
+    \begin{subfigure}[b]{0.38\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{Figures/Y1/CENTER.pdf}
+    \caption{LSST Y1}
+    \end{subfigure}
+    \hspace{0.0\linewidth}
+    \begin{subfigure}[b]{0.60\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{Figures/Y10/CENTER.pdf}
+    \caption{LSST Y10}
+    \end{subfigure}
+    \caption{Distributions of the scaled expectation bias \(\delta_{\mu_m}\) (Equation~\ref{eq:22}) across the ensemble of statistical experiments for the \texttt{Hybrid} estimator under each of the six analysis configurations in Table~\ref{tab:2}. Each sub-panel corresponds to a tomographic bin and compares \texttt{Gold}, \texttt{Silver}, \texttt{Titanium}, \texttt{Copper}, \texttt{Iron}, and \texttt{Zinc}. Violin width encodes the distribution across experiments, and markers indicate the mean together with the minimum and maximum realised values over the experiment ensemble. The LSST-Y1 panel shows five lens bins and five source bins, while the LSST-Y10 panel shows ten lens bins and five source bins. Vertical shaded bands denote the statistical-only redshift-calibration requirements adopted from the LSST~DESC SRD.}
+    \label{fig:6}
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \begin{subfigure}[b]{0.38\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{Figures/Y1/WIDTH.pdf}
+    \caption{LSST Y1}
+    \end{subfigure}
+    \hspace{0.0\linewidth}
+    \begin{subfigure}[b]{0.60\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{Figures/Y10/WIDTH.pdf}
+    \caption{LSST Y10}
+    \end{subfigure}
+    \caption{As Figure~\ref{fig:6}, but for the scaled width bias \(\delta_{\eta_m}\) (Equation~\ref{eq:22}); markers again indicate the mean together with the minimum and maximum realised values across the experiment ensemble.}
+    \label{fig:7}
+\end{figure*}
+
+\subsubsection{Lens galaxies} \label{sec:4.4.1}
+
+For the LSST-Y1 lens sample, both the expectation biases \(\delta_{\mu_m}\) and the width biases \(\delta_{\eta_m}\) remain tightly concentrated and close to zero across \texttt{Gold}, \texttt{Silver}, \texttt{Titanium}, \texttt{Copper}, and \texttt{Iron} in the first four tomographic bins, indicating only weak sensitivity to augmentation, the calibration SOM training set, or the global-versus-tomographic construction of the \texttt{Reference} sample. The highest-redshift lens bin exhibits the largest dispersion and modestly larger offsets in both moments, consistent with the edge behaviour identified in Section~\ref{sec:4.1}, with mild broadening of \(\sigma_{\eta_m}\) at the high-redshift end. The stress-test \texttt{Zinc} configuration is a clear outlier in both moments, producing systematically shifted distributions even at low redshift and the largest deviations in the highest-redshift lens bin, as expected when the training and calibration relations are drawn from a mismatched simulated population.
+
+For the LSST-Y10 lens sample, both moments show the same qualitative behaviour: \(\delta_{\mu_m}\) and \(\delta_{\eta_m}\) remain small and stable across the physically motivated configurations \texttt{Gold}--\texttt{Iron}, with a gradual increase in spread towards the highest-redshift bins. Again, \texttt{Zinc} yields the largest systematic shifts and dispersions in both moments, highlighting the sensitivity of lens calibration to an incorrect colour--redshift relation even when photometric noise is reduced. Overall, lens calibration is therefore robust to the physically motivated configuration changes considered here, with appreciable sensitivity emerging only at the highest redshifts and under the deliberately mismatched \texttt{Zinc} stress test.
+
+\subsubsection{Source galaxies} \label{sec:4.4.2}
+
+For the LSST-Y1 source sample, the expectation biases \(\delta_{\mu_m}\) show substantially stronger configuration dependence than for lenses, with the largest differences appearing in the highest-redshift bin. In the first four source bins (\(z \lesssim 1\)), \texttt{Gold} and the augmentation-enabled configurations (\texttt{Titanium} and \texttt{Copper}) remain close to zero with comparable dispersion, whereas \texttt{Silver} shows substantially broader distributions in several bins. This behaviour is consistent with \texttt{Silver} improving tomographic assignments through augmented photometric-redshift training, while still relying on a purely spectroscopic \texttt{Reference} sample whose support can fluctuate strongly under varying spectroscopic selection functions. The controlled perturbations introduce coherent but modest bin-dependent shifts: \texttt{Copper} (which retrains the calibration SOM on \texttt{Combination}; Table~\ref{tab:2}) and \texttt{Iron} show that calibration SOM training and the global-versus-tomographic \texttt{Reference} definition can move \(\bar{\delta}_{\mu_m}\) at the few \(\times 10^{-3}\) to \(\sim 10^{-2}\) level even when the estimator is fixed. In the final Y1 source bin, all configurations shift to pronounced negative \(\delta_{\mu_m}\) with increased scatter, demonstrating that limited support and imperfect modelling of the high-redshift tail dominate the error budget. Even so, \texttt{Titanium} and \texttt{Copper} suppress the most extreme excursions relative to the purely spectroscopic baselines, reflecting the stabilising effect of augmentation in realisations where the spectroscopic coverage becomes particularly sparse. By contrast, \texttt{Zinc} yields the largest negative shifts, consistent with a genuine mismatch in the underlying colour--redshift relation.
+
+For the LSST-Y1 source sample, the width biases reinforce these trends. At \(z \lesssim 1\), the purely spectroscopic baselines (\texttt{Gold}, and especially \texttt{Silver}) show broader and, in several bins, more negatively shifted \(\delta_{\eta_m}\) distributions, whereas the augmentation-enabled configurations (\texttt{Titanium} and \texttt{Copper}) are tighter and lie closer to zero. This behaviour is consistent with improved feature-space coverage reducing the degree to which a small number of weakly supported clusters control the inferred tail behaviour of \(\phi_m(z)\). In the highest-redshift source bin, all configurations yield negative \(\delta_{\eta_m}\), reflecting the difficulty of recovering extended high-redshift tails; \texttt{Zinc} again behaves distinctly, indicating that mismatched training relations can alter both the inferred mean and width.
+
+For the LSST-Y10 source sample, the expectation biases show tighter distributions than in Y1 in the first three source bins, consistent with reduced photometric noise and improved point-estimate binning in the deeper survey scenario. Across these low-redshift bins, \texttt{Gold}, \texttt{Titanium}, and \texttt{Copper} remain close to zero with small scatter, whereas \texttt{Iron} shows coherent offsets, indicating that constructing source \texttt{Reference} samples tomographically can introduce bin-dependent biases even when feature-space support is otherwise adequate. At higher redshift (bins \(4\)--\(5\)), all configurations shift towards negative \(\delta_{\mu_m}\), with the magnitude increasing towards the final bin, consistent with the common high-redshift tail limitation discussed in Section~\ref{sec:4.3}. In this regime, configuration changes chiefly modulate the severity of the failure mode rather than remove it. Notably, the augmentation-enabled configurations again avoid the most extreme outliers seen in the purely spectroscopic baselines, indicating that augmentation stabilises calibration against variations in the spectroscopic selection function by increasing support in sparsely sampled regions of feature space.
+
+For the LSST-Y10 source sample, the width biases again show reduced scatter relative to Y1 in the first three bins, but the configuration trends persist: \texttt{Titanium} and \texttt{Copper} remain among the most stable options at low redshift, while \texttt{Iron} introduces coherent bin-dependent shifts. At \(z \gtrsim 1\) (bins \(4\)--\(5\)), the width biases become uniformly negative across configurations, with the most negative shifts typically occurring where the conditional-PDF component is least constrained by representative training data. This confirms that beyond \(z \gtrsim 1\) the dominant limitation is not estimator choice, which is fixed here, but residual mismatch and incompleteness in the calibration relation between the \texttt{Augmentation} and \texttt{Application} populations.
+
+Overall, Figures~\ref{fig:6}--\ref{fig:7} show that, under a fixed \texttt{Hybrid} estimator, configuration choices have limited impact on lens calibration except at the highest redshifts, where sensitivity to edge effects and support limitations becomes more visible. For source bins, by contrast, the dominant dependencies are the degree of feature-space support, the construction of the \texttt{Reference} samples, and the realism of the augmentation. At \(z \lesssim 1\), augmentation-enabled configurations are typically the most stable and most consistent with SRD-level requirements on \(\delta_{\mu_m}\), whereas at \(z \gtrsim 1\) coherent negative shifts in \(\delta_{\mu_m}\) and increasingly negative \(\delta_{\eta_m}\) persist, indicating that high-redshift tail recovery remains the dominant limitation (Section~\ref{sec:6.1}). Even so, augmentation suppresses the most extreme outliers by stabilising calibration against fluctuations in the spectroscopic selection function, motivating augmentation-based sampling to define informative priors on residual biases under alternative galaxy-evolution assumptions (Section~\ref{sec:6.2}).

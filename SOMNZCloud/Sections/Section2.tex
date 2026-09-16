@@ -1,0 +1,123 @@
+In this section we establish the Bayesian framework used to characterise tomographic redshift distributions. Our objective is to infer a robust colour--redshift relation from galaxies with secure calibration redshifts, and to propagate this relation to photometric samples through an importance-weighted scheme that accounts for spectroscopic selection effects.
+
+The resulting quantities are referred to as \textit{conditional redshift distributions}, because they describe the redshift distribution of a tomographic sample conditional on the selection effects encoded by the calibration measure in the importance-weighted framework. Throughout this section, all expressions are formulated for a single realised experiment, defined by a particular photometric sample, spectroscopic calibration sample, and associated selection functions. Our formulation proceeds in two stages. First, we derive an importance-weighted expression for the population-level conditional redshift distribution and introduce a discrete mixture representation in photometric feature space, yielding a practical estimator. Secondly, we define a family of estimators for the cluster-level conditional redshift densities, including the SOM-based \texttt{DIR} method, the density-modelling \texttt{Stack} approach, a combined \texttt{Hybrid} estimator, and the \texttt{Truth} benchmark. A schematic summary of the workflow is provided in Fig.~\ref{fig:1}, while the construction of the calibration galaxy samples and the practical implementation of these estimators are deferred to Section~\ref{sec:3}.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=\linewidth]{Figures/SUMMARISE.pdf}
+    \caption{Schematic overview of the summarisation techniques for conditional redshift distributions. The diagram illustrates the construction of photometric and spectroscopic samples, the discretisation of photometric feature space via a SOM with optimised clustering, and the derivation of conditional redshift PDFs. Four summarisation approaches are shown: \texttt{DIR}, \texttt{Stack}, \texttt{Hybrid}, and the benchmark \texttt{Truth}.}
+    \label{fig:1}
+\end{figure*}
+
+\subsection{Theoretical formalism and mixture representation} \label{sec:2.1}
+
+We adopt a Bayesian formulation in which the tomographic redshift distribution is defined as the conditional probability of the true redshift given the selection. For galaxies assigned to tomographic bin \(m = 1, \ldots, M\) under selection \(s_m\) (e.g.\ defined by the maximum-a-posteriori ML photometric-redshift point estimate and optional magnitude cuts), we define the conditional probability as
+\begin{equation} \label{eq:1}
+    \phi_m(z) \equiv p(z \mid s_m).
+\end{equation}
+Throughout, \(\mathbf{x}\) denotes the photometric observables (e.g.\ colours and magnitudes). Introducing \(\mathbf{x}\) and marginalising over observable space yields
+\begin{equation} \label{eq:2}
+\begin{split}
+    \phi_m(z) &= \frac{1}{p(s_m)} \int p(z, s_m, \mathbf{x}) \, \mathrm{d}\mathbf{x} \\
+    &= \int p(z \mid s_m, \mathbf{x}) \, p(\mathbf{x} \mid s_m) \, \mathrm{d}\mathbf{x}.
+\end{split}
+\end{equation}
+The redshift distribution is therefore obtained by averaging the conditional redshift density over the observable distribution of the selected sample.
+
+As \(p(z \mid s_m, \mathbf{x})\) and \(p(\mathbf{x} \mid s_m)\) are not available in closed analytic form, we introduce the spectroscopic calibration distribution \(p_\mathrm{spec}(\mathbf{x})\) as a reference measure and rewrite Equation~(\ref{eq:2}) via importance weighting,
+\begin{equation} \label{eq:3}
+    \phi_m(z) = \int p_\mathrm{spec}(\mathbf{x}) \, w(\mathbf{x} \mid s_m) \, p(z \mid s_m, \mathbf{x}) \, \mathrm{d}\mathbf{x},
+\end{equation}
+\begin{equation} \label{eq:4}
+    w(\mathbf{x} \mid s_m) = \frac{p(\mathbf{x} \mid s_m)}{p_\mathrm{spec}(\mathbf{x})}.
+\end{equation}
+This rewriting is valid provided that every photometric galaxy satisfying the selection has non-zero probability of being sampled by the spectroscopic calibration measure; otherwise the importance weight becomes ill-defined. The ratio therefore acts as an importance weight correcting for mismatches between the spectroscopic calibration prior and the photometric target distribution.
+
+To construct a practical estimator, we discretise observable space by grouping galaxies into \(C\) clusters in photometric feature space, labelled by \(c = 1, \ldots, C\). The spectroscopic occupation probability of cluster \(c\) is
+\begin{equation} \label{eq:5}
+    P_\mathrm{spec}(c) = \int_{\mathbf{x}\in c} p_\mathrm{spec}(\mathbf{x}) \, \mathrm{d}\mathbf{x}.
+\end{equation}
+We assume approximate homogeneity of the conditional density within each cluster, such that
+\begin{equation} \label{eq:6}
+    p(z \mid s_m, \mathbf{x}) \approx p(z \mid s_m, c)
+    \qquad \text{for } \mathbf{x}\in c.
+\end{equation}
+Under this approximation, the importance-weighted expression reduces to the discrete mixture form
+\begin{equation} \label{eq:7}
+    \phi_m(z) = \sum_{c} P_\mathrm{spec}(c) \, w(c \mid s_m) \, p(z \mid s_m, c),
+\end{equation}
+where the cluster-level importance weight is
+\begin{equation} \label{eq:8}
+    w(c \mid s_m) = \frac{P(c \mid s_m)}{P_\mathrm{spec}(c)},
+\end{equation}
+and \(P(c \mid s_m) = \int_{\mathbf{x}\in c} p(\mathbf{x}\mid s_m) \, \mathrm{d}\mathbf{x}\) is the photometric occupation probability of cluster \(c\) under selection \(s_m\). Equation~(\ref{eq:7}) can therefore be written directly in terms of the target occupancies as
+\begin{equation} \label{eq:9}
+    \phi_m(z) = \sum_{c} P(c \mid s_m) \, p(z \mid s_m, c).
+\end{equation}
+
+For numerical evaluation, we further discretise redshift onto a grid \(z_1, \ldots, z_n, \ldots, z_{N_z}\) with linear spacing \(\Delta_z\). The conditional redshift distribution of bin \(m\) can then be written as
+\begin{equation} \label{eq:10}
+    \phi_m(z_n) = \sum_{c} \Pi_{m,c} \, H_c(z_n \mid s_m),
+\end{equation}
+where \(H_c(z_n \mid s_m)\) is a discrete approximation to the cluster-level conditional density \(p(z \mid s_m, c)\), and satisfies the normalisation condition
+\begin{equation} \label{eq:11}
+    \sum_n H_c(z_n \mid s_m) \, \Delta_z = 1.
+\end{equation}
+In practice, we estimate the cluster occupancy \(P(c \mid s_m)\) directly from the selected photometric sample and therefore interpret the mixture coefficients \(\Pi_{m,c}\) as empirical estimators of \(P(c \mid s_m)\),
+\begin{equation} \label{eq:12}
+    \Pi_{m,c} = \frac{W_{m,c}^\mathrm{phot}}{\sum_{c'} W_{m,c'}^\mathrm{phot}}.
+\end{equation}
+For lens samples \(W_{m,c}^\mathrm{phot} = N_{m,c}^\mathrm{phot}\), whereas for source samples inverse-variance shear weights are adopted,
+\begin{equation} \label{eq:13}
+    W_{m,c}^\mathrm{phot} = \sum_{g \in (m,c)} \left(\frac{1}{\sigma_\gamma^g}\right)^2.
+\end{equation}
+Due to the normalisation conditions imposed on both the mixture coefficients \(\Pi_{m,c}\) and the cluster-level conditional density \(H_c(z_n \mid s_m)\), the conditional redshift distribution itself also satisfies
+\begin{equation} \label{eq:14}
+    \sum_n \phi_m(z_n) \, \Delta_z = 1.
+\end{equation}
+
+\subsection{Estimators of cluster-level conditional densities} \label{sec:2.2}
+
+We now define a set of estimators for the cluster-level conditional density \(H_c(z_n \mid s_m)\). All approaches share the same mixture weights \(\Pi_{m,c}\) in Equation~(\ref{eq:10}) and differ only in how \(H_c(z_n \mid s_m)\) is constructed, thereby yielding different approximations to \(\phi_m(z_n)\).
+
+\subsubsection{Empirical histogram of spectroscopic redshifts} \label{sec:2.2.1}
+
+In the \texttt{DIR} approach, the conditional density in cluster \(c\) is estimated directly from spectroscopic redshifts via a normalised histogram,
+\begin{equation} \label{eq:15}
+    H_c^\texttt{DIR}(z_n \mid s_m) = \frac{N_{m,c}^\mathrm{spec}(z_n)}{\Delta_z \, N_{m,c}^\mathrm{spec}},
+\end{equation}
+where \(N_{m,c}^\mathrm{spec}(z_n)\) denotes the number of spectroscopic galaxies in cluster \(c\) and redshift bin \(z_n\) that satisfy the selection, and \(N_{m,c}^\mathrm{spec} = \sum_n N_{m,c}^\mathrm{spec}(z_n)\) is the corresponding total count in that cluster. When redshift-dependent selection within clusters is negligible, we adopt the simplified estimator
+\begin{equation} \label{eq:16}
+    H_c^\texttt{DIR}(z_n) = \frac{N_c^\mathrm{spec}(z_n)}{\Delta_z \, N_c^\mathrm{spec}},
+\end{equation}
+where \(N_c^\mathrm{spec}=\sum_n N_c^\mathrm{spec}(z_n)\). Substituting Equation~(\ref{eq:16}) into Equation~(\ref{eq:10}) yields the \texttt{DIR} estimator \(\phi_m^\texttt{DIR}(z_n)\).
+
+\subsubsection{ML posterior stacking} \label{sec:2.2.2}
+
+When galaxy-level redshift posteriors \(p_\mathrm{ML}(z \mid \mathbf{x})\) are available and reliable, we estimate the cluster-level conditional density by stacking these posteriors within each cluster,
+\begin{equation} \label{eq:17}
+    H_c^\texttt{Stack}(z_n \mid s_m) \equiv \frac{1}{N_{m,c}^\mathrm{phot}} \sum_{g \in (m,c)} p_\mathrm{ML}(z_n \mid \mathbf{x}_g),
+\end{equation}
+where the sum runs over photometric galaxies in cluster \(c\) satisfying \(s_m\), and \(N_{m,c}^\mathrm{phot}\) is the corresponding number of galaxies. Substituting Equation~(\ref{eq:17}) into Equation~(\ref{eq:10}) yields the \texttt{Stack} estimator \(\phi_m^\texttt{Stack}(z_n)\).
+
+We note that stacking of individual photo-\(z\) posteriors is not, in general, a consistent estimator of the population-level redshift distribution: \citet{2021PhRvD.103h3502M} show that the stacked estimator recovers the true \(\mathcal{N}(z)\) only under limiting conditions that are unlikely to hold for future broad-band photometric surveys. We retain \texttt{Stack} as an estimator in this work precisely to investigate its performance and characterise its limitations relative to \texttt{DIR}. As detailed below, all estimators introduced in this section are evaluated against a common benchmark constructed from true redshifts, so that residual biases are explicitly diagnosed. We emphasise that none of the estimators defined here carries formal optimality guarantees; a fuller discussion of how the present construction relates to the conditions identified by \citet{2021PhRvD.103h3502M} is given in Section~\ref{sec:6.1.4}, and more principled alternatives including hierarchical Bayesian inference are outlined in Section~\ref{sec:6.2.3}.
+
+For lens samples, \(W_{m,c}^\mathrm{phot}=N_{m,c}^\mathrm{phot}\), and the construction of population-level redshift distributions is therefore fully number-weighted, consistent with the \texttt{DIR} estimator. For source samples, inverse-variance shear weights enter the redshift distributions only through the mixture coefficients \(\Pi_{m,c}\) in Equation~(\ref{eq:12}), whereas the cluster-level density \(H_c^\texttt{Stack}(z_n \mid s_m)\) in Equation~(\ref{eq:17}) is defined as a number-weighted average of the per-galaxy posteriors within each cluster. This preserves a common mixture representation for \texttt{DIR} and \texttt{Stack} through the shared use of Equation~(\ref{eq:10}), while treating \(H_c(z \mid s_m)\) as a property of the local colour--magnitude manifold rather than of shape-measurement noise.
+
+In the limit that (i) the conditional density is approximately homogeneous within a cluster (Equation~\ref{eq:6}) and (ii) the shear weights \((\sigma_\gamma^g)^{-2}\) are approximately constant, or only weakly correlated with \(p_\mathrm{ML}(z \mid \mathbf{x}_g)\), within that cluster, the resulting \(\phi_m(z)\) is equivalent to that obtained from a fully shear-weighted posterior stack. Under this approximation, residual differences between \texttt{DIR} and \texttt{Stack} primarily trace finite-spectroscopic sampling noise versus the smoothness of the density-modelling posteriors, motivating their geometric combination in the \texttt{Hybrid} estimator (Equation~\ref{eq:18}).
+
+\subsubsection{Geometric combination} \label{sec:2.2.3}
+
+To combine the complementary behaviour of the discrete \texttt{DIR} estimator and the density-modelling \texttt{Stack} estimator, we define a \texttt{Hybrid} estimator as the geometric mean of their redshift distributions,
+\begin{equation} \label{eq:18}
+    \phi_m^\texttt{Hybrid}(z_n) \propto \sqrt{\phi_m^\texttt{DIR}(z_n) \, \phi_m^\texttt{Stack}(z_n)}.
+\end{equation}
+We then renormalise \(\phi_m^\texttt{Hybrid}\) on the redshift grid such that it satisfies Equation~\ref{eq:14}. This construction is ad hoc: it lacks a formal statistical justification but provides a practical means of balancing complementary failure modes, since \texttt{DIR} preserves the stochasticity arising from finite spectroscopic samples, whereas \texttt{Stack} is better suited to capturing the smooth, global form of the conditional density.
+
+\subsubsection{Benchmark of true redshifts} \label{sec:2.2.4}
+
+For simulated catalogues with known true redshifts \(z_\mathrm{true}\), we construct a benchmark, \texttt{Truth}, by using the same mixture structure as Equation~(\ref{eq:10}) with the cluster-level estimator
+\begin{equation} \label{eq:19}
+    H_c^\texttt{Truth}(z_n \mid s_m) = \frac{N_{m,c}^\mathrm{phot}(z_n)}{\Delta_z \, N_{m,c}^\mathrm{phot}}.
+\end{equation}
+Here \(N_{m,c}^\mathrm{phot}(z_n)\) represents the number of photometric galaxies in cluster \(c\) and redshift bin \(z_n\) that meet the selection criteria, while \(N_{m,c}^\mathrm{phot}=\sum_n N_{m,c}^\mathrm{phot}(z_n)\) gives the corresponding total number of such galaxies in cluster \(c\). Substituting Equation~(\ref{eq:19}) into Equation~(\ref{eq:10}) yields \(\phi_m^\texttt{Truth}(z_n)\). The estimated and true redshift distributions therefore share an identical mixture representation, differing only in the cluster-level components. This common structure enables direct cluster-by-cluster comparison and isolates residual calibration biases.

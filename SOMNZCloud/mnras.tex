@@ -1,0 +1,173 @@
+\documentclass[fleqn, usenatbib]{mnras}
+
+\usepackage{amsmath}
+\usepackage{CJKutf8}
+\usepackage{amssymb}
+\usepackage{txfonts}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{subfiles}
+\usepackage{orcidlink}
+\usepackage{subcaption}
+\usepackage{fontawesome}
+\usepackage[left]{lineno}
+\usepackage{threeparttable}
+\DeclareRobustCommand{\VAN}[3]{#2}
+\let\VANthebibliography\thebibliography
+\def\thebibliography{\DeclareRobustCommand{\VAN}[3]{##3}\VANthebibliography}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%% TITLE PAGE %%%%%%%%%%%%%%%%%%%
+
+\title[Data-Augmented Redshift Calibration for LSST]{Improved photometric redshift estimations through self-organising map-based data augmentation: application to LSST redshift distributions}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%% AUTHORS %%%%%%%%%%%%%%%%%%%%
+
+\author[Y.-H. Zhang et al.]{
+Yun-Hao Zhang\begin{CJK*}{UTF8}{gbsn}(张云皓)\end{CJK*}\orcidlink{0000-0003-4916-6346},\(^{1, 2}\)\thanks{YunHao.Zhang@ed.ac.uk}
+Irene Moskowitz\orcidlink{0000-0002-2206-8589},\(^{3}\)
+Joe Zuntz\orcidlink{0000-0001-9789-9646},\(^{1}\)
+Eric Gawiser\orcidlink{0000-0003-1530-8713},\(^{3}\)
+Konrad Kuijken\orcidlink{0000-0002-3827-0175},\(^{2}\)
+\newauthor
+Marika Asgari\orcidlink{0000-0002-3064-083X},\(^{4}\) 
+Nora Elisa Chisari\orcidlink{0000-0003-4221-6718},\(^{2,5}\)
+Catherine Heymans\orcidlink{0000-0001-7023-3940},\(^{1,6}\)
+Henk Hoekstra\orcidlink{0000-0002-0641-3231},\(^{2}\)
+\newauthor 
+Shun-Sheng Li\begin{CJK*}{UTF8}{gbsn}(李顺生)\end{CJK*}\orcidlink{0000-0001-9952-7408},\(^{7,8}\)
+Alex I. Malz\orcidlink{https://orcid.org/0000-0002-8676-1622},\(^{9,10}\)
+Ziang Yan\begin{CJK*}{UTF8}{gbsn}(颜子昂)\end{CJK*}\orcidlink{0000-0001-8043-5378},\(^{6}\)
+\newauthor 
+Tianqing Zhang\orcidlink{https://orcid.org/0000-0002-5596-198X},\(^{11}\)
+and The LSST Dark Energy Science Collaboration
+\\
+\(^{1}\) Institute for Astronomy, University of Edinburgh, Royal Observatory, Blackford Hill, Edinburgh, EH9 3HJ, The United Kingdom \\
+\(^{2}\) Leiden Observatory, Leiden University, Einsteinweg 55, 2333 CC, Leiden, The Netherlands \\
+\(^{3}\) Department of Physics and Astronomy, Rutgers, The State University of New Jersey, Piscataway, NJ 08854, The U.S.A. \\
+\(^{4}\) School of Mathematics, Statistics and Physics, Newcastle University, Herschel Building, NE1 7RU, Newcastle-upon-Tyne, The United Kingdom \\
+\(^{5}\) Institute for Theoretical Physics, Utrecht University, Princetonplein 5, 3584 CC Utrecht, The Netherlands \\
+\(^{6}\) Ruhr University Bochum, Astronomical Institute (AIRUB), German Centre for Cosmological Lensing, 44780 Bochum, Germany \\
+\(^{7}\) Kavli Institute for Particle Astrophysics \& Cosmology (KIPAC), Stanford University, Stanford, CA 94305, USA \\
+\(^{8}\) SLAC National Accelerator Laboratory, 2575 Sand Hill Road, Menlo Park, CA 94025, USA \\
+\(^{9}\) LSST Interdisciplinary Network for Collaboration and Computing Frameworks, 933 N. Cherry Avenue, Tucson, AZ 85721, The U.S.A. \\
+\(^{10}\) McWilliams Center for Cosmology and Astrophysics, Department of Physics, Carnegie Mellon University, Pittsburgh, PA 15213, The U.S.A. \\
+\(^{11}\) Department of Physics and Astronomy and PITT PACC, University of Pittsburgh, Pittsburgh, PA 15260, The U.S.A. \\
+}
+
+\date{Accepted XXX. Received YYY; in original form ZZZ}
+\pubyear{\the\year{}}
+
+\begin{document}
+\label{firstpage}
+\pagerange{\pageref{firstpage}--\pageref{lastpage}}
+\maketitle
+\linenumbers
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%% ABSTRACT %%%%%%%%%%%%%%%%%%%%
+
+\begin{abstract}
+Realising the cosmological potential of Stage-IV imaging surveys such as LSST requires sub-percent calibration of tomographic redshift distributions, a task fundamentally limited by incomplete spectroscopic coverage. We develop a self-organising map (SOM)-based data-augmentation framework that supplements spectroscopic calibration samples with targeted simulated galaxies, building on prior work on training-set augmentation for LSST. We combine this with a hybrid calibration approach that merges direct spectroscopic summarisation and machine-learning conditional density estimation. Across LSST Year~1 and Year~10 survey scenarios, lens-galaxy calibration proves robust, while source-galaxy calibration is more demanding owing to stronger colour--redshift degeneracies and weaker high-redshift support; in this regime, the hybrid approach delivers the most stable and least biased performance. SOM-based augmentation further improves tomographic assignments, expands feature-space coverage, and reduces truncation of high-redshift tails. Under the best-performing configurations, mean-redshift biases are reduced to sub-percent levels for lens samples and most source bins in both scenarios, meeting LSST science requirements. To quantify calibration uncertainty, we generate Monte Carlo ensembles of tomographic redshift distributions by sampling across plausible spectroscopic-selection and augmentation realisations via Dirichlet-weighted experiment marginalisation. These ensembles yield uncertainty products ranging from simple mean-redshift corrections to full-shape realisations that capture correlated, higher-order variations across tomographic bins, revealing that standard shift-and-width parameterisations do not generally capture the full distributional freedom. This work provides both a practical calibration strategy for Stage-IV cosmological analyses, and analysis-ready uncertainty products for inference forecasts.
+\end{abstract}
+
+\begin{keywords}
+galaxies: distances and redshifts -- methods: statistical -- gravitational lensing: weak -- cosmology: large-scale structure of Universe  
+\end{keywords}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%% BODY OF PAPER %%%%%%%%%%%%%%%%%%
+
+\section{Introduction} \label{sec:1}
+\subfile{Sections/Section1}
+
+\section{Bayesian Framework for Redshift Distributions} \label{sec:2}
+\subfile{Sections/Section2}
+
+\section{Experimental Design and Calibration Configurations} \label{sec:3}
+\subfile{Sections/Section3}
+
+\section{Performance Evaluation and Methodological Comparison} \label{sec:4}
+\subfile{Sections/Section4}
+
+\section{Probabilistic Uncertainty Quantifications} \label{sec:5}
+\subfile{Sections/Section5}
+
+\section{Limitations and roadmap to LSST application} \label{sec:6}
+\subfile{Sections/Section6}
+
+\section{Summary and Conclusions} \label{sec:7}
+\subfile{Sections/Section7}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%% CONTRIBUTION STATEMENTS %%%%%%%%%%%%%%
+
+\section*{Contribution Statements}
+
+Y.-H. Z. initiated and led the project, developed the methodology, performed the formal analysis --- including dataset construction, photometric-redshift modelling, and evaluation of the SOM-based augmentation strategy --- and wrote the majority of the manuscript.
+
+I. M. developed the data-augmentation framework, contributed expertise on dataset construction and photometric-redshift modelling, provided scripts used in the formal analysis, and reviewed the manuscript and provided comments.
+
+J. Z. supervised the project, contributed to the methodological development, formal analysis, and scientific validation, and reviewed and edited the manuscript.
+
+E. G. contributed to the overall conceptual framework, advised on dataset construction and photometric-redshift modelling, provided important input on scientific validation, and reviewed the manuscript and provided comments.
+
+K. K. co-supervised the project, providing guidance on methodology development, formal analysis, and scientific validation, and reviewed the manuscript and provided comments.
+
+M. A. suggested improvements to the construction of the spectroscopic datasets, advised on the application of the SOM technique, and reviewed the manuscript and provided comments.
+
+E. C. proposed refinements to better align the analysis with LSST DESC science requirements, and reviewed the manuscript and provided comments.
+
+C. H. suggested the comparison with a calibration method from the literature, and reviewed the manuscript and provided comments.
+
+H. H. contributed to the discussion and interpretation of the scientific results, highlighted directions for future improvement, and reviewed the manuscript and provided comments.
+
+S. L. provided feedback on the calibration framework, contributed to discussions of the current limitations of the analysis and the future implementation on survey data, and reviewed the manuscript and provided comments.
+
+Z. Y. assisted with the application of the SOM technique, advised on software configuration and scientific validation, contributed to the implementation of SOM-based data augmentation within the RAIL platform, and reviewed the manuscript and provided comments.
+
+A. M. and T. Z. contributed as DESC builders and core developers of the RAIL platform, which is central to this work.
+
+\section*{Acknowledgements}
+
+This work made extensive use of publicly available software, including \texttt{NumPy} \citep{2020Natur.585..357H}, \texttt{SciPy} \citep{2020NatMe..17..261V}, and \texttt{Matplotlib} \citep{2007CSE.....9...90H}, together with DESC software products, in particular the \texttt{RAIL} platform and its implementations of \texttt{Somoclu} and \texttt{FlexZBoost}, which were central to the analysis presented here.
+
+Y.-H. Z. acknowledges support from a UK Research and Innovation (UKRI) Science and Technology Facilities Council (STFC) studentship, the Edinburgh--Leiden joint studentship awarded by the University of Edinburgh and Leiden University, and the STFC travel fund for UK participation in LSST through grant ST/X001334/1.
+
+J. Z. acknowledges support from STFC funding for UK participation in LSST through grant ST/X001334/1.
+
+I. M. and E. G. acknowledge support from the U.S. Department of Energy, Office of Science, Office of High Energy Physics Cosmic Frontier Research programme under Award Number DE-SC0010008.
+
+M. A. acknowledges support from the UK STFC through grant ST/Y002652/1, and from the Royal Society through grants RGSR2222268 and ICAR1231094.
+
+T. Z. acknowledges support from Schmidt Sciences.
+
+The DESC acknowledges ongoing support from the Institut National de Physique Nucl\'eaire et de Physique des Particules in France; the Science \& Technology Facilities Council in the United Kingdom; and the Department of Energy and the LSST Discovery Alliance in the United States. DESC uses resources of the IN2P3 Computing Center (CC-IN2P3--Lyon/Villeurbanne, France) funded by the Centre National de la Recherche Scientifique; the National Energy Research Scientific Computing Center, a DOE Office of Science User Facility supported by the Office of Science of the U.S.\ Department of Energy under Contract No.\ DE-AC02-05CH11231; STFC DiRAC HPC Facilities, funded by UK BEIS National E-infrastructure capital grants; and the UK particle physics grid, supported by the GridPP Collaboration. This work was performed in part under DOE Contract DE-AC02-76SF00515.
+
+\section*{Data Availability}
+
+The scripts supporting this analysis are publicly available from the GitHub repository \href{https://github.com/CosmoCloudZhang/SOMZCloud.git}{\faGithub \texttt{SOMZCloud}}. The derived data products associated with this work, including the ensemble redshift distributions and related outputs, are archived on the LSST DESC Community File System (CFS) at the National Energy Research Scientific Computing Center (NERSC\footnote{\url{https://www.nersc.gov}}).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%% REFERENCES %%%%%%%%%%%%%%%%%%%%
+
+\bibliographystyle{mnras}
+\bibliography{mnras}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%% APPENDICES %%%%%%%%%%%%%%%%%%%%
+\appendix
+
+\section{Tabulated calibration metrics and nuisance priors} \label{sec:A}
+\subfile{Sections/Appendix}
+
+\bsp
+\label{lastpage}
+\end{document}

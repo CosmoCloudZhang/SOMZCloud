@@ -1,0 +1,154 @@
+\documentclass[fleqn, usenatbib]{mnras}
+
+\usepackage{amsmath}
+\usepackage{CJKutf8}
+\usepackage{amssymb}
+\usepackage{txfonts}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{subfiles}
+\usepackage{orcidlink}
+\usepackage{subcaption}
+\usepackage{fontawesome}
+\usepackage{threeparttable}
+\DeclareRobustCommand{\VAN}[3]{#2}
+\let\VANthebibliography\thebibliography
+\def\thebibliography{\DeclareRobustCommand{\VAN}[3]{##3}\VANthebibliography}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%% TITLE PAGE %%%%%%%%%%%%%%%%%%%
+
+\title[SOM-based data augmentation]{Improved photometric redshift estimations through self-organising map-based data augmentation}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%% AUTHORS %%%%%%%%%%%%%%%%%%%%
+
+\author[Y.-H. Zhang et al.]{
+Yun-Hao Zhang \begin{CJK*}{UTF8}{gbsn}(张云皓)\end{CJK*}\orcidlink{0000-0003-4916-6346},\(^{1, 2}\)\thanks{YunHao.Zhang@ed.ac.uk}
+Joe Zuntz\orcidlink{0000-0001-9789-9646},\(^{1}\)
+Irene Moskowitz\orcidlink{0000-0002-2206-8589},\(^{3}\)
+Eric Gawiser\orcidlink{0000-0003-1530-8713},\(^{3}\)
+Konrad Kuijken\orcidlink{0000-0002-3827-0175},\(^{2}\)
+\newauthor
+Marika Asgari\orcidlink{0000-0002-3064-083X},\(^{4}\) 
+Henk Hoekstra\orcidlink{0000-0002-0641-3231},\(^{2}\)
+Alex I. Malz\orcidlink{https://orcid.org/0000-0002-8676-1622},\(^{5, 6}\)
+Ziang Yan \begin{CJK*}{UTF8}{gbsn}(颜子昂)\end{CJK*}\orcidlink{0000-0001-8043-5378},\(^{7}\)
+Tianqing Zhang\orcidlink{https://orcid.org/0000-0002-5596-198X},\(^{8}\)
+\newauthor
+and The LSST Dark Energy Science Collaboration
+\\
+\(^{1}\) Institute for Astronomy, University of Edinburgh, Royal Observatory, Blackford Hill, Edinburgh, EH9 3HJ, The United Kingdom \\
+\(^{2}\) Leiden Observatory, Leiden University, Einsteinweg 55, 2333 CC, Leiden, The Netherlands \\
+\(^{3}\) Department of Physics and Astronomy, Rutgers, The State University of New Jersey, Piscataway, NJ 08854, The U.S.A. \\
+\(^{4}\) School of Mathematics, Statistics and Physics, Newcastle University, Herschel Building, NE1 7RU, Newcastle-upon-Tyne, The United Kingdom \\
+\(^{5}\) LSST Interdisciplinary Network for Collaboration and Computing Frameworks, 933 N. Cherry Avenue, Tucson, AZ 85721, The U.S.A. \\
+\(^{6}\) McWilliams Center for Cosmology and Astrophysics, Department of Physics, Carnegie Mellon University, Pittsburgh, PA 15213, The U.S.A. \\
+\(^{7}\) Ruhr University Bochum, Astronomical Institute (AIRUB), German Centre for Cosmological Lensing, 44780 Bochum, Germany \\
+\(^{8}\) Department of Physics and Astronomy and PITT PACC, University of Pittsburgh, Pittsburgh, PA 15260, The U.S.A. \\
+}
+
+\date{Accepted XXX. Received YYY; in original form ZZZ}
+\pubyear{2025}
+
+\begin{document}
+\label{firstpage}
+\pagerange{\pageref{firstpage}--\pageref{lastpage}}
+\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%% ABSTRACT %%%%%%%%%%%%%%%%%%%%
+
+\begin{abstract}
+We introduce a framework for the enhanced estimation of photometric redshifts using Self-Organising Maps (SOMs). Our method projects galaxy Spectral Energy Distributions (SEDs) onto a two-dimensional map, identifying regions that are sparsely sampled by existing spectroscopic observations. These under-sampled areas are then augmented with simulated galaxies, yielding a more representative spectroscopic training dataset. To assess the efficacy of this SOM-based data augmentation in the context of the forthcoming Legacy Survey of Space and Time (LSST), we employ mock galaxy catalogues from the \texttt{OpenUniverse2024} project and generate synthetic datasets that mimic the expected photometric selections of LSST after one (Y1) and ten (Y10) years of observation. We construct 501 degraded realisations of synthetic spectroscopic surveys by sampling galaxy colours, magnitudes, redshifts, and spectroscopic success rates, in order to emulate the diverse compilation of spectroscopic datasets that may exist for LSST analysis. Augmenting the degraded mock datasets with simulated galaxies from the independent \texttt{CosmoDC2} catalogues significantly improves the performance of our photometric-redshift estimates -- particularly at high redshift \((z_\mathrm{true} \gtrsim 1.5)\) -- even in the presence of differences in the underlying galaxy SED modelling between the two catalogues. This improvement is manifested in notably reduced systematic biases and a decrease in catastrophic failures by up to approximately a factor of \(2\), along with a reduction in information loss in the conditional density estimations. These results underscore the effectiveness of SOM-based augmentation in refining photometric redshift estimation, thereby enabling more robust analyses in cosmology and astrophysics for the NSF-DOE Vera C. Rubin Observatory.
+\end{abstract}
+
+\begin{keywords}
+galaxies: distances and redshifts -- methods: statistical -- cosmology: large-scale structure of Universe  
+\end{keywords}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%% BODY OF PAPER %%%%%%%%%%%%%%%%%%
+
+\section{Introduction} \label{sec:1}
+\subfile{Sections/Section1}
+
+\section{Mock Galaxy Catalogue} \label{sec:2}
+\subfile{Sections/Section2}
+
+\section{Dataset Configuration} \label{sec:3}
+\subfile{Sections/Section3}
+
+\section{Photometric Redshift Estimation} \label{sec:4}
+\subfile{Sections/Section4}
+
+\section{Results and Discussion} \label{sec:5}
+\subfile{Sections/Section5}
+
+\section{Conclusions} \label{sec:6}
+\subfile{Sections/Section6}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%% Contribution Statements %%%%%%%%%%%%
+
+\section*{Contribution Statements}
+
+Y.-H. Z. conceptualised and directed the research, developed the methodologies, conducted the formal analysis -- which encompassed dataset construction, photometric-redshift modelling, and evaluation of the effectiveness of the SOM-based data-augmentation technique -- and also authored the majority of the manuscript.
+
+J. Z. supervised the work, and contributed conceptually to methodology development, formal analysis, and scientific validation, and also reviewed and refined the manuscript.
+
+I. M. established the data augmentation framework, offered insights on dataset construction and photometric redshift modelling, provided necessary scripts to facilitate the formal analysis, and also reviewed and commented on the manuscript.
+
+E. G. contributed to designing the conceptual framework, advised on dataset construction and photometric redshift modelling, delivered crucial feedback for scientific validation, and reviewed and commented on the manuscript.
+
+K. K. co-supervised the work, offering guidance on methodology development, formal analysis, and scientific validation, in addition to reviewing and providing feedback on the manuscript.
+
+M. A. proposed refinements for the construction of spectroscopic datasets, advised on the application of the SOM technique, and also reviewed and commented on the manuscript.
+
+H. H. offered insights into the discussion of the scientific findings, emphasised potential areas for future enhancements, and also reviewed and provided feedback on the draft.
+
+Z. Y. assisted in employing the SOM technique, advising on software configuration and scientific validation, and was actively involved in implementing SOM-based data augmentation for the RAIL platform, in addition to reviewing and providing feedback on the manuscript.
+
+A. M. and T. Z. are DESC builders and key developers of the RAIL platform, which is crucial to this work.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%% ACKNOWLEDGEMENTS %%%%%%%%%%%%%%%%%%
+
+\section*{Acknowledgements}
+
+This manuscript has been internally reviewed by the LSST DESC. The authors express their gratitude to Catherine Heymans and Nora Elisa Chisari for their contribution as members of the DESC publication review committee, whose insightful comments and suggestions enhanced the quality of this paper.
+
+This study extensively utilised publicly available software, including \texttt{NumPy} \citep{2020Natur.585..357H}, \texttt{SciPy} \citep{2020NatMe..17..261V}, and \texttt{Matplotlib} \citep{2007CSE.....9...90H}, as well as the DESC softwares, particularly \texttt{RAIL} platform, including implementation of \texttt{Somoclu} and \texttt{FlexZBoost}, which were instrumental to this work.
+
+Y.–H. Z. acknowledges support from the UK Research and Innovation (UKRI) Science and Technology Facilities Council (STFC) studentship, the Edinburgh–Leiden joint studentship awarded by the University of Edinburgh and Leiden University, and the STFC travel fund for UK participation in LSST (grant ST/X001334/1). 
+
+J. Z. acknowledges the support by STFC funding for UK participation in LSST, through grant ST/X001334/1.
+
+I. M. and E.G. acknowledge support from the U.S. Department of Energy, Office of Science, Office of High Energy Physics Cosmic Frontier Research program under Award Number DE-SC0010008.
+
+M. A. receives support from the UK STFC through grant number ST/Y002652/1, as well as from the Royal Society via grant numbers RGSR2222268 and ICAR1231094.
+
+T. Z. is supported by Schmidt Sciences.
+
+The DESC acknowledges ongoing support from the Institut National de Physique Nucl\'eaire et de Physique des Particules in France; the Science \& Technology Facilities Council in the United Kingdom; and the Department of Energy and the LSST Discovery Alliance in the United States.  DESC uses resources of the IN2P3 Computing Center (CC-IN2P3--Lyon/Villeurbanne - France) funded by the Centre National de la Recherche Scientifique; the National Energy Research Scientific Computing Center, a DOE Office of Science User Facility supported by the Office of Science of the U.S.\ Department of Energy under Contract No.\ DE-AC02-05CH11231; STFC DiRAC HPC Facilities, funded by UK BEIS National E-infrastructure capital grants; and the UK particle physics grid, supported by the GridPP Collaboration. This work was performed in part under DOE Contract DE-AC02-76SF00515.
+
+\section*{Data Availability}
+
+All scripts associated with this study are publicly available in the GitHub repository \href{https://github.com/CosmoCloudZhang/SOMZCloud.git}{\faGithub \texttt{SOMZCloud}}. The generated datasets and accompanying products -- including photometric redshift estimates -- have been deposited in the LSST DESC Community File System (CFS) at the National Energy Research Scientific Computing Center (NERSC\footnote{\url{https://www.nersc.gov}}).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%% REFERENCES %%%%%%%%%%%%%%%%%%%%
+
+\bibliographystyle{mnras}
+\bibliography{mnras}
+
+\bsp
+\label{lastpage}
+\end{document}
