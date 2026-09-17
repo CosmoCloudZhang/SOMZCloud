@@ -19,7 +19,7 @@ module load cray-hdf5-parallel
 
 # Activate the conda environment
 source $HOME/.bashrc
-conda activate $RAILENV
+conda activate RAILConda
 
 # Initialize the process
 TAG="Y10"

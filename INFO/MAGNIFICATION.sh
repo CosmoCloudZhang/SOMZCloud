@@ -19,7 +19,7 @@ module load cray-hdf5-parallel
 
 # Activate the conda environment
 source $HOME/.bashrc
-conda activate $CosmoENV
+conda activate CosmoConda
 
 # Initialize the process
 NUMBER=1
