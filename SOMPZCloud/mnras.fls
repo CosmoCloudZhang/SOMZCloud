@@ -1,8 +1,8 @@
-PWD /Users/s2227120/Downloads/SOMPZCloud
+PWD /Users/s2227120/CosmoCloud/SOMZCloud/SOMPZCloud
 INPUT /usr/local/texlive/2023/texmf.cnf
 INPUT /usr/local/texlive/2023/texmf-dist/web2c/texmf.cnf
 INPUT /usr/local/texlive/2023/texmf-var/web2c/pdftex/pdflatex.fmt
-INPUT /Users/s2227120/Downloads/SOMPZCloud/mnras.tex
+INPUT /Users/s2227120/CosmoCloud/SOMZCloud/SOMPZCloud/mnras.tex
 OUTPUT mnras.log
 INPUT ./mnras.cls
 INPUT ./mnras.cls

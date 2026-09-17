@@ -1,3 +1,6 @@
+# Local AI-generated reviews, plans, and supplementary files
+/FILE/
+
 # DATA
 DATA/
 *.pkl

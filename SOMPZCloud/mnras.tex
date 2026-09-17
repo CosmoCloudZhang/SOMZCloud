@@ -34,9 +34,9 @@ Konrad Kuijken\orcidlink{0000-0002-3827-0175},\(^{2}\)
 \newauthor
 Marika Asgari\orcidlink{0000-0002-3064-083X},\(^{4}\) 
 Henk Hoekstra\orcidlink{0000-0002-0641-3231},\(^{2}\)
-Alex I. Malz\orcidlink{https://orcid.org/0000-0002-8676-1622},\(^{5, 6}\)
+Alex I. Malz\orcidlink{0000-0002-8676-1622},\(^{5, 6}\)
 Ziang Yan \begin{CJK*}{UTF8}{gbsn}(颜子昂)\end{CJK*}\orcidlink{0000-0001-8043-5378},\(^{7}\)
-Tianqing Zhang\orcidlink{https://orcid.org/0000-0002-5596-198X},\(^{8}\)
+Tianqing Zhang\orcidlink{0000-0002-5596-198X},\(^{8}\)
 \newauthor
 and The LSST Dark Energy Science Collaboration
 \\
@@ -50,8 +50,8 @@ and The LSST Dark Energy Science Collaboration
 \(^{8}\) Department of Physics and Astronomy and PITT PACC, University of Pittsburgh, Pittsburgh, PA 15260, The U.S.A. \\
 }
 
-\date{Accepted XXX. Received YYY; in original form ZZZ}
-\pubyear{2025}
+\date{Accepted 2025 December 11. Received 2025 December 10; in original form 2025 August 29}
+\pubyear{2026}
 
 \begin{document}
 \label{firstpage}
@@ -63,7 +63,7 @@ and The LSST Dark Energy Science Collaboration
 %%%%%%%%%%%%%%%%%%%% ABSTRACT %%%%%%%%%%%%%%%%%%%%
 
 \begin{abstract}
-We introduce a framework for the enhanced estimation of photometric redshifts using Self-Organising Maps (SOMs). Our method projects galaxy Spectral Energy Distributions (SEDs) onto a two-dimensional map, identifying regions that are sparsely sampled by existing spectroscopic observations. These under-sampled areas are then augmented with simulated galaxies, yielding a more representative spectroscopic training dataset. To assess the efficacy of this SOM-based data augmentation in the context of the forthcoming Legacy Survey of Space and Time (LSST), we employ mock galaxy catalogues from the \texttt{OpenUniverse2024} project and generate synthetic datasets that mimic the expected photometric selections of LSST after one (Y1) and ten (Y10) years of observation. We construct 501 degraded realisations of synthetic spectroscopic surveys by sampling galaxy colours, magnitudes, redshifts, and spectroscopic success rates, in order to emulate the diverse compilation of spectroscopic datasets that may exist for LSST analysis. Augmenting the degraded mock datasets with simulated galaxies from the independent \texttt{CosmoDC2} catalogues significantly improves the performance of our photometric-redshift estimates -- particularly at high redshift \((z_\mathrm{true} \gtrsim 1.5)\) -- even in the presence of differences in the underlying galaxy SED modelling between the two catalogues. This improvement is manifested in notably reduced systematic biases and a decrease in catastrophic failures by up to approximately a factor of \(2\), along with a reduction in information loss in the conditional density estimations. These results underscore the effectiveness of SOM-based augmentation in refining photometric redshift estimation, thereby enabling more robust analyses in cosmology and astrophysics for the NSF-DOE Vera C. Rubin Observatory.
+We introduce a framework for the enhanced estimation of photometric redshifts using Self-Organising Maps (SOMs). Our method projects galaxy Spectral Energy Distributions (SEDs) onto a two-dimensional map, identifying regions that are sparsely sampled by existing spectroscopic observations. These under-sampled areas are then augmented with simulated galaxies, yielding a more representative spectroscopic training dataset. To assess the efficacy of this SOM-based data augmentation in the context of the forthcoming Legacy Survey of Space and Time (LSST), we employ mock galaxy catalogues from the \texttt{OpenUniverse2024} project and generate synthetic datasets that mimic the expected photometric selections of LSST after one (Y1) and ten (Y10) years of observation. We construct 501 degraded realisations of synthetic spectroscopic surveys by sampling galaxy colours, magnitudes, redshifts, and spectroscopic success rates, in order to emulate the diverse compilation of spectroscopic datasets that may exist for LSST analysis. Augmenting the degraded mock datasets with simulated galaxies from the distinct \texttt{CosmoDC2} catalogues significantly improves the performance of our photometric-redshift estimates -- particularly at high redshift \((z_\mathrm{true} \gtrsim 1.5)\) -- even in the presence of differences in the underlying galaxy SED modelling between the two catalogues. This improvement is manifested in notably reduced systematic biases and a decrease in catastrophic failures by up to approximately a factor of \(2\), along with reduced departures from uniformity in the probability integral transform of the conditional density estimates. These results underscore the effectiveness of SOM-based augmentation in refining photometric redshift estimation, thereby enabling more robust analyses in cosmology and astrophysics for the NSF-DOE Vera C. Rubin Observatory.
 \end{abstract}
 
 \begin{keywords}
